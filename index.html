@@ -690,6 +690,72 @@ body.mobile-view .smenu-num { display: none; }
 body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
 body.mobile-view .ra-row { flex-direction: column; }
 
+/* ── 월별 지출 ── */
+.exp-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+}
+.exp-month-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border: 2px solid var(--peach);
+  border-radius: 30px; padding: 6px 14px;
+  box-shadow: 0 2px 8px rgba(232,131,74,.15);
+}
+.exp-month-label { font-size: .92rem; color: var(--peach-dark); min-width: 90px; text-align: center; }
+.exp-arrow {
+  background: none; border: none; cursor: pointer;
+  color: var(--peach-dark); font-size: .85rem;
+  padding: 2px 6px; border-radius: 8px; transition: background .15s;
+  font-family: 'Jua', sans-serif;
+}
+.exp-arrow:hover { background: var(--peach); }
+.exp-total {
+  background: linear-gradient(135deg, var(--peach-dark), #d06030);
+  color: white; padding: 7px 18px; border-radius: 30px;
+  font-size: .85rem; box-shadow: 0 2px 8px rgba(208,96,48,.25);
+}
+.exp-form { margin-bottom: 16px; }
+.exp-inp-grid {
+  display: grid; grid-template-columns: 100px 1fr 120px 120px;
+  gap: 8px;
+}
+.exp-table-wrap {
+  overflow-x: auto; border-radius: 14px;
+  border: 2px solid var(--peach); box-shadow: 0 3px 12px rgba(232,131,74,.1);
+}
+.exp-table {
+  width: 100%; border-collapse: collapse;
+  font-size: .8rem; background: white;
+  border-radius: 14px; overflow: hidden;
+}
+.exp-table th {
+  background: linear-gradient(135deg, var(--peach), #ffc8a0);
+  color: var(--peach-dark); padding: 10px 12px;
+  text-align: left; font-size: .78rem; white-space: nowrap;
+  border-bottom: 2px solid var(--peach);
+}
+.exp-table td {
+  padding: 10px 12px; border-bottom: 1px solid #fff0e8;
+  vertical-align: middle; color: var(--text);
+}
+.exp-table tbody tr:last-child td { border-bottom: none; }
+.exp-table tbody tr:hover { background: #fff8f4; }
+.exp-table tbody tr.editing { background: #fff0e4; }
+.exp-td-day { font-weight: 700; color: var(--peach-dark); white-space: nowrap; }
+.exp-td-amt { font-weight: 700; color: #c04020; white-space: nowrap; }
+.exp-td-acts { display: flex; gap: 4px; white-space: nowrap; }
+.exp-td-acts button {
+  background: none; border: 1.5px solid var(--peach);
+  border-radius: 7px; padding: 3px 8px;
+  font-family: 'Jua', sans-serif; font-size: .68rem;
+  color: var(--peach-dark); cursor: pointer; transition: all .15s;
+}
+.exp-td-acts button:hover { background: var(--peach); }
+.exp-td-acts button.del:hover { background: #ffe0d0; color: #c03010; border-color: #c03010; }
+
+body.mobile-view .exp-inp-grid { grid-template-columns: 1fr 1fr; }
+body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8px; font-size: .72rem; }
+
 /* ── 레시피 카테고리 탭 ── */
 .recipe-cat-tabs {
   display: flex;
@@ -979,7 +1045,8 @@ body.mobile-view .ra-row { flex-direction: column; }
     <div class="page-with-sidebar">
       <div class="sidebar">
         <div class="sidebar-title">MENU</div>
-        <div class="smenu" onclick="switchSub('menu2',1,this)" id="m2-sm-1"><span class="smenu-icon">🧹</span>청소 루틴<span class="smenu-num">01</span></div>
+        <div class="smenu active" onclick="switchSub('menu2',0,this)" id="m2-sm-0"><span class="smenu-icon">💳</span>월별지출<span class="smenu-num">00</span></div>
+<div class="smenu" onclick="switchSub('menu2',1,this)" id="m2-sm-1"><span class="smenu-icon">🧹</span>청소 루틴<span class="smenu-num">01</span></div>
 <div class="smenu" onclick="switchSub('menu2',2,this)" id="m2-sm-2"><span class="smenu-icon">🛒</span>장보기 목록<span class="smenu-num">02</span></div>
 <div class="smenu" onclick="switchSub('menu2',3,this)" id="m2-sm-3"><span class="smenu-icon">💡</span>전기/수도<span class="smenu-num">03</span></div>
 <div class="smenu" onclick="switchSub('menu2',4,this)" id="m2-sm-4"><span class="smenu-icon">🍽️</span>식단 계획<span class="smenu-num">04</span></div>
@@ -991,7 +1058,61 @@ body.mobile-view .ra-row { flex-direction: column; }
 <div class="smenu" onclick="switchSub('menu2',10,this)" id="m2-sm-10"><span class="smenu-icon">📖</span>독서 기록<span class="smenu-num">10</span></div>
       </div>
       <div class="sidebar-content">
-        <div class="subpage active" id="menu2-sub-1">
+        <!-- 월별지출 서브페이지 -->
+        <div class="subpage active" id="menu2-sub-0">
+          <div class="subpage-header">
+            <div class="subpage-icon" style="background:linear-gradient(135deg,#fff8f0,var(--peach))">💳</div>
+            <div>
+              <div class="subpage-title">월별 지출</div>
+              <div class="subpage-desc">매월 고정 지출을 관리해요 💰</div>
+            </div>
+          </div>
+
+          <!-- 월 선택 + 합계 -->
+          <div class="exp-topbar">
+            <div class="exp-month-wrap">
+              <button class="exp-arrow" onclick="changeExpMonth(-1)">◀</button>
+              <div class="exp-month-label" id="exp-month-label">2025년 3월</div>
+              <button class="exp-arrow" onclick="changeExpMonth(1)">▶</button>
+            </div>
+            <div class="exp-total" id="exp-total">합계: 0원</div>
+          </div>
+
+          <!-- 입력 폼 -->
+          <div class="card cpe exp-form" id="exp-add-form">
+            <div style="font-size:.85rem;color:var(--peach-dark);margin-bottom:10px;font-weight:700">✏️ 지출 항목 등록</div>
+            <div class="exp-inp-grid">
+              <input id="exp-day"  type="text" class="ra-inp" placeholder="날짜 (예: 1일, 10일)">
+              <input id="exp-item" type="text" class="ra-inp" placeholder="항목명">
+              <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)">
+              <input id="exp-bank" type="text" class="ra-inp" placeholder="출금 통장">
+              <input id="exp-note" type="text" class="ra-inp" placeholder="계좌/비고" style="grid-column:1/-1">
+            </div>
+            <div class="ra-btns" style="margin-top:10px">
+              <button class="abtn" onclick="addExpItem()" style="background:linear-gradient(135deg,var(--peach-dark),#d06030)">+ 등록</button>
+              <button class="abtn" onclick="cancelExpEdit()" id="exp-cancel-btn" style="display:none;background:linear-gradient(135deg,#aaa,#888)">취소</button>
+            </div>
+          </div>
+
+          <!-- 지출 테이블 -->
+          <div class="exp-table-wrap">
+            <table class="exp-table">
+              <thead>
+                <tr>
+                  <th>날짜</th>
+                  <th>항목</th>
+                  <th>금액(원)</th>
+                  <th>출금 통장</th>
+                  <th>계좌/비고</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="exp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="subpage" id="menu2-sub-1">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🧹</div>
       <div><div class="subpage-title">청소 루틴</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
@@ -1613,9 +1734,117 @@ Object.keys(renderCfg).forEach(rerender);
 
 renderRecipe();
 
+// ── 월별 지출 ──
+let expYear  = new Date().getFullYear();
+let expMonth = new Date().getMonth() + 1;
+let editingExpId = null;
+
+function expKey() { return `exp_${expYear}_${expMonth}`; }
+function loadExp() { return load(expKey()); }
+function saveExp(data) { stor(expKey(), data); }
+
+function changeExpMonth(dir) {
+  expMonth += dir;
+  if (expMonth > 12) { expMonth = 1; expYear++; }
+  if (expMonth < 1)  { expMonth = 12; expYear--; }
+  renderExp();
+}
+
+function renderExp() {
+  const data = loadExp();
+  document.getElementById('exp-month-label').textContent = `${expYear}년 ${expMonth}월`;
+
+  const tbody = document.getElementById('exp-tbody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--soft)">지출 항목을 등록해요 💳</td></tr>`;
+    document.getElementById('exp-total').textContent = '합계: 0원';
+    return;
+  }
+
+  let total = 0;
+  tbody.innerHTML = data.map(row => {
+    const amt = parseInt((row.amt||'0').replace(/[^0-9]/g,'')) || 0;
+    total += amt;
+    const amtDisp = amt ? amt.toLocaleString() : row.amt;
+    return `<tr id="exp-row-${row.id}">
+      <td class="exp-td-day">${esc(row.day)}</td>
+      <td>${esc(row.item)}</td>
+      <td class="exp-td-amt">${amtDisp}</td>
+      <td>${esc(row.bank)}</td>
+      <td>${esc(row.note)}</td>
+      <td><div class="exp-td-acts">
+        <button onclick="editExpItem(${row.id})">✏️</button>
+        <button class="del" onclick="delExpItem(${row.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('exp-total').textContent = `합계: ${total.toLocaleString()}원`;
+}
+
+function addExpItem() {
+  const day  = document.getElementById('exp-day').value.trim();
+  const item = document.getElementById('exp-item').value.trim();
+  const amt  = document.getElementById('exp-amt').value.trim();
+  const bank = document.getElementById('exp-bank').value.trim();
+  const note = document.getElementById('exp-note').value.trim();
+  if (!item) { toast('항목명을 입력해요 💳'); return; }
+
+  const data = loadExp();
+  if (editingExpId) {
+    const idx = data.findIndex(r => r.id === editingExpId);
+    if (idx !== -1) data[idx] = { ...data[idx], day, item, amt, bank, note };
+    editingExpId = null;
+    document.getElementById('exp-cancel-btn').style.display = 'none';
+    toast('✏️ 수정됐어요!');
+  } else {
+    data.push({ id: Date.now(), day, item, amt, bank, note });
+    toast('💳 등록됐어요!');
+  }
+  saveExp(data);
+  clearExpForm();
+  renderExp();
+}
+
+function editExpItem(id) {
+  const data = loadExp();
+  const row  = data.find(r => r.id === id);
+  if (!row) return;
+  editingExpId = id;
+  document.getElementById('exp-day').value  = row.day;
+  document.getElementById('exp-item').value = row.item;
+  document.getElementById('exp-amt').value  = row.amt;
+  document.getElementById('exp-bank').value = row.bank;
+  document.getElementById('exp-note').value = row.note;
+  document.getElementById('exp-cancel-btn').style.display = 'inline-block';
+  document.getElementById('exp-add-form').scrollIntoView({ behavior: 'smooth' });
+  toast('✏️ 수정 모드예요!');
+}
+
+function delExpItem(id) {
+  if (!confirm('이 항목을 삭제할까요?')) return;
+  const data = loadExp().filter(r => r.id !== id);
+  saveExp(data);
+  renderExp();
+  toast('🗑️ 삭제됐어요');
+}
+
+function cancelExpEdit() {
+  editingExpId = null;
+  clearExpForm();
+  document.getElementById('exp-cancel-btn').style.display = 'none';
+}
+
+function clearExpForm() {
+  ['exp-day','exp-item','exp-amt','exp-bank','exp-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
 // ── 사이드 메뉴 초기 활성화 ──
 document.getElementById('m1-sm-1') && document.getElementById('m1-sm-1').classList.add('active');
-document.getElementById('m2-sm-1') && document.getElementById('m2-sm-1').classList.add('active');
+document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
+renderExp();
 
 // ── 구글 시트 동기화 ──
 syncFromSheet();
