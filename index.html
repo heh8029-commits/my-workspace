@@ -762,7 +762,7 @@ function hk(e, fn) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fn();} 
 function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── Google Sheets 연동 ──
-const GS_URL = 'https://script.google.com/macros/s/AKfycbzRWQtVTK6tbABcbOLg8j1sklFDrJjjdpswX7jVjprjgZKRTefHTqelW5q2G5jf8Ur5/exec';
+const GS_URL = 'https://script.google.com/macros/s/AKfycbz9IJ1jvGlls4RS1Ve68tS-mmr-uR70wGHdkUt2W_r-hgsAC04qIvgBg9UuTXSrdZ0M/exec';
 
 // 로컬캐시 (빠른 UI용) + 구글시트 동기화
 function load(k) {
@@ -772,11 +772,15 @@ function load(k) {
 function stor(k, v) {
   // 1. 로컬 즉시 저장
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
-  // 2. 구글 시트에 비동기 저장 (no-cors)
-  const form = new FormData();
-  form.append('key', k);
-  form.append('value', JSON.stringify(v));
-  fetch(GS_URL, { method: 'POST', body: form }).catch(()=>{});
+  // 2. 구글 시트에 비동기 저장
+  const params = new URLSearchParams();
+  params.append('key', k);
+  params.append('value', JSON.stringify(v));
+  fetch(GS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  }).catch(()=>{});
 }
 
 // 구글 시트에서 전체 데이터 불러오기
