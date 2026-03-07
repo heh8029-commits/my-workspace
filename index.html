@@ -674,15 +674,25 @@ mark { background:var(--yellow); border-radius:3px; padding:0 2px; }
 }
 
 /* 모바일에서 사이드바 숨김 */
-body.mobile-view .page-with-sidebar { flex-direction: column; }
+body.mobile-view .page-with-sidebar { flex-direction: column; gap: 10px; }
 body.mobile-view .sidebar {
   width: 100%;
   position: static;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
-body.mobile-view .smenu { padding: 7px 12px; font-size: .75rem; }
+body.mobile-view .sidebar-title { display: none; }
+body.mobile-view .smenu {
+  padding: 5px 12px;
+  font-size: .72rem;
+  border-radius: 20px;
+  gap: 0;
+  box-shadow: none;
+  transform: none !important;
+}
+body.mobile-view .smenu::before { display: none; }
+body.mobile-view .smenu-icon { display: none; }
 body.mobile-view .smenu-num { display: none; }
 
 body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
