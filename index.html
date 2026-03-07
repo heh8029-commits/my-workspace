@@ -753,6 +753,44 @@ body.mobile-view .ra-row { flex-direction: column; }
 .exp-td-acts button:hover { background: var(--peach); }
 .exp-td-acts button.del:hover { background: #ffe0d0; color: #c03010; border-color: #c03010; }
 
+/* 메모 아이콘 */
+.exp-memo-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.1rem; padding: 2px 4px;
+  border-radius: 8px; transition: transform .15s;
+  position: relative;
+}
+.exp-memo-btn:hover { transform: scale(1.2); }
+.exp-memo-btn.has-memo::after {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 7px; height: 7px;
+  background: var(--rose); border-radius: 50%;
+  border: 1.5px solid white;
+}
+
+/* 메모 팝업 */
+.exp-memo-overlay {
+  display: none; position: fixed;
+  inset: 0; background: rgba(0,0,0,.35);
+  z-index: 500;
+}
+.exp-memo-overlay.show { display: block; }
+.exp-memo-popup {
+  display: none; position: fixed;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: white; border-radius: 20px;
+  border: 2px solid var(--peach); padding: 22px 24px;
+  width: min(380px, 90vw);
+  box-shadow: 0 8px 32px rgba(232,131,74,.25);
+  z-index: 501; animation: fadeUp .2s ease;
+}
+.exp-memo-popup.show { display: block; }
+.exp-memo-popup-title {
+  font-size: 1rem; color: var(--peach-dark);
+  margin-bottom: 14px; font-weight: 700;
+}
+
 body.mobile-view .exp-inp-grid { grid-template-columns: 1fr 1fr; }
 body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8px; font-size: .72rem; }
 
@@ -1068,13 +1106,8 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
             </div>
           </div>
 
-          <!-- 월 선택 + 합계 -->
+          <!-- 합계 -->
           <div class="exp-topbar">
-            <div class="exp-month-wrap">
-              <button class="exp-arrow" onclick="changeExpMonth(-1)">◀</button>
-              <div class="exp-month-label" id="exp-month-label">2025년 3월</div>
-              <button class="exp-arrow" onclick="changeExpMonth(1)">▶</button>
-            </div>
             <div class="exp-total" id="exp-total">합계: 0원</div>
           </div>
 
@@ -1104,11 +1137,23 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
                   <th>금액(원)</th>
                   <th>출금 통장</th>
                   <th>계좌/비고</th>
+                  <th>메모</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody id="exp-tbody"></tbody>
             </table>
+          </div>
+
+          <!-- 메모 팝업 -->
+          <div class="exp-memo-overlay" id="exp-memo-overlay" onclick="closeExpMemo()"></div>
+          <div class="exp-memo-popup" id="exp-memo-popup">
+            <div class="exp-memo-popup-title">📝 메모</div>
+            <textarea id="exp-memo-text" class="ra-inp ra-memo" placeholder="확인 사항, 수정 내용 등 자유롭게 메모해요..." style="min-height:100px;margin-bottom:10px"></textarea>
+            <div class="ra-btns">
+              <button class="abtn" onclick="saveExpMemo()" style="background:linear-gradient(135deg,var(--peach-dark),#d06030)">저장</button>
+              <button class="abtn" onclick="closeExpMemo()" style="background:linear-gradient(135deg,#aaa,#888)">닫기</button>
+            </div>
           </div>
         </div>
 
@@ -1293,7 +1338,7 @@ function stor(k, v) {
 
 // 구글 시트에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe'];
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe','exp_fixed'];
   toast('🔄 동기화 중...');
   let updated = false;
   for (const k of keys) {
@@ -1735,28 +1780,17 @@ Object.keys(renderCfg).forEach(rerender);
 renderRecipe();
 
 // ── 월별 지출 ──
-let expYear  = new Date().getFullYear();
-let expMonth = new Date().getMonth() + 1;
 let editingExpId = null;
+let memoTargetId = null;
 
-function expKey() { return `exp_${expYear}_${expMonth}`; }
-function loadExp() { return load(expKey()); }
-function saveExp(data) { stor(expKey(), data); }
-
-function changeExpMonth(dir) {
-  expMonth += dir;
-  if (expMonth > 12) { expMonth = 1; expYear++; }
-  if (expMonth < 1)  { expMonth = 12; expYear--; }
-  renderExp();
-}
+function loadExp() { return load('exp_fixed'); }
+function saveExp(data) { stor('exp_fixed', data); }
 
 function renderExp() {
   const data = loadExp();
-  document.getElementById('exp-month-label').textContent = `${expYear}년 ${expMonth}월`;
-
   const tbody = document.getElementById('exp-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--soft)">지출 항목을 등록해요 💳</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">지출 항목을 등록해요 💳</td></tr>`;
     document.getElementById('exp-total').textContent = '합계: 0원';
     return;
   }
@@ -1765,13 +1799,20 @@ function renderExp() {
   tbody.innerHTML = data.map(row => {
     const amt = parseInt((row.amt||'0').replace(/[^0-9]/g,'')) || 0;
     total += amt;
-    const amtDisp = amt ? amt.toLocaleString() : row.amt;
+    const amtDisp = amt ? amt.toLocaleString() : (row.amt||'-');
+    const hasMemo = row.memo && row.memo.trim();
     return `<tr id="exp-row-${row.id}">
-      <td class="exp-td-day">${esc(row.day)}</td>
-      <td>${esc(row.item)}</td>
+      <td class="exp-td-day">${esc(row.day||'')}</td>
+      <td>${esc(row.item||'')}</td>
       <td class="exp-td-amt">${amtDisp}</td>
-      <td>${esc(row.bank)}</td>
-      <td>${esc(row.note)}</td>
+      <td>${esc(row.bank||'')}</td>
+      <td>${esc(row.note||'')}</td>
+      <td style="text-align:center">
+        <button class="exp-memo-btn ${hasMemo?'has-memo':''}" onclick="openExpMemo(${row.id})" title="${hasMemo?'메모 있음 - 클릭해서 보기':'메모 추가'}">
+          ${hasMemo ? '🟠' : '💬'}
+        </button>
+        ${hasMemo ? `<div style="font-size:.65rem;color:var(--rose);margin-top:2px">메모있음</div>` : ''}
+      </td>
       <td><div class="exp-td-acts">
         <button onclick="editExpItem(${row.id})">✏️</button>
         <button class="del" onclick="delExpItem(${row.id})">🗑️</button>
@@ -1798,7 +1839,7 @@ function addExpItem() {
     document.getElementById('exp-cancel-btn').style.display = 'none';
     toast('✏️ 수정됐어요!');
   } else {
-    data.push({ id: Date.now(), day, item, amt, bank, note });
+    data.push({ id: Date.now(), day, item, amt, bank, note, memo: '' });
     toast('💳 등록됐어요!');
   }
   saveExp(data);
@@ -1807,15 +1848,14 @@ function addExpItem() {
 }
 
 function editExpItem(id) {
-  const data = loadExp();
-  const row  = data.find(r => r.id === id);
+  const row = loadExp().find(r => r.id === id);
   if (!row) return;
   editingExpId = id;
-  document.getElementById('exp-day').value  = row.day;
-  document.getElementById('exp-item').value = row.item;
-  document.getElementById('exp-amt').value  = row.amt;
-  document.getElementById('exp-bank').value = row.bank;
-  document.getElementById('exp-note').value = row.note;
+  document.getElementById('exp-day').value  = row.day||'';
+  document.getElementById('exp-item').value = row.item||'';
+  document.getElementById('exp-amt').value  = row.amt||'';
+  document.getElementById('exp-bank').value = row.bank||'';
+  document.getElementById('exp-note').value = row.note||'';
   document.getElementById('exp-cancel-btn').style.display = 'inline-block';
   document.getElementById('exp-add-form').scrollIntoView({ behavior: 'smooth' });
   toast('✏️ 수정 모드예요!');
@@ -1823,15 +1863,12 @@ function editExpItem(id) {
 
 function delExpItem(id) {
   if (!confirm('이 항목을 삭제할까요?')) return;
-  const data = loadExp().filter(r => r.id !== id);
-  saveExp(data);
-  renderExp();
-  toast('🗑️ 삭제됐어요');
+  saveExp(loadExp().filter(r => r.id !== id));
+  renderExp(); toast('🗑️ 삭제됐어요');
 }
 
 function cancelExpEdit() {
-  editingExpId = null;
-  clearExpForm();
+  editingExpId = null; clearExpForm();
   document.getElementById('exp-cancel-btn').style.display = 'none';
 }
 
@@ -1839,6 +1876,30 @@ function clearExpForm() {
   ['exp-day','exp-item','exp-amt','exp-bank','exp-note'].forEach(id => {
     document.getElementById(id).value = '';
   });
+}
+
+function openExpMemo(id) {
+  memoTargetId = id;
+  const row = loadExp().find(r => r.id === id);
+  document.getElementById('exp-memo-text').value = row ? (row.memo||'') : '';
+  document.getElementById('exp-memo-overlay').classList.add('show');
+  document.getElementById('exp-memo-popup').classList.add('show');
+  setTimeout(() => document.getElementById('exp-memo-text').focus(), 100);
+}
+
+function closeExpMemo() {
+  document.getElementById('exp-memo-overlay').classList.remove('show');
+  document.getElementById('exp-memo-popup').classList.remove('show');
+  memoTargetId = null;
+}
+
+function saveExpMemo() {
+  const memo = document.getElementById('exp-memo-text').value.trim();
+  const data = loadExp();
+  const idx  = data.findIndex(r => r.id === memoTargetId);
+  if (idx !== -1) { data[idx].memo = memo; saveExp(data); }
+  closeExpMemo(); renderExp();
+  toast(memo ? '📝 메모 저장됐어요!' : '메모를 지웠어요');
 }
 
 // ── 사이드 메뉴 초기 활성화 ──
