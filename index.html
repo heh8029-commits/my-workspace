@@ -690,6 +690,63 @@ body.mobile-view .smenu-num { display: none; }
 body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
 body.mobile-view .ra-row { flex-direction: column; }
 
+/* ── 레시피 카테고리 탭 ── */
+.recipe-cat-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.rct {
+  padding: 7px 18px;
+  border-radius: 30px;
+  background: white;
+  border: 2px solid var(--pink-mid);
+  font-family: 'Jua', sans-serif;
+  font-size: .8rem;
+  color: var(--soft);
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 2px 6px var(--shadow);
+  white-space: nowrap;
+}
+
+.rct:hover { background: var(--pink-pale); color: var(--rose); border-color: var(--pink-dark); transform: translateY(-1px); }
+
+.rct.active {
+  background: linear-gradient(135deg, var(--pink-dark), var(--rose));
+  color: white;
+  border-color: var(--rose);
+  box-shadow: 0 3px 10px rgba(224,60,110,.28);
+}
+
+.rc-cat-badge {
+  font-size: .65rem;
+  background: var(--pink-pale);
+  color: var(--pink-dark);
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--pink-mid);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.recipe-cat-select {
+  border: 2px solid var(--pink-mid);
+  border-radius: 11px;
+  padding: 9px 13px;
+  font-family: 'Jua', sans-serif;
+  font-size: .82rem;
+  color: var(--text);
+  background: var(--pink-pale);
+  outline: none;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.recipe-cat-select:focus { border-color: var(--pink-dark); }
+
 @media(max-width:760px){
   .three-col,.two-col { grid-template-columns:1fr; }
   .week-row { grid-template-columns:repeat(3,1fr); }
@@ -1011,6 +1068,15 @@ body.mobile-view .ra-row { flex-direction: column; }
   <div class="page" id="menu3">
     <div class="sec">🍳 요리 레시피</div>
 
+    <!-- 카테고리 미니메뉴 -->
+    <div class="recipe-cat-tabs">
+      <div class="rct active" onclick="filterRecipe('전체',this)">🍽️ 전체</div>
+      <div class="rct" onclick="filterRecipe('국',this)">🍲 국</div>
+      <div class="rct" onclick="filterRecipe('반찬',this)">🥢 반찬</div>
+      <div class="rct" onclick="filterRecipe('메인요리',this)">🍳 메인요리</div>
+      <div class="rct" onclick="filterRecipe('기타',this)">🍱 기타</div>
+    </div>
+
     <!-- 검색창 -->
     <div class="recipe-search-wrap">
       <div class="recipe-search-box">
@@ -1026,6 +1092,12 @@ body.mobile-view .ra-row { flex-direction: column; }
       <div style="font-size:.9rem;color:var(--rose);margin-bottom:12px;font-weight:700">✏️ 새 레시피 등록</div>
       <div class="ra-row">
         <input id="recipe-title-inp" type="text" placeholder="🍽️ 요리 제목" class="ra-inp title-inp">
+        <select id="recipe-cat-inp" class="recipe-cat-select">
+          <option value="국">🍲 국</option>
+          <option value="반찬">🥢 반찬</option>
+          <option value="메인요리">🍳 메인요리</option>
+          <option value="기타">🍱 기타</option>
+        </select>
       </div>
       <textarea id="recipe-memo-inp" class="ra-inp ra-memo" placeholder="📝 재료, 조리법, 참고 URL 등 자유롭게 메모해요&#10;URL은 자동으로 링크가 걸려요! (예: https://...)"></textarea>
       <div class="ra-btns">
@@ -1386,6 +1458,7 @@ const recipeDB = { data: load('recipe') };
 function saveRecipe() { stor('recipe', recipeDB.data); }
 
 let editingRecipeId = null;
+let currentCatFilter = '전체';
 
 function linkify(text) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -1402,29 +1475,43 @@ function highlightText(text, keyword) {
   return escaped.replace(regex, '<mark>$1</mark>');
 }
 
+function filterRecipe(cat, el) {
+  currentCatFilter = cat;
+  document.querySelectorAll('.rct').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderRecipe(document.getElementById('recipe-search').value);
+}
+
 function renderRecipe(keyword='') {
   const grid = document.getElementById('recipe-grid');
-  const items = recipeDB.data;
+  const kw = keyword.trim().toLowerCase();
+
+  let items = recipeDB.data;
+  if (currentCatFilter !== '전체') {
+    items = items.filter(i => (i.cat || '기타') === currentCatFilter);
+  }
+
   if (!items.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:40px 0">레시피를 등록해요 🍳</div>';
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:40px 0">${currentCatFilter !== '전체' ? currentCatFilter + ' 레시피가 없어요 🍳' : '레시피를 등록해요 🍳'}</div>`;
+    document.getElementById('search-result-count').textContent = '';
     return;
   }
 
-  const kw = keyword.trim().toLowerCase();
   let shown = 0;
-
   grid.innerHTML = items.map(item => {
     const matchTitle = item.title.toLowerCase().includes(kw);
-    const matchMemo  = item.memo.toLowerCase().includes(kw);
+    const matchMemo  = (item.memo||'').toLowerCase().includes(kw);
     const hidden = kw && !matchTitle && !matchMemo;
     if (!hidden) shown++;
 
     const titleHtml = kw ? highlightText(item.title, kw) : escHtml(item.title);
-    const memoHtml  = kw ? linkifyHighlight(item.memo, kw) : linkify(item.memo);
+    const memoHtml  = kw ? linkifyHighlight(item.memo||'', kw) : linkify(item.memo||'');
+    const catLabel  = item.cat ? `<span class="rc-cat-badge">${item.cat}</span>` : '';
 
     return `<div class="recipe-card ${hidden ? 'hidden' : ''}" id="rc_${item.id}">
       <div class="rc-top">
         <div class="rc-title">${titleHtml}</div>
+        ${catLabel}
       </div>
       ${item.memo ? `<div class="rc-memo">${memoHtml}</div>` : ''}
       <div class="rc-acts">
@@ -1434,12 +1521,11 @@ function renderRecipe(keyword='') {
     </div>`;
   }).join('');
 
-  // 검색 결과 카운트
   const countEl = document.getElementById('search-result-count');
   if (kw) {
     countEl.textContent = `🔍 "${keyword}" 검색 결과: ${shown}개`;
   } else {
-    countEl.textContent = `총 ${items.length}개의 레시피`;
+    countEl.textContent = `총 ${items.length}개`;
   }
 }
 
@@ -1457,7 +1543,7 @@ function linkifyHighlight(text, keyword) {
 function addRecipe() {
   const title = document.getElementById('recipe-title-inp').value.trim();
   const memo  = document.getElementById('recipe-memo-inp').value.trim();
-  
+  const cat   = document.getElementById('recipe-cat-inp').value;
   if (!title) { toast('제목을 입력해요 🍽️'); return; }
 
   if (editingRecipeId) {
@@ -1467,14 +1553,14 @@ function addRecipe() {
     document.getElementById('recipe-cancel-btn').style.display = 'none';
     toast('✏️ 수정됐어요!');
   } else {
-    recipeDB.data.unshift({ id: Date.now(), title, memo });
+    recipeDB.data.unshift({ id: Date.now(), title, memo, cat });
     toast('🍳 레시피 등록됐어요!');
   }
 
   saveRecipe();
   document.getElementById('recipe-title-inp').value = '';
   document.getElementById('recipe-memo-inp').value = '';
-
+  document.getElementById('recipe-cat-inp').value = '국';
   renderRecipe(document.getElementById('recipe-search').value);
 }
 
@@ -1483,7 +1569,8 @@ function editRecipe(id) {
   if (!item) return;
   editingRecipeId = id;
   document.getElementById('recipe-title-inp').value = item.title;
-  document.getElementById('recipe-memo-inp').value  = item.memo;
+  document.getElementById('recipe-memo-inp').value  = item.memo || '';
+  document.getElementById('recipe-cat-inp').value   = item.cat || '국';
 
   document.getElementById('recipe-cancel-btn').style.display = 'inline-block';
   document.getElementById('recipe-title-inp').focus();
