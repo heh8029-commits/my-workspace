@@ -769,6 +769,18 @@ body.mobile-view .ra-row { flex-direction: column; }
   border: 1.5px solid white;
 }
 
+.exp-memo-preview {
+  font-size: .68rem; color: var(--rose);
+  max-width: 120px; word-break: break-all;
+  line-height: 1.4; cursor: pointer;
+  animation: memoGlow 2s ease-in-out infinite;
+}
+
+@keyframes memoGlow {
+  0%, 100% { opacity: 1; text-shadow: none; }
+  50% { opacity: .6; text-shadow: 0 0 6px rgba(224,60,110,.7); }
+}
+
 /* 메모 팝업 */
 .exp-memo-overlay {
   display: none; position: fixed;
@@ -865,7 +877,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   <div class="tb-icons">
     <div class="tb-icon">🏠</div>
     <div class="tb-icon">🔔</div>
-    <div class="tb-icon">⚙️</div>
+    <div class="tb-icon" onclick="reloadCurrentPage()" title="현재 페이지 새로고침">🔄</div>
   </div>
   <div class="divider"></div>
   <div class="tabs">
@@ -1299,6 +1311,23 @@ function goTab(el, id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById(id).classList.add('active');
+  localStorage.setItem('ws5_curtab', id);
+}
+
+// ── 현재 페이지 새로고침 ──
+function reloadCurrentPage() {
+  localStorage.setItem('ws5_curtab', localStorage.getItem('ws5_curtab') || 'home');
+  location.reload();
+}
+
+// ── 탭 복원 ──
+const savedTab = localStorage.getItem('ws5_curtab') || 'home';
+const savedTabEl = document.querySelector(`.tab[onclick*="${savedTab}"]`);
+if (savedTab !== 'home' && savedTabEl) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  savedTabEl.classList.add('active');
+  document.getElementById(savedTab).classList.add('active');
 }
 
 // ── 토스트 ──
@@ -1807,11 +1836,11 @@ function renderExp() {
       <td class="exp-td-amt">${amtDisp}</td>
       <td>${esc(row.bank||'')}</td>
       <td>${esc(row.note||'')}</td>
-      <td style="text-align:center">
-        <button class="exp-memo-btn ${hasMemo?'has-memo':''}" onclick="openExpMemo(${row.id})" title="${hasMemo?'메모 있음 - 클릭해서 보기':'메모 추가'}">
+      <td style="text-align:center;min-width:80px">
+        <button class="exp-memo-btn ${hasMemo?'has-memo':''}" onclick="openExpMemo(${row.id})" title="${hasMemo?'클릭해서 메모 보기':'메모 추가'}">
           ${hasMemo ? '🟠' : '💬'}
         </button>
-        ${hasMemo ? `<div style="font-size:.65rem;color:var(--rose);margin-top:2px">메모있음</div>` : ''}
+        ${hasMemo ? `<div class="exp-memo-preview" onclick="openExpMemo(${row.id})">${esc(row.memo.length>30 ? row.memo.slice(0,30)+'…' : row.memo)}</div>` : ''}
       </td>
       <td><div class="exp-td-acts">
         <button onclick="editExpItem(${row.id})">✏️</button>
