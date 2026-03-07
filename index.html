@@ -1586,7 +1586,7 @@ function hk(e, fn) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fn();} 
 function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── Google Sheets 연동 ──
-const GS_URL = 'https://script.google.com/macros/s/AKfycbwACus_1w0hsp5had863xADS_STEggXDJUZSvGzdvB1nL8QrpZqm7WlYErmBHOsb8JH/exec';
+const GS_URL = 'https://script.google.com/macros/s/AKfycbwH9yyUNa-YsW2m-sbXNBjA8tX3xOc5C28_RAZJHg0KStxJE2byclDdoojK3vdsmSpr/exec';
 
 // 로컬캐시 (빠른 UI용) + 구글시트 동기화
 function load(k) {
@@ -1599,16 +1599,12 @@ function loadObj(k) {
 function stor(k, v) {
   // 1. 로컬 즉시 저장
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
-  // 2. 구글 시트에 저장 (POST)
-  const params = new URLSearchParams();
-  params.append('action', 'set');
-  params.append('key', k);
-  params.append('value', JSON.stringify(v));
+  // 2. 구글 시트에 JSON POST 저장
   fetch(GS_URL, {
     method: 'POST',
     mode: 'no-cors',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params.toString()
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ key: k, value: JSON.stringify(v) })
   }).catch(()=>{});
 }
 
