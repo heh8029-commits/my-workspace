@@ -706,17 +706,6 @@ body.mobile-view .ra-row { flex-direction: column; }
       <div style="font-size:.9rem;color:var(--rose);margin-bottom:12px;font-weight:700">✏️ 새 레시피 등록</div>
       <div class="ra-row">
         <input id="recipe-title-inp" type="text" placeholder="🍽️ 요리 제목" class="ra-inp title-inp">
-        <select id="recipe-cat-inp" class="ra-inp" style="max-width:130px">
-          <option value="">카테고리</option>
-          <option value="🍚 한식">🍚 한식</option>
-          <option value="🍝 양식">🍝 양식</option>
-          <option value="🍜 일식">🍜 일식</option>
-          <option value="🥢 중식">🥢 중식</option>
-          <option value="🥗 샐러드">🥗 샐러드</option>
-          <option value="🍰 디저트">🍰 디저트</option>
-          <option value="🥤 음료">🥤 음료</option>
-          <option value="🍱 기타">🍱 기타</option>
-        </select>
       </div>
       <textarea id="recipe-memo-inp" class="ra-inp ra-memo" placeholder="📝 재료, 조리법, 참고 URL 등 자유롭게 메모해요&#10;URL은 자동으로 링크가 걸려요! (예: https://...)"></textarea>
       <div class="ra-btns">
@@ -771,6 +760,9 @@ const GS_URL = 'https://script.google.com/macros/s/AKfycbz9IJ1jvGlls4RS1Ve68tS-m
 function load(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'[]'); } catch { return []; }
 }
+function loadObj(k) {
+  try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
+}
 
 function stor(k, v) {
   // 1. 로컬 즉시 저장
@@ -806,7 +798,7 @@ async function syncFromSheet() {
   }
   if (updated) {
     ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
-    const wd = load('week');
+    const wd = loadObj('week');
     WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
     Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
     recipeDB.data = load('recipe');
@@ -879,7 +871,7 @@ function editFlow(type, id, val) {
 
 // ── 요일 박스 ──
 const WEEKDAYS = ['월','화','수','목','금'];
-const weekData = load('week');
+const weekData = loadObj('week');
 // weekData 구조: { 월:[{id,text,done},...], 화:... }
 WEEKDAYS.forEach(d => { if (!weekData[d]) weekData[d] = []; });
 
@@ -1103,7 +1095,6 @@ function renderRecipe(keyword='') {
     return `<div class="recipe-card ${hidden ? 'hidden' : ''}" id="rc_${item.id}">
       <div class="rc-top">
         <div class="rc-title">${titleHtml}</div>
-        ${item.cat ? `<div class="rc-cat">${escHtml(item.cat)}</div>` : ''}
       </div>
       ${item.memo ? `<div class="rc-memo">${memoHtml}</div>` : ''}
       <div class="rc-acts">
@@ -1136,7 +1127,7 @@ function linkifyHighlight(text, keyword) {
 function addRecipe() {
   const title = document.getElementById('recipe-title-inp').value.trim();
   const memo  = document.getElementById('recipe-memo-inp').value.trim();
-  const cat   = document.getElementById('recipe-cat-inp').value;
+  
   if (!title) { toast('제목을 입력해요 🍽️'); return; }
 
   if (editingRecipeId) {
@@ -1146,14 +1137,14 @@ function addRecipe() {
     document.getElementById('recipe-cancel-btn').style.display = 'none';
     toast('✏️ 수정됐어요!');
   } else {
-    recipeDB.data.unshift({ id: Date.now(), title, memo, cat });
+    recipeDB.data.unshift({ id: Date.now(), title, memo });
     toast('🍳 레시피 등록됐어요!');
   }
 
   saveRecipe();
   document.getElementById('recipe-title-inp').value = '';
   document.getElementById('recipe-memo-inp').value = '';
-  document.getElementById('recipe-cat-inp').value = '';
+
   renderRecipe(document.getElementById('recipe-search').value);
 }
 
@@ -1163,7 +1154,7 @@ function editRecipe(id) {
   editingRecipeId = id;
   document.getElementById('recipe-title-inp').value = item.title;
   document.getElementById('recipe-memo-inp').value  = item.memo;
-  document.getElementById('recipe-cat-inp').value   = item.cat || '';
+
   document.getElementById('recipe-cancel-btn').style.display = 'inline-block';
   document.getElementById('recipe-title-inp').focus();
   document.getElementById('recipe-add-form').scrollIntoView({ behavior:'smooth' });
