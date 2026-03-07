@@ -614,7 +614,7 @@ function hk(e, fn) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fn();} 
 function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── Google Sheets 연동 ──
-const GS_URL = 'https://script.google.com/macros/s/AKfycbyv0wBRIsN9Ppsy8Fs0FalFW6HjUiOJ9FhhRW96eU7jbWsEtDcn9_k_UBkPGF7CL4Bf/exec';
+const GS_URL = 'https://script.google.com/macros/s/AKfycbzRWQtVTK6tbABcbOLg8j1sklFDrJjjdpswX7jVjprjgZKRTefHTqelW5q2G5jf8Ur5/exec';
 
 // 로컬캐시 (빠른 UI용) + 구글시트 동기화
 function load(k) {
@@ -622,42 +622,38 @@ function load(k) {
 }
 
 function stor(k, v) {
-  // 1. 로컬 즉시 저장 (빠른 응답)
+  // 1. 로컬 즉시 저장
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
-  // 2. 구글 시트에 비동기 저장
-  fetch(GS_URL, {
-    method: 'POST',
-    body: JSON.stringify({ key: k, value: JSON.stringify(v) })
-  }).catch(()=>{}); // 실패해도 로컬엔 저장됨
+  // 2. 구글 시트에 비동기 저장 (no-cors)
+  const form = new FormData();
+  form.append('key', k);
+  form.append('value', JSON.stringify(v));
+  fetch(GS_URL, { method: 'POST', body: form }).catch(()=>{});
 }
 
-// 구글 시트에서 전체 데이터 불러오기 (앱 시작시)
+// 구글 시트에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','ws5_viewmode'];
-  toast('🔄 데이터 불러오는 중...');
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin'];
+  toast('🔄 동기화 중...');
   let updated = false;
   for (const k of keys) {
     try {
-      const res = await fetch(GS_URL + '?key=' + k);
-      const text = await res.text();
-      if (text && text !== '[]' && text !== 'null') {
-        const remote = JSON.parse(text);
-        const local  = localStorage.getItem('ws5_'+k);
-        // 리모트 데이터가 있으면 덮어씀
-        if (remote && (Array.isArray(remote) ? remote.length > 0 : Object.keys(remote).length > 0)) {
-          localStorage.setItem('ws5_'+k, JSON.stringify(remote));
-          updated = true;
-        }
+      const res = await fetch(GS_URL + '?key=' + encodeURIComponent(k), { cache: 'no-cache' });
+      const text = (await res.text()).trim();
+      if (!text || text === 'null') continue;
+      const remote = JSON.parse(text);
+      const isEmpty = Array.isArray(remote) ? remote.length === 0 : Object.keys(remote).length === 0;
+      if (!isEmpty) {
+        localStorage.setItem('ws5_'+k, JSON.stringify(remote));
+        updated = true;
       }
-    } catch(e) {}
+    } catch(e) { console.log('sync err', k, e); }
   }
   if (updated) {
-    // 데이터 갱신 후 다시 렌더
-    ['boss','basic','design'].forEach(t => {
-      flowData[t] = load(t+'_flow');
-    });
-    Object.assign(weekData, load('week'));
-    WEEKDAYS.forEach(d => { if(!weekData[d]) weekData[d]=[]; });
+    ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
+    const wd = load('week');
+    WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
+    Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
     ['boss','basic','design'].forEach(renderFlow);
     renderWeek();
     Object.keys(renderCfg).forEach(rerender);
