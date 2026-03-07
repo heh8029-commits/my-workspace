@@ -769,6 +769,14 @@ body.mobile-view .ra-row { flex-direction: column; }
   border: 1.5px solid white;
 }
 
+.exp-memo-add-btn {
+  background: none; border: 1.5px dashed var(--peach);
+  border-radius: 8px; padding: 2px 8px;
+  font-family: 'Jua', sans-serif; font-size: .68rem;
+  color: var(--soft); cursor: pointer; transition: all .15s;
+}
+.exp-memo-add-btn:hover { background: var(--peach); color: var(--peach-dark); }
+
 .exp-memo-preview {
   font-size: .68rem; color: var(--rose);
   max-width: 120px; word-break: break-all;
@@ -1129,7 +1137,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
             <div class="exp-inp-grid">
               <input id="exp-day"  type="text" class="ra-inp" placeholder="날짜 (예: 1일, 10일)">
               <input id="exp-item" type="text" class="ra-inp" placeholder="항목명">
-              <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)">
+              <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)" oninput="formatAmt(this)">
               <input id="exp-bank" type="text" class="ra-inp" placeholder="출금 통장">
               <input id="exp-note" type="text" class="ra-inp" placeholder="계좌/비고" style="grid-column:1/-1">
             </div>
@@ -1808,6 +1816,11 @@ Object.keys(renderCfg).forEach(rerender);
 
 renderRecipe();
 
+function formatAmt(el) {
+  const raw = el.value.replace(/[^0-9]/g, '');
+  el.value = raw ? parseInt(raw).toLocaleString() : '';
+}
+
 // ── 월별 지출 ──
 let editingExpId = null;
 let memoTargetId = null;
@@ -1836,11 +1849,11 @@ function renderExp() {
       <td class="exp-td-amt">${amtDisp}</td>
       <td>${esc(row.bank||'')}</td>
       <td>${esc(row.note||'')}</td>
-      <td style="text-align:center;min-width:80px">
-        <button class="exp-memo-btn ${hasMemo?'has-memo':''}" onclick="openExpMemo(${row.id})" title="${hasMemo?'클릭해서 메모 보기':'메모 추가'}">
-          ${hasMemo ? '🟠' : '💬'}
-        </button>
-        ${hasMemo ? `<div class="exp-memo-preview" onclick="openExpMemo(${row.id})">${esc(row.memo.length>30 ? row.memo.slice(0,30)+'…' : row.memo)}</div>` : ''}
+      <td style="text-align:left;min-width:80px">
+        ${hasMemo
+          ? `<div class="exp-memo-preview" onclick="openExpMemo(${row.id})">${esc(row.memo.length>30 ? row.memo.slice(0,30)+'…' : row.memo)}</div>`
+          : `<button class="exp-memo-add-btn" onclick="openExpMemo(${row.id})">+ 메모</button>`
+        }
       </td>
       <td><div class="exp-td-acts">
         <button onclick="editExpItem(${row.id})">✏️</button>
