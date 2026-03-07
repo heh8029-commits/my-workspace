@@ -1599,10 +1599,16 @@ function loadObj(k) {
 function stor(k, v) {
   // 1. 로컬 즉시 저장
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
-  // 2. 구글 시트에 저장 - GET 방식 (Apps Script와 가장 호환성 좋음)
-  const val = encodeURIComponent(JSON.stringify(v));
-  fetch(GS_URL + '?action=set&key=' + encodeURIComponent(k) + '&value=' + val, {
-    method: 'GET', mode: 'no-cors', cache: 'no-cache'
+  // 2. 구글 시트에 저장 (POST)
+  const params = new URLSearchParams();
+  params.append('action', 'set');
+  params.append('key', k);
+  params.append('value', JSON.stringify(v));
+  fetch(GS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
   }).catch(()=>{});
 }
 
@@ -1614,9 +1620,11 @@ async function syncFromSheet() {
     try {
       const res = await fetch(GS_URL + '?action=get&key=' + encodeURIComponent(k), { cache: 'no-cache' });
       const text = (await res.text()).trim();
-      if (!text || text === 'null' || text === '[]') continue;
+      if (!text || text === 'null') continue;
       const remote = JSON.parse(text);
-      const isEmpty = Array.isArray(remote) ? remote.length === 0 : Object.keys(remote).length === 0;
+      // exp_fixed는 빈 배열이어도 덮어씀 (삭제 반영 위해)
+      const isExpKey = k === 'exp_fixed';
+      const isEmpty = !isExpKey && (Array.isArray(remote) ? remote.length === 0 : Object.keys(remote).length === 0);
       if (!isEmpty) {
         localStorage.setItem('ws5_'+k, JSON.stringify(remote));
         updated = true;
@@ -2060,7 +2068,10 @@ let memoTargetId = null;
 let currentBankFilter = '전체';
 
 function loadExp() { return load('exp_fixed'); }
-function saveExp(data) { stor('exp_fixed', data); }
+function saveExp(data) {
+  stor('exp_fixed', data);
+  console.log('💾 exp_fixed 저장:', data.length, '개');
+}
 
 function filterExpBank(bank, el) {
   currentBankFilter = bank;
