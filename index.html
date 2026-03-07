@@ -424,9 +424,121 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
+/* ── 레시피 ── */
+.recipe-search-wrap {
+  margin-bottom: 18px;
+}
+.recipe-search-box {
+  display:flex; align-items:center; gap:10px;
+  background:white; border:2px solid var(--pink-mid);
+  border-radius:16px; padding:10px 16px;
+  box-shadow:0 3px 12px var(--shadow);
+  transition:border-color .2s;
+}
+.recipe-search-box:focus-within {
+  border-color:var(--pink-dark);
+  box-shadow:0 3px 16px rgba(232,100,138,.2);
+}
+.rs-icon { font-size:1.1rem; flex-shrink:0; }
+.recipe-search-box input {
+  flex:1; border:none; outline:none; background:none;
+  font-family:'Jua',sans-serif; font-size:.9rem; color:var(--text);
+}
+.recipe-search-box input::placeholder { color:var(--soft); }
+.rs-clear {
+  background:none; border:none; cursor:pointer;
+  color:var(--soft); font-size:.9rem; padding:2px 6px;
+  border-radius:50%; transition:all .15s;
+}
+.rs-clear:hover { background:var(--pink-mid); color:var(--rose); }
+.rs-count {
+  font-size:.75rem; color:var(--soft); margin-top:6px; padding-left:4px;
+}
+
+.recipe-add-card { margin-bottom:20px; }
+.ra-row { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.ra-inp {
+  border:2px solid var(--pink-mid); border-radius:11px;
+  padding:9px 13px; font-family:'Jua',sans-serif;
+  font-size:.82rem; color:var(--text); background:var(--pink-pale);
+  outline:none; transition:border-color .2s; width:100%;
+}
+.ra-inp:focus { border-color:var(--pink-dark); box-shadow:0 0 0 3px rgba(249,168,192,.2); }
+.title-inp { flex:1; min-width:180px; }
+.ra-memo {
+  display:block; resize:vertical; min-height:90px;
+  margin-bottom:12px; line-height:1.6;
+}
+.ra-btns { display:flex; gap:8px; }
+
+.recipe-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:16px; margin-bottom:20px;
+}
+
+.recipe-card {
+  background:white; border-radius:18px;
+  border:2px solid var(--pink-mid);
+  padding:18px; box-shadow:0 4px 16px var(--shadow);
+  display:flex; flex-direction:column; gap:10px;
+  position:relative; overflow:hidden;
+  animation:popIn .25s ease;
+  transition:transform .18s, box-shadow .18s;
+}
+.recipe-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px var(--shadow); }
+.recipe-card::before {
+  content:''; position:absolute; top:0;left:0;right:0; height:4px;
+  background:linear-gradient(90deg,var(--pink),var(--rose));
+  border-radius:18px 18px 0 0;
+}
+
+.rc-top { display:flex; align-items:flex-start; gap:8px; }
+.rc-title {
+  font-size:1rem; color:var(--text); flex:1;
+  word-break:break-all; line-height:1.4;
+}
+.rc-cat {
+  font-size:.65rem; background:var(--pink-pale);
+  color:var(--pink-dark); padding:2px 8px;
+  border-radius:20px; border:1px solid var(--pink-mid);
+  white-space:nowrap; flex-shrink:0; margin-top:2px;
+}
+
+.rc-memo {
+  font-size:.78rem; color:#6a4a5a; line-height:1.7;
+  word-break:break-all; flex:1;
+  max-height:120px; overflow-y:auto;
+}
+.rc-memo::-webkit-scrollbar { width:3px; }
+.rc-memo::-webkit-scrollbar-thumb { background:var(--pink); border-radius:10px; }
+.rc-memo a {
+  color:var(--pink-dark); text-decoration:underline;
+  word-break:break-all;
+}
+.rc-memo a:hover { color:var(--rose); }
+
+.rc-acts {
+  display:flex; gap:6px; justify-content:flex-end;
+  padding-top:8px; border-top:1px dashed var(--pink-mid);
+}
+.rc-btn {
+  background:none; border:1.5px solid var(--pink-mid);
+  border-radius:8px; padding:4px 10px;
+  font-family:'Jua',sans-serif; font-size:.72rem;
+  color:var(--soft); cursor:pointer; transition:all .15s;
+}
+.rc-btn:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
+.rc-btn.del:hover { background:#ffe0e8; color:var(--rose); }
+
+.recipe-card.highlight { border-color:var(--pink-dark); }
+.recipe-card.hidden { display:none; }
+
+mark { background:var(--yellow); border-radius:3px; padding:0 2px; }
+
 @media(max-width:760px){
   .three-col,.two-col { grid-template-columns:1fr; }
   .week-row { grid-template-columns:repeat(3,1fr); }
+  .recipe-grid { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -444,7 +556,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1')">📌 메뉴 1</div>
     <div class="tab" onclick="goTab(this,'menu2')">📌 메뉴 2</div>
-    <div class="tab" onclick="goTab(this,'menu3')">📌 메뉴 3</div>
+    <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
   </div>
   <div class="divider"></div>
   <div class="tb-right">
@@ -574,9 +686,45 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   </div>
 
   <div class="page" id="menu3">
-    <div class="sec">📌 메뉴 3</div>
-    <div class="card cy" style="min-height:300px;display:flex;align-items:center;justify-content:center;color:var(--soft);font-size:1rem">
-      새로운 페이지를 여기에 만들어요 ✨
+    <div class="sec">🍳 요리 레시피</div>
+
+    <!-- 검색창 -->
+    <div class="recipe-search-wrap">
+      <div class="recipe-search-box">
+        <span class="rs-icon">🔍</span>
+        <input id="recipe-search" type="text" placeholder="레시피 검색... (제목, 메모 모두 검색돼요)" oninput="searchRecipe()">
+        <button class="rs-clear" onclick="clearSearch()" id="rs-clear-btn" style="display:none">✕</button>
+      </div>
+      <div id="search-result-count" class="rs-count"></div>
+    </div>
+
+    <!-- 추가 폼 -->
+    <div class="card cp recipe-add-card" id="recipe-add-form">
+      <div style="font-size:.9rem;color:var(--rose);margin-bottom:12px;font-weight:700">✏️ 새 레시피 등록</div>
+      <div class="ra-row">
+        <input id="recipe-title-inp" type="text" placeholder="🍽️ 요리 제목" class="ra-inp title-inp">
+        <select id="recipe-cat-inp" class="ra-inp" style="max-width:130px">
+          <option value="">카테고리</option>
+          <option value="🍚 한식">🍚 한식</option>
+          <option value="🍝 양식">🍝 양식</option>
+          <option value="🍜 일식">🍜 일식</option>
+          <option value="🥢 중식">🥢 중식</option>
+          <option value="🥗 샐러드">🥗 샐러드</option>
+          <option value="🍰 디저트">🍰 디저트</option>
+          <option value="🥤 음료">🥤 음료</option>
+          <option value="🍱 기타">🍱 기타</option>
+        </select>
+      </div>
+      <textarea id="recipe-memo-inp" class="ra-inp ra-memo" placeholder="📝 재료, 조리법, 참고 URL 등 자유롭게 메모해요&#10;URL은 자동으로 링크가 걸려요! (예: https://...)"></textarea>
+      <div class="ra-btns">
+        <button class="abtn" onclick="addRecipe()" style="padding:9px 24px">+ 등록하기</button>
+        <button class="abtn" onclick="cancelEditRecipe()" id="recipe-cancel-btn" style="display:none;background:linear-gradient(135deg,#aaa,#888)">취소</button>
+      </div>
+    </div>
+
+    <!-- 레시피 그리드 -->
+    <div class="recipe-grid" id="recipe-grid">
+      <div class="empty" style="grid-column:1/-1;padding:40px 0">레시피를 등록해요 🍳</div>
     </div>
   </div>
 
@@ -633,7 +781,7 @@ function stor(k, v) {
 
 // 구글 시트에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin'];
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe'];
   toast('🔄 동기화 중...');
   let updated = false;
   for (const k of keys) {
@@ -654,9 +802,11 @@ async function syncFromSheet() {
     const wd = load('week');
     WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
     Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
+    recipeDB.data = load('recipe');
     ['boss','basic','design'].forEach(renderFlow);
     renderWeek();
     Object.keys(renderCfg).forEach(rerender);
+    renderRecipe();
     toast('✅ 동기화 완료!');
   } else {
     toast('🎀 최신 데이터예요!');
@@ -902,10 +1052,150 @@ function setView(mode) {
 const savedView = localStorage.getItem('ws5_viewmode') || 'pc';
 setView(savedView);
 
+// ── 레시피 ──
+const recipeDB = { data: load('recipe') };
+function saveRecipe() { stor('recipe', recipeDB.data); }
+
+let editingRecipeId = null;
+
+function linkify(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return escHtml(text).replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+}
+function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function highlightText(text, keyword) {
+  if (!keyword) return escHtml(text);
+  const escaped = escHtml(text);
+  const kEsc = escHtml(keyword);
+  const regex = new RegExp('(' + kEsc.replace(/[.*+?^${}()|[\]\]/g,'\$&') + ')', 'gi');
+  return escaped.replace(regex, '<mark>$1</mark>');
+}
+
+function renderRecipe(keyword='') {
+  const grid = document.getElementById('recipe-grid');
+  const items = recipeDB.data;
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:40px 0">레시피를 등록해요 🍳</div>';
+    return;
+  }
+
+  const kw = keyword.trim().toLowerCase();
+  let shown = 0;
+
+  grid.innerHTML = items.map(item => {
+    const matchTitle = item.title.toLowerCase().includes(kw);
+    const matchMemo  = item.memo.toLowerCase().includes(kw);
+    const hidden = kw && !matchTitle && !matchMemo;
+    if (!hidden) shown++;
+
+    const titleHtml = kw ? highlightText(item.title, kw) : escHtml(item.title);
+    const memoHtml  = kw ? linkifyHighlight(item.memo, kw) : linkify(item.memo);
+
+    return `<div class="recipe-card ${hidden ? 'hidden' : ''}" id="rc_${item.id}">
+      <div class="rc-top">
+        <div class="rc-title">${titleHtml}</div>
+        ${item.cat ? `<div class="rc-cat">${escHtml(item.cat)}</div>` : ''}
+      </div>
+      ${item.memo ? `<div class="rc-memo">${memoHtml}</div>` : ''}
+      <div class="rc-acts">
+        <button class="rc-btn" onclick="editRecipe(${item.id})">✏️ 수정</button>
+        <button class="rc-btn del" onclick="deleteRecipe(${item.id})">🗑️ 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 검색 결과 카운트
+  const countEl = document.getElementById('search-result-count');
+  if (kw) {
+    countEl.textContent = `🔍 "${keyword}" 검색 결과: ${shown}개`;
+  } else {
+    countEl.textContent = `총 ${items.length}개의 레시피`;
+  }
+}
+
+function linkifyHighlight(text, keyword) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map(part => {
+    if (urlRegex.test(part)) {
+      return `<a href="${part}" target="_blank" rel="noopener">${part}</a>`;
+    }
+    return keyword ? highlightText(part, keyword) : escHtml(part);
+  }).join('');
+}
+
+function addRecipe() {
+  const title = document.getElementById('recipe-title-inp').value.trim();
+  const memo  = document.getElementById('recipe-memo-inp').value.trim();
+  const cat   = document.getElementById('recipe-cat-inp').value;
+  if (!title) { toast('제목을 입력해요 🍽️'); return; }
+
+  if (editingRecipeId) {
+    const item = recipeDB.data.find(i => i.id === editingRecipeId);
+    if (item) { item.title=title; item.memo=memo; item.cat=cat; }
+    editingRecipeId = null;
+    document.getElementById('recipe-cancel-btn').style.display = 'none';
+    toast('✏️ 수정됐어요!');
+  } else {
+    recipeDB.data.unshift({ id: Date.now(), title, memo, cat });
+    toast('🍳 레시피 등록됐어요!');
+  }
+
+  saveRecipe();
+  document.getElementById('recipe-title-inp').value = '';
+  document.getElementById('recipe-memo-inp').value = '';
+  document.getElementById('recipe-cat-inp').value = '';
+  renderRecipe(document.getElementById('recipe-search').value);
+}
+
+function editRecipe(id) {
+  const item = recipeDB.data.find(i => i.id === id);
+  if (!item) return;
+  editingRecipeId = id;
+  document.getElementById('recipe-title-inp').value = item.title;
+  document.getElementById('recipe-memo-inp').value  = item.memo;
+  document.getElementById('recipe-cat-inp').value   = item.cat || '';
+  document.getElementById('recipe-cancel-btn').style.display = 'inline-block';
+  document.getElementById('recipe-title-inp').focus();
+  document.getElementById('recipe-add-form').scrollIntoView({ behavior:'smooth' });
+  toast('✏️ 수정 모드예요!');
+}
+
+function cancelEditRecipe() {
+  editingRecipeId = null;
+  document.getElementById('recipe-title-inp').value = '';
+  document.getElementById('recipe-memo-inp').value  = '';
+  document.getElementById('recipe-cat-inp').value   = '';
+  document.getElementById('recipe-cancel-btn').style.display = 'none';
+}
+
+function deleteRecipe(id) {
+  if (!confirm('이 레시피를 삭제할까요?')) return;
+  recipeDB.data = recipeDB.data.filter(i => i.id !== id);
+  saveRecipe();
+  renderRecipe(document.getElementById('recipe-search').value);
+  toast('🗑️ 삭제됐어요');
+}
+
+function searchRecipe() {
+  const kw = document.getElementById('recipe-search').value;
+  document.getElementById('rs-clear-btn').style.display = kw ? 'block' : 'none';
+  renderRecipe(kw);
+}
+
+function clearSearch() {
+  document.getElementById('recipe-search').value = '';
+  document.getElementById('rs-clear-btn').style.display = 'none';
+  renderRecipe();
+}
+
 // ── 초기 렌더 ──
 ['boss','basic','design'].forEach(renderFlow);
 renderWeek();
 Object.keys(renderCfg).forEach(rerender);
+
+renderRecipe();
 
 // ── 구글 시트 동기화 ──
 syncFromSheet();
