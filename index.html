@@ -535,10 +535,13 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 mark { background:var(--yellow); border-radius:3px; padding:0 2px; }
 
+body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
+body.mobile-view .ra-row { flex-direction: column; }
+
 @media(max-width:760px){
   .three-col,.two-col { grid-template-columns:1fr; }
   .week-row { grid-template-columns:repeat(3,1fr); }
-  .recipe-grid { grid-template-columns:1fr; }
+  .recipe-grid { grid-template-columns: 1fr !important; }
 }
 </style>
 </head>
