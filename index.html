@@ -1596,15 +1596,29 @@ function loadObj(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
 }
 
+// 타임스탬프 저장/불러오기
+function getTS(k)    { return parseInt(localStorage.getItem('ws5_ts_'+k)||'0'); }
+function setTS(k, t) { localStorage.setItem('ws5_ts_'+k, String(t)); }
+
 function stor(k, v) {
-  // 1. 로컬 즉시 저장
+  const ts = Date.now();
+  // 1. 로컬 즉시 저장 + 타임스탬프
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
-  // 2. 구글 시트에 JSON POST 저장
+  setTS(k, ts);
+  // 2. 구글 시트에 데이터+타임스탬프 함께 저장
+  const payload = JSON.stringify({ key: k, value: JSON.stringify(v), ts: ts });
   fetch(GS_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ key: k, value: JSON.stringify(v) })
+    body: payload
+  }).catch(()=>{});
+  // ts도 별도 키로 저장
+  fetch(GS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ key: 'ts_'+k, value: String(ts) })
   }).catch(()=>{});
 }
 
@@ -1612,21 +1626,31 @@ async function syncFromSheet() {
   const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe','exp_fixed'];
   toast('🔄 동기화 중...');
   let updated = false;
+
   for (const k of keys) {
     try {
-      const res = await fetch(GS_URL + '?action=get&key=' + encodeURIComponent(k), { cache: 'no-cache' });
-      const text = (await res.text()).trim();
-      if (!text || text === 'null') continue;
-      const remote = JSON.parse(text);
-      // exp_fixed는 빈 배열이어도 덮어씀 (삭제 반영 위해)
-      const isExpKey = k === 'exp_fixed';
-      const isEmpty = !isExpKey && (Array.isArray(remote) ? remote.length === 0 : Object.keys(remote).length === 0);
-      if (!isEmpty) {
+      // 서버 타임스탬프 먼저 확인
+      const tsRes = await fetch(GS_URL + '?action=get&key=' + encodeURIComponent('ts_'+k), { cache: 'no-cache' });
+      const tsText = (await tsRes.text()).trim();
+      const remoteTS = parseInt(tsText) || 0;
+      const localTS  = getTS(k);
+
+      // 서버가 더 최신이면 데이터 불러오기
+      if (remoteTS > localTS) {
+        const res  = await fetch(GS_URL + '?action=get&key=' + encodeURIComponent(k), { cache: 'no-cache' });
+        const text = (await res.text()).trim();
+        if (!text || text === 'null') continue;
+        const remote = JSON.parse(text);
         localStorage.setItem('ws5_'+k, JSON.stringify(remote));
+        setTS(k, remoteTS);
         updated = true;
+        console.log('✅ sync:', k, '서버TS:', remoteTS, '로컬TS:', localTS);
+      } else {
+        console.log('⏭️ skip:', k, '로컬이 최신');
       }
     } catch(e) { console.log('sync err', k, e); }
   }
+
   if (updated) {
     ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
     const wd = loadObj('week');
