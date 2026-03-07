@@ -535,6 +535,156 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 mark { background:var(--yellow); border-radius:3px; padding:0 2px; }
 
+/* ── 사이드 메뉴 레이아웃 ── */
+.page-with-sidebar {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 90px;
+}
+
+.sidebar-title {
+  font-size: .72rem;
+  color: var(--soft);
+  letter-spacing: 2px;
+  padding: 4px 8px 8px;
+  border-bottom: 2px dashed var(--pink-mid);
+  margin-bottom: 4px;
+}
+
+.smenu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: white;
+  border: 2px solid var(--pink-mid);
+  font-family: 'Jua', sans-serif;
+  font-size: .82rem;
+  color: var(--soft);
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 2px 8px var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.smenu::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--pink-mid);
+  border-radius: 3px 0 0 3px;
+  transition: background .18s;
+}
+
+.smenu:hover {
+  background: var(--pink-pale);
+  color: var(--rose);
+  border-color: var(--pink-dark);
+  transform: translateX(3px);
+}
+
+.smenu:hover::before { background: var(--pink-dark); }
+
+.smenu.active {
+  background: linear-gradient(135deg, #fff0f5, #ffe4ef);
+  color: var(--rose);
+  border-color: var(--pink-dark);
+  font-weight: 700;
+}
+
+.smenu.active::before { background: var(--rose); }
+
+.smenu-icon { font-size: 1.1rem; flex-shrink: 0; }
+.smenu-num {
+  margin-left: auto;
+  font-size: .65rem;
+  background: var(--pink-pale);
+  color: var(--soft);
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--pink-mid);
+}
+
+.smenu.active .smenu-num {
+  background: var(--pink-dark);
+  color: white;
+  border-color: var(--pink-dark);
+}
+
+.sidebar-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 서브페이지 */
+.subpage { display: none; }
+.subpage.active { display: block; animation: fadeUp .25s ease; }
+
+.subpage-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--pink-mid);
+}
+
+.subpage-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--pink-pale), var(--pink-mid));
+  flex-shrink: 0;
+}
+
+.subpage-title {
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.subpage-desc {
+  font-size: .75rem;
+  color: var(--soft);
+  margin-top: 2px;
+}
+
+.subpage-empty {
+  background: white;
+  border-radius: 18px;
+  border: 2px dashed var(--pink-mid);
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--soft);
+  font-size: .88rem;
+  line-height: 2;
+}
+
+/* 모바일에서 사이드바 숨김 */
+body.mobile-view .page-with-sidebar { flex-direction: column; }
+body.mobile-view .sidebar {
+  width: 100%;
+  position: static;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.mobile-view .smenu { padding: 7px 12px; font-size: .75rem; }
+body.mobile-view .smenu-num { display: none; }
+
 body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
 body.mobile-view .ra-row { flex-direction: column; }
 
@@ -676,15 +826,183 @@ body.mobile-view .ra-row { flex-direction: column; }
   <!-- ══════════════ 메뉴 1,2,3 ══════════════ -->
   <div class="page" id="menu1">
     <div class="sec">🛍️ 미리제작소</div>
-    <div class="card cp" style="min-height:300px;display:flex;align-items:center;justify-content:center;color:var(--soft);font-size:1rem">
-      새로운 페이지를 여기에 만들어요 🎀
+    <div class="page-with-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-title">MENU</div>
+        <div class="smenu" onclick="switchSub('menu1',1,this)" id="m1-sm-1"><span class="smenu-icon">🏪</span>쇼핑몰 공지<span class="smenu-num">01</span></div>
+<div class="smenu" onclick="switchSub('menu1',2,this)" id="m1-sm-2"><span class="smenu-icon">📦</span>주문 관리<span class="smenu-num">02</span></div>
+<div class="smenu" onclick="switchSub('menu1',3,this)" id="m1-sm-3"><span class="smenu-icon">🎨</span>디자인 작업<span class="smenu-num">03</span></div>
+<div class="smenu" onclick="switchSub('menu1',4,this)" id="m1-sm-4"><span class="smenu-icon">💰</span>매출 정리<span class="smenu-num">04</span></div>
+<div class="smenu" onclick="switchSub('menu1',5,this)" id="m1-sm-5"><span class="smenu-icon">📸</span>상품 사진<span class="smenu-num">05</span></div>
+<div class="smenu" onclick="switchSub('menu1',6,this)" id="m1-sm-6"><span class="smenu-icon">🚚</span>배송 현황<span class="smenu-num">06</span></div>
+<div class="smenu" onclick="switchSub('menu1',7,this)" id="m1-sm-7"><span class="smenu-icon">💬</span>고객 문의<span class="smenu-num">07</span></div>
+<div class="smenu" onclick="switchSub('menu1',8,this)" id="m1-sm-8"><span class="smenu-icon">📢</span>마케팅<span class="smenu-num">08</span></div>
+<div class="smenu" onclick="switchSub('menu1',9,this)" id="m1-sm-9"><span class="smenu-icon">📋</span>재고 관리<span class="smenu-num">09</span></div>
+<div class="smenu" onclick="switchSub('menu1',10,this)" id="m1-sm-10"><span class="smenu-icon">⭐</span>리뷰 관리<span class="smenu-num">10</span></div>
+      </div>
+      <div class="sidebar-content">
+        <div class="subpage active" id="menu1-sub-1">
+    <div class="subpage-header">
+      <div class="subpage-icon">🏪</div>
+      <div><div class="subpage-title">쇼핑몰 공지</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 쇼핑몰 공지 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-2">
+    <div class="subpage-header">
+      <div class="subpage-icon">📦</div>
+      <div><div class="subpage-title">주문 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 주문 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-3">
+    <div class="subpage-header">
+      <div class="subpage-icon">🎨</div>
+      <div><div class="subpage-title">디자인 작업</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 디자인 작업 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-4">
+    <div class="subpage-header">
+      <div class="subpage-icon">💰</div>
+      <div><div class="subpage-title">매출 정리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 매출 정리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-5">
+    <div class="subpage-header">
+      <div class="subpage-icon">📸</div>
+      <div><div class="subpage-title">상품 사진</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 상품 사진 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-6">
+    <div class="subpage-header">
+      <div class="subpage-icon">🚚</div>
+      <div><div class="subpage-title">배송 현황</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 배송 현황 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-7">
+    <div class="subpage-header">
+      <div class="subpage-icon">💬</div>
+      <div><div class="subpage-title">고객 문의</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 고객 문의 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-8">
+    <div class="subpage-header">
+      <div class="subpage-icon">📢</div>
+      <div><div class="subpage-title">마케팅</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 마케팅 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-9">
+    <div class="subpage-header">
+      <div class="subpage-icon">📋</div>
+      <div><div class="subpage-title">재고 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 재고 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-10">
+    <div class="subpage-header">
+      <div class="subpage-icon">⭐</div>
+      <div><div class="subpage-title">리뷰 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 리뷰 관리 내용을 채워요</span></div>
+  </div>
+      </div>
     </div>
   </div>
 
   <div class="page" id="menu2">
     <div class="sec">🏠 우리집</div>
-    <div class="card cm" style="min-height:300px;display:flex;align-items:center;justify-content:center;color:var(--soft);font-size:1rem">
-      새로운 페이지를 여기에 만들어요 🌿
+    <div class="page-with-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-title">MENU</div>
+        <div class="smenu" onclick="switchSub('menu2',1,this)" id="m2-sm-1"><span class="smenu-icon">🧹</span>청소 루틴<span class="smenu-num">01</span></div>
+<div class="smenu" onclick="switchSub('menu2',2,this)" id="m2-sm-2"><span class="smenu-icon">🛒</span>장보기 목록<span class="smenu-num">02</span></div>
+<div class="smenu" onclick="switchSub('menu2',3,this)" id="m2-sm-3"><span class="smenu-icon">💡</span>전기/수도<span class="smenu-num">03</span></div>
+<div class="smenu" onclick="switchSub('menu2',4,this)" id="m2-sm-4"><span class="smenu-icon">🍽️</span>식단 계획<span class="smenu-num">04</span></div>
+<div class="smenu" onclick="switchSub('menu2',5,this)" id="m2-sm-5"><span class="smenu-icon">🔧</span>집 수리<span class="smenu-num">05</span></div>
+<div class="smenu" onclick="switchSub('menu2',6,this)" id="m2-sm-6"><span class="smenu-icon">💊</span>건강 관리<span class="smenu-num">06</span></div>
+<div class="smenu" onclick="switchSub('menu2',7,this)" id="m2-sm-7"><span class="smenu-icon">📅</span>가족 일정<span class="smenu-num">07</span></div>
+<div class="smenu" onclick="switchSub('menu2',8,this)" id="m2-sm-8"><span class="smenu-icon">💸</span>가계부<span class="smenu-num">08</span></div>
+<div class="smenu" onclick="switchSub('menu2',9,this)" id="m2-sm-9"><span class="smenu-icon">🌱</span>식물 관리<span class="smenu-num">09</span></div>
+<div class="smenu" onclick="switchSub('menu2',10,this)" id="m2-sm-10"><span class="smenu-icon">📖</span>독서 기록<span class="smenu-num">10</span></div>
+      </div>
+      <div class="sidebar-content">
+        <div class="subpage active" id="menu2-sub-1">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🧹</div>
+      <div><div class="subpage-title">청소 루틴</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 청소 루틴 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-2">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🛒</div>
+      <div><div class="subpage-title">장보기 목록</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 장보기 목록 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-3">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💡</div>
+      <div><div class="subpage-title">전기/수도</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 전기/수도 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-4">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🍽️</div>
+      <div><div class="subpage-title">식단 계획</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 식단 계획 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-5">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🔧</div>
+      <div><div class="subpage-title">집 수리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 집 수리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-6">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💊</div>
+      <div><div class="subpage-title">건강 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 건강 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-7">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">📅</div>
+      <div><div class="subpage-title">가족 일정</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 가족 일정 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-8">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💸</div>
+      <div><div class="subpage-title">가계부</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 가계부 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-9">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🌱</div>
+      <div><div class="subpage-title">식물 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 식물 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-10">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">📖</div>
+      <div><div class="subpage-title">독서 기록</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 독서 기록 내용을 채워요</span></div>
+  </div>
+      </div>
     </div>
   </div>
 
@@ -1051,6 +1369,16 @@ function setView(mode) {
 const savedView = localStorage.getItem('ws5_viewmode') || 'pc';
 setView(savedView);
 
+// ── 사이드 메뉴 전환 ──
+function switchSub(pageId, num, el) {
+  // 서브페이지 전환
+  document.querySelectorAll(`#${pageId} .subpage`).forEach(p => p.classList.remove('active'));
+  document.getElementById(`${pageId}-sub-${num}`).classList.add('active');
+  // 사이드메뉴 활성화
+  document.querySelectorAll(`#${pageId} .smenu`).forEach(m => m.classList.remove('active'));
+  el.classList.add('active');
+}
+
 // ── 레시피 ──
 const recipeDB = { data: load('recipe') };
 function saveRecipe() { stor('recipe', recipeDB.data); }
@@ -1195,6 +1523,10 @@ renderWeek();
 Object.keys(renderCfg).forEach(rerender);
 
 renderRecipe();
+
+// ── 사이드 메뉴 초기 활성화 ──
+document.getElementById('m1-sm-1') && document.getElementById('m1-sm-1').classList.add('active');
+document.getElementById('m2-sm-1') && document.getElementById('m2-sm-1').classList.add('active');
 
 // ── 구글 시트 동기화 ──
 syncFromSheet();
