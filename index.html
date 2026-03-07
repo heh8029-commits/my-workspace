@@ -51,7 +51,8 @@ body {
   box-shadow: 0 3px 12px var(--shadow);
 }
 
-.tb-icons { display:flex; gap:4px; }
+.mobile-refresh { display: none; }
+body.mobile-view .mobile-refresh { display: flex; }
 .tb-icon {
   width:32px; height:32px; border-radius:50%;
   background:white; border:2px solid var(--pink);
@@ -896,6 +897,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   </div>
   <div class="divider"></div>
   <div class="tabs">
+    <div class="tb-icon mobile-refresh" onclick="reloadCurrentPage()" title="새로고침">🔄</div>
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
@@ -1468,6 +1470,7 @@ function stor(k, v) {
   params.append('value', JSON.stringify(v));
   fetch(GS_URL, {
     method: 'POST',
+    mode: 'no-cors',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString()
   }).catch(()=>{});
@@ -1501,6 +1504,7 @@ async function syncFromSheet() {
     renderWeek();
     Object.keys(renderCfg).forEach(rerender);
     renderRecipe();
+    renderExp();
     toast('✅ 동기화 완료!');
   } else {
     toast('🎀 최신 데이터예요!');
