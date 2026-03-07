@@ -691,6 +691,25 @@ body.mobile-view .smenu-num { display: none; }
 body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
 body.mobile-view .ra-row { flex-direction: column; }
 
+/* ── 통장 필터 탭 ── */
+.exp-bank-tabs {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 14px;
+}
+.ebt {
+  padding: 5px 12px; border-radius: 20px;
+  background: white; border: 1.5px solid var(--peach);
+  font-family: 'Jua', sans-serif; font-size: .72rem;
+  color: var(--soft); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.ebt:hover { background: var(--peach); color: var(--peach-dark); }
+.ebt.active {
+  background: linear-gradient(135deg, var(--peach-dark), #d06030);
+  color: white; border-color: var(--peach-dark);
+  box-shadow: 0 2px 8px rgba(208,96,48,.25);
+}
+
 /* ── 월별 지출 ── */
 .exp-topbar {
   display: flex; align-items: center; justify-content: space-between;
@@ -1136,9 +1155,21 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
             </div>
           </div>
 
-          <!-- 합계 -->
+          <!-- 합계 + 통장 필터 -->
           <div class="exp-topbar">
             <div class="exp-total" id="exp-total">합계: 0원</div>
+          </div>
+          <div class="exp-bank-tabs">
+            <div class="ebt active" onclick="filterExpBank('전체',this)">전체</div>
+            <div class="ebt" onclick="filterExpBank('미래에셋통장',this)">미래에셋</div>
+            <div class="ebt" onclick="filterExpBank('농협301',this)">농협301</div>
+            <div class="ebt" onclick="filterExpBank('농협312',this)">농협312</div>
+            <div class="ebt" onclick="filterExpBank('경기화폐카드',this)">경기화폐</div>
+            <div class="ebt" onclick="filterExpBank('현대카드',this)">현대카드</div>
+            <div class="ebt" onclick="filterExpBank('신한카드',this)">신한카드</div>
+            <div class="ebt" onclick="filterExpBank('롯데카드',this)">롯데카드</div>
+            <div class="ebt" onclick="filterExpBank('삼성카드',this)">삼성카드</div>
+            <div class="ebt" onclick="filterExpBank('기타',this)">기타</div>
           </div>
 
           <!-- 입력 폼 -->
@@ -1148,7 +1179,18 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <input id="exp-day"  type="text" class="ra-inp" placeholder="날짜 (예: 1일, 10일)">
               <input id="exp-item" type="text" class="ra-inp" placeholder="항목명">
               <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)" oninput="formatAmt(this)">
-              <input id="exp-bank" type="text" class="ra-inp" placeholder="출금 통장">
+              <select id="exp-bank" class="ra-inp">
+                <option value="">출금 통장 선택</option>
+                <option value="미래에셋통장">미래에셋통장</option>
+                <option value="농협301">농협301</option>
+                <option value="농협312">농협312</option>
+                <option value="경기화폐카드">경기화폐카드</option>
+                <option value="현대카드">현대카드</option>
+                <option value="신한카드">신한카드</option>
+                <option value="롯데카드">롯데카드</option>
+                <option value="삼성카드">삼성카드</option>
+                <option value="기타">기타</option>
+              </select>
               <input id="exp-note" type="text" class="ra-inp" placeholder="계좌/비고" style="grid-column:1/-1">
             </div>
             <div class="ra-btns" style="margin-top:10px">
@@ -1928,15 +1970,26 @@ function formatAmt(el) {
 // ── 월별 지출 ──
 let editingExpId = null;
 let memoTargetId = null;
+let currentBankFilter = '전체';
 
 function loadExp() { return load('exp_fixed'); }
 function saveExp(data) { stor('exp_fixed', data); }
 
+function filterExpBank(bank, el) {
+  currentBankFilter = bank;
+  document.querySelectorAll('.ebt').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderExp();
+}
+
 function renderExp() {
-  const data = loadExp();
+  let data = loadExp();
+  if (currentBankFilter !== '전체') {
+    data = data.filter(r => (r.bank||'') === currentBankFilter);
+  }
   const tbody = document.getElementById('exp-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">지출 항목을 등록해요 💳</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">${currentBankFilter !== '전체' ? currentBankFilter+' 항목이 없어요' : '지출 항목을 등록해요 💳'}</td></tr>`;
     document.getElementById('exp-total').textContent = '합계: 0원';
     return;
   }
