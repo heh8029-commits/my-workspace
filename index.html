@@ -62,7 +62,7 @@ body {
   width:32px; height:32px; border-radius:50%;
   background:white; border:2px solid var(--pink);
   display:flex; align-items:center; justify-content:center;
-  font-size:.9rem; cursor:pointer; transition:all .15s;
+  font-size:.97rem; cursor:pointer; transition:all .15s;
   box-shadow: 0 2px 5px var(--shadow);
 }
 .tb-icon:hover { background:var(--pink-pale); transform:scale(1.1); }
@@ -74,7 +74,7 @@ body {
 .tab {
   padding:6px 18px; border-radius:30px;
   background:white; border:2px solid var(--pink);
-  font-family:'Jua',sans-serif; font-size:.78rem;
+  font-family:'Jua',sans-serif; font-size:.85rem;
   color:var(--soft); cursor:pointer;
   transition:all .18s; white-space:nowrap;
   box-shadow:0 2px 5px var(--shadow);
@@ -137,12 +137,12 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   background:linear-gradient(90deg,var(--rose),var(--pink-dark),#c03878);
   padding:7px 22px;
   display:flex; align-items:center; gap:10px;
-  color:white; font-size:.82rem;
+  color:white; font-size:.89rem;
 }
 .datebar .dtxt { font-size:1rem; letter-spacing:.5px; }
 .datebar .dpill {
   margin-left:auto; background:rgba(255,255,255,.2);
-  padding:2px 12px; border-radius:20px; font-size:.72rem;
+  padding:2px 12px; border-radius:20px; font-size:.79rem;
   border:1px solid rgba(255,255,255,.25);
 }
 
@@ -200,7 +200,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   display:flex; align-items:center; gap:6px;
   background:var(--pink-pale); border:2px solid var(--pink-mid);
   border-radius:22px; padding:7px 14px;
-  font-size:.82rem; cursor:pointer;
+  font-size:.89rem; cursor:pointer;
   transition:all .18s; position:relative;
   animation:popIn .3s ease both;
 }
@@ -210,7 +210,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .flow-item .fi-del {
   display:none; position:absolute; top:-7px; right:-7px;
   width:18px; height:18px; border-radius:50%;
-  background:var(--rose); color:white; font-size:.65rem;
+  background:var(--rose); color:white; font-size:.72rem;
   align-items:center; justify-content:center; cursor:pointer;
   border:none;
 }
@@ -220,7 +220,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   width:18px; height:18px; border-radius:5px;
   border:2px solid var(--pink-dark); background:white;
   cursor:pointer; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; font-size:.7rem;
+  display:flex; align-items:center; justify-content:center; font-size:.77rem;
   transition:all .15s;
 }
 .flow-item.done-flow .flow-chk { background:var(--pink-dark); color:white; border-color:var(--pink-dark); }
@@ -237,7 +237,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   display:flex; align-items:center; gap:6px;
   background:white; border:2px dashed var(--pink);
   border-radius:22px; padding:7px 14px;
-  font-size:.8rem; color:var(--soft); cursor:pointer;
+  font-size:.87rem; color:var(--soft); cursor:pointer;
   transition:all .18s;
 }
 .flow-add:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
@@ -262,7 +262,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .day-col { display:flex; flex-direction:column; gap:6px; }
 
 .day-label {
-  text-align:center; font-size:.85rem; font-weight:700;
+  text-align:center; font-size:.92rem; font-weight:700;
   padding:5px 0; border-radius:10px;
   background:var(--pink-pale); color:var(--rose);
   border:2px solid var(--pink-mid);
@@ -282,7 +282,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 .today-badge {
   display:inline-block; background:var(--yellow); color:var(--text);
-  font-size:.58rem; padding:1px 5px; border-radius:8px; margin-left:4px;
+  font-size:.65rem; padding:1px 5px; border-radius:8px; margin-left:4px;
   animation:flash .8s ease-in-out infinite alternate;
 }
 @keyframes flash { from{opacity:1} to{opacity:.3} }
@@ -291,7 +291,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 .day-task {
   background:var(--pink-pale); border:1.5px solid var(--pink-mid);
-  border-radius:10px; padding:6px 9px; font-size:.75rem;
+  border-radius:10px; padding:6px 9px; font-size:.82rem;
   display:flex; align-items:flex-start; gap:6px;
   transition:all .15s; cursor:default; position:relative;
   animation:popIn .25s ease;
@@ -314,14 +314,14 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 .dt-del {
   display:none; background:none; border:none; color:var(--soft);
-  font-size:.75rem; cursor:pointer; padding:0 2px; line-height:1;
+  font-size:.82rem; cursor:pointer; padding:0 2px; line-height:1;
 }
 .day-task:hover .dt-del { display:block; }
 
 .day-add {
   display:flex; align-items:center; justify-content:center;
   gap:4px; background:white; border:1.5px dashed var(--pink);
-  border-radius:10px; padding:5px 8px; font-size:.73rem;
+  border-radius:10px; padding:5px 8px; font-size:.8rem;
   color:var(--soft); cursor:pointer; transition:all .15s;
 }
 .day-add:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
@@ -339,7 +339,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .inp-row textarea,
 .inp-row select {
   flex:1; border:2px solid var(--pink-mid); border-radius:11px;
-  padding:8px 12px; font-family:'Jua',sans-serif; font-size:.8rem;
+  padding:8px 12px; font-family:'Jua',sans-serif; font-size:.87rem;
   color:var(--text); background:var(--pink-pale); outline:none;
   transition:border-color .18s; resize:none;
 }
@@ -350,7 +350,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .abtn {
   padding:8px 16px; background:linear-gradient(135deg,var(--pink-dark),var(--rose));
   color:white; border:none; border-radius:11px;
-  font-family:'Jua',sans-serif; font-size:.8rem; cursor:pointer;
+  font-family:'Jua',sans-serif; font-size:.87rem; cursor:pointer;
   white-space:nowrap; transition:all .18s; flex-shrink:0;
   box-shadow:0 3px 8px rgba(224,60,110,.22);
 }
@@ -384,7 +384,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .it {
   background:var(--pink-pale); border:1.5px solid var(--pink-mid); border-radius:11px;
   padding:9px 11px; display:flex; align-items:flex-start; gap:8px;
-  font-size:.8rem; line-height:1.5; animation:popIn .22s ease;
+  font-size:.87rem; line-height:1.5; animation:popIn .22s ease;
   transition:border-color .15s;
 }
 .it:hover { border-color:var(--pink-dark); }
@@ -399,7 +399,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .ichk {
   width:19px; height:19px; border-radius:5px; border:2px solid var(--pink-dark);
   background:white; cursor:pointer; flex-shrink:0; margin-top:2px;
-  display:flex; align-items:center; justify-content:center; font-size:.72rem;
+  display:flex; align-items:center; justify-content:center; font-size:.79rem;
   transition:all .15s;
 }
 .it.done .ichk { background:var(--pink-dark); color:white; border-color:var(--pink-dark); }
@@ -416,7 +416,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .itxt[contenteditable="true"] { background:white; border-radius:5px; padding:1px 5px; }
 
 .ibadge {
-  font-size:.63rem; font-weight:700; padding:2px 7px; border-radius:14px;
+  font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:14px;
   white-space:nowrap; align-self:flex-start; margin-top:3px;
 }
 .badge-date { background:var(--pink-dark); color:white; }
@@ -424,12 +424,12 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 .iacts { display:flex; gap:2px; flex-shrink:0; }
 .iacts button {
-  background:none; border:none; cursor:pointer; font-size:.75rem;
+  background:none; border:none; cursor:pointer; font-size:.82rem;
   padding:2px 4px; border-radius:6px; opacity:.35; transition:opacity .15s, background .15s;
 }
 .iacts button:hover { opacity:1; background:rgba(0,0,0,.06); }
 
-.empty { text-align:center; color:var(--soft); font-size:.75rem; padding:18px 0; }
+.empty { text-align:center; color:var(--soft); font-size:.82rem; padding:18px 0; }
 
 /* ────────────────────────────────
    토스트
@@ -439,7 +439,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   transform:translateX(-50%) translateY(14px);
   background:linear-gradient(135deg,var(--rose),var(--pink-dark));
   color:white; padding:9px 22px; border-radius:28px;
-  font-size:.8rem; opacity:0; transition:all .28s;
+  font-size:.87rem; opacity:0; transition:all .28s;
   pointer-events:none; z-index:9999;
   box-shadow:0 5px 18px rgba(224,60,110,.3);
 }
@@ -463,17 +463,17 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .rs-icon { font-size:1.1rem; flex-shrink:0; }
 .recipe-search-box input {
   flex:1; border:none; outline:none; background:none;
-  font-family:'Jua',sans-serif; font-size:.9rem; color:var(--text);
+  font-family:'Jua',sans-serif; font-size:.97rem; color:var(--text);
 }
 .recipe-search-box input::placeholder { color:var(--soft); }
 .rs-clear {
   background:none; border:none; cursor:pointer;
-  color:var(--soft); font-size:.9rem; padding:2px 6px;
+  color:var(--soft); font-size:.97rem; padding:2px 6px;
   border-radius:50%; transition:all .15s;
 }
 .rs-clear:hover { background:var(--pink-mid); color:var(--rose); }
 .rs-count {
-  font-size:.75rem; color:var(--soft); margin-top:6px; padding-left:4px;
+  font-size:.82rem; color:var(--soft); margin-top:6px; padding-left:4px;
 }
 
 .recipe-add-card { margin-bottom:20px; }
@@ -481,7 +481,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .ra-inp {
   border:2px solid var(--pink-mid); border-radius:11px;
   padding:9px 13px; font-family:'Jua',sans-serif;
-  font-size:.82rem; color:var(--text); background:var(--pink-pale);
+  font-size:.89rem; color:var(--text); background:var(--pink-pale);
   outline:none; transition:border-color .2s; width:100%;
 }
 .ra-inp:focus { border-color:var(--pink-dark); box-shadow:0 0 0 3px rgba(249,168,192,.2); }
@@ -519,14 +519,14 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   word-break:break-all; line-height:1.4;
 }
 .rc-cat {
-  font-size:.65rem; background:var(--pink-pale);
+  font-size:.72rem; background:var(--pink-pale);
   color:var(--pink-dark); padding:2px 8px;
   border-radius:20px; border:1px solid var(--pink-mid);
   white-space:nowrap; flex-shrink:0; margin-top:2px;
 }
 
 .rc-memo {
-  font-size:.78rem; color:#6a4a5a; line-height:1.7;
+  font-size:.85rem; color:#6a4a5a; line-height:1.7;
   word-break:break-all; flex:1;
   max-height:120px; overflow-y:auto;
 }
@@ -545,7 +545,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .rc-btn {
   background:none; border:1.5px solid var(--pink-mid);
   border-radius:8px; padding:4px 10px;
-  font-family:'Jua',sans-serif; font-size:.72rem;
+  font-family:'Jua',sans-serif; font-size:.79rem;
   color:var(--soft); cursor:pointer; transition:all .15s;
 }
 .rc-btn:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
@@ -988,7 +988,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 할일 -->
       <div class="card cp">
-        <div style="font-size:.88rem;color:var(--rose);margin-bottom:10px">✅ 할일</div>
+        <div style="font-size:.95rem;color:var(--rose);margin-bottom:10px">✅ 할일</div>
         <div class="inp-row">
           <textarea id="todo-inp" rows="2" placeholder="할 일 입력..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addTodo()}"></textarea>
           <button class="abtn" onclick="addTodo()">+</button>
@@ -998,7 +998,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 일정 -->
       <div class="card cm">
-        <div style="font-size:.88rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
+        <div style="font-size:.95rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
         <div class="inp-row">
           <input id="sched-date" type="date" style="max-width:138px">
         </div>
@@ -1011,7 +1011,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 메모 -->
       <div class="card cy">
-        <div style="font-size:.88rem;color:#a07800;margin-bottom:10px">📝 메모</div>
+        <div style="font-size:.95rem;color:#a07800;margin-bottom:10px">📝 메모</div>
         <div class="inp-row">
           <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addMemo()}"></textarea>
           <button class="abtn ylw-btn" onclick="addMemo()">+</button>
@@ -1033,7 +1033,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 은희 -->
       <div class="card cl">
-        <div style="font-size:.88rem;color:var(--lav-dark);margin-bottom:10px">🌸 은희 개인 할일</div>
+        <div style="font-size:.95rem;color:var(--lav-dark);margin-bottom:10px">🌸 은희 개인 할일</div>
         <div class="inp-row">
           <textarea id="eun-inp" rows="2" placeholder="은희 할 일..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addEun()}"></textarea>
           <button class="abtn lav-btn" onclick="addEun()">+</button>
@@ -1043,7 +1043,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 진우엄마 -->
       <div class="card cpe">
-        <div style="font-size:.88rem;color:var(--peach-dark);margin-bottom:10px">🐣 진우엄마 할일</div>
+        <div style="font-size:.95rem;color:var(--peach-dark);margin-bottom:10px">🐣 진우엄마 할일</div>
         <div class="inp-row">
           <textarea id="jin-inp" rows="2" placeholder="진우엄마 할 일..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addJin()}"></textarea>
           <button class="abtn pch-btn" onclick="addJin()">+</button>
@@ -1053,7 +1053,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 어플개선메모 -->
       <div class="card" style="border-top:3px solid #a0c4ff">
-        <div style="font-size:.88rem;color:#4a80d0;margin-bottom:10px">💡 어플 개선 메모</div>
+        <div style="font-size:.95rem;color:#4a80d0;margin-bottom:10px">💡 어플 개선 메모</div>
         <div class="inp-row">
           <textarea id="app-inp" rows="2" placeholder="개선하고 싶은 것..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addApp()}"></textarea>
           <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addApp()">+</button>
@@ -1087,70 +1087,70 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="subpage-icon">🏪</div>
       <div><div class="subpage-title">쇼핑몰 공지</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 쇼핑몰 공지 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 쇼핑몰 공지 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-2">
     <div class="subpage-header">
       <div class="subpage-icon">📦</div>
       <div><div class="subpage-title">주문 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 주문 관리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 주문 관리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-3">
     <div class="subpage-header">
       <div class="subpage-icon">🎨</div>
       <div><div class="subpage-title">디자인 작업</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 디자인 작업 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 디자인 작업 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-4">
     <div class="subpage-header">
       <div class="subpage-icon">💰</div>
       <div><div class="subpage-title">매출 정리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 매출 정리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 매출 정리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-5">
     <div class="subpage-header">
       <div class="subpage-icon">📸</div>
       <div><div class="subpage-title">상품 사진</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 상품 사진 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 상품 사진 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-6">
     <div class="subpage-header">
       <div class="subpage-icon">🚚</div>
       <div><div class="subpage-title">배송 현황</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 배송 현황 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 배송 현황 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-7">
     <div class="subpage-header">
       <div class="subpage-icon">💬</div>
       <div><div class="subpage-title">고객 문의</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 고객 문의 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 고객 문의 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-8">
     <div class="subpage-header">
       <div class="subpage-icon">📢</div>
       <div><div class="subpage-title">마케팅</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 마케팅 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 마케팅 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-9">
     <div class="subpage-header">
       <div class="subpage-icon">📋</div>
       <div><div class="subpage-title">재고 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 재고 관리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 재고 관리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu1-sub-10">
     <div class="subpage-header">
       <div class="subpage-icon">⭐</div>
       <div><div class="subpage-title">리뷰 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 리뷰 관리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 리뷰 관리 내용을 채워요</span></div>
   </div>
       </div>
     </div>
@@ -1205,7 +1205,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
           <!-- 입력 폼 -->
           <div class="card cpe exp-form" id="exp-add-form">
-            <div style="font-size:.85rem;color:var(--peach-dark);margin-bottom:10px;font-weight:700">✏️ 지출 항목 등록</div>
+            <div style="font-size:.92rem;color:var(--peach-dark);margin-bottom:10px;font-weight:700">✏️ 지출 항목 등록</div>
             <div class="exp-inp-grid">
               <input id="exp-day"  type="text" class="ra-inp" placeholder="날짜 (예: 1일, 10일)">
               <input id="exp-item" type="text" class="ra-inp" placeholder="항목명">
@@ -1269,70 +1269,70 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🧹</div>
       <div><div class="subpage-title">청소 루틴</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 청소 루틴 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 청소 루틴 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-2">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🛒</div>
       <div><div class="subpage-title">장보기 목록</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 장보기 목록 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 장보기 목록 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-3">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💡</div>
       <div><div class="subpage-title">전기/수도</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 전기/수도 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 전기/수도 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-4">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🍽️</div>
       <div><div class="subpage-title">식단 계획</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 식단 계획 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 식단 계획 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-5">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🔧</div>
       <div><div class="subpage-title">집 수리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 집 수리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 집 수리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-6">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💊</div>
       <div><div class="subpage-title">건강 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 건강 관리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 건강 관리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-7">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">📅</div>
       <div><div class="subpage-title">가족 일정</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 가족 일정 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 가족 일정 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-8">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💸</div>
       <div><div class="subpage-title">가계부</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 가계부 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 가계부 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-9">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🌱</div>
       <div><div class="subpage-title">식물 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 식물 관리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 식물 관리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu2-sub-10">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">📖</div>
       <div><div class="subpage-title">독서 기록</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 독서 기록 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 독서 기록 내용을 채워요</span></div>
   </div>
       </div>
     </div>
@@ -1360,70 +1360,70 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">📚</div>
       <div><div class="subpage-title">학교 준비물</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학교 준비물 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 학교 준비물 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-2">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">📅</div>
       <div><div class="subpage-title">학교 일정</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학교 일정 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 학교 일정 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-3">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🏫</div>
       <div><div class="subpage-title">숙제/과제</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 숙제/과제 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 숙제/과제 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-4">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">💊</div>
       <div><div class="subpage-title">건강/병원</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 건강/병원 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 건강/병원 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-5">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🥪</div>
       <div><div class="subpage-title">급식/도시락</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 급식/도시락 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 급식/도시락 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-6">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🎨</div>
       <div><div class="subpage-title">방과후 활동</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 방과후 활동 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 방과후 활동 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-7">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">👕</div>
       <div><div class="subpage-title">준비물 챙기기</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 준비물 챙기기 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 준비물 챙기기 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-8">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">💰</div>
       <div><div class="subpage-title">학원비/용돈</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학원비/용돈 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 학원비/용돈 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-9">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">📞</div>
       <div><div class="subpage-title">연락망</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 연락망 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 연락망 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu4-sub-10">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🌟</div>
       <div><div class="subpage-title">칭찬 기록</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 칭찬 기록 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 칭찬 기록 내용을 채워요</span></div>
   </div>
       </div>
     </div>
@@ -1451,70 +1451,70 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📊</div>
       <div><div class="subpage-title">보유 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 보유 종목 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 보유 종목 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-2">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💰</div>
       <div><div class="subpage-title">수익 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 수익 현황 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 수익 현황 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-3">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📋</div>
       <div><div class="subpage-title">매매 일지</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 매매 일지 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 매매 일지 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-4">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🔍</div>
       <div><div class="subpage-title">관심 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 관심 종목 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 관심 종목 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-5">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📰</div>
       <div><div class="subpage-title">뉴스/정보</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 뉴스/정보 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 뉴스/정보 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-6">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🎯</div>
       <div><div class="subpage-title">목표 관리</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 목표 관리 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 목표 관리 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-7">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💳</div>
       <div><div class="subpage-title">배당 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 배당 기록 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 배당 기록 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-8">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📉</div>
       <div><div class="subpage-title">손실 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 손실 기록 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 손실 기록 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-9">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🏦</div>
       <div><div class="subpage-title">계좌 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 계좌 현황 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 계좌 현황 내용을 채워요</span></div>
   </div>
 <div class="subpage " id="menu5-sub-10">
     <div class="subpage-header">
       <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📌</div>
       <div><div class="subpage-title">투자 메모</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 투자 메모 내용을 채워요</span></div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 투자 메모 내용을 채워요</span></div>
   </div>
       </div>
     </div>
@@ -1544,7 +1544,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
     <!-- 추가 폼 -->
     <div class="card cp recipe-add-card" id="recipe-add-form">
-      <div style="font-size:.9rem;color:var(--rose);margin-bottom:12px;font-weight:700">✏️ 새 레시피 등록</div>
+      <div style="font-size:.97rem;color:var(--rose);margin-bottom:12px;font-weight:700">✏️ 새 레시피 등록</div>
       <div class="ra-row">
         <input id="recipe-title-inp" type="text" placeholder="🍽️ 요리 제목" class="ra-inp title-inp">
         <select id="recipe-cat-inp" class="recipe-cat-select">
