@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리집관리소 👨‍👩‍👦</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="우리집관리소">
+<meta name="theme-color" content="#e8648a">
+<link rel="manifest" href="manifest-husband.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --pink:      #f7a8c0;
+  --pink-dark: #e8648a;
+  --pink-pale: #fff0f5;
+  --pink-mid:  #fcd5e5;
+  --rose:      #e03c6e;
+  --mint:      #b2e8d4;
+  --mint-dark: #3dbb8f;
+  --yellow:    #ffe880;
+  --ylw-dark:  #f0c800;
+  --lav:       #ddd0f8;
+  --lav-dark:  #8b60d0;
+  --peach:     #ffd8c0;
+  --peach-dark:#e8834a;
+  --cream:     #fff8fb;
+  --text:      #3a1a2e;
+  --soft:      #b888a8;
+  --white:     #ffffff;
+  --shadow:    rgba(232,100,138,0.13);
+}
+
+body {
+  font-family: 'Jua', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ────────────────────────────────
+   상단 탭바
+──────────────────────────────── */
+.topbar {
+  background: linear-gradient(180deg,#fff2f7,#ffe6f0);
+  border-bottom: 2.5px solid var(--pink);
+  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 3px 12px var(--shadow);
+}
+
+.tb-icons { display:flex; gap:4px; }
+.tb-icon {
+  width:32px; height:32px; border-radius:50%;
+  background:white; border:2px solid var(--pink);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.9rem; cursor:pointer; transition:all .15s;
+  box-shadow: 0 2px 5px var(--shadow);
+}
+.tb-icon:hover { background:var(--pink-pale); transform:scale(1.1); }
+
+.divider { width:1px; height:28px; background:var(--pink); opacity:.4; margin:0 4px; }
+
+.tabs { display:flex; gap:5px; flex-wrap:wrap; flex:1; }
+
+.tab {
+  padding:6px 18px; border-radius:30px;
+  background:white; border:2px solid var(--pink);
+  font-family:'Jua',sans-serif; font-size:.78rem;
+  color:var(--soft); cursor:pointer;
+  transition:all .18s; white-space:nowrap;
+  box-shadow:0 2px 5px var(--shadow);
+}
+.tab:hover { background:var(--pink-pale); color:var(--rose); transform:translateY(-1px); }
+.tab.active {
+  background:linear-gradient(135deg,var(--pink-dark),var(--rose));
+  color:white; border-color:var(--rose);
+  box-shadow:0 3px 10px rgba(224,60,110,.28);
+}
+
+.tb-right { display:flex; gap:4px; }
+
+/* ────────────────────────────────
+   PC/모바일 전환 버튼
+──────────────────────────────── */
+.view-btn.active-view {
+  background: linear-gradient(135deg,var(--pink-dark),var(--rose)) !important;
+  border-color: var(--rose) !important;
+  box-shadow: 0 3px 10px rgba(224,60,110,.3) !important;
+}
+
+/* ── 모바일 뷰 ── */
+body.mobile-view .main { max-width: 420px; padding: 14px 12px 60px; }
+body.mobile-view .three-col { grid-template-columns: 1fr; gap: 12px; }
+body.mobile-view .two-col   { grid-template-columns: 1fr; gap: 12px; }
+body.mobile-view .week-row  { grid-template-columns: repeat(3,1fr); gap: 8px; }
+
+body.mobile-view .topbar { padding: 7px 10px; gap: 4px; }
+body.mobile-view .tabs   { gap: 4px; }
+body.mobile-view .tab    { padding: 5px 11px; font-size: .72rem; }
+body.mobile-view .divider { display: none; }
+body.mobile-view .tb-icons { display: none; }
+
+body.mobile-view .flow-wrap { gap: 0; }
+body.mobile-view .flow-item { padding: 6px 10px; font-size: .76rem; }
+body.mobile-view .flow-arrow { font-size: .9rem; }
+
+body.mobile-view .card { padding: 13px 14px; border-radius: 14px; }
+body.mobile-view .sec  { font-size: .88rem; }
+
+body.mobile-view .inp-row input,
+body.mobile-view .inp-row textarea,
+body.mobile-view .inp-row select { font-size: .78rem; padding: 7px 10px; }
+body.mobile-view .abtn { padding: 7px 12px; font-size: .76rem; }
+
+body.mobile-view .it { font-size: .76rem; padding: 8px 9px; }
+body.mobile-view .ilist { max-height: 220px; }
+
+body.mobile-view .day-label { font-size: .75rem; padding: 4px 0; }
+body.mobile-view .day-task  { font-size: .7rem; padding: 5px 7px; }
+
+body.mobile-view .datebar { padding: 6px 14px; font-size: .72rem; }
+body.mobile-view .datebar .dtxt { font-size: .85rem; }
+
+/* ────────────────────────────────
+   날짜 바
+──────────────────────────────── */
+.datebar {
+  background:linear-gradient(90deg,var(--rose),var(--pink-dark),#c03878);
+  padding:7px 22px;
+  display:flex; align-items:center; gap:10px;
+  color:white; font-size:.82rem;
+}
+.datebar .dtxt { font-size:1rem; letter-spacing:.5px; }
+.datebar .dpill {
+  margin-left:auto; background:rgba(255,255,255,.2);
+  padding:2px 12px; border-radius:20px; font-size:.72rem;
+  border:1px solid rgba(255,255,255,.25);
+}
+
+/* ────────────────────────────────
+   페이지 전환
+──────────────────────────────── */
+.page { display:none; }
+.page.active { display:block; animation:fadeUp .3s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.main { padding:20px 20px 50px; max-width:1200px; margin:0 auto; }
+
+/* ────────────────────────────────
+   섹션 타이틀
+──────────────────────────────── */
+.sec {
+  font-size:1rem; color:var(--rose); margin-bottom:12px;
+  display:flex; align-items:center; gap:8px;
+}
+.sec::after {
+  content:''; flex:1; height:2px;
+  background:linear-gradient(90deg,var(--pink),transparent);
+  border-radius:2px; margin-left:6px;
+}
+
+/* ────────────────────────────────
+   카드
+──────────────────────────────── */
+.card {
+  background:white; border-radius:18px;
+  border:2px solid var(--pink-mid);
+  padding:16px 18px;
+  box-shadow:0 4px 16px var(--shadow);
+  margin-bottom:16px; position:relative; overflow:hidden;
+}
+.card::before {
+  content:''; position:absolute; top:0;left:0;right:0; height:4px; border-radius:18px 18px 0 0;
+}
+.cp::before { background:linear-gradient(90deg,var(--pink),var(--rose)); }
+.cm::before { background:linear-gradient(90deg,var(--mint),var(--mint-dark)); }
+.cy::before { background:linear-gradient(90deg,var(--ylw-dark),#d4a800); }
+.cl::before { background:linear-gradient(90deg,var(--lav),var(--lav-dark)); }
+.cpe::before{ background:linear-gradient(90deg,var(--peach),var(--peach-dark)); }
+
+/* ────────────────────────────────
+   플로우 (화살표 한 줄)
+──────────────────────────────── */
+.flow-wrap {
+  display:flex; align-items:center; gap:0;
+  flex-wrap:wrap; padding:4px 0;
+  min-height:52px;
+}
+
+.flow-item {
+  display:flex; align-items:center; gap:6px;
+  background:var(--pink-pale); border:2px solid var(--pink-mid);
+  border-radius:22px; padding:7px 14px;
+  font-size:.82rem; cursor:pointer;
+  transition:all .18s; position:relative;
+  animation:popIn .3s ease both;
+}
+.flow-item:hover { background:var(--pink-mid); border-color:var(--pink-dark); }
+.flow-item.done-flow { opacity:.5; text-decoration:line-through; }
+
+.flow-item .fi-del {
+  display:none; position:absolute; top:-7px; right:-7px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--rose); color:white; font-size:.65rem;
+  align-items:center; justify-content:center; cursor:pointer;
+  border:none;
+}
+.flow-item:hover .fi-del { display:flex; }
+
+.flow-chk {
+  width:18px; height:18px; border-radius:5px;
+  border:2px solid var(--pink-dark); background:white;
+  cursor:pointer; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:.7rem;
+  transition:all .15s;
+}
+.flow-item.done-flow .flow-chk { background:var(--pink-dark); color:white; border-color:var(--pink-dark); }
+
+.flow-txt {
+  outline:none; cursor:text; min-width:40px;
+  border-bottom:1px dashed transparent;
+}
+.flow-txt:focus { border-bottom-color:var(--pink-dark); }
+
+.flow-arrow { color:var(--pink); font-size:1.1rem; margin:0 2px; flex-shrink:0; }
+
+.flow-add {
+  display:flex; align-items:center; gap:6px;
+  background:white; border:2px dashed var(--pink);
+  border-radius:22px; padding:7px 14px;
+  font-size:.8rem; color:var(--soft); cursor:pointer;
+  transition:all .18s;
+}
+.flow-add:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
+
+/* 민트 플로우 */
+.flow-item.mint { background:#f0fff8; border-color:var(--mint); }
+.flow-item.mint:hover { background:var(--mint); }
+.flow-item.mint .flow-chk { border-color:var(--mint-dark); }
+.flow-item.mint.done-flow .flow-chk { background:var(--mint-dark); border-color:var(--mint-dark); }
+.flow-arrow.mint { color:var(--mint-dark); }
+.flow-add.mint { border-color:var(--mint); color:var(--mint-dark); }
+.flow-add.mint:hover { background:#f0fff8; border-color:var(--mint-dark); }
+
+/* ────────────────────────────────
+   요일 박스
+──────────────────────────────── */
+.week-row {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:10px;
+  margin-bottom:4px;
+}
+
+.day-col { display:flex; flex-direction:column; gap:6px; }
+
+.day-label {
+  text-align:center; font-size:.85rem; font-weight:700;
+  padding:5px 0; border-radius:10px;
+  background:var(--pink-pale); color:var(--rose);
+  border:2px solid var(--pink-mid);
+  position:relative; overflow:hidden;
+}
+
+.day-label.today {
+  background:linear-gradient(135deg,var(--pink-dark),var(--rose));
+  color:white; border-color:var(--rose);
+  animation:blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,100% { box-shadow:0 0 0 0 rgba(224,60,110,.5); }
+  50%      { box-shadow:0 0 0 8px rgba(224,60,110,0); }
+}
+
+.today-badge {
+  display:inline-block; background:var(--yellow); color:var(--text);
+  font-size:.58rem; padding:1px 5px; border-radius:8px; margin-left:4px;
+  animation:flash .8s ease-in-out infinite alternate;
+}
+@keyframes flash { from{opacity:1} to{opacity:.3} }
+
+.day-tasks { display:flex; flex-direction:column; gap:5px; min-height:60px; }
+
+.day-task {
+  background:var(--pink-pale); border:1.5px solid var(--pink-mid);
+  border-radius:10px; padding:6px 9px; font-size:.75rem;
+  display:flex; align-items:flex-start; gap:6px;
+  transition:all .15s; cursor:default; position:relative;
+  animation:popIn .25s ease;
+}
+.day-task:hover { border-color:var(--pink-dark); }
+.day-task.today-task {
+  background:linear-gradient(135deg,#fff0f5,#ffe0ed);
+  border-color:var(--pink-dark);
+  animation:taskBlink 2s ease-in-out infinite;
+}
+@keyframes taskBlink {
+  0%,100%{ box-shadow:0 0 0 0 rgba(232,100,138,.4); }
+  50%    { box-shadow:0 0 0 5px rgba(232,100,138,0); }
+}
+
+.dt-chk { display:none; }
+
+.dt-txt { flex:1; outline:none; min-width:20px; cursor:text; line-height:1.4; }
+.dt-txt:focus { background:white; border-radius:5px; padding:0 3px; }
+
+.dt-del {
+  display:none; background:none; border:none; color:var(--soft);
+  font-size:.75rem; cursor:pointer; padding:0 2px; line-height:1;
+}
+.day-task:hover .dt-del { display:block; }
+
+.day-add {
+  display:flex; align-items:center; justify-content:center;
+  gap:4px; background:white; border:1.5px dashed var(--pink);
+  border-radius:10px; padding:5px 8px; font-size:.73rem;
+  color:var(--soft); cursor:pointer; transition:all .15s;
+}
+.day-add:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
+
+@keyframes popIn { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+
+/* ────────────────────────────────
+   할일 / 일정 / 메모 공통
+──────────────────────────────── */
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:16px; }
+.two-col   { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+.inp-row { display:flex; gap:7px; margin-bottom:10px; align-items:flex-start; }
+.inp-row input,
+.inp-row textarea,
+.inp-row select {
+  flex:1; border:2px solid var(--pink-mid); border-radius:11px;
+  padding:8px 12px; font-family:'Jua',sans-serif; font-size:.8rem;
+  color:var(--text); background:var(--pink-pale); outline:none;
+  transition:border-color .18s; resize:none;
+}
+.inp-row input:focus,
+.inp-row textarea:focus { border-color:var(--pink-dark); box-shadow:0 0 0 3px rgba(249,168,192,.25); }
+.inp-row select { cursor:pointer; flex:0 0 auto; min-width:90px; }
+
+.abtn {
+  padding:8px 16px; background:linear-gradient(135deg,var(--pink-dark),var(--rose));
+  color:white; border:none; border-radius:11px;
+  font-family:'Jua',sans-serif; font-size:.8rem; cursor:pointer;
+  white-space:nowrap; transition:all .18s; flex-shrink:0;
+  box-shadow:0 3px 8px rgba(224,60,110,.22);
+}
+.abtn:hover { transform:translateY(-2px); box-shadow:0 5px 12px rgba(224,60,110,.3); }
+
+.abtn.mint-btn { background:linear-gradient(135deg,var(--mint-dark),#2da87a); box-shadow:0 3px 8px rgba(61,187,143,.22); }
+.abtn.ylw-btn  { background:linear-gradient(135deg,var(--ylw-dark),#c8a000); color:var(--text); box-shadow:0 3px 8px rgba(240,200,0,.22); }
+.abtn.lav-btn  { background:linear-gradient(135deg,var(--lav-dark),#6a40b8); box-shadow:0 3px 8px rgba(139,96,208,.22); }
+.abtn.pch-btn  { background:linear-gradient(135deg,var(--peach-dark),#c06030); box-shadow:0 3px 8px rgba(232,131,74,.22); }
+
+/* 아이템 */
+.ilist { display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:3px; }
+.ilist::-webkit-scrollbar { width:3px; }
+.ilist::-webkit-scrollbar-thumb { background:var(--pink); border-radius:10px; }
+
+.it {
+  background:var(--pink-pale); border:1.5px solid var(--pink-mid); border-radius:11px;
+  padding:9px 11px; display:flex; align-items:flex-start; gap:8px;
+  font-size:.8rem; line-height:1.5; animation:popIn .22s ease;
+  transition:border-color .15s;
+}
+.it:hover { border-color:var(--pink-dark); }
+.it.done { opacity:.6; }
+.it.done .itxt { text-decoration:line-through; opacity:.45; }
+
+.it.mint-it  { background:#f0fff8; border-color:var(--mint); }
+.it.ylw-it   { background:#fffbea; border-color:#f0e060; }
+.it.lav-it   { background:#f8f4ff; border-color:var(--lav); }
+.it.pch-it   { background:#fff5ef; border-color:var(--peach); }
+
+.ichk {
+  width:19px; height:19px; border-radius:5px; border:2px solid var(--pink-dark);
+  background:white; cursor:pointer; flex-shrink:0; margin-top:2px;
+  display:flex; align-items:center; justify-content:center; font-size:.72rem;
+  transition:all .15s;
+}
+.it.done .ichk { background:var(--pink-dark); color:white; border-color:var(--pink-dark); }
+.it.mint-it .ichk { border-color:var(--mint-dark); }
+.it.mint-it.done .ichk { background:var(--mint-dark); border-color:var(--mint-dark); color:white; }
+.it.ylw-it .ichk  { border-color:var(--ylw-dark); }
+.it.ylw-it.done .ichk  { background:var(--ylw-dark); border-color:var(--ylw-dark); color:var(--text); }
+.it.lav-it .ichk  { border-color:var(--lav-dark); }
+.it.lav-it.done .ichk  { background:var(--lav-dark); border-color:var(--lav-dark); color:white; }
+.it.pch-it .ichk  { border-color:var(--peach-dark); }
+.it.pch-it.done .ichk  { background:var(--peach-dark); border-color:var(--peach-dark); color:white; }
+
+.itxt { flex:1; outline:none; word-break:break-all; }
+.itxt[contenteditable="true"] { background:white; border-radius:5px; padding:1px 5px; }
+
+.ibadge {
+  font-size:.63rem; font-weight:700; padding:2px 7px; border-radius:14px;
+  white-space:nowrap; align-self:flex-start; margin-top:3px;
+}
+.badge-date { background:var(--pink-dark); color:white; }
+.badge-time { background:var(--rose); color:white; }
+
+.iacts { display:flex; gap:2px; flex-shrink:0; }
+.iacts button {
+  background:none; border:none; cursor:pointer; font-size:.75rem;
+  padding:2px 4px; border-radius:6px; opacity:.35; transition:opacity .15s, background .15s;
+}
+.iacts button:hover { opacity:1; background:rgba(0,0,0,.06); }
+
+.empty { text-align:center; color:var(--soft); font-size:.75rem; padding:18px 0; }
+
+/* ────────────────────────────────
+   토스트
+──────────────────────────────── */
+.toast {
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:linear-gradient(135deg,var(--rose),var(--pink-dark));
+  color:white; padding:9px 22px; border-radius:28px;
+  font-size:.8rem; opacity:0; transition:all .28s;
+  pointer-events:none; z-index:9999;
+  box-shadow:0 5px 18px rgba(224,60,110,.3);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── 레시피 ── */
+.recipe-search-wrap {
+  margin-bottom: 18px;
+}
+.recipe-search-box {
+  display:flex; align-items:center; gap:10px;
+  background:white; border:2px solid var(--pink-mid);
+  border-radius:16px; padding:10px 16px;
+  box-shadow:0 3px 12px var(--shadow);
+  transition:border-color .2s;
+}
+.recipe-search-box:focus-within {
+  border-color:var(--pink-dark);
+  box-shadow:0 3px 16px rgba(232,100,138,.2);
+}
+.rs-icon { font-size:1.1rem; flex-shrink:0; }
+.recipe-search-box input {
+  flex:1; border:none; outline:none; background:none;
+  font-family:'Jua',sans-serif; font-size:.9rem; color:var(--text);
+}
+.recipe-search-box input::placeholder { color:var(--soft); }
+.rs-clear {
+  background:none; border:none; cursor:pointer;
+  color:var(--soft); font-size:.9rem; padding:2px 6px;
+  border-radius:50%; transition:all .15s;
+}
+.rs-clear:hover { background:var(--pink-mid); color:var(--rose); }
+.rs-count {
+  font-size:.75rem; color:var(--soft); margin-top:6px; padding-left:4px;
+}
+
+.recipe-add-card { margin-bottom:20px; }
+.ra-row { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.ra-inp {
+  border:2px solid var(--pink-mid); border-radius:11px;
+  padding:9px 13px; font-family:'Jua',sans-serif;
+  font-size:.82rem; color:var(--text); background:var(--pink-pale);
+  outline:none; transition:border-color .2s; width:100%;
+}
+.ra-inp:focus { border-color:var(--pink-dark); box-shadow:0 0 0 3px rgba(249,168,192,.2); }
+.title-inp { flex:1; min-width:180px; }
+.ra-memo {
+  display:block; resize:vertical; min-height:90px;
+  margin-bottom:12px; line-height:1.6;
+}
+.ra-btns { display:flex; gap:8px; }
+
+.recipe-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:16px; margin-bottom:20px;
+}
+
+.recipe-card {
+  background:white; border-radius:18px;
+  border:2px solid var(--pink-mid);
+  padding:18px; box-shadow:0 4px 16px var(--shadow);
+  display:flex; flex-direction:column; gap:10px;
+  position:relative; overflow:hidden;
+  animation:popIn .25s ease;
+  transition:transform .18s, box-shadow .18s;
+}
+.recipe-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px var(--shadow); }
+.recipe-card::before {
+  content:''; position:absolute; top:0;left:0;right:0; height:4px;
+  background:linear-gradient(90deg,var(--pink),var(--rose));
+  border-radius:18px 18px 0 0;
+}
+
+.rc-top { display:flex; align-items:flex-start; gap:8px; }
+.rc-title {
+  font-size:1rem; color:var(--text); flex:1;
+  word-break:break-all; line-height:1.4;
+}
+.rc-cat {
+  font-size:.65rem; background:var(--pink-pale);
+  color:var(--pink-dark); padding:2px 8px;
+  border-radius:20px; border:1px solid var(--pink-mid);
+  white-space:nowrap; flex-shrink:0; margin-top:2px;
+}
+
+.rc-memo {
+  font-size:.78rem; color:#6a4a5a; line-height:1.7;
+  word-break:break-all; flex:1;
+  max-height:120px; overflow-y:auto;
+}
+.rc-memo::-webkit-scrollbar { width:3px; }
+.rc-memo::-webkit-scrollbar-thumb { background:var(--pink); border-radius:10px; }
+.rc-memo a {
+  color:var(--pink-dark); text-decoration:underline;
+  word-break:break-all;
+}
+.rc-memo a:hover { color:var(--rose); }
+
+.rc-acts {
+  display:flex; gap:6px; justify-content:flex-end;
+  padding-top:8px; border-top:1px dashed var(--pink-mid);
+}
+.rc-btn {
+  background:none; border:1.5px solid var(--pink-mid);
+  border-radius:8px; padding:4px 10px;
+  font-family:'Jua',sans-serif; font-size:.72rem;
+  color:var(--soft); cursor:pointer; transition:all .15s;
+}
+.rc-btn:hover { background:var(--pink-pale); color:var(--rose); border-color:var(--pink-dark); }
+.rc-btn.del:hover { background:#ffe0e8; color:var(--rose); }
+
+.recipe-card.highlight { border-color:var(--pink-dark); }
+.recipe-card.hidden { display:none; }
+
+mark { background:var(--yellow); border-radius:3px; padding:0 2px; }
+
+/* ── 사이드 메뉴 레이아웃 ── */
+.page-with-sidebar {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 90px;
+}
+
+.sidebar-title {
+  font-size: .72rem;
+  color: var(--soft);
+  letter-spacing: 2px;
+  padding: 4px 8px 8px;
+  border-bottom: 2px dashed var(--pink-mid);
+  margin-bottom: 4px;
+}
+
+.smenu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: white;
+  border: 2px solid var(--pink-mid);
+  font-family: 'Jua', sans-serif;
+  font-size: .82rem;
+  color: var(--soft);
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 2px 8px var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.smenu::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--pink-mid);
+  border-radius: 3px 0 0 3px;
+  transition: background .18s;
+}
+
+.smenu:hover {
+  background: var(--pink-pale);
+  color: var(--rose);
+  border-color: var(--pink-dark);
+  transform: translateX(3px);
+}
+
+.smenu:hover::before { background: var(--pink-dark); }
+
+.smenu.active {
+  background: linear-gradient(135deg, #fff0f5, #ffe4ef);
+  color: var(--rose);
+  border-color: var(--pink-dark);
+  font-weight: 700;
+}
+
+.smenu.active::before { background: var(--rose); }
+
+.smenu-icon { font-size: 1.1rem; flex-shrink: 0; }
+.smenu-num { display: none; }
+
+.sidebar-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+/* 서브페이지 */
+.subpage { display: none; }
+.subpage.active { display: block; animation: fadeUp .25s ease; }
+
+.subpage-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--pink-mid);
+}
+
+.subpage-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--pink-pale), var(--pink-mid));
+  flex-shrink: 0;
+}
+
+.subpage-title {
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.subpage-desc {
+  font-size: .75rem;
+  color: var(--soft);
+  margin-top: 2px;
+}
+
+.subpage-empty {
+  background: white;
+  border-radius: 18px;
+  border: 2px dashed var(--pink-mid);
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--soft);
+  font-size: .88rem;
+  line-height: 2;
+}
+
+/* 모바일에서 사이드바 숨김 */
+body.mobile-view .page-with-sidebar { flex-direction: column; gap: 10px; }
+body.mobile-view .sidebar {
+  width: 100%;
+  position: static;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+body.mobile-view .sidebar-content {
+  width: 100%;
+  min-width: 0;
+  flex: none;
+}
+body.mobile-view .sidebar-title { display: none; }
+body.mobile-view .smenu {
+  padding: 5px 12px;
+  font-size: .72rem;
+  border-radius: 20px;
+  gap: 0;
+  box-shadow: none;
+  transform: none !important;
+}
+body.mobile-view .smenu::before { display: none; }
+body.mobile-view .smenu-icon { display: none; }
+body.mobile-view .smenu-num { display: none; }
+
+body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
+body.mobile-view .ra-row { flex-direction: column; }
+
+/* ── 통장 필터 탭 ── */
+.exp-bank-tabs {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 14px;
+}
+.ebt {
+  padding: 5px 12px; border-radius: 20px;
+  background: white; border: 1.5px solid var(--peach);
+  font-family: 'Jua', sans-serif; font-size: .72rem;
+  color: var(--soft); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.ebt:hover { background: var(--peach); color: var(--peach-dark); }
+.ebt.active {
+  background: linear-gradient(135deg, var(--peach-dark), #d06030);
+  color: white; border-color: var(--peach-dark);
+  box-shadow: 0 2px 8px rgba(208,96,48,.25);
+}
+
+/* 메모 미리보기 */
+.exp-memo-preview {
+  font-size: .72rem; color: var(--rose);
+  cursor: pointer; line-height: 1.5;
+  word-break: break-all;
+  animation: memoGlow 1.8s ease-in-out infinite;
+}
+@keyframes memoGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+.exp-memo-add-btn {
+  background: none; border: 1.5px dashed var(--peach);
+  border-radius: 8px; padding: 2px 8px;
+  font-family: 'Jua', sans-serif; font-size: .68rem;
+  color: var(--soft); cursor: pointer; transition: all .15s;
+}
+.exp-memo-add-btn:hover { background: var(--peach); color: var(--peach-dark); }
+
+
+.exp-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+}
+.exp-month-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border: 2px solid var(--peach);
+  border-radius: 30px; padding: 6px 14px;
+  box-shadow: 0 2px 8px rgba(232,131,74,.15);
+}
+.exp-month-label { font-size: .92rem; color: var(--peach-dark); min-width: 90px; text-align: center; }
+.exp-arrow {
+  background: none; border: none; cursor: pointer;
+  color: var(--peach-dark); font-size: .85rem;
+  padding: 2px 6px; border-radius: 8px; transition: background .15s;
+  font-family: 'Jua', sans-serif;
+}
+.exp-arrow:hover { background: var(--peach); }
+.exp-total {
+  background: linear-gradient(135deg, var(--peach-dark), #d06030);
+  color: white; padding: 7px 18px; border-radius: 30px;
+  font-size: .85rem; box-shadow: 0 2px 8px rgba(208,96,48,.25);
+}
+.exp-form { margin-bottom: 16px; }
+.exp-inp-grid {
+  display: grid; grid-template-columns: 100px 1fr 120px 120px;
+  gap: 8px;
+}
+.exp-table-wrap {
+  overflow-x: auto; border-radius: 14px;
+  border: 2px solid var(--peach); box-shadow: 0 3px 12px rgba(232,131,74,.1);
+}
+.exp-table {
+  width: 100%; border-collapse: collapse;
+  font-size: .8rem; background: white;
+  border-radius: 14px; overflow: hidden;
+}
+.exp-table th {
+  background: linear-gradient(135deg, var(--peach), #ffc8a0);
+  color: var(--peach-dark); padding: 10px 12px;
+  text-align: left; font-size: .78rem; white-space: nowrap;
+  border-bottom: 2px solid var(--peach);
+}
+.exp-table td {
+  padding: 10px 12px; border-bottom: 1px solid #fff0e8;
+  vertical-align: middle; color: var(--text);
+}
+.exp-table tbody tr:last-child td { border-bottom: none; }
+.exp-table tbody tr:hover { background: #fff8f4; }
+.exp-table tbody tr.editing { background: #fff0e4; }
+.exp-td-day { font-weight: 700; color: var(--peach-dark); white-space: nowrap; }
+.exp-td-amt { font-weight: 700; color: #c04020; white-space: nowrap; }
+.exp-td-acts { display: flex; gap: 4px; white-space: nowrap; }
+.exp-td-acts button {
+  background: none; border: 1.5px solid var(--peach);
+  border-radius: 7px; padding: 3px 8px;
+  font-family: 'Jua', sans-serif; font-size: .68rem;
+  color: var(--peach-dark); cursor: pointer; transition: all .15s;
+}
+.exp-td-acts button:hover { background: var(--peach); }
+.exp-td-acts button.del:hover { background: #ffe0d0; color: #c03010; border-color: #c03010; }
+
+/* 메모 아이콘 */
+.exp-memo-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.1rem; padding: 2px 4px;
+  border-radius: 8px; transition: transform .15s;
+  position: relative;
+}
+.exp-memo-btn:hover { transform: scale(1.2); }
+.exp-memo-btn.has-memo::after {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 7px; height: 7px;
+  background: var(--rose); border-radius: 50%;
+  border: 1.5px solid white;
+}
+
+/* 메모 팝업 */
+.exp-memo-overlay {
+  display: none; position: fixed;
+  inset: 0; background: rgba(0,0,0,.35);
+  z-index: 500;
+}
+.exp-memo-overlay.show { display: block; }
+.exp-memo-popup {
+  display: none; position: fixed;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: white; border-radius: 20px;
+  border: 2px solid var(--peach); padding: 22px 24px;
+  width: min(380px, 90vw);
+  box-shadow: 0 8px 32px rgba(232,131,74,.25);
+  z-index: 501; animation: fadeUp .2s ease;
+}
+.exp-memo-popup.show { display: block; }
+.exp-memo-popup-title {
+  font-size: 1rem; color: var(--peach-dark);
+  margin-bottom: 14px; font-weight: 700;
+}
+
+body.mobile-view .exp-inp-grid { grid-template-columns: 1fr 1fr; }
+body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8px; font-size: .72rem; }
+
+/* ── 초딩진우 테마 ── */
+#menu4 .subpage-icon { background: linear-gradient(135deg,#e8f4ff,#b2d8f8) !important; }
+#menu4 .smenu.active { background: linear-gradient(135deg,#e8f4ff,#d0eaff); color: #2a7abf; border-color: #5aaae0; }
+#menu4 .smenu.active::before { background: #5aaae0; }
+#menu4 .sec { color: #2a7abf; }
+#menu4 .sec::after { background: linear-gradient(90deg,#5aaae0,transparent); }
+
+/* ── 투자 테마 ── */
+#menu5 .subpage-icon { background: linear-gradient(135deg,#f0fff4,#b2f0c8) !important; }
+#menu5 .smenu.active { background: linear-gradient(135deg,#f0fff4,#d0f0e0); color: #2a8a4a; border-color: #4ab86a; }
+#menu5 .smenu.active::before { background: #4ab86a; }
+#menu5 .sec { color: #2a8a4a; }
+#menu5 .sec::after { background: linear-gradient(90deg,#4ab86a,transparent); }
+
+/* ── 레시피 카테고리 탭 ── */
+.recipe-cat-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.rct {
+  padding: 7px 18px;
+  border-radius: 30px;
+  background: white;
+  border: 2px solid var(--pink-mid);
+  font-family: 'Jua', sans-serif;
+  font-size: .8rem;
+  color: var(--soft);
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 2px 6px var(--shadow);
+  white-space: nowrap;
+}
+
+.rct:hover { background: var(--pink-pale); color: var(--rose); border-color: var(--pink-dark); transform: translateY(-1px); }
+
+.rct.active {
+  background: linear-gradient(135deg, var(--pink-dark), var(--rose));
+  color: white;
+  border-color: var(--rose);
+  box-shadow: 0 3px 10px rgba(224,60,110,.28);
+}
+
+.rc-cat-badge {
+  font-size: .65rem;
+  background: var(--pink-pale);
+  color: var(--pink-dark);
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--pink-mid);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.recipe-cat-select {
+  border: 2px solid var(--pink-mid);
+  border-radius: 11px;
+  padding: 9px 13px;
+  font-family: 'Jua', sans-serif;
+  font-size: .82rem;
+  color: var(--text);
+  background: var(--pink-pale);
+  outline: none;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.recipe-cat-select:focus { border-color: var(--pink-dark); }
+
+@media(max-width:760px){
+  .three-col,.two-col { grid-template-columns:1fr; }
+  .week-row { grid-template-columns:repeat(3,1fr); }
+  .recipe-grid { grid-template-columns: 1fr !important; }
+}
+/* ── 남편버전: 숨김 페이지 ── */
+#home, #menu1, #menu3, #menu5 { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- 상단 탭바 -->
+<div class="topbar">
+  <div class="tabs">
+    <div class="tb-icon" onclick="reloadCurrentPage()" title="새로고침">🔄</div>
+    <div class="tab active" onclick="goTab(this,'menu2')">🏠 우리집</div>
+    <div class="tab" onclick="goTab(this,'menu4')">🎒 초딩진우</div>
+  </div>
+
+</div>
+
+<!-- 날짜 바 -->
+<div class="datebar">
+  <span>🎀</span>
+  <span class="dtxt" id="dtxt"></span>
+  <span>✨</span>
+  <div class="dpill" id="dpill"></div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════ 홈 ══════════════ -->
+  <div class="page active" id="home">
+
+    <!-- 기본 업무 순서 플로우 -->
+    <div class="sec">📋 기본 업무 순서</div>
+    <div class="card cp">
+      <div class="flow-wrap" id="boss-flow"></div>
+    </div>
+
+    <!-- 디자인 작업 순서 플로우 -->
+    <div class="sec">🎨 디자인 작업 순서</div>
+    <div class="card cl">
+      <div class="flow-wrap" id="design-flow"></div>
+    </div>
+
+    <!-- 요일 박스 -->
+    <div class="sec" style="margin-top:8px">📅 요일별 할일</div>
+    <div class="card cy">
+      <div class="week-row" id="week-row"></div>
+    </div>
+
+    <!-- 할일 | 일정 | 메모 -->
+    <div class="sec">✅ 할일 &nbsp;|&nbsp; 🗓️ 일정 &nbsp;|&nbsp; 📝 메모</div>
+    <div class="three-col">
+
+      <!-- 할일 -->
+      <div class="card cp">
+        <div style="font-size:.88rem;color:var(--rose);margin-bottom:10px">✅ 할일</div>
+        <div class="inp-row">
+          <input id="todo-inp" type="text" placeholder="할 일 입력..." onkeydown="hk(event,addTodo)">
+          <button class="abtn" onclick="addTodo()">+</button>
+        </div>
+        <div class="ilist" id="todo-list"><div class="empty">할 일을 추가해요 🌸</div></div>
+      </div>
+
+      <!-- 일정 -->
+      <div class="card cm">
+        <div style="font-size:.88rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
+        <div class="inp-row">
+          <input id="sched-date" type="date" style="max-width:138px">
+          <input id="sched-time" type="time" style="max-width:105px">
+        </div>
+        <div class="inp-row">
+          <input id="sched-inp" type="text" placeholder="일정 내용..." onkeydown="hk(event,addSched)">
+          <button class="abtn mint-btn" onclick="addSched()">+</button>
+        </div>
+        <div class="ilist" id="sched-list"><div class="empty">일정을 추가해요 🗓️</div></div>
+      </div>
+
+      <!-- 메모 -->
+      <div class="card cy">
+        <div style="font-size:.88rem;color:#a07800;margin-bottom:10px">📝 메모</div>
+        <div class="inp-row">
+          <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="hk(event,addMemo)"></textarea>
+          <button class="abtn ylw-btn" onclick="addMemo()">+</button>
+        </div>
+        <div class="ilist" id="memo-list"><div class="empty">메모를 추가해요 📝</div></div>
+      </div>
+
+    </div>
+
+    <!-- 기본 할일 플로우 -->
+    <div class="sec">⏰ 기본 할일</div>
+    <div class="card cm">
+      <div class="flow-wrap" id="basic-flow"></div>
+    </div>
+
+    <!-- 은희 | 진우엄마 -->
+    <div class="sec">🌸 은희 할일 &nbsp;|&nbsp; 🐣 진우엄마 할일</div>
+    <div class="two-col">
+
+      <!-- 은희 -->
+      <div class="card cl">
+        <div style="font-size:.88rem;color:var(--lav-dark);margin-bottom:10px">🌸 은희 개인 할일</div>
+        <div class="inp-row">
+          <input id="eun-inp" type="text" placeholder="은희 할 일..." onkeydown="hk(event,addEun)">
+          <button class="abtn lav-btn" onclick="addEun()">+</button>
+        </div>
+        <div class="ilist" id="eun-list"><div class="empty">할 일을 추가해요 🌸</div></div>
+      </div>
+
+      <!-- 진우엄마 -->
+      <div class="card cpe">
+        <div style="font-size:.88rem;color:var(--peach-dark);margin-bottom:10px">🐣 진우엄마 할일</div>
+        <div class="inp-row">
+          <input id="jin-inp" type="text" placeholder="진우엄마 할 일..." onkeydown="hk(event,addJin)">
+          <button class="abtn pch-btn" onclick="addJin()">+</button>
+        </div>
+        <div class="ilist" id="jin-list"><div class="empty">할 일을 추가해요 🐣</div></div>
+      </div>
+
+    </div>
+  </div><!-- /home -->
+
+  <!-- ══════════════ 메뉴 1,2,3 ══════════════ -->
+  <div class="page" id="menu1">
+    <div class="sec">🛍️ 미리제작소</div>
+    <div class="page-with-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-title">MENU</div>
+        <div class="smenu" onclick="switchSub('menu1',1,this)" id="m1-sm-1"><span class="smenu-icon">🏪</span>쇼핑몰 공지<span class="smenu-num">01</span></div>
+<div class="smenu" onclick="switchSub('menu1',2,this)" id="m1-sm-2"><span class="smenu-icon">📦</span>주문 관리<span class="smenu-num">02</span></div>
+<div class="smenu" onclick="switchSub('menu1',3,this)" id="m1-sm-3"><span class="smenu-icon">🎨</span>디자인 작업<span class="smenu-num">03</span></div>
+<div class="smenu" onclick="switchSub('menu1',4,this)" id="m1-sm-4"><span class="smenu-icon">💰</span>매출 정리<span class="smenu-num">04</span></div>
+<div class="smenu" onclick="switchSub('menu1',5,this)" id="m1-sm-5"><span class="smenu-icon">📸</span>상품 사진<span class="smenu-num">05</span></div>
+<div class="smenu" onclick="switchSub('menu1',6,this)" id="m1-sm-6"><span class="smenu-icon">🚚</span>배송 현황<span class="smenu-num">06</span></div>
+<div class="smenu" onclick="switchSub('menu1',7,this)" id="m1-sm-7"><span class="smenu-icon">💬</span>고객 문의<span class="smenu-num">07</span></div>
+<div class="smenu" onclick="switchSub('menu1',8,this)" id="m1-sm-8"><span class="smenu-icon">📢</span>마케팅<span class="smenu-num">08</span></div>
+<div class="smenu" onclick="switchSub('menu1',9,this)" id="m1-sm-9"><span class="smenu-icon">📋</span>재고 관리<span class="smenu-num">09</span></div>
+<div class="smenu" onclick="switchSub('menu1',10,this)" id="m1-sm-10"><span class="smenu-icon">⭐</span>리뷰 관리<span class="smenu-num">10</span></div>
+      </div>
+      <div class="sidebar-content">
+        <div class="subpage active" id="menu1-sub-1">
+    <div class="subpage-header">
+      <div class="subpage-icon">🏪</div>
+      <div><div class="subpage-title">쇼핑몰 공지</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 쇼핑몰 공지 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-2">
+    <div class="subpage-header">
+      <div class="subpage-icon">📦</div>
+      <div><div class="subpage-title">주문 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 주문 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-3">
+    <div class="subpage-header">
+      <div class="subpage-icon">🎨</div>
+      <div><div class="subpage-title">디자인 작업</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 디자인 작업 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-4">
+    <div class="subpage-header">
+      <div class="subpage-icon">💰</div>
+      <div><div class="subpage-title">매출 정리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 매출 정리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-5">
+    <div class="subpage-header">
+      <div class="subpage-icon">📸</div>
+      <div><div class="subpage-title">상품 사진</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 상품 사진 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-6">
+    <div class="subpage-header">
+      <div class="subpage-icon">🚚</div>
+      <div><div class="subpage-title">배송 현황</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 배송 현황 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-7">
+    <div class="subpage-header">
+      <div class="subpage-icon">💬</div>
+      <div><div class="subpage-title">고객 문의</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 고객 문의 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-8">
+    <div class="subpage-header">
+      <div class="subpage-icon">📢</div>
+      <div><div class="subpage-title">마케팅</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 마케팅 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-9">
+    <div class="subpage-header">
+      <div class="subpage-icon">📋</div>
+      <div><div class="subpage-title">재고 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 재고 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu1-sub-10">
+    <div class="subpage-header">
+      <div class="subpage-icon">⭐</div>
+      <div><div class="subpage-title">리뷰 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🎀</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 리뷰 관리 내용을 채워요</span></div>
+  </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="menu2">
+    <div class="sec">🏠 우리집</div>
+    <div class="page-with-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-title">MENU</div>
+        <div class="smenu active" onclick="switchSub('menu2',0,this)" id="m2-sm-0"><span class="smenu-icon">💳</span>월별지출<span class="smenu-num">00</span></div>
+<div class="smenu" onclick="switchSub('menu2',1,this)" id="m2-sm-1"><span class="smenu-icon">🧹</span>청소 루틴<span class="smenu-num">01</span></div>
+<div class="smenu" onclick="switchSub('menu2',2,this)" id="m2-sm-2"><span class="smenu-icon">🛒</span>장보기 목록<span class="smenu-num">02</span></div>
+<div class="smenu" onclick="switchSub('menu2',3,this)" id="m2-sm-3"><span class="smenu-icon">💡</span>전기/수도<span class="smenu-num">03</span></div>
+<div class="smenu" onclick="switchSub('menu2',4,this)" id="m2-sm-4"><span class="smenu-icon">🍽️</span>식단 계획<span class="smenu-num">04</span></div>
+<div class="smenu" onclick="switchSub('menu2',5,this)" id="m2-sm-5"><span class="smenu-icon">🔧</span>집 수리<span class="smenu-num">05</span></div>
+<div class="smenu" onclick="switchSub('menu2',6,this)" id="m2-sm-6"><span class="smenu-icon">💊</span>건강 관리<span class="smenu-num">06</span></div>
+<div class="smenu" onclick="switchSub('menu2',7,this)" id="m2-sm-7"><span class="smenu-icon">📅</span>가족 일정<span class="smenu-num">07</span></div>
+<div class="smenu" onclick="switchSub('menu2',8,this)" id="m2-sm-8"><span class="smenu-icon">💸</span>가계부<span class="smenu-num">08</span></div>
+<div class="smenu" onclick="switchSub('menu2',9,this)" id="m2-sm-9"><span class="smenu-icon">🌱</span>식물 관리<span class="smenu-num">09</span></div>
+<div class="smenu" onclick="switchSub('menu2',10,this)" id="m2-sm-10"><span class="smenu-icon">📖</span>독서 기록<span class="smenu-num">10</span></div>
+      </div>
+      <div class="sidebar-content">
+        <!-- 월별지출 서브페이지 -->
+        <div class="subpage active" id="menu2-sub-0">
+          <div class="subpage-header">
+            <div class="subpage-icon" style="background:linear-gradient(135deg,#fff8f0,var(--peach))">💳</div>
+            <div>
+              <div class="subpage-title">월별 지출</div>
+              <div class="subpage-desc">매월 고정 지출을 관리해요 💰</div>
+            </div>
+          </div>
+
+          <!-- 합계 + 분류 필터 -->
+          <div class="exp-topbar">
+            <div class="exp-total" id="exp-total">합계: 0원</div>
+          </div>
+          <div class="exp-bank-tabs">
+            <div class="ebt active" onclick="filterExpBank('전체',this)">전체</div>
+            <div class="ebt" onclick="filterExpBank('미래에셋통장',this)">미래에셋</div>
+            <div class="ebt" onclick="filterExpBank('농협301',this)">농협301</div>
+            <div class="ebt" onclick="filterExpBank('농협312',this)">농협312</div>
+            <div class="ebt" onclick="filterExpBank('카뱅',this)">카뱅</div>
+            <div class="ebt" onclick="filterExpBank('경기화폐카드',this)">경기화폐</div>
+            <div class="ebt" onclick="filterExpBank('현대카드',this)">현대카드</div>
+            <div class="ebt" onclick="filterExpBank('신한카드',this)">신한카드</div>
+            <div class="ebt" onclick="filterExpBank('롯데카드',this)">롯데카드</div>
+            <div class="ebt" onclick="filterExpBank('삼성카드',this)">삼성카드</div>
+            <div class="ebt" onclick="filterExpBank('기타',this)">기타</div>
+          </div>
+
+          <!-- 입력 폼 -->
+          <div class="card cpe exp-form" id="exp-add-form">
+            <div style="font-size:.85rem;color:var(--peach-dark);margin-bottom:10px;font-weight:700">✏️ 지출 항목 등록</div>
+            <div class="exp-inp-grid">
+              <input id="exp-day"  type="text" class="ra-inp" placeholder="날짜 (예: 1일, 10일)">
+              <input id="exp-item" type="text" class="ra-inp" placeholder="항목명">
+              <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)" oninput="formatAmt(this)">
+              <select id="exp-bank" class="ra-inp" onchange="toggleBankEtc(this)">
+                <option value="">통장 선택</option>
+                <option value="미래에셋통장">미래에셋통장</option>
+                <option value="농협301">농협301</option>
+                <option value="농협312">농협312</option>
+                <option value="카뱅">카뱅</option>
+                <option value="경기화폐카드">경기화폐카드</option>
+                <option value="현대카드">현대카드</option>
+                <option value="신한카드">신한카드</option>
+                <option value="롯데카드">롯데카드</option>
+                <option value="삼성카드">삼성카드</option>
+                <option value="기타">기타(직접입력)</option>
+              </select>
+              <input id="exp-bank-etc" type="text" class="ra-inp" placeholder="직접 입력" style="display:none">
+              <input id="exp-note" type="text" class="ra-inp" placeholder="계좌/비고" style="grid-column:1/-1">
+            </div>
+            <div class="ra-btns" style="margin-top:10px">
+              <button class="abtn" onclick="addExpItem()" style="background:linear-gradient(135deg,var(--peach-dark),#d06030)">+ 등록</button>
+              <button class="abtn" onclick="cancelExpEdit()" id="exp-cancel-btn" style="display:none;background:linear-gradient(135deg,#aaa,#888)">취소</button>
+            </div>
+          </div>
+
+          <!-- 지출 테이블 -->
+          <div class="exp-table-wrap">
+            <table class="exp-table">
+              <thead>
+                <tr>
+                  <th>날짜</th>
+                  <th>항목</th>
+                  <th>금액(원)</th>
+                  <th>출금 통장</th>
+                  <th>계좌/비고</th>
+                  <th>메모</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="exp-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- 메모 팝업 -->
+          <div class="exp-memo-overlay" id="exp-memo-overlay" onclick="closeExpMemo()"></div>
+          <div class="exp-memo-popup" id="exp-memo-popup">
+            <div class="exp-memo-popup-title">📝 메모</div>
+            <textarea id="exp-memo-text" class="ra-inp ra-memo" placeholder="확인 사항, 수정 내용 등 자유롭게 메모해요..." style="min-height:100px;margin-bottom:10px"></textarea>
+            <div class="ra-btns">
+              <button class="abtn" onclick="saveExpMemo()" style="background:linear-gradient(135deg,var(--peach-dark),#d06030)">저장</button>
+              <button class="abtn" onclick="deleteExpMemo()" style="background:linear-gradient(135deg,#e05050,#c03030)">🗑️ 삭제</button>
+              <button class="abtn" onclick="closeExpMemo()" style="background:linear-gradient(135deg,#aaa,#888)">닫기</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="subpage" id="menu2-sub-1">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🧹</div>
+      <div><div class="subpage-title">청소 루틴</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 청소 루틴 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-2">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🛒</div>
+      <div><div class="subpage-title">장보기 목록</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 장보기 목록 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-3">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💡</div>
+      <div><div class="subpage-title">전기/수도</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 전기/수도 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-4">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🍽️</div>
+      <div><div class="subpage-title">식단 계획</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 식단 계획 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-5">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🔧</div>
+      <div><div class="subpage-title">집 수리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 집 수리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-6">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💊</div>
+      <div><div class="subpage-title">건강 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 건강 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-7">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">📅</div>
+      <div><div class="subpage-title">가족 일정</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 가족 일정 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-8">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">💸</div>
+      <div><div class="subpage-title">가계부</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 가계부 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-9">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">🌱</div>
+      <div><div class="subpage-title">식물 관리</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 식물 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu2-sub-10">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,var(--mint))">📖</div>
+      <div><div class="subpage-title">독서 기록</div><div class="subpage-desc">내용을 자유롭게 채워보세요 🏠</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 독서 기록 내용을 채워요</span></div>
+  </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="menu4">
+    <div class="sec">🎒 초딩진우</div>
+    <div class="page-with-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-title">MENU</div>
+        <div class="smenu" onclick="switchSub('menu4',1,this)" id="m4-sm-1"><span class="smenu-icon">📚</span>학교 준비물<span class="smenu-num">01</span></div>
+<div class="smenu" onclick="switchSub('menu4',2,this)" id="m4-sm-2"><span class="smenu-icon">📅</span>학교 일정<span class="smenu-num">02</span></div>
+<div class="smenu" onclick="switchSub('menu4',3,this)" id="m4-sm-3"><span class="smenu-icon">🏫</span>숙제/과제<span class="smenu-num">03</span></div>
+<div class="smenu" onclick="switchSub('menu4',4,this)" id="m4-sm-4"><span class="smenu-icon">💊</span>건강/병원<span class="smenu-num">04</span></div>
+<div class="smenu" onclick="switchSub('menu4',5,this)" id="m4-sm-5"><span class="smenu-icon">🥪</span>급식/도시락<span class="smenu-num">05</span></div>
+<div class="smenu" onclick="switchSub('menu4',6,this)" id="m4-sm-6"><span class="smenu-icon">🎨</span>방과후 활동<span class="smenu-num">06</span></div>
+<div class="smenu" onclick="switchSub('menu4',7,this)" id="m4-sm-7"><span class="smenu-icon">👕</span>준비물 챙기기<span class="smenu-num">07</span></div>
+<div class="smenu" onclick="switchSub('menu4',8,this)" id="m4-sm-8"><span class="smenu-icon">💰</span>학원비/용돈<span class="smenu-num">08</span></div>
+<div class="smenu" onclick="switchSub('menu4',9,this)" id="m4-sm-9"><span class="smenu-icon">📞</span>연락망<span class="smenu-num">09</span></div>
+<div class="smenu" onclick="switchSub('menu4',10,this)" id="m4-sm-10"><span class="smenu-icon">🌟</span>칭찬 기록<span class="smenu-num">10</span></div>
+      </div>
+      <div class="sidebar-content">
+        <div class="subpage active" id="menu4-sub-1">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">📚</div>
+      <div><div class="subpage-title">학교 준비물</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학교 준비물 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-2">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">📅</div>
+      <div><div class="subpage-title">학교 일정</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학교 일정 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-3">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🏫</div>
+      <div><div class="subpage-title">숙제/과제</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 숙제/과제 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-4">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">💊</div>
+      <div><div class="subpage-title">건강/병원</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 건강/병원 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-5">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🥪</div>
+      <div><div class="subpage-title">급식/도시락</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 급식/도시락 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-6">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🎨</div>
+      <div><div class="subpage-title">방과후 활동</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 방과후 활동 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-7">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">👕</div>
+      <div><div class="subpage-title">준비물 챙기기</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 준비물 챙기기 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-8">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">💰</div>
+      <div><div class="subpage-title">학원비/용돈</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학원비/용돈 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-9">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">📞</div>
+      <div><div class="subpage-title">연락망</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 연락망 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu4-sub-10">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🌟</div>
+      <div><div class="subpage-title">칭찬 기록</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 칭찬 기록 내용을 채워요</span></div>
+  </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="menu5">
+    <div class="sec">📈 투자</div>
+    <div class="page-with-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-title">MENU</div>
+        <div class="smenu" onclick="switchSub('menu5',1,this)" id="m5-sm-1"><span class="smenu-icon">📊</span>보유 종목<span class="smenu-num">01</span></div>
+<div class="smenu" onclick="switchSub('menu5',2,this)" id="m5-sm-2"><span class="smenu-icon">💰</span>수익 현황<span class="smenu-num">02</span></div>
+<div class="smenu" onclick="switchSub('menu5',3,this)" id="m5-sm-3"><span class="smenu-icon">📋</span>매매 일지<span class="smenu-num">03</span></div>
+<div class="smenu" onclick="switchSub('menu5',4,this)" id="m5-sm-4"><span class="smenu-icon">🔍</span>관심 종목<span class="smenu-num">04</span></div>
+<div class="smenu" onclick="switchSub('menu5',5,this)" id="m5-sm-5"><span class="smenu-icon">📰</span>뉴스/정보<span class="smenu-num">05</span></div>
+<div class="smenu" onclick="switchSub('menu5',6,this)" id="m5-sm-6"><span class="smenu-icon">🎯</span>목표 관리<span class="smenu-num">06</span></div>
+<div class="smenu" onclick="switchSub('menu5',7,this)" id="m5-sm-7"><span class="smenu-icon">💳</span>배당 기록<span class="smenu-num">07</span></div>
+<div class="smenu" onclick="switchSub('menu5',8,this)" id="m5-sm-8"><span class="smenu-icon">📉</span>손실 기록<span class="smenu-num">08</span></div>
+<div class="smenu" onclick="switchSub('menu5',9,this)" id="m5-sm-9"><span class="smenu-icon">🏦</span>계좌 현황<span class="smenu-num">09</span></div>
+<div class="smenu" onclick="switchSub('menu5',10,this)" id="m5-sm-10"><span class="smenu-icon">📌</span>투자 메모<span class="smenu-num">10</span></div>
+      </div>
+      <div class="sidebar-content">
+        <div class="subpage active" id="menu5-sub-1">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📊</div>
+      <div><div class="subpage-title">보유 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 보유 종목 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-2">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💰</div>
+      <div><div class="subpage-title">수익 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 수익 현황 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-3">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📋</div>
+      <div><div class="subpage-title">매매 일지</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 매매 일지 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-4">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🔍</div>
+      <div><div class="subpage-title">관심 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 관심 종목 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-5">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📰</div>
+      <div><div class="subpage-title">뉴스/정보</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 뉴스/정보 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-6">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🎯</div>
+      <div><div class="subpage-title">목표 관리</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 목표 관리 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-7">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💳</div>
+      <div><div class="subpage-title">배당 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 배당 기록 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-8">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📉</div>
+      <div><div class="subpage-title">손실 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 손실 기록 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-9">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🏦</div>
+      <div><div class="subpage-title">계좌 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 계좌 현황 내용을 채워요</span></div>
+  </div>
+<div class="subpage " id="menu5-sub-10">
+    <div class="subpage-header">
+      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📌</div>
+      <div><div class="subpage-title">투자 메모</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    </div>
+    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 투자 메모 내용을 채워요</span></div>
+  </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="menu3">
+    <div class="sec">🍳 요리 레시피</div>
+
+    <!-- 카테고리 미니메뉴 -->
+    <div class="recipe-cat-tabs">
+      <div class="rct active" onclick="filterRecipe('전체',this)">🍽️ 전체</div>
+      <div class="rct" onclick="filterRecipe('국',this)">🍲 국</div>
+      <div class="rct" onclick="filterRecipe('반찬',this)">🥢 반찬</div>
+      <div class="rct" onclick="filterRecipe('메인요리',this)">🍳 메인요리</div>
+      <div class="rct" onclick="filterRecipe('기타',this)">🍱 기타</div>
+    </div>
+
+    <!-- 검색창 -->
+    <div class="recipe-search-wrap">
+      <div class="recipe-search-box">
+        <span class="rs-icon">🔍</span>
+        <input id="recipe-search" type="text" placeholder="레시피 검색... (제목, 메모 모두 검색돼요)" oninput="searchRecipe()">
+        <button class="rs-clear" onclick="clearSearch()" id="rs-clear-btn" style="display:none">✕</button>
+      </div>
+      <div id="search-result-count" class="rs-count"></div>
+    </div>
+
+    <!-- 추가 폼 -->
+    <div class="card cp recipe-add-card" id="recipe-add-form">
+      <div style="font-size:.9rem;color:var(--rose);margin-bottom:12px;font-weight:700">✏️ 새 레시피 등록</div>
+      <div class="ra-row">
+        <input id="recipe-title-inp" type="text" placeholder="🍽️ 요리 제목" class="ra-inp title-inp">
+        <select id="recipe-cat-inp" class="recipe-cat-select">
+          <option value="국">🍲 국</option>
+          <option value="반찬">🥢 반찬</option>
+          <option value="메인요리">🍳 메인요리</option>
+          <option value="기타">🍱 기타</option>
+        </select>
+      </div>
+      <textarea id="recipe-memo-inp" class="ra-inp ra-memo" placeholder="📝 재료, 조리법, 참고 URL 등 자유롭게 메모해요&#10;URL은 자동으로 링크가 걸려요! (예: https://...)"></textarea>
+      <div class="ra-btns">
+        <button class="abtn" onclick="addRecipe()" style="padding:9px 24px">+ 등록하기</button>
+        <button class="abtn" onclick="cancelEditRecipe()" id="recipe-cancel-btn" style="display:none;background:linear-gradient(135deg,#aaa,#888)">취소</button>
+      </div>
+    </div>
+
+    <!-- 레시피 그리드 -->
+    <div class="recipe-grid" id="recipe-grid">
+      <div class="empty" style="grid-column:1/-1;padding:40px 0">레시피를 등록해요 🍳</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 날짜 ──
+const NOW   = new Date();
+const DAYS  = ['일','월','화','수','목','금','토'];
+const DAYKO = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+const TOD   = DAYS[NOW.getDay()];
+
+document.getElementById('dtxt').textContent =
+  `${NOW.getFullYear()}년 ${NOW.getMonth()+1}월 ${NOW.getDate()}일 (${TOD}) ✨`;
+document.getElementById('dpill').textContent = `🔔 오늘은 ${DAYKO[NOW.getDay()]}`;
+
+// ── 탭 전환 ──
+function goTab(el, id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+  localStorage.setItem('ws5_curtab', id);
+}
+
+// ── 현재 페이지 새로고침 ──
+function reloadCurrentPage() {
+  localStorage.setItem('ws5_curtab', localStorage.getItem('ws5_curtab') || 'home');
+  location.reload();
+}
+
+// ── 탭 복원 ──
+const savedTab = localStorage.getItem('ws5_curtab') || 'menu2';
+const savedTabEl = document.querySelector(`.tab[onclick*="${savedTab}"]`);
+if (savedTab !== 'home' && savedTabEl) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  savedTabEl.classList.add('active');
+  document.getElementById(savedTab).classList.add('active');
+}
+
+// ── 토스트 ──
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 1700);
+}
+
+function hk(e, fn) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fn();} }
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Firebase Realtime Database 연동 ──
+const FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
+
+function load(k) {
+  try { return JSON.parse(localStorage.getItem('ws5_'+k)||'[]'); } catch { return []; }
+}
+function loadObj(k) {
+  try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
+}
+
+// Firebase에 PUT 저장 + 로컬캐시
+function stor(k, v) {
+  localStorage.setItem('ws5_'+k, JSON.stringify(v));
+  fetch(FB_URL + '/' + k + '.json', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(v)
+  }).then(r => r.json())
+    .then(() => console.log('✅ 저장:', k))
+    .catch(e => console.log('❌ 저장 실패:', k, e));
+}
+
+// Firebase에서 전체 데이터 불러오기
+async function syncFromSheet() {
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe','exp_fixed'];
+  toast('🔄 동기화 중...');
+  try {
+    const res = await fetch(FB_URL + '.json', { cache: 'no-cache' });
+    const all = await res.json();
+    if (!all) { toast('🎀 최신 데이터예요!'); return; }
+    let updated = false;
+    for (const k of keys) {
+      if (all[k] !== undefined && all[k] !== null) {
+        localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
+        updated = true;
+      }
+    }
+    if (updated) {
+      ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
+      const wd = loadObj('week');
+      WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
+      Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
+      recipeDB.data = load('recipe');
+      safeRender(() => ['boss','basic','design'].forEach(renderFlow));
+      safeRender(() => renderWeek());
+      safeRender(() => Object.keys(renderCfg).forEach(rerender));
+      safeRender(() => renderRecipe());
+      renderExp();
+      toast('✅ 동기화 완료!');
+    } else {
+      toast('🎀 최신 데이터예요!');
+    }
+  } catch(e) {
+    console.log('sync err', e);
+    toast('❌ 동기화 실패');
+  }
+}
+
+// ── FLOW 데이터 ──
+const flowData = {
+  boss:   load('boss_flow'),
+  basic:  load('basic_flow'),
+  design: load('design_flow'),
+};
+
+function saveFlow(type) { stor(type+'_flow', flowData[type]); }
+
+function renderFlow(type) {
+  const wrap = document.getElementById(type+'-flow');
+  const isMint = type==='basic';
+  const isLav  = type==='design';
+  const cls    = isMint ? 'mint' : (isLav ? 'lav-flow' : '');
+  const arrCls = isMint ? 'mint' : '';
+
+  let html = '';
+  flowData[type].forEach((item, i) => {
+    if (i > 0) html += `<span class="flow-arrow ${arrCls}">→</span>`;
+    html += `<div class="flow-item ${cls}" id="fi_${type}_${item.id}">
+      <span class="flow-txt" contenteditable="true"
+        onblur="editFlow('${type}',${item.id},this.textContent)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+      >${esc(item.text)}</span>
+      <button class="fi-del" onclick="delFlow('${type}',${item.id})">✕</button>
+    </div>`;
+  });
+
+  const addCls = isMint ? 'mint' : '';
+  html += `<span class="flow-arrow ${arrCls}" ${flowData[type].length===0?'style="display:none"':''}>→</span>
+    <div class="flow-add ${addCls}" onclick="addFlow('${type}')">＋ 추가</div>`;
+
+  wrap.innerHTML = html;
+}
+
+function addFlow(type) {
+  const text = prompt('항목 이름을 입력하세요');
+  if (!text || !text.trim()) return;
+  flowData[type].push({ id: Date.now(), text: text.trim(), done: false });
+  saveFlow(type); renderFlow(type); toast('🎀 추가됐어요!');
+}
+
+function delFlow(type, id) {
+  flowData[type] = flowData[type].filter(i=>i.id!==id);
+  saveFlow(type); renderFlow(type); toast('🗑️ 삭제했어요');
+}
+
+function toggleFlow(type, id) {
+  const item = flowData[type].find(i=>i.id===id);
+  if (item) { item.done=!item.done; saveFlow(type); renderFlow(type); }
+}
+
+function editFlow(type, id, val) {
+  const item = flowData[type].find(i=>i.id===id);
+  if (item && val.trim()) { item.text=val.trim(); saveFlow(type); }
+}
+
+// ── 요일 박스 ──
+const WEEKDAYS = ['월','화','수','목','금'];
+const weekData = loadObj('week');
+// weekData 구조: { 월:[{id,text,done},...], 화:... }
+WEEKDAYS.forEach(d => { if (!weekData[d]) weekData[d] = []; });
+
+function saveWeek() { stor('week', weekData); }
+
+function renderWeek() {
+  const row = document.getElementById('week-row');
+  row.innerHTML = WEEKDAYS.map(day => {
+    const isToday = day === TOD;
+    const tasks = weekData[day] || [];
+    const taskHtml = tasks.map(t => `
+      <div class="day-task ${isToday?'today-task':''}" id="dt_${day}_${t.id}">
+        <div class="dt-txt" contenteditable="true"
+          onblur="editDayTask('${day}',${t.id},this.textContent)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        >${esc(t.text)}</div>
+        <button class="dt-del" onclick="delDayTask('${day}',${t.id})">✕</button>
+      </div>`).join('');
+
+    return `<div class="day-col">
+      <div class="day-label ${isToday?'today':''}">
+        ${day} ${isToday?'<span class="today-badge">오늘!</span>':''}
+      </div>
+      <div class="day-tasks">${taskHtml}</div>
+      <div class="day-add" onclick="addDayTask('${day}')">＋ 추가</div>
+    </div>`;
+  }).join('');
+}
+
+function addDayTask(day) {
+  const text = prompt(`${day}요일 할 일을 입력하세요`);
+  if (!text || !text.trim()) return;
+  weekData[day].push({ id: Date.now(), text: text.trim(), done: false });
+  saveWeek(); renderWeek(); toast('📅 추가됐어요!');
+}
+
+function delDayTask(day, id) {
+  weekData[day] = weekData[day].filter(t=>t.id!==id);
+  saveWeek(); renderWeek(); toast('🗑️ 삭제했어요');
+}
+
+function toggleDayTask(day, id) {
+  const t = weekData[day].find(t=>t.id===id);
+  if (t) { t.done=!t.done; saveWeek(); renderWeek(); }
+}
+
+function editDayTask(day, id, val) {
+  const t = weekData[day].find(t=>t.id===id);
+  if (t && val.trim()) { t.text=val.trim(); saveWeek(); }
+}
+
+// ── 일반 리스트 ──
+function makeListDB(key) {
+  const db = load(key);
+  return {
+    data: db,
+    save() { stor(key, this.data); },
+    add(item) { this.data.unshift(item); this.save(); },
+    del(id)   { this.data=this.data.filter(i=>i.id!==id); this.save(); },
+    toggle(id){ const i=this.data.find(i=>i.id===id); if(i){i.done=!i.done;this.save();} },
+    edit(id,v){ const i=this.data.find(i=>i.id===id); if(i&&v.trim()){i.text=v.trim();this.save();} },
+  };
+}
+
+const DBS = {
+  todo:  makeListDB('todo'),
+  sched: makeListDB('sched'),
+  memo:  makeListDB('memo'),
+  eun:   makeListDB('eun'),
+  jin:   makeListDB('jin'),
+};
+
+function renderList(key, elId, clsName, emptyMsg) {
+  const el = document.getElementById(elId);
+  const items = DBS[key].data.filter(i=>!i.done);
+  if (!items.length) { el.innerHTML=`<div class="empty">${emptyMsg}</div>`; return; }
+  el.innerHTML = items.map(item => {
+    const dateBadge = item.date ? `<span class="ibadge badge-date">📅 ${item.date.slice(5).replace('-','/')}</span>` : '';
+    const timeBadge = item.time ? `<span class="ibadge badge-time">⏰ ${item.time}</span>` : '';
+    return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}">
+      <div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>
+      <div class="itxt" contenteditable="false"
+        ondblclick="this.contentEditable='true';this.focus()"
+        onblur="${key}Edit(${item.id},this.textContent);this.contentEditable='false'"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+      >${esc(item.text)}</div>
+      ${dateBadge}${timeBadge}
+      <div class="iacts">
+        <button onclick="this.closest('.it').querySelector('.itxt').contentEditable='true';this.closest('.it').querySelector('.itxt').focus()">✏️</button>
+        <button onclick="${key}Del(${item.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// 각 리스트 함수 생성
+['todo','sched','memo','eun','jin'].forEach(key => {
+  window[key+'Toggle'] = (id) => { DBS[key].toggle(id); rerender(key); };
+  window[key+'Del']    = (id) => { DBS[key].del(id); rerender(key); toast('🗑️ 삭제했어요'); };
+  window[key+'Edit']   = (id,v) => { DBS[key].edit(id,v); rerender(key); };
+});
+
+const renderCfg = {
+  todo:  ['todo-list',  '',        '할 일을 추가해요 🌸'],
+  sched: ['sched-list', 'mint-it', '일정을 추가해요 🗓️'],
+  memo:  ['memo-list',  'ylw-it',  '메모를 추가해요 📝'],
+  eun:   ['eun-list',   'lav-it',  '할 일을 추가해요 🌸'],
+  jin:   ['jin-list',   'pch-it',  '할 일을 추가해요 🐣'],
+};
+
+function rerender(key) {
+  const [elId, cls, msg] = renderCfg[key];
+  renderList(key, elId, cls, msg);
+}
+
+// ── 추가 함수 ──
+function addTodo() {
+  const v = document.getElementById('todo-inp').value.trim();
+  if (!v) return;
+  DBS.todo.add({ id:Date.now(), text:v, done:false });
+  document.getElementById('todo-inp').value='';
+  rerender('todo'); toast('🎀 저장됐어요!');
+}
+
+function addSched() {
+  const v = document.getElementById('sched-inp').value.trim();
+  if (!v) return;
+  DBS.sched.add({ id:Date.now(), text:v, done:false,
+    date: document.getElementById('sched-date').value||'',
+    time: document.getElementById('sched-time').value||'' });
+  document.getElementById('sched-inp').value='';
+  rerender('sched'); toast('🎀 저장됐어요!');
+}
+
+function addMemo() {
+  const v = document.getElementById('memo-inp').value.trim();
+  if (!v) return;
+  DBS.memo.add({ id:Date.now(), text:v, done:false });
+  document.getElementById('memo-inp').value='';
+  rerender('memo'); toast('🎀 저장됐어요!');
+}
+
+function addEun() {
+  const v = document.getElementById('eun-inp').value.trim();
+  if (!v) return;
+  DBS.eun.add({ id:Date.now(), text:v, done:false });
+  document.getElementById('eun-inp').value='';
+  rerender('eun'); toast('🎀 저장됐어요!');
+}
+
+function addJin() {
+  const v = document.getElementById('jin-inp').value.trim();
+  if (!v) return;
+  DBS.jin.add({ id:Date.now(), text:v, done:false });
+  document.getElementById('jin-inp').value='';
+  rerender('jin'); toast('🎀 저장됐어요!');
+}
+
+// ── PC/모바일 뷰 전환 ──
+function setView(mode) {
+  const body = document.body;
+  const btnPc     = document.getElementById('btn-pc');
+  const btnMobile = document.getElementById('btn-mobile');
+  if (mode === 'mobile') {
+    body.classList.add('mobile-view');
+    if (btnMobile) btnMobile.classList.add('active-view');
+    if (btnPc)     btnPc.classList.remove('active-view');
+  } else {
+    body.classList.remove('mobile-view');
+    if (btnPc)     btnPc.classList.add('active-view');
+    if (btnMobile) btnMobile.classList.remove('active-view');
+  }
+  localStorage.setItem('ws5_viewmode', mode);
+}
+
+// 저장된 뷰모드 복원
+const savedView = localStorage.getItem('ws5_viewmode') || 'pc';
+setView(savedView);
+
+// ── 사이드 메뉴 전환 ──
+function switchSub(pageId, num, el) {
+  // 서브페이지 전환
+  document.querySelectorAll(`#${pageId} .subpage`).forEach(p => p.classList.remove('active'));
+  document.getElementById(`${pageId}-sub-${num}`).classList.add('active');
+  // 사이드메뉴 활성화
+  document.querySelectorAll(`#${pageId} .smenu`).forEach(m => m.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── 레시피 ──
+const recipeDB = { data: load('recipe') };
+function saveRecipe() { stor('recipe', recipeDB.data); }
+
+let editingRecipeId = null;
+let currentCatFilter = '전체';
+
+function linkify(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return escHtml(text).replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+}
+function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function highlightText(text, keyword) {
+  if (!keyword) return escHtml(text);
+  const escaped = escHtml(text);
+  const kEsc = escHtml(keyword);
+  const safeKw = kEsc.replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&');
+  const regex = new RegExp('(' + safeKw + ')', 'gi');
+  return escaped.replace(regex, '<mark>$1</mark>');
+}
+
+function filterRecipe(cat, el) {
+  currentCatFilter = cat;
+  document.querySelectorAll('.rct').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderRecipe(document.getElementById('recipe-search').value);
+}
+
+function renderRecipe(keyword='') {
+  const grid = document.getElementById('recipe-grid');
+  const kw = keyword.trim().toLowerCase();
+
+  let items = recipeDB.data;
+  if (currentCatFilter !== '전체') {
+    items = items.filter(i => (i.cat || '기타') === currentCatFilter);
+  }
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:40px 0">${currentCatFilter !== '전체' ? currentCatFilter + ' 레시피가 없어요 🍳' : '레시피를 등록해요 🍳'}</div>`;
+    document.getElementById('search-result-count').textContent = '';
+    return;
+  }
+
+  let shown = 0;
+  grid.innerHTML = items.map(item => {
+    const matchTitle = item.title.toLowerCase().includes(kw);
+    const matchMemo  = (item.memo||'').toLowerCase().includes(kw);
+    const hidden = kw && !matchTitle && !matchMemo;
+    if (!hidden) shown++;
+
+    const titleHtml = kw ? highlightText(item.title, kw) : escHtml(item.title);
+    const memoHtml  = kw ? linkifyHighlight(item.memo||'', kw) : linkify(item.memo||'');
+    const catLabel  = item.cat ? `<span class="rc-cat-badge">${item.cat}</span>` : '';
+
+    return `<div class="recipe-card ${hidden ? 'hidden' : ''}" id="rc_${item.id}">
+      <div class="rc-top">
+        <div class="rc-title">${titleHtml}</div>
+        ${catLabel}
+      </div>
+      ${item.memo ? `<div class="rc-memo">${memoHtml}</div>` : ''}
+      <div class="rc-acts">
+        <button class="rc-btn" onclick="editRecipe(${item.id})">✏️ 수정</button>
+        <button class="rc-btn del" onclick="deleteRecipe(${item.id})">🗑️ 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const countEl = document.getElementById('search-result-count');
+  if (kw) {
+    countEl.textContent = `🔍 "${keyword}" 검색 결과: ${shown}개`;
+  } else {
+    countEl.textContent = `총 ${items.length}개`;
+  }
+}
+
+function linkifyHighlight(text, keyword) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map(part => {
+    if (urlRegex.test(part)) {
+      return `<a href="${part}" target="_blank" rel="noopener">${part}</a>`;
+    }
+    return keyword ? highlightText(part, keyword) : escHtml(part);
+  }).join('');
+}
+
+function addRecipe() {
+  const title = document.getElementById('recipe-title-inp').value.trim();
+  const memo  = document.getElementById('recipe-memo-inp').value.trim();
+  const cat   = document.getElementById('recipe-cat-inp').value;
+  if (!title) { toast('제목을 입력해요 🍽️'); return; }
+
+  if (editingRecipeId) {
+    const item = recipeDB.data.find(i => i.id === editingRecipeId);
+    if (item) { item.title=title; item.memo=memo; item.cat=cat; }
+    editingRecipeId = null;
+    document.getElementById('recipe-cancel-btn').style.display = 'none';
+    toast('✏️ 수정됐어요!');
+  } else {
+    recipeDB.data.unshift({ id: Date.now(), title, memo, cat });
+    toast('🍳 레시피 등록됐어요!');
+  }
+
+  saveRecipe();
+  document.getElementById('recipe-title-inp').value = '';
+  document.getElementById('recipe-memo-inp').value = '';
+  document.getElementById('recipe-cat-inp').value = '국';
+  renderRecipe(document.getElementById('recipe-search').value);
+}
+
+function editRecipe(id) {
+  const item = recipeDB.data.find(i => i.id === id);
+  if (!item) return;
+  editingRecipeId = id;
+  document.getElementById('recipe-title-inp').value = item.title;
+  document.getElementById('recipe-memo-inp').value  = item.memo || '';
+  document.getElementById('recipe-cat-inp').value   = item.cat || '국';
+
+  document.getElementById('recipe-cancel-btn').style.display = 'inline-block';
+  document.getElementById('recipe-title-inp').focus();
+  document.getElementById('recipe-add-form').scrollIntoView({ behavior:'smooth' });
+  toast('✏️ 수정 모드예요!');
+}
+
+function cancelEditRecipe() {
+  editingRecipeId = null;
+  document.getElementById('recipe-title-inp').value = '';
+  document.getElementById('recipe-memo-inp').value  = '';
+  document.getElementById('recipe-cat-inp').value   = '';
+  document.getElementById('recipe-cancel-btn').style.display = 'none';
+}
+
+function deleteRecipe(id) {
+  if (!confirm('이 레시피를 삭제할까요?')) return;
+  recipeDB.data = recipeDB.data.filter(i => i.id !== id);
+  saveRecipe();
+  renderRecipe(document.getElementById('recipe-search').value);
+  toast('🗑️ 삭제됐어요');
+}
+
+function searchRecipe() {
+  const kw = document.getElementById('recipe-search').value;
+  document.getElementById('rs-clear-btn').style.display = kw ? 'block' : 'none';
+  renderRecipe(kw);
+}
+
+function clearSearch() {
+  document.getElementById('recipe-search').value = '';
+  document.getElementById('rs-clear-btn').style.display = 'none';
+  renderRecipe();
+}
+
+// ── 초기 렌더 (없는 요소는 안전하게 스킵) ──
+function safeRender(fn) { try { fn(); } catch(e) { console.log('skip render:', e.message); } }
+safeRender(() => ['boss','basic','design'].forEach(renderFlow));
+safeRender(() => renderWeek());
+safeRender(() => Object.keys(renderCfg).forEach(rerender));
+safeRender(() => renderRecipe());
+
+// ── 월별 지출 ──
+let editingExpId = null;
+let memoTargetId = null;
+let currentBankFilter = '전체';
+
+function loadExp() { return load('exp_fixed'); }
+function saveExp(data) { stor('exp_fixed', data); }
+
+// 기타 직접입력 토글
+function toggleBankEtc(sel) {
+  const etc = document.getElementById('exp-bank-etc');
+  etc.style.display = sel.value === '기타' ? 'block' : 'none';
+  if (sel.value !== '기타') etc.value = '';
+}
+
+// 통장 필터
+function filterExpBank(bank, el) {
+  currentBankFilter = bank;
+  document.querySelectorAll('.ebt').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderExp();
+}
+
+function renderExp() {
+  let data = loadExp();
+  const filtered = currentBankFilter !== '전체'
+    ? data.filter(r => (r.bank||'') === currentBankFilter)
+    : data;
+
+  const tbody = document.getElementById('exp-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">${currentBankFilter !== '전체' ? currentBankFilter+' 항목이 없어요' : '지출 항목을 등록해요 💳'}</td></tr>`;
+    document.getElementById('exp-total').textContent = currentBankFilter !== '전체' ? currentBankFilter+' 합계: 0원' : '합계: 0원';
+    return;
+  }
+
+  let total = 0;
+  tbody.innerHTML = filtered.map(row => {
+    const amt = parseInt((row.amt||'0').replace(/[^0-9]/g,'')) || 0;
+    total += amt;
+    const amtDisp = amt ? amt.toLocaleString() : (row.amt||'-');
+    const hasMemo = row.memo && row.memo.trim();
+    return `<tr id="exp-row-${row.id}">
+      <td class="exp-td-day">${esc(row.day||'')}</td>
+      <td>${esc(row.item||'')}</td>
+      <td class="exp-td-amt">${amtDisp}</td>
+      <td>${esc(row.bank||'')}</td>
+      <td>${esc(row.note||'')}</td>
+      <td style="text-align:left;min-width:90px">
+        ${hasMemo
+          ? `<div class="exp-memo-preview" onclick="openExpMemo(${row.id})">${esc(row.memo.length>20 ? row.memo.slice(0,20)+'…' : row.memo)}</div>`
+          : `<button class="exp-memo-add-btn" onclick="openExpMemo(${row.id})">+ 메모</button>`
+        }
+      </td>
+      <td><div class="exp-td-acts">
+        <button onclick="editExpItem(${row.id})">✏️</button>
+        <button class="del" onclick="delExpItem(${row.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  const label = currentBankFilter !== '전체' ? currentBankFilter+' 합계' : '합계';
+  document.getElementById('exp-total').textContent = `${label}: ${total.toLocaleString()}원`;
+}
+
+function addExpItem() {
+  const day  = document.getElementById('exp-day').value.trim();
+  const item = document.getElementById('exp-item').value.trim();
+  const amt  = document.getElementById('exp-amt').value.trim();
+  const bankSel = document.getElementById('exp-bank').value;
+  const bankEtc = document.getElementById('exp-bank-etc').value.trim();
+  const bank = bankSel === '기타' ? (bankEtc || '기타') : bankSel;
+  const note = document.getElementById('exp-note').value.trim();
+  if (!item) { toast('항목명을 입력해요 💳'); return; }
+
+  const data = loadExp();
+  if (editingExpId) {
+    const idx = data.findIndex(r => r.id === editingExpId);
+    if (idx !== -1) data[idx] = { ...data[idx], day, item, amt, bank, note };
+    editingExpId = null;
+    document.getElementById('exp-cancel-btn').style.display = 'none';
+    toast('✏️ 수정됐어요!');
+  } else {
+    data.push({ id: Date.now(), day, item, amt, bank, note, memo: '' });
+    toast('💳 등록됐어요!');
+  }
+  saveExp(data);
+  clearExpForm();
+  renderExp();
+}
+
+function editExpItem(id) {
+  const row = loadExp().find(r => r.id === id);
+  if (!row) return;
+  editingExpId = id;
+  document.getElementById('exp-day').value  = row.day||'';
+  document.getElementById('exp-item').value = row.item||'';
+  document.getElementById('exp-amt').value  = row.amt||'';
+  // bank 값이 select 옵션에 있으면 선택, 없으면 기타+직접입력
+  const bankSel = document.getElementById('exp-bank');
+  const opts = Array.from(bankSel.options).map(o => o.value);
+  if (opts.includes(row.bank)) {
+    bankSel.value = row.bank;
+    document.getElementById('exp-bank-etc').style.display = 'none';
+  } else {
+    bankSel.value = '기타';
+    document.getElementById('exp-bank-etc').value = row.bank||'';
+    document.getElementById('exp-bank-etc').style.display = 'block';
+  }
+  document.getElementById('exp-note').value = row.note||'';
+  document.getElementById('exp-cancel-btn').style.display = 'inline-block';
+  document.getElementById('exp-add-form').scrollIntoView({ behavior: 'smooth' });
+  toast('✏️ 수정 모드예요!');
+}
+
+function delExpItem(id) {
+  if (!confirm('이 항목을 삭제할까요?')) return;
+  saveExp(loadExp().filter(r => r.id !== id));
+  renderExp(); toast('🗑️ 삭제됐어요');
+}
+
+function cancelExpEdit() {
+  editingExpId = null; clearExpForm();
+  document.getElementById('exp-cancel-btn').style.display = 'none';
+}
+
+function clearExpForm() {
+  ['exp-day','exp-item','exp-amt','exp-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('exp-bank').value = '';
+  document.getElementById('exp-bank-etc').value = '';
+  document.getElementById('exp-bank-etc').style.display = 'none';
+}
+
+function openExpMemo(id) {
+  memoTargetId = id;
+  const row = loadExp().find(r => r.id === id);
+  document.getElementById('exp-memo-text').value = row ? (row.memo||'') : '';
+  document.getElementById('exp-memo-overlay').classList.add('show');
+  document.getElementById('exp-memo-popup').classList.add('show');
+  setTimeout(() => document.getElementById('exp-memo-text').focus(), 100);
+}
+
+function closeExpMemo() {
+  document.getElementById('exp-memo-overlay').classList.remove('show');
+  document.getElementById('exp-memo-popup').classList.remove('show');
+  memoTargetId = null;
+}
+
+function saveExpMemo() {
+  const memo = document.getElementById('exp-memo-text').value.trim();
+  const data = loadExp();
+  const idx  = data.findIndex(r => r.id === memoTargetId);
+  if (idx !== -1) { data[idx].memo = memo; saveExp(data); }
+  closeExpMemo(); renderExp();
+  toast(memo ? '📝 메모 저장됐어요!' : '메모를 지웠어요');
+}
+
+function deleteExpMemo() {
+  if (!confirm('메모를 삭제할까요?')) return;
+  const data = loadExp();
+  const idx  = data.findIndex(r => r.id === memoTargetId);
+  if (idx !== -1) { data[idx].memo = ''; saveExp(data); }
+  closeExpMemo(); renderExp();
+  toast('🗑️ 메모 삭제됐어요');
+}
+
+// ── 사이드 메뉴 초기 활성화 ──
+document.getElementById('m1-sm-1') && document.getElementById('m1-sm-1').classList.add('active');
+document.getElementById('m4-sm-1') && document.getElementById('m4-sm-1').classList.add('active');
+document.getElementById('m5-sm-1') && document.getElementById('m5-sm-1').classList.add('active');
+document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
+renderExp();
+
+// ── 구글 시트 동기화 ──
+syncFromSheet();
+
+// ── PWA 서비스워커 등록 ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(() => {
+    console.log('✅ SW 등록됨');
+  }).catch(e => console.log('SW 오류:', e));
+}
+</script>
+</body>
+</html>

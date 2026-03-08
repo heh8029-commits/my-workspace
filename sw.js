@@ -1,7 +1,9 @@
-const CACHE_NAME = 'urij-v1';
+const CACHE_NAME = 'urij-v2';
 const ASSETS = [
   './index.html',
+  './husband.html',
   './manifest.json',
+  './manifest-husband.json',
   './icon-192.png',
   './icon-512.png'
 ];
