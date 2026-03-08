@@ -986,7 +986,6 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
         <div style="font-size:.88rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
         <div class="inp-row">
           <input id="sched-date" type="date" style="max-width:138px">
-          <input id="sched-time" type="time" style="max-width:105px">
         </div>
         <div class="inp-row">
           <input id="sched-inp" type="text" placeholder="일정 내용..." onkeydown="hk(event,addSched)">
@@ -1014,8 +1013,8 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
     </div>
 
     <!-- 은희 | 진우엄마 -->
-    <div class="sec">🌸 은희 할일 &nbsp;|&nbsp; 🐣 진우엄마 할일</div>
-    <div class="two-col">
+    <div class="sec">🌸 은희 할일 &nbsp;|&nbsp; 🐣 진우엄마 할일 &nbsp;|&nbsp; 💡 어플개선메모</div>
+    <div class="three-col">
 
       <!-- 은희 -->
       <div class="card cl">
@@ -1035,6 +1034,16 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
           <button class="abtn pch-btn" onclick="addJin()">+</button>
         </div>
         <div class="ilist" id="jin-list"><div class="empty">할 일을 추가해요 🐣</div></div>
+      </div>
+
+      <!-- 어플개선메모 -->
+      <div class="card" style="border-top:3px solid #a0c4ff">
+        <div style="font-size:.88rem;color:#4a80d0;margin-bottom:10px">💡 어플 개선 메모</div>
+        <div class="inp-row">
+          <input id="app-inp" type="text" placeholder="개선하고 싶은 것..." onkeydown="hk(event,addApp)">
+          <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addApp()">+</button>
+        </div>
+        <div class="ilist" id="app-list"><div class="empty">개선 아이디어를 적어요 💡</div></div>
       </div>
 
     </div>
@@ -1175,6 +1184,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
             <div class="ebt" onclick="filterExpBank('신한카드',this)">신한카드</div>
             <div class="ebt" onclick="filterExpBank('롯데카드',this)">롯데카드</div>
             <div class="ebt" onclick="filterExpBank('삼성카드',this)">삼성카드</div>
+            <div class="ebt" onclick="filterExpBank('토스',this)">토스</div>
             <div class="ebt" onclick="filterExpBank('기타',this)">기타</div>
           </div>
 
@@ -1196,6 +1206,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
                 <option value="신한카드">신한카드</option>
                 <option value="롯데카드">롯데카드</option>
                 <option value="삼성카드">삼성카드</option>
+                <option value="토스">토스</option>
                 <option value="기타">기타(직접입력)</option>
               </select>
               <input id="exp-bank-etc" type="text" class="ra-inp" placeholder="직접 입력" style="display:none">
@@ -1615,7 +1626,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe','exp_fixed'];
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','recipe','exp_fixed'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json', { cache: 'no-cache' });
@@ -1783,18 +1794,20 @@ const DBS = {
 
 function renderList(key, elId, clsName, emptyMsg) {
   const el = document.getElementById(elId);
-  const items = DBS[key].data.filter(i=>!i.done);
+  const items = DBS[key].data;
   if (!items.length) { el.innerHTML=`<div class="empty">${emptyMsg}</div>`; return; }
+  const noChk = ['memo','app'];
   el.innerHTML = items.map(item => {
     const dateBadge = item.date ? `<span class="ibadge badge-date">📅 ${item.date.slice(5).replace('-','/')}</span>` : '';
     const timeBadge = item.time ? `<span class="ibadge badge-time">⏰ ${item.time}</span>` : '';
+    const hideChk = noChk.includes(key);
     return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}">
-      <div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>
+      ${hideChk ? '' : `<div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>`}
       <div class="itxt" contenteditable="false"
         ondblclick="this.contentEditable='true';this.focus()"
         onblur="${key}Edit(${item.id},this.textContent);this.contentEditable='false'"
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
-      >${esc(item.text)}</div>
+      >${linkify(item.text)}</div>
       ${dateBadge}${timeBadge}
       <div class="iacts">
         <button onclick="this.closest('.it').querySelector('.itxt').contentEditable='true';this.closest('.it').querySelector('.itxt').focus()">✏️</button>
@@ -1805,7 +1818,7 @@ function renderList(key, elId, clsName, emptyMsg) {
 }
 
 // 각 리스트 함수 생성
-['todo','sched','memo','eun','jin'].forEach(key => {
+['todo','sched','memo','eun','jin','app'].forEach(key => {
   window[key+'Toggle'] = (id) => { DBS[key].toggle(id); rerender(key); };
   window[key+'Del']    = (id) => { DBS[key].del(id); rerender(key); toast('🗑️ 삭제했어요'); };
   window[key+'Edit']   = (id,v) => { DBS[key].edit(id,v); rerender(key); };
@@ -1817,6 +1830,7 @@ const renderCfg = {
   memo:  ['memo-list',  'ylw-it',  '메모를 추가해요 📝'],
   eun:   ['eun-list',   'lav-it',  '할 일을 추가해요 🌸'],
   jin:   ['jin-list',   'pch-it',  '할 일을 추가해요 🐣'],
+  app:   ['app-list',   '',        '개선 아이디어를 적어요 💡'],
 };
 
 function rerender(key) {
@@ -1833,12 +1847,21 @@ function addTodo() {
   rerender('todo'); toast('🎀 저장됐어요!');
 }
 
+function addApp() {
+  const v = document.getElementById('app-inp').value.trim();
+  if (!v) return;
+  DBS['app'].add(v);
+  document.getElementById('app-inp').value='';
+  rerender('app');
+  toast('💡 메모됐어요!');
+}
+
 function addSched() {
   const v = document.getElementById('sched-inp').value.trim();
   if (!v) return;
   DBS.sched.add({ id:Date.now(), text:v, done:false,
     date: document.getElementById('sched-date').value||'',
-    time: document.getElementById('sched-time').value||'' });
+    time: '' });
   document.getElementById('sched-inp').value='';
   rerender('sched'); toast('🎀 저장됐어요!');
 }
@@ -1906,8 +1929,13 @@ let editingRecipeId = null;
 let currentCatFilter = '전체';
 
 function linkify(text) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return escHtml(text).replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+  const escaped = escHtml(text);
+  const urlRegex = /(https?:\/\/[^\s<]+)|(www\.[^\s<]+\.[^\s<]+)/g;
+  return escaped.replace(urlRegex, (match, http, www) => {
+    const href = http ? http : 'https://' + www;
+    const display = (http || www).replace(/\/+$/, '');
+    return `<a href="${href}" target="_blank" rel="noopener" style="color:#e8648a;text-decoration:underline;word-break:break-all">${display}</a>`;
+  });
 }
 function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -2083,6 +2111,12 @@ function filterExpBank(bank, el) {
 
 function renderExp() {
   let data = loadExp();
+  // 날짜 오름차순 정렬 (숫자 추출)
+  data = [...data].sort((a,b) => {
+    const na = parseInt((a.day||'0').replace(/[^0-9]/g,'')) || 0;
+    const nb = parseInt((b.day||'0').replace(/[^0-9]/g,'')) || 0;
+    return na - nb;
+  });
   const filtered = currentBankFilter !== '전체'
     ? data.filter(r => (r.bank||'') === currentBankFilter)
     : data;
@@ -2233,8 +2267,9 @@ document.getElementById('m5-sm-1') && document.getElementById('m5-sm-1').classLi
 document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
 renderExp();
 
-// ── 구글 시트 동기화 ──
+// ── Firebase 동기화 (최초 + 30초마다 자동) ──
 syncFromSheet();
+setInterval(syncFromSheet, 30000);
 
 // ── PWA 서비스워커 등록 ──
 if ('serviceWorker' in navigator) {
