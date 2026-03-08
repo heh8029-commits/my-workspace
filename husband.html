@@ -1878,8 +1878,8 @@ function setView(mode) {
   localStorage.setItem('ws5_viewmode', mode);
 }
 
-// 저장된 뷰모드 복원
-const savedView = localStorage.getItem('ws5_viewmode') || 'pc';
+// 저장된 뷰모드 복원 (남편버전 기본: 모바일)
+const savedView = localStorage.getItem('ws5_viewmode') || 'mobile';
 setView(savedView);
 
 // ── 사이드 메뉴 전환 ──
