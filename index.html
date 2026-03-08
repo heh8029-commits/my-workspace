@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎀 나의 업무 공간</title>
+<title>우리집관리소 🎀</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="우리집관리소">
+<meta name="theme-color" content="#e8648a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -2229,6 +2235,13 @@ renderExp();
 
 // ── 구글 시트 동기화 ──
 syncFromSheet();
+
+// ── PWA 서비스워커 등록 ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(() => {
+    console.log('✅ SW 등록됨');
+  }).catch(e => console.log('SW 오류:', e));
+}
 </script>
 </body>
 </html>
