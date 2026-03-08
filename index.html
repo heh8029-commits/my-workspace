@@ -362,7 +362,22 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .abtn.pch-btn  { background:linear-gradient(135deg,var(--peach-dark),#c06030); box-shadow:0 3px 8px rgba(232,131,74,.22); }
 
 /* 아이템 */
+.drag-handle {
+  cursor: grab; color: #ccc; font-size: 1rem;
+  padding: 0 4px; user-select: none;
+  flex-shrink: 0; touch-action: none;
+}
+.drag-handle:active { cursor: grabbing; }
+.it.dragging { opacity: .4; transform: scale(.97); }
+.it.drag-over {
+  border-color: var(--pink-dark) !important;
+  background: var(--pink-pale) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(232,100,138,.2);
+}
+
 .ilist { display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:3px; }
+
 .ilist::-webkit-scrollbar { width:3px; }
 .ilist::-webkit-scrollbar-thumb { background:var(--pink); border-radius:10px; }
 
@@ -1801,7 +1816,8 @@ function renderList(key, elId, clsName, emptyMsg) {
     const dateBadge = item.date ? `<span class="ibadge badge-date">📅 ${item.date.slice(5).replace('-','/')}</span>` : '';
     const timeBadge = item.time ? `<span class="ibadge badge-time">⏰ ${item.time}</span>` : '';
     const hideChk = noChk.includes(key);
-    return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}">
+    return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}">
+      <div class="drag-handle" title="드래그해서 순서 변경">⠿</div>
       ${hideChk ? '' : `<div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>`}
       <div class="itxt" contenteditable="false"
         ondblclick="this.contentEditable='true';this.focus()"
@@ -1815,6 +1831,94 @@ function renderList(key, elId, clsName, emptyMsg) {
       </div>
     </div>`;
   }).join('');
+
+  // 드래그앤드롭 이벤트
+  initDrag(el, key);
+}
+
+// ── 드래그앤드롭 (PC + 모바일 터치) ──
+let dragSrc = null;
+
+function initDrag(container, key) {
+  const items = container.querySelectorAll('.it[draggable]');
+
+  items.forEach(item => {
+    // PC 드래그
+    item.addEventListener('dragstart', e => {
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      container.querySelectorAll('.it').forEach(i => i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (item !== dragSrc) {
+        container.querySelectorAll('.it').forEach(i => i.classList.remove('drag-over'));
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc && dragSrc !== item) {
+        const srcId = parseInt(dragSrc.dataset.id);
+        const tgtId = parseInt(item.dataset.id);
+        const data = DBS[key].data;
+        const si = data.findIndex(d => d.id === srcId);
+        const ti = data.findIndex(d => d.id === tgtId);
+        if (si !== -1 && ti !== -1) {
+          const [moved] = data.splice(si, 1);
+          data.splice(ti, 0, moved);
+          DBS[key].save();
+          rerender(key);
+        }
+      }
+    });
+
+    // 모바일 터치
+    const handle = item.querySelector('.drag-handle');
+    let touchStartY = 0, touchItem = null;
+
+    handle.addEventListener('touchstart', e => {
+      touchItem = item;
+      touchStartY = e.touches[0].clientY;
+      item.classList.add('dragging');
+    }, { passive: true });
+
+    handle.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const y = e.touches[0].clientY;
+      const els = [...container.querySelectorAll('.it:not(.dragging)')];
+      const target = els.find(el => {
+        const r = el.getBoundingClientRect();
+        return y > r.top && y < r.bottom;
+      });
+      els.forEach(e => e.classList.remove('drag-over'));
+      if (target) target.classList.add('drag-over');
+    }, { passive: false });
+
+    handle.addEventListener('touchend', e => {
+      item.classList.remove('dragging');
+      const els = [...container.querySelectorAll('.it')];
+      const target = els.find(el => el.classList.contains('drag-over'));
+      if (target && target !== item) {
+        const srcId = parseInt(item.dataset.id);
+        const tgtId = parseInt(target.dataset.id);
+        const data = DBS[key].data;
+        const si = data.findIndex(d => d.id === srcId);
+        const ti = data.findIndex(d => d.id === tgtId);
+        if (si !== -1 && ti !== -1) {
+          const [moved] = data.splice(si, 1);
+          data.splice(ti, 0, moved);
+          DBS[key].save();
+          rerender(key);
+        }
+      }
+      container.querySelectorAll('.it').forEach(i => i.classList.remove('drag-over'));
+    });
+  });
 }
 
 // 각 리스트 함수 생성
