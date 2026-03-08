@@ -51,7 +51,7 @@ body {
   box-shadow: 0 3px 12px var(--shadow);
 }
 
-
+.tb-icons { display:flex; gap:4px; }
 .tb-icon {
   width:32px; height:32px; border-radius:50%;
   background:white; border:2px solid var(--pink);
@@ -690,25 +690,6 @@ body.mobile-view .smenu-num { display: none; }
 body.mobile-view .recipe-grid { grid-template-columns: 1fr !important; }
 body.mobile-view .ra-row { flex-direction: column; }
 
-/* ── 통장 필터 탭 ── */
-.exp-bank-tabs {
-  display: flex; flex-wrap: wrap; gap: 5px;
-  margin-bottom: 14px;
-}
-.ebt {
-  padding: 5px 12px; border-radius: 20px;
-  background: white; border: 1.5px solid var(--peach);
-  font-family: 'Jua', sans-serif; font-size: .72rem;
-  color: var(--soft); cursor: pointer;
-  transition: all .15s; white-space: nowrap;
-}
-.ebt:hover { background: var(--peach); color: var(--peach-dark); }
-.ebt.active {
-  background: linear-gradient(135deg, var(--peach-dark), #d06030);
-  color: white; border-color: var(--peach-dark);
-  box-shadow: 0 2px 8px rgba(208,96,48,.25);
-}
-
 /* ── 월별 지출 ── */
 .exp-topbar {
   display: flex; align-items: center; justify-content: space-between;
@@ -788,26 +769,6 @@ body.mobile-view .ra-row { flex-direction: column; }
   border: 1.5px solid white;
 }
 
-.exp-memo-add-btn {
-  background: none; border: 1.5px dashed var(--peach);
-  border-radius: 8px; padding: 2px 8px;
-  font-family: 'Jua', sans-serif; font-size: .68rem;
-  color: var(--soft); cursor: pointer; transition: all .15s;
-}
-.exp-memo-add-btn:hover { background: var(--peach); color: var(--peach-dark); }
-
-.exp-memo-preview {
-  font-size: .68rem; color: var(--rose);
-  max-width: 120px; word-break: break-all;
-  line-height: 1.4; cursor: pointer;
-  animation: memoGlow 2s ease-in-out infinite;
-}
-
-@keyframes memoGlow {
-  0%, 100% { opacity: 1; text-shadow: none; }
-  50% { opacity: .6; text-shadow: 0 0 6px rgba(224,60,110,.7); }
-}
-
 /* 메모 팝업 */
 .exp-memo-overlay {
   display: none; position: fixed;
@@ -832,20 +793,6 @@ body.mobile-view .ra-row { flex-direction: column; }
 
 body.mobile-view .exp-inp-grid { grid-template-columns: 1fr 1fr; }
 body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8px; font-size: .72rem; }
-
-/* ── 투자 테마 ── */
-#menu5 .subpage-icon { background: linear-gradient(135deg,#f0fff4,#b2f0c8) !important; }
-#menu5 .smenu.active { background: linear-gradient(135deg,#f0fff4,#d0f0e0); color: #2a8a4a; border-color: #4ab86a; }
-#menu5 .smenu.active::before { background: #4ab86a; }
-#menu5 .sec { color: #2a8a4a; }
-#menu5 .sec::after { background: linear-gradient(90deg,#4ab86a,transparent); }
-
-/* ── 초딩진우 테마 ── */
-#menu4 .subpage-icon { background: linear-gradient(135deg,#e8f4ff,#b2d8f8) !important; }
-#menu4 .smenu.active { background: linear-gradient(135deg,#e8f4ff,#d0eaff); color: #2a7abf; border-color: #5aaae0; }
-#menu4 .smenu.active::before { background: #5aaae0; }
-#menu4 .sec { color: #2a7abf; }
-#menu4 .sec::after { background: linear-gradient(90deg,#5aaae0,transparent); }
 
 /* ── 레시피 카테고리 탭 ── */
 .recipe-cat-tabs {
@@ -915,14 +862,16 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
 <!-- 상단 탭바 -->
 <div class="topbar">
-
+  <div class="tb-icons">
+    <div class="tb-icon">🏠</div>
+    <div class="tb-icon">🔔</div>
+    <div class="tb-icon" onclick="reloadCurrentPage()" title="현재 페이지 새로고침">🔄</div>
+  </div>
+  <div class="divider"></div>
   <div class="tabs">
-    <div class="tb-icon" onclick="reloadCurrentPage()" title="새로고침">🔄</div>
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
-    <div class="tab" onclick="goTab(this,'menu4')">🎒 초딩진우</div>
-    <div class="tab" onclick="goTab(this,'menu5')">📈 투자</div>
     <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
   </div>
   <div class="divider"></div>
@@ -1157,21 +1106,9 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
             </div>
           </div>
 
-          <!-- 합계 + 통장 필터 -->
+          <!-- 합계 -->
           <div class="exp-topbar">
             <div class="exp-total" id="exp-total">합계: 0원</div>
-          </div>
-          <div class="exp-bank-tabs">
-            <div class="ebt active" onclick="filterExpBank('전체',this)">전체</div>
-            <div class="ebt" onclick="filterExpBank('미래에셋통장',this)">미래에셋</div>
-            <div class="ebt" onclick="filterExpBank('농협301',this)">농협301</div>
-            <div class="ebt" onclick="filterExpBank('농협312',this)">농협312</div>
-            <div class="ebt" onclick="filterExpBank('경기화폐카드',this)">경기화폐</div>
-            <div class="ebt" onclick="filterExpBank('현대카드',this)">현대카드</div>
-            <div class="ebt" onclick="filterExpBank('신한카드',this)">신한카드</div>
-            <div class="ebt" onclick="filterExpBank('롯데카드',this)">롯데카드</div>
-            <div class="ebt" onclick="filterExpBank('삼성카드',this)">삼성카드</div>
-            <div class="ebt" onclick="filterExpBank('기타',this)">기타</div>
           </div>
 
           <!-- 입력 폼 -->
@@ -1180,19 +1117,8 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
             <div class="exp-inp-grid">
               <input id="exp-day"  type="text" class="ra-inp" placeholder="날짜 (예: 1일, 10일)">
               <input id="exp-item" type="text" class="ra-inp" placeholder="항목명">
-              <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)" oninput="formatAmt(this)">
-              <select id="exp-bank" class="ra-inp">
-                <option value="">출금 통장 선택</option>
-                <option value="미래에셋통장">미래에셋통장</option>
-                <option value="농협301">농협301</option>
-                <option value="농협312">농협312</option>
-                <option value="경기화폐카드">경기화폐카드</option>
-                <option value="현대카드">현대카드</option>
-                <option value="신한카드">신한카드</option>
-                <option value="롯데카드">롯데카드</option>
-                <option value="삼성카드">삼성카드</option>
-                <option value="기타">기타</option>
-              </select>
+              <input id="exp-amt"  type="text" class="ra-inp" placeholder="금액 (원)">
+              <input id="exp-bank" type="text" class="ra-inp" placeholder="출금 통장">
               <input id="exp-note" type="text" class="ra-inp" placeholder="계좌/비고" style="grid-column:1/-1">
             </div>
             <div class="ra-btns" style="margin-top:10px">
@@ -1305,189 +1231,6 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
     </div>
   </div>
 
-
-  <div class="page" id="menu4">
-    <div class="sec">🎒 초딩진우</div>
-    <div class="page-with-sidebar">
-      <div class="sidebar">
-        <div class="sidebar-title">MENU</div>
-        <div class="smenu" onclick="switchSub('menu4',1,this)" id="m4-sm-1"><span class="smenu-icon">📚</span>학교 준비물<span class="smenu-num">01</span></div>
-<div class="smenu" onclick="switchSub('menu4',2,this)" id="m4-sm-2"><span class="smenu-icon">📅</span>학교 일정<span class="smenu-num">02</span></div>
-<div class="smenu" onclick="switchSub('menu4',3,this)" id="m4-sm-3"><span class="smenu-icon">🏫</span>숙제/과제<span class="smenu-num">03</span></div>
-<div class="smenu" onclick="switchSub('menu4',4,this)" id="m4-sm-4"><span class="smenu-icon">💊</span>건강/병원<span class="smenu-num">04</span></div>
-<div class="smenu" onclick="switchSub('menu4',5,this)" id="m4-sm-5"><span class="smenu-icon">🥪</span>급식/도시락<span class="smenu-num">05</span></div>
-<div class="smenu" onclick="switchSub('menu4',6,this)" id="m4-sm-6"><span class="smenu-icon">🎨</span>방과후 활동<span class="smenu-num">06</span></div>
-<div class="smenu" onclick="switchSub('menu4',7,this)" id="m4-sm-7"><span class="smenu-icon">👕</span>준비물 챙기기<span class="smenu-num">07</span></div>
-<div class="smenu" onclick="switchSub('menu4',8,this)" id="m4-sm-8"><span class="smenu-icon">💰</span>학원비/용돈<span class="smenu-num">08</span></div>
-<div class="smenu" onclick="switchSub('menu4',9,this)" id="m4-sm-9"><span class="smenu-icon">📞</span>연락망<span class="smenu-num">09</span></div>
-<div class="smenu" onclick="switchSub('menu4',10,this)" id="m4-sm-10"><span class="smenu-icon">🌟</span>칭찬 기록<span class="smenu-num">10</span></div>
-      </div>
-      <div class="sidebar-content">
-        <div class="subpage active" id="menu4-sub-1">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">📚</div>
-      <div><div class="subpage-title">학교 준비물</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학교 준비물 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-2">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">📅</div>
-      <div><div class="subpage-title">학교 일정</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학교 일정 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-3">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">🏫</div>
-      <div><div class="subpage-title">숙제/과제</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 숙제/과제 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-4">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">💊</div>
-      <div><div class="subpage-title">건강/병원</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 건강/병원 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-5">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">🥪</div>
-      <div><div class="subpage-title">급식/도시락</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 급식/도시락 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-6">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">🎨</div>
-      <div><div class="subpage-title">방과후 활동</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 방과후 활동 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-7">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">👕</div>
-      <div><div class="subpage-title">준비물 챙기기</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 준비물 챙기기 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-8">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">💰</div>
-      <div><div class="subpage-title">학원비/용돈</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 학원비/용돈 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-9">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">📞</div>
-      <div><div class="subpage-title">연락망</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 연락망 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu4-sub-10">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0f8ff,#b2d8f8)">🌟</div>
-      <div><div class="subpage-title">칭찬 기록</div><div class="subpage-desc">진우 정보를 여기에 채워요 🎒</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 칭찬 기록 내용을 채워요</span></div>
-  </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="page" id="menu5">
-    <div class="sec">📈 투자</div>
-    <div class="page-with-sidebar">
-      <div class="sidebar">
-        <div class="sidebar-title">MENU</div>
-        <div class="smenu" onclick="switchSub('menu5',1,this)" id="m5-sm-1"><span class="smenu-icon">📊</span>보유 종목<span class="smenu-num">01</span></div>
-<div class="smenu" onclick="switchSub('menu5',2,this)" id="m5-sm-2"><span class="smenu-icon">💰</span>수익 현황<span class="smenu-num">02</span></div>
-<div class="smenu" onclick="switchSub('menu5',3,this)" id="m5-sm-3"><span class="smenu-icon">📋</span>매매 일지<span class="smenu-num">03</span></div>
-<div class="smenu" onclick="switchSub('menu5',4,this)" id="m5-sm-4"><span class="smenu-icon">🔍</span>관심 종목<span class="smenu-num">04</span></div>
-<div class="smenu" onclick="switchSub('menu5',5,this)" id="m5-sm-5"><span class="smenu-icon">📰</span>뉴스/정보<span class="smenu-num">05</span></div>
-<div class="smenu" onclick="switchSub('menu5',6,this)" id="m5-sm-6"><span class="smenu-icon">🎯</span>목표 관리<span class="smenu-num">06</span></div>
-<div class="smenu" onclick="switchSub('menu5',7,this)" id="m5-sm-7"><span class="smenu-icon">💳</span>배당 기록<span class="smenu-num">07</span></div>
-<div class="smenu" onclick="switchSub('menu5',8,this)" id="m5-sm-8"><span class="smenu-icon">📉</span>손실 기록<span class="smenu-num">08</span></div>
-<div class="smenu" onclick="switchSub('menu5',9,this)" id="m5-sm-9"><span class="smenu-icon">🏦</span>계좌 현황<span class="smenu-num">09</span></div>
-<div class="smenu" onclick="switchSub('menu5',10,this)" id="m5-sm-10"><span class="smenu-icon">📌</span>투자 메모<span class="smenu-num">10</span></div>
-      </div>
-      <div class="sidebar-content">
-        <div class="subpage active" id="menu5-sub-1">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📊</div>
-      <div><div class="subpage-title">보유 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 보유 종목 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-2">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💰</div>
-      <div><div class="subpage-title">수익 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 수익 현황 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-3">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📋</div>
-      <div><div class="subpage-title">매매 일지</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 매매 일지 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-4">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🔍</div>
-      <div><div class="subpage-title">관심 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 관심 종목 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-5">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📰</div>
-      <div><div class="subpage-title">뉴스/정보</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 뉴스/정보 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-6">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🎯</div>
-      <div><div class="subpage-title">목표 관리</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 목표 관리 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-7">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💳</div>
-      <div><div class="subpage-title">배당 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 배당 기록 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-8">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📉</div>
-      <div><div class="subpage-title">손실 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 손실 기록 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-9">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🏦</div>
-      <div><div class="subpage-title">계좌 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 계좌 현황 내용을 채워요</span></div>
-  </div>
-<div class="subpage " id="menu5-sub-10">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📌</div>
-      <div><div class="subpage-title">투자 메모</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.78rem">앞으로 여기에 투자 메모 내용을 채워요</span></div>
-  </div>
-      </div>
-    </div>
-  </div>
-
   <div class="page" id="menu3">
     <div class="sec">🍳 요리 레시피</div>
 
@@ -1585,10 +1328,9 @@ function toast(msg) {
 function hk(e, fn) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fn();} }
 function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── Google Sheets 연동 ──
-const GS_URL = 'https://script.google.com/macros/s/AKfycbwH9yyUNa-YsW2m-sbXNBjA8tX3xOc5C28_RAZJHg0KStxJE2byclDdoojK3vdsmSpr/exec';
+// ── Firebase Realtime Database 연동 ──
+const FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
 
-// 로컬캐시 (빠른 UI용) + 구글시트 동기화
 function load(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'[]'); } catch { return []; }
 }
@@ -1596,75 +1338,51 @@ function loadObj(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
 }
 
-// 타임스탬프 저장/불러오기
-function getTS(k)    { return parseInt(localStorage.getItem('ws5_ts_'+k)||'0'); }
-function setTS(k, t) { localStorage.setItem('ws5_ts_'+k, String(t)); }
-
+// Firebase에 PUT 저장 + 로컬캐시
 function stor(k, v) {
-  const ts = Date.now();
-  // 1. 로컬 즉시 저장 + 타임스탬프
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
-  setTS(k, ts);
-  // 2. 구글 시트에 데이터+타임스탬프 함께 저장
-  const payload = JSON.stringify({ key: k, value: JSON.stringify(v), ts: ts });
-  fetch(GS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: payload
-  }).catch(()=>{});
-  // ts도 별도 키로 저장
-  fetch(GS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ key: 'ts_'+k, value: String(ts) })
-  }).catch(()=>{});
+  fetch(FB_URL + '/' + k + '.json', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(v)
+  }).then(r => r.json())
+    .then(() => console.log('✅ 저장:', k))
+    .catch(e => console.log('❌ 저장 실패:', k, e));
 }
 
+// Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
   const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','recipe','exp_fixed'];
   toast('🔄 동기화 중...');
-  let updated = false;
-
-  for (const k of keys) {
-    try {
-      // 서버 타임스탬프 먼저 확인
-      const tsRes = await fetch(GS_URL + '?action=get&key=' + encodeURIComponent('ts_'+k), { cache: 'no-cache' });
-      const tsText = (await tsRes.text()).trim();
-      const remoteTS = parseInt(tsText) || 0;
-      const localTS  = getTS(k);
-
-      // 서버가 더 최신이면 데이터 불러오기
-      if (remoteTS > localTS) {
-        const res  = await fetch(GS_URL + '?action=get&key=' + encodeURIComponent(k), { cache: 'no-cache' });
-        const text = (await res.text()).trim();
-        if (!text || text === 'null') continue;
-        const remote = JSON.parse(text);
-        localStorage.setItem('ws5_'+k, JSON.stringify(remote));
-        setTS(k, remoteTS);
+  try {
+    const res = await fetch(FB_URL + '.json', { cache: 'no-cache' });
+    const all = await res.json();
+    if (!all) { toast('🎀 최신 데이터예요!'); return; }
+    let updated = false;
+    for (const k of keys) {
+      if (all[k] !== undefined && all[k] !== null) {
+        localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
         updated = true;
-        console.log('✅ sync:', k, '서버TS:', remoteTS, '로컬TS:', localTS);
-      } else {
-        console.log('⏭️ skip:', k, '로컬이 최신');
       }
-    } catch(e) { console.log('sync err', k, e); }
-  }
-
-  if (updated) {
-    ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
-    const wd = loadObj('week');
-    WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
-    Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
-    recipeDB.data = load('recipe');
-    ['boss','basic','design'].forEach(renderFlow);
-    renderWeek();
-    Object.keys(renderCfg).forEach(rerender);
-    renderRecipe();
-    renderExp();
-    toast('✅ 동기화 완료!');
-  } else {
-    toast('🎀 최신 데이터예요!');
+    }
+    if (updated) {
+      ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
+      const wd = loadObj('week');
+      WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
+      Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
+      recipeDB.data = load('recipe');
+      ['boss','basic','design'].forEach(renderFlow);
+      renderWeek();
+      Object.keys(renderCfg).forEach(rerender);
+      renderRecipe();
+      renderExp();
+      toast('✅ 동기화 완료!');
+    } else {
+      toast('🎀 최신 데이터예요!');
+    }
+  } catch(e) {
+    console.log('sync err', e);
+    toast('❌ 동기화 실패');
   }
 }
 
@@ -2077,37 +1795,18 @@ Object.keys(renderCfg).forEach(rerender);
 
 renderRecipe();
 
-function formatAmt(el) {
-  const raw = el.value.replace(/[^0-9]/g, '');
-  el.value = raw ? parseInt(raw).toLocaleString() : '';
-}
-
 // ── 월별 지출 ──
 let editingExpId = null;
 let memoTargetId = null;
-let currentBankFilter = '전체';
 
 function loadExp() { return load('exp_fixed'); }
-function saveExp(data) {
-  stor('exp_fixed', data);
-  console.log('💾 exp_fixed 저장:', data.length, '개');
-}
-
-function filterExpBank(bank, el) {
-  currentBankFilter = bank;
-  document.querySelectorAll('.ebt').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderExp();
-}
+function saveExp(data) { stor('exp_fixed', data); }
 
 function renderExp() {
-  let data = loadExp();
-  if (currentBankFilter !== '전체') {
-    data = data.filter(r => (r.bank||'') === currentBankFilter);
-  }
+  const data = loadExp();
   const tbody = document.getElementById('exp-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">${currentBankFilter !== '전체' ? currentBankFilter+' 항목이 없어요' : '지출 항목을 등록해요 💳'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">지출 항목을 등록해요 💳</td></tr>`;
     document.getElementById('exp-total').textContent = '합계: 0원';
     return;
   }
@@ -2124,11 +1823,11 @@ function renderExp() {
       <td class="exp-td-amt">${amtDisp}</td>
       <td>${esc(row.bank||'')}</td>
       <td>${esc(row.note||'')}</td>
-      <td style="text-align:left;min-width:80px">
-        ${hasMemo
-          ? `<div class="exp-memo-preview" onclick="openExpMemo(${row.id})">${esc(row.memo.length>30 ? row.memo.slice(0,30)+'…' : row.memo)}</div>`
-          : `<button class="exp-memo-add-btn" onclick="openExpMemo(${row.id})">+ 메모</button>`
-        }
+      <td style="text-align:center">
+        <button class="exp-memo-btn ${hasMemo?'has-memo':''}" onclick="openExpMemo(${row.id})" title="${hasMemo?'메모 있음 - 클릭해서 보기':'메모 추가'}">
+          ${hasMemo ? '🟠' : '💬'}
+        </button>
+        ${hasMemo ? `<div style="font-size:.65rem;color:var(--rose);margin-top:2px">메모있음</div>` : ''}
       </td>
       <td><div class="exp-td-acts">
         <button onclick="editExpItem(${row.id})">✏️</button>
@@ -2222,8 +1921,6 @@ function saveExpMemo() {
 // ── 사이드 메뉴 초기 활성화 ──
 document.getElementById('m1-sm-1') && document.getElementById('m1-sm-1').classList.add('active');
 document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
-document.getElementById('m4-sm-1') && document.getElementById('m4-sm-1').classList.add('active');
-document.getElementById('m5-sm-1') && document.getElementById('m5-sm-1').classList.add('active');
 renderExp();
 
 // ── 구글 시트 동기화 ──
