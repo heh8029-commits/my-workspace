@@ -3736,6 +3736,21 @@ function updateSalesSummary(year, month) {
   }
 }
 
+function clearSalesRow(year, month, day, tdEl) {
+  const data = loadSales(year, month);
+  const key = `d${day}`;
+  if (!data[key] || Object.values(data[key]).every(v => v === '' || v === 0 || !v)) return;
+  if (!confirm(`${month}/${day} 입력값을 모두 삭제할까요?`)) return;
+  data[key] = {};
+  saveSales(year, month, data);
+  // 해당 행 input 초기화
+  const tr = tdEl.closest('tr');
+  tr.querySelectorAll('input').forEach(inp => { inp.value = ''; inp.dataset.raw = ''; });
+  updateSalesRowTotal(year, month, day, data);
+  updateSalesSummary(year, month);
+  toast(`🗑️ ${month}/${day} 데이터 삭제했어요`);
+}
+
 function renderSalesMonthTabs() {
   const el = document.getElementById('sales-month-tabs');
   if (!el) return;
@@ -3789,7 +3804,7 @@ function renderSalesTable() {
     const total = coupangTotal + parseNum(r.naver);
 
     rows += `<tr style="background:${rowColor}">
-      <td style="padding:6px 10px;text-align:center;color:${textColor};font-weight:600;white-space:nowrap">${month}/${d}</td>
+      <td ondblclick="clearSalesRow(${year},${month},${d},this)" style="padding:6px 10px;text-align:center;color:${textColor};font-weight:600;white-space:nowrap;cursor:pointer;user-select:none" title="두번 클릭하면 이 줄 초기화">${month}/${d}</td>
       <td style="padding:6px 8px;text-align:center;color:${textColor};font-weight:700">${dow}</td>
       <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'gross',r.gross)}</td>
       <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'seller',r.seller)}</td>
