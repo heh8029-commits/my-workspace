@@ -2105,6 +2105,7 @@ function renderList(key, elId, clsName, emptyMsg) {
         <button onclick="this.closest('.it').querySelector('.itxt').contentEditable='true';this.closest('.it').querySelector('.itxt').focus()">✏️</button>
         <button onclick="${key}Del(${item.id})">🗑️</button>
       </div>
+      ${item.createdAt ? `<div class="cat-badge">${formatCreatedAt(item.createdAt)}</div>` : ''}
     </div>`;
   }).join('');
 
