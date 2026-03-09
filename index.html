@@ -1056,9 +1056,9 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="week-row" id="week-row"></div>
     </div>
 
-    <!-- 할일 | 메모 -->
-    <div class="sec">✅ 할일 &nbsp;|&nbsp; 📝 메모</div>
-    <div class="two-col">
+    <!-- 할일 | 주문제작요청 | 메모 -->
+    <div class="sec">✅ 할일 &nbsp;|&nbsp; 📦 주문제작요청 &nbsp;|&nbsp; 📝 메모</div>
+    <div class="three-col">
 
       <!-- 할일 -->
       <div class="card cp">
@@ -1073,6 +1073,25 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
           <span class="urgent-txt">긴급</span>
         </label>
         <div class="ilist" id="todo-list"><div class="empty">할 일을 추가해요 🌸</div></div>
+      </div>
+
+      <!-- 주문제작요청 -->
+      <div class="card" style="border-top:3px solid #b0a0f8">
+        <div style="font-size:.95rem;color:#8060e0;margin-bottom:10px">📦 주문제작요청</div>
+        <div class="order-form">
+          <div class="order-row">
+            <label class="order-label">📅 요청일</label>
+            <input id="order-date" type="date" class="ra-inp" style="flex:1">
+          </div>
+          <div class="order-row">
+            <label class="order-label">📝 메모</label>
+            <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
+          </div>
+          <div style="text-align:right;margin-top:6px">
+            <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
+          </div>
+        </div>
+        <div class="ilist order-list" id="order-list"><div class="empty">주문제작 요청을 등록해요 📦</div></div>
       </div>
 
       <!-- 메모 -->
@@ -1091,25 +1110,6 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
     <div class="sec">⏰ 기본 할일</div>
     <div class="card cm">
       <div class="flow-wrap" id="basic-flow"></div>
-    </div>
-
-    <!-- 주문제작요청 -->
-    <div class="sec">📦 주문제작요청</div>
-    <div class="card" style="border-top:3px solid #b0a0f8">
-      <div class="order-form">
-        <div class="order-row">
-          <label class="order-label">📅 요청일</label>
-          <input id="order-date" type="date" class="ra-inp" style="max-width:160px">
-        </div>
-        <div class="order-row">
-          <label class="order-label">📝 메모</label>
-          <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용을 자세히 적어줘요..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
-        </div>
-        <div style="text-align:right;margin-top:8px">
-          <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 요청 등록</button>
-        </div>
-      </div>
-      <div class="ilist order-list" id="order-list"><div class="empty">주문제작 요청을 등록해요 📦</div></div>
     </div>
 
     <!-- 은희 | 진우엄마 -->
@@ -1749,6 +1749,7 @@ async function syncFromSheet() {
       renderWeek();
       Object.keys(renderCfg).forEach(rerender);
       renderRecipe();
+      renderOrder();
       renderExp();
       toast('✅ 동기화 완료!');
     } else {
