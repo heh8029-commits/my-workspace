@@ -2792,7 +2792,8 @@ function editOrder(id) {
   if (!row) return;
   document.getElementById('order-date').value = row.date || '';
   document.getElementById('order-memo').value = row.memo || '';
-  delOrder(id);
+  saveOrder(loadOrder().filter(r => r.id !== id));
+  renderOrder();
   document.getElementById('order-memo').focus();
   toast('✏️ 수정 모드예요!');
 }
