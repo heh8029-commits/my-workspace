@@ -2963,7 +2963,6 @@ function saveFridgeMemo() {
   closeFridgeMemo();
   toast(fridgeMemoType === 'ingredient' ? '재료 메모 저장됐어요! 🧊' : '반찬 메모 저장됐어요! 🍱');
 }
-renderFridgeMemo();
 
 function linkify(text) {
   const escaped = escHtml(text).replace(/\n/g, '<br>');
@@ -3141,16 +3140,21 @@ let memoTargetId = null;
 let currentBankFilter = '전체';
 
 // ── 초기 렌더 ──
-document.addEventListener('DOMContentLoaded', function() {
-  ['boss','basic','design'].forEach(renderFlow);
-  renderWeek();
-  Object.keys(renderCfg).forEach(rerender);
-  renderOrder();
-  renderRecipe();
-  TAX_KEYS.forEach(renderTaxList);
-  renderTaxMemoList();
-  renderExp();
-});
+(function initRender() {
+  try { ['boss','basic','design'].forEach(renderFlow); } catch(e) {}
+  try { renderWeek(); } catch(e) {}
+  try { Object.keys(renderCfg).forEach(rerender); } catch(e) {}
+  try { renderOrder(); } catch(e) {}
+  try { renderRecipe(); } catch(e) {}
+  try { TAX_KEYS.forEach(renderTaxList); } catch(e) {}
+  try { renderTaxMemoList(); } catch(e) {}
+  try { renderExp(); } catch(e) {}
+  try { renderFridgeMemo(); } catch(e) {}
+  try {
+    const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
+    const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
+  } catch(e) {}
+})();
 
 function loadExp() { return load('exp_fixed'); }
 function saveExp(data) { stor('exp_fixed', data); }
