@@ -550,7 +550,7 @@ body.mobile-view .mobile-subnav.active {
 }
 
 .gnav {
-  width: 148px;
+  width: 160px;
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -611,9 +611,9 @@ body.mobile-view .mobile-subnav.active {
   border-radius: 8px;
   cursor: pointer;
   transition: all .13s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.4;
   font-weight: 500;
 }
 .gnav-sub:hover { background: #fce8f0; color: var(--rose); }
