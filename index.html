@@ -3539,6 +3539,7 @@ function deleteExpMemo() {
 }
 
 
+function initTaxDrag(container, key) {
   let dragSrcEl = null;
   container.querySelectorAll('.it[draggable]').forEach(item => {
     item.addEventListener('dragstart', e => { dragSrcEl = item; item.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
