@@ -1772,6 +1772,7 @@ function saveFlow(type) { stor(type+'_flow', flowData[type]); }
 
 function renderFlow(type) {
   const wrap = document.getElementById(type+'-flow');
+  if (!wrap) return;
   const isMint = type==='basic';
   const isLav  = type==='design';
   const cls    = isMint ? 'mint' : (isLav ? 'lav-flow' : '');
@@ -1828,6 +1829,7 @@ function saveWeek() { stor('week', weekData); }
 
 function renderWeek() {
   const row = document.getElementById('week-row');
+  if (!row) return;
   row.innerHTML = WEEKDAYS.map(day => {
     const isToday = day === TOD;
     const tasks = weekData[day] || [];
@@ -2236,6 +2238,7 @@ function filterRecipe(cat, el) {
 
 function renderRecipe(keyword='') {
   const grid = document.getElementById('recipe-grid');
+  if (!grid) return;
   const kw = keyword.trim().toLowerCase();
 
   let items = recipeDB.data;
@@ -2388,6 +2391,8 @@ function filterExpBank(bank, el) {
 }
 
 function renderExp() {
+  const _tbody = document.getElementById('exp-tbody');
+  if (!_tbody) return;
   let data = loadExp();
   // 날짜 오름차순 정렬 — "10일", "2일", "10" 등 숫자만 추출해서 정수 비교
   data = [...data].sort((a,b) => {
@@ -2399,7 +2404,7 @@ function renderExp() {
     ? data.filter(r => (r.bank||'') === currentBankFilter)
     : data;
 
-  const tbody = document.getElementById('exp-tbody');
+  const tbody = _tbody;
   if (!filtered.length) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">${currentBankFilter !== '전체' ? currentBankFilter+' 항목이 없어요' : '지출 항목을 등록해요 💳'}</td></tr>`;
     document.getElementById('exp-total').textContent = currentBankFilter !== '전체' ? currentBankFilter+' 합계: 0원' : '합계: 0원';
