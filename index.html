@@ -3182,7 +3182,7 @@ function renderTaxMemoList() {
   const data = loadTaxList('tax-memo');
   if (!data.length) { el.innerHTML = '<div class="empty">메모를 추가해요 📝</div>'; return; }
   el.innerHTML = data.map(item => `
-    <div class="it" id="txit_taxmemo_${item.id}" draggable="true" data-id="${item.id}" data-key="tax-memo" style="background:#f0fff8;border:1.5px solid var(--mint);border-radius:11px;overflow:hidden;padding:0">
+    <div id="txit_taxmemo_${item.id}" draggable="true" data-id="${item.id}" data-key="tax-memo" style="background:#f0fff8;border:1.5px solid var(--mint);border-radius:11px;overflow:hidden;margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;padding:10px 12px">
         <div class="drag-handle" title="드래그해서 순서 변경" onclick="event.stopPropagation()">⠿</div>
         <span id="tax-memo-arrow-${item.id}" style="color:var(--mint-dark);font-size:.8rem;flex-shrink:0;cursor:pointer" onclick="toggleTaxMemo(${item.id})">▶</span>
@@ -3193,17 +3193,13 @@ function renderTaxMemoList() {
           onblur="editTaxMemoContent(${item.id},'title',this.textContent);this.contentEditable='false'"
           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
         >${esc(item.title)}</div>
-        <button onclick="event.stopPropagation();delTaxMemoItem(${item.id})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.85rem;padding:2px 4px;border-radius:6px;flex-shrink:0">🗑️</button>
-        <button onclick="event.stopPropagation();editTaxMemoOpen(${item.id})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.85rem;padding:2px 4px;border-radius:6px;flex-shrink:0">✏️</button>
+        <button onclick="event.stopPropagation();editTaxMemoOpen(${item.id})" style="background:none;border:none;cursor:pointer;color:var(--mint-dark);font-size:.85rem;padding:2px 4px;flex-shrink:0" title="편집">✏️</button>
+        <button onclick="event.stopPropagation();delTaxMemoItem(${item.id})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.85rem;padding:2px 4px;flex-shrink:0" title="삭제">🗑️</button>
       </div>
-      <div id="tax-memo-body-${item.id}" style="display:none;border-top:1px dashed var(--mint)">
-        <div style="font-size:.85rem;color:#3a6a4a;line-height:1.7;padding:10px 14px;outline:none;white-space:pre-wrap;word-break:break-all;width:100%;box-sizing:border-box"
-          contenteditable="false"
-          ondblclick="this.contentEditable='true';this.focus()"
-          onblur="editTaxMemoContent(${item.id},'content',this.textContent);this.contentEditable='false'"
-        >${linkify(item.content||'내용 없음')}</div>
-        <div style="text-align:right;padding:0 12px 10px">
-          <span onclick="toggleTaxMemo(${item.id})" style="font-size:.75rem;color:var(--mint-dark);cursor:pointer;padding:2px 10px;border:1px solid var(--mint);border-radius:10px">▲ 닫기</span>
+      <div id="tax-memo-body-${item.id}" style="display:none;border-top:1px dashed var(--mint);padding:10px 14px 12px">
+        <div style="font-size:.85rem;color:#3a6a4a;line-height:1.8;white-space:pre-wrap;word-break:break-all">${linkify(item.content||'내용 없음')}</div>
+        <div style="text-align:right;margin-top:8px">
+          <span onclick="toggleTaxMemo(${item.id})" style="font-size:.75rem;color:var(--mint-dark);cursor:pointer;padding:3px 12px;border:1px solid var(--mint);border-radius:10px">▲ 닫기</span>
         </div>
       </div>
     </div>`).join('');
@@ -3369,21 +3365,7 @@ function editTaxMemoOpen(id) {
 
 
 // ── 초기 렌더 ──
-(function initRender() {
-  try { ['boss','basic','design'].forEach(renderFlow); } catch(e) {}
-  try { renderWeek(); } catch(e) {}
-  try { Object.keys(renderCfg).forEach(rerender); } catch(e) {}
-  try { renderOrder(); } catch(e) {}
-  try { renderRecipe(); } catch(e) {}
-  try { TAX_KEYS.forEach(renderTaxList); } catch(e) {}
-  try { renderTaxMemoList(); } catch(e) {}
-  try { renderExp(); } catch(e) {}
-  try { renderFridgeMemo(); } catch(e) {}
-  try {
-    const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
-    const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
-  } catch(e) {}
-})();
+// initRender는 파일 맨 끝으로 이동
 
 function loadExp() { return load('exp_fixed'); }
 function saveExp(data) { stor('exp_fixed', data); }
@@ -3601,6 +3583,19 @@ document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classLi
 // syncFromSheet();
 
 // ── PWA 서비스워커 등록 ──
+// ── 초기 렌더 (모든 함수 정의 후 실행) ──
+['boss','basic','design'].forEach(renderFlow);
+renderWeek();
+Object.keys(renderCfg).forEach(rerender);
+renderOrder();
+renderRecipe();
+TAX_KEYS.forEach(renderTaxList);
+renderTaxMemoList();
+renderExp();
+renderFridgeMemo();
+(function(){ const sc=load('shortcuts'); if(sc&&sc.length) renderShortcuts(sc); })();
+(function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(() => {
     console.log('✅ SW 등록됨');
