@@ -475,7 +475,7 @@ body.mobile-view .app-icon-img {
 }
 
 /* ── 등록일 뱃지 ── */
-.cat-badge { width:100%; margin-top:0; padding-left:2px; }
+.cat-badge { width:100%; margin-top:0; text-align:right; padding-right:2px; }
 .cat-today {
   font-size: .72rem; font-weight: 800;
   color: var(--rose);
@@ -1219,16 +1219,11 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 할일 -->
       <div class="card cp">
-        <div style="font-size:.95rem;color:var(--rose);margin-bottom:10px;display:flex;align-items:center;gap:6px">✅ 할일 <span id="todo-urgent-badge" style="display:none;font-size:.72rem;font-weight:800;background:linear-gradient(135deg,#ff2255,#ff6600);color:white;border-radius:20px;padding:1px 8px">🚨 긴급있음</span></div>
+        <div style="font-size:.95rem;color:var(--rose);margin-bottom:10px">✅ 할일</div>
         <div class="inp-row">
           <textarea id="todo-inp" rows="2" placeholder="할 일 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTodo()}"></textarea>
           <button class="abtn" onclick="addTodo()">+</button>
         </div>
-        <label class="urgent-label">
-          <input type="checkbox" id="todo-urgent">
-          <span class="urgent-chk-box">🚨</span>
-          <span class="urgent-txt">긴급</span>
-        </label>
         <div class="ilist" id="todo-list"><div class="empty">할 일을 추가해요 🌸</div></div>
       </div>
 
@@ -2077,7 +2072,7 @@ function renderList(key, elId, clsName, emptyMsg) {
     const dateBadge = item.date ? `<span class="ibadge badge-date">📅 ${item.date.slice(5).replace('-','/')}</span>` : '';
     const timeBadge = item.time ? `<span class="ibadge badge-time">⏰ ${item.time}</span>` : '';
     const hideChk = noChk.includes(key);
-    return `<div class="it ${clsName} ${item.done?'done':''} ${item.urgent?'urgent':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}">
+    return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}">
       <div class="drag-handle" title="드래그해서 순서 변경">⠿</div>
       ${hideChk ? '' : `<div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>`}
       ${(()=>{
@@ -2252,20 +2247,14 @@ const renderCfg = {
 function rerender(key) {
   const [elId, cls, msg] = renderCfg[key];
   renderList(key, elId, cls, msg);
-  // 할일 긴급 뱃지 타이틀 업데이트
-  if (key === 'todo') {
-    const badge = document.getElementById('todo-urgent-badge');
-    if (badge) badge.style.display = DBS.todo.data.some(i => i.urgent && !i.done) ? '' : 'none';
-  }
+
 }
 
 // ── 추가 함수 ──
 function addTodo() {
   const v = document.getElementById('todo-inp').value.trim();
   if (!v) return;
-  const urgent = document.getElementById('todo-urgent').checked;
-  DBS.todo.add({ id:Date.now(), text:v, done:false, urgent, createdAt:Date.now() });
-  document.getElementById('todo-urgent').checked = false;
+  DBS.todo.add({ id:Date.now(), text:v, done:false, createdAt:Date.now() });
   document.getElementById('todo-inp').value='';
   rerender('todo'); toast('🎀 저장됐어요!');
 }
