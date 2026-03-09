@@ -1539,7 +1539,60 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff8e0,#ffe880)">💰</div>
         <div><div class="subpage-title">부가세 / 종소세 / 세금관련</div><div class="subpage-desc">세금 관련 자료를 정리해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">세금 신고 일정, 자료 등을 여기에 채워요</span></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:start">
+
+        <!-- 1열: 부가세 -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card cy">
+            <div style="font-size:.95rem;color:#a07800;font-weight:700;margin-bottom:10px">📋 2026년 부가세</div>
+            <div class="inp-row">
+              <textarea rows="2" placeholder="내용 입력..." class="ra-inp" id="tax-2026-vat-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2026-vat')}"></textarea>
+              <button class="abtn ylw-btn" onclick="addTaxItem('tax-2026-vat')">+</button>
+            </div>
+            <div class="ilist" id="tax-2026-vat-list"></div>
+          </div>
+          <div class="card cy">
+            <div style="font-size:.95rem;color:#a07800;font-weight:700;margin-bottom:10px">📋 2025년 부가세</div>
+            <div class="inp-row">
+              <textarea rows="2" placeholder="내용 입력..." class="ra-inp" id="tax-2025-vat-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2025-vat')}"></textarea>
+              <button class="abtn ylw-btn" onclick="addTaxItem('tax-2025-vat')">+</button>
+            </div>
+            <div class="ilist" id="tax-2025-vat-list"></div>
+          </div>
+        </div>
+
+        <!-- 2열: 종소세 -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card" style="border-top:3px solid #b0a0f8">
+            <div style="font-size:.95rem;color:#8060e0;font-weight:700;margin-bottom:10px">📋 2026년 종소세</div>
+            <div class="inp-row">
+              <textarea rows="2" placeholder="내용 입력..." class="ra-inp" style="border-color:#b0a0f8;background:#f8f4ff" id="tax-2026-income-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2026-income')}"></textarea>
+              <button class="abtn lav-btn" onclick="addTaxItem('tax-2026-income')">+</button>
+            </div>
+            <div class="ilist" id="tax-2026-income-list"></div>
+          </div>
+          <div class="card" style="border-top:3px solid #b0a0f8">
+            <div style="font-size:.95rem;color:#8060e0;font-weight:700;margin-bottom:10px">📋 2025년 종소세</div>
+            <div class="inp-row">
+              <textarea rows="2" placeholder="내용 입력..." class="ra-inp" style="border-color:#b0a0f8;background:#f8f4ff" id="tax-2025-income-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2025-income')}"></textarea>
+              <button class="abtn lav-btn" onclick="addTaxItem('tax-2025-income')">+</button>
+            </div>
+            <div class="ilist" id="tax-2025-income-list"></div>
+          </div>
+        </div>
+
+        <!-- 3열: 세금관련 메모 -->
+        <div class="card cm">
+          <div style="font-size:.95rem;color:var(--mint-dark);font-weight:700;margin-bottom:10px">📝 세금관련 메모</div>
+          <div class="inp-row">
+            <textarea rows="2" placeholder="메모 입력..." class="ra-inp" style="border-color:var(--mint);background:#f0fff8" id="tax-memo-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-memo')}"></textarea>
+            <button class="abtn mint-btn" onclick="addTaxItem('tax-memo')">+</button>
+          </div>
+          <div class="ilist" id="tax-memo-list" style="max-height:600px"></div>
+        </div>
+
+      </div>
     </div>
     <div class="subpage" id="menu1-sub-2">
       <div class="subpage-header">
@@ -3259,6 +3312,62 @@ function deleteExpMemo() {
   closeExpMemo(); renderExp();
   toast('🗑️ 메모 삭제됐어요');
 }
+
+// ── 세금 메모 리스트 ──
+const TAX_KEYS = ['tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
+
+function loadTaxList(key) {
+  try { return JSON.parse(localStorage.getItem('ws5_'+key)||'[]'); } catch { return []; }
+}
+function saveTaxList(key, data) { localStorage.setItem('ws5_'+key, JSON.stringify(data)); }
+
+function addTaxItem(key) {
+  const inp = document.getElementById(key+'-inp');
+  const v = inp.value.trim();
+  if (!v) return;
+  const data = loadTaxList(key);
+  data.unshift({ id: Date.now(), text: v, createdAt: Date.now() });
+  saveTaxList(key, data);
+  inp.value = '';
+  renderTaxList(key);
+  toast('🎀 저장됐어요!');
+}
+
+function delTaxItem(key, id) {
+  saveTaxList(key, loadTaxList(key).filter(i => i.id !== id));
+  renderTaxList(key);
+  toast('🗑️ 삭제했어요');
+}
+
+function editTaxItem(key, id, v) {
+  const data = loadTaxList(key);
+  const item = data.find(i => i.id === id);
+  if (item && v.trim()) { item.text = v.trim(); saveTaxList(key, data); }
+}
+
+function renderTaxList(key) {
+  const el = document.getElementById(key+'-list');
+  if (!el) return;
+  const data = loadTaxList(key);
+  if (!data.length) { el.innerHTML = '<div class="empty">내용을 추가해요 🌸</div>'; return; }
+  const clsMap = { 'tax-2026-vat':'ylw-it', 'tax-2025-vat':'ylw-it', 'tax-2026-income':'lav-it', 'tax-2025-income':'lav-it', 'tax-memo':'mint-it' };
+  const cls = clsMap[key] || '';
+  el.innerHTML = data.map(item => `
+    <div class="it ${cls}" id="txit_${key}_${item.id}">
+      <div class="itxt" contenteditable="false"
+        ondblclick="this.contentEditable='true';this.focus()"
+        onblur="editTaxItem('${key}',${item.id},this.textContent);this.contentEditable='false'"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+      >${linkify(item.text)}</div>
+      <div class="iacts">
+        <button onclick="navigator.clipboard.writeText('${item.text.replace(/'/g,"\\'")}').then(()=>toast('📋 복사됐어요!'))">📋</button>
+        <button onclick="delTaxItem('${key}',${item.id})">🗑️</button>
+      </div>
+      ${item.createdAt ? `<div class="cat-badge">${formatCreatedAt(item.createdAt)}</div>` : ''}
+    </div>`).join('');
+}
+
+TAX_KEYS.forEach(renderTaxList);
 
 // ── 사이드 메뉴 초기 활성화 ──
 document.getElementById('m1-sm-1') && document.getElementById('m1-sm-1').classList.add('active');
