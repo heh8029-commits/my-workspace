@@ -1590,10 +1590,10 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
         <div class="card cm">
           <div style="font-size:.95rem;color:var(--mint-dark);font-weight:700;margin-bottom:10px">📝 세금관련 메모</div>
           <div style="display:flex;flex-direction:column;gap:6px">
-            <input type="text" placeholder="제목 입력..." class="ra-inp" id="tax-memo-title-inp">
-            <textarea rows="3" placeholder="내용 입력..." class="ra-inp" id="tax-memo-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxMemoItem()}"></textarea>
-            <div style="text-align:right">
-              <button class="abtn mint-btn" onclick="addTaxMemoItem()">+</button>
+            <input type="text" placeholder="제목 입력..." class="ra-inp" id="tax-memo-title-inp" style="border-color:var(--mint);background:#f0fff8">
+            <div style="display:flex;gap:6px;align-items:flex-start">
+              <textarea rows="3" placeholder="내용 입력..." class="ra-inp" id="tax-memo-inp" style="flex:1;min-width:0;width:0;border-color:var(--mint);background:#f0fff8;resize:vertical" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxMemoItem()}"></textarea>
+              <button class="abtn mint-btn" style="flex-shrink:0;align-self:flex-start" onclick="addTaxMemoItem()">+</button>
             </div>
           </div>
           <div id="tax-memo-list" style="height:700px;max-height:700px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px"></div>
