@@ -2106,7 +2106,12 @@ function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 const FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
 
 function load(k) {
-  try { return JSON.parse(localStorage.getItem('ws5_'+k)||'[]'); } catch { return []; }
+  try {
+    const v = localStorage.getItem('ws5_'+k);
+    if (v === null) return [];
+    const parsed = JSON.parse(v);
+    return parsed;
+  } catch { return []; }
 }
 function loadObj(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
@@ -2126,40 +2131,36 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-    const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
   toast('🔄 동기화 중...');
   try {
-    const res = await fetch(FB_URL + '.json', { cache: 'no-cache' });
+    const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
     const all = await res.json();
     if (!all) { toast('🎀 최신 데이터예요!'); return; }
-    let updated = false;
     for (const k of keys) {
       if (all[k] !== undefined && all[k] !== null) {
         localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
-        updated = true;
       }
     }
-    if (updated) {
-      ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
-      const wd = loadObj('week');
-      WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
-      Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
-      recipeDB.data = load('recipe');
-      ['boss','basic','design'].forEach(renderFlow);
-      renderWeek();
-      Object.keys(renderCfg).forEach(rerender);
-      renderRecipe();
-      renderOrder();
-      renderExp();
-      TAX_KEYS.forEach(renderTaxList);
-      renderTaxMemoList();
-      renderFridgeMemo();
-      const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
-      const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
-      toast('✅ 동기화 완료!');
-    } else {
-      toast('🎀 최신 데이터예요!');
-    }
+    // 메모리 데이터 갱신
+    ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
+    const wd = loadObj('week');
+    WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
+    Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
+    recipeDB.data = load('recipe');
+    // 전체 렌더
+    ['boss','basic','design'].forEach(renderFlow);
+    renderWeek();
+    Object.keys(renderCfg).forEach(rerender);
+    renderRecipe();
+    renderOrder();
+    renderExp();
+    TAX_KEYS.forEach(renderTaxList);
+    renderTaxMemoList();
+    renderFridgeMemo();
+    const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
+    const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
+    toast('✅ 동기화 완료!');
   } catch(e) {
     console.log('sync err', e);
     toast('❌ 동기화 실패');
