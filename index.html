@@ -398,6 +398,18 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   100% { border-color: #ff2255; box-shadow: 0 0 8px 2px rgba(255,34,85,.35); }
 }
 
+/* ── 더보기 ── */
+.itxt-wrap { flex: 1; min-width: 0; }
+.itxt-wrap .itxt { width: 100%; }
+.more-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Jua', sans-serif; font-size: .75rem;
+  color: var(--pink-dark); padding: 2px 0;
+  display: block; margin-top: 2px;
+  transition: color .15s;
+}
+.more-btn:hover { color: var(--rose); }
+
 .drag-handle {
   cursor: grab; color: #ccc; font-size: 1rem;
   padding: 0 4px; user-select: none;
@@ -1861,11 +1873,23 @@ function renderList(key, elId, clsName, emptyMsg) {
     return `<div class="it ${clsName} ${item.done?'done':''} ${item.urgent?'urgent':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}">
       <div class="drag-handle" title="드래그해서 순서 변경">⠿</div>
       ${hideChk ? '' : `<div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>`}
-      <div class="itxt" contenteditable="false"
-        ondblclick="this.contentEditable='true';this.focus()"
-        onblur="${key}Edit(${item.id},this.textContent);this.contentEditable='false'"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
-      >${linkify(item.text)}</div>
+      ${(()=>{
+        const lines = item.text.split('\n');
+        const isLong = lines.length > 8;
+        const shortText = isLong ? lines.slice(0,8).join('\n') : item.text;
+        const uid = key+'_'+item.id;
+        return `<div class="itxt-wrap">
+          <div class="itxt" id="itxt_${uid}" contenteditable="false"
+            ondblclick="this.contentEditable='true';this.focus()"
+            onblur="${key}Edit(${item.id},this.textContent);this.contentEditable='false'"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+            data-full="${encodeURIComponent(item.text)}"
+            data-short="${encodeURIComponent(shortText)}"
+            data-expanded="false"
+          >${isLong ? linkify(shortText) : linkify(item.text)}</div>
+          ${isLong ? `<button class="more-btn" onclick="toggleMore('${uid}')">▼ 더보기</button>` : ''}
+        </div>`;
+      })()}
       ${item.urgent ? '<span class="urgent-badge">🚨 긴급</span>' : ''}
       ${dateBadge}${timeBadge}
       <div class="iacts">
@@ -1878,6 +1902,24 @@ function renderList(key, elId, clsName, emptyMsg) {
 
   // 드래그앤드롭 이벤트
   initDrag(el, key);
+}
+
+
+// ── 더보기/접기 ──
+function toggleMore(uid) {
+  const el = document.getElementById('itxt_' + uid);
+  const btn = el.nextElementSibling;
+  if (!el || !btn) return;
+  const expanded = el.dataset.expanded === 'true';
+  if (expanded) {
+    el.innerHTML = linkify(decodeURIComponent(el.dataset.short));
+    el.dataset.expanded = 'false';
+    btn.textContent = '▼ 더보기';
+  } else {
+    el.innerHTML = linkify(decodeURIComponent(el.dataset.full));
+    el.dataset.expanded = 'true';
+    btn.textContent = '▲ 접기';
+  }
 }
 
 // ── 드래그앤드롭 (PC + 모바일 터치) ──
