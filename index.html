@@ -3591,8 +3591,7 @@ document.getElementById('m4-sm-1') && document.getElementById('m4-sm-1').classLi
 document.getElementById('m5-sm-1') && document.getElementById('m5-sm-1').classList.add('active');
 document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
 
-// ── Firebase 동기화 (최초 1회) ── 주석처리: 자동sync 끔 (수동으로만)
-// syncFromSheet();
+// ── Firebase 동기화 (🔄 버튼으로 수동) ──
 
 // ── PWA 서비스워커 등록 ──
 // ── 초기 렌더 (모든 함수 정의 후 실행) ──
@@ -3607,6 +3606,9 @@ renderExp();
 renderFridgeMemo();
 (function(){ const sc=load('shortcuts'); if(sc&&sc.length) renderShortcuts(sc); })();
 (function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
+
+// 페이지 로드 시 Firebase 자동 동기화
+syncFromSheet();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(() => {
