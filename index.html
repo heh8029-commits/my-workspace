@@ -1999,9 +1999,9 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 </div><!-- app-wrapper -->
 
 <!-- 이미지 모달 -->
-<div id="img-modal-overlay" onclick="closeImgModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
+<div id="img-modal-overlay" onclick="closeImgModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;display:none">
   <img id="img-modal-img" src="" style="max-width:92vw;max-height:90vh;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.5);object-fit:contain">
-  <button onclick="closeImgModal()" style="position:absolute;top:18px;right:22px;background:rgba(255,255,255,.2);border:none;color:white;font-size:1.6rem;border-radius:50%;width:40px;height:40px;cursor:pointer;line-height:1">✕</button>
+  <button onclick="event.stopPropagation();closeImgModal()" style="position:absolute;top:18px;right:22px;background:rgba(255,255,255,.2);border:none;color:white;font-size:1.6rem;border-radius:50%;width:40px;height:40px;cursor:pointer;line-height:1">✕</button>
 </div>
 
 <script>
@@ -2958,11 +2958,13 @@ function linkify(text) {
 }
 
 function openImgModal(src) {
-  document.getElementById('img-modal-overlay').classList.add('show');
-  document.getElementById('img-modal-img').src = src;
+  const overlay = document.getElementById('img-modal-overlay');
+  const img = document.getElementById('img-modal-img');
+  img.src = src;
+  overlay.style.display = 'flex';
 }
 function closeImgModal() {
-  document.getElementById('img-modal-overlay').classList.remove('show');
+  document.getElementById('img-modal-overlay').style.display = 'none';
   document.getElementById('img-modal-img').src = '';
 }
 function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
