@@ -510,14 +510,11 @@ body.mobile-view .gnav { display: none !important; }
 /* ── 모바일 서브메뉴 바 ── */
 .mobile-subnav {
   display: none;
-  overflow-x: auto;
-  white-space: nowrap;
+  flex-wrap: wrap;
   background: white;
   border-bottom: 2px solid var(--pink-mid);
   padding: 8px 12px;
   gap: 6px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
 }
 .mobile-subnav::-webkit-scrollbar { display: none; }
 body.mobile-view .mobile-subnav.active {
@@ -535,7 +532,6 @@ body.mobile-view .mobile-subnav.active {
   font-size: .8rem;
   color: #555;
   cursor: pointer;
-  white-space: nowrap;
   flex-shrink: 0;
   transition: all .15s;
   font-weight: 500;
