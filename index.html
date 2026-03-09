@@ -1615,15 +1615,18 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 테이블 -->
       <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #e8f8ee">
-        <table id="sales-table" style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:600px">
+        <table id="sales-table" style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:800px">
           <thead>
             <tr style="background:linear-gradient(135deg,#e8f8ee,#d0f4e0);color:#2a7a4a">
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">날짜</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">요일</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">쿠팡매출</th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡<br><span style="font-size:.72rem;font-weight:600;color:#3dbb8f">그로스</span></th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡<br><span style="font-size:.72rem;font-weight:600;color:#3dbb8f">판매자배송</span></th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡매출<br><span style="font-size:.72rem;font-weight:500;color:#888">합계</span></th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">쿠팡광고비</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">네이버매출</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">네이버광고비</th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">검색광고</th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">AI광고</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총매출</th>
             </tr>
           </thead>
@@ -3640,11 +3643,94 @@ function getDaysInMonth(year, month) {
   return new Date(year, month, 0).getDate();
 }
 
+// 숫자 → 콤마 표시, 콤마 → 숫자
+function fmtNum(v) { return v ? Number(v).toLocaleString() : ''; }
+function parseNum(s) { return Number(String(s).replace(/,/g, '')) || 0; }
+
+// 포커스 시 숫자만, 블러 시 콤마 포맷
+function salesInpFocus(el) {
+  const raw = el.dataset.raw || '';
+  el.value = raw;
+  el.style.borderColor = '#3dbb8f';
+  el.style.background = '#f0fff8';
+}
+function salesInpBlur(el, year, month, day, field) {
+  const raw = String(el.value).replace(/,/g, '');
+  const num = raw === '' ? '' : Number(raw);
+  el.dataset.raw = raw;
+  el.value = raw === '' ? '' : Number(raw).toLocaleString();
+  el.style.borderColor = '#d0f0e0';
+  el.style.background = 'transparent';
+  // 저장
+  const data = loadSales(year, month);
+  const key = `d${day}`;
+  if (!data[key]) data[key] = {};
+  data[key][field] = num;
+  saveSales(year, month, data);
+  // 해당 행 총매출 + 요약만 갱신
+  updateSalesRowTotal(year, month, day, data);
+  updateSalesSummary(year, month);
+}
+
+function updateSalesRowTotal(year, month, day, data) {
+  const r = (data || loadSales(year, month))[`d${day}`] || {};
+  const coupangTotal = parseNum(r.gross) + parseNum(r.seller);
+  const total = coupangTotal + parseNum(r.naver);
+  const cCell = document.getElementById(`sales-ctotal-${day}`);
+  const tCell = document.getElementById(`sales-total-${day}`);
+  if (cCell) cCell.textContent = coupangTotal > 0 ? coupangTotal.toLocaleString() : '-';
+  if (tCell) tCell.textContent = total > 0 ? total.toLocaleString() : '-';
+}
+
+function updateSalesSummary(year, month) {
+  const data = loadSales(year, month);
+  const days = getDaysInMonth(year, month);
+  let tg=0, ts=0, tca=0, tn=0, tns=0, tna=0;
+  for (let d=1; d<=days; d++) {
+    const r = data[`d${d}`] || {};
+    tg  += parseNum(r.gross);
+    ts  += parseNum(r.seller);
+    tca += parseNum(r.coupangAd);
+    tn  += parseNum(r.naver);
+    tns += parseNum(r.naverSearch);
+    tna += parseNum(r.naverAi);
+  }
+  const tc = tg + ts;
+  const summary = document.getElementById('sales-summary');
+  if (!summary) return;
+  const cards = [
+    { label:'쿠팡 그로스',     val: tg,    color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 판매자배송', val: ts,    color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 총매출',     val: tc,    color:'#2a9a6a', bg:'#e8fff4' },
+    { label:'쿠팡 광고비',     val: tca,   color:'#e03c6e', bg:'#fff0f5' },
+    { label:'네이버 총매출',   val: tn,    color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'검색광고',        val: tns,   color:'#e8648a', bg:'#fff0f5' },
+    { label:'AI광고',          val: tna,   color:'#e8648a', bg:'#fff0f5' },
+    { label:'전체 총매출',     val: tc+tn, color:'#8b60d0', bg:'#f8f4ff' },
+  ];
+  summary.style.gridTemplateColumns = 'repeat(4,1fr)';
+  summary.innerHTML = cards.map(c => `
+    <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:12px;padding:12px 14px">
+      <div style="font-size:.75rem;color:#888;margin-bottom:4px">${c.label}</div>
+      <div style="font-size:1rem;font-weight:800;color:${c.color}">${c.val.toLocaleString()}원</div>
+    </div>`).join('');
+  // 합계행 갱신
+  const sr = document.getElementById('sales-sum-row');
+  if (sr) {
+    sr.cells[2].textContent = tg.toLocaleString();
+    sr.cells[3].textContent = ts.toLocaleString();
+    sr.cells[4].textContent = tc.toLocaleString();
+    sr.cells[5].textContent = tca.toLocaleString();
+    sr.cells[6].textContent = tn.toLocaleString();
+    sr.cells[7].textContent = tns.toLocaleString();
+    sr.cells[8].textContent = tna.toLocaleString();
+    sr.cells[9].textContent = (tc+tn).toLocaleString();
+  }
+}
+
 function renderSalesMonthTabs() {
   const el = document.getElementById('sales-month-tabs');
   if (!el) return;
-  const now = new Date();
-  // 현재 연도 기준 3월부터 다음해 2월까지
   el.innerHTML = SALES_MONTHS.map((m, i) => {
     const mn = SALES_MONTH_NUMS[i];
     const yr = mn >= 3 ? 2026 : 2027;
@@ -3662,7 +3748,6 @@ function switchSalesMonth(year, month) {
 
 function renderSalesTable() {
   const tbody = document.getElementById('sales-tbody');
-  const summary = document.getElementById('sales-summary');
   if (!tbody) return;
 
   const year = salesCurrentYear;
@@ -3670,7 +3755,18 @@ function renderSalesTable() {
   const days = getDaysInMonth(year, month);
   const data = loadSales(year, month);
 
-  let totalCoupang = 0, totalCoupangAd = 0, totalNaver = 0, totalNaverAd = 0;
+  const INP_STYLE = `border:1px solid #d0f0e0;border-radius:7px;padding:5px 6px;font-size:.8rem;text-align:right;background:transparent;outline:none;color:#2a7a4a;width:88px;font-family:inherit`;
+
+  const mkInp = (year, month, d, field, val) => {
+    const fmt = val ? Number(val).toLocaleString() : '';
+    return `<input type="text" inputmode="numeric"
+      data-raw="${val||''}"
+      value="${fmt}"
+      style="${INP_STYLE}"
+      onfocus="salesInpFocus(this)"
+      onblur="salesInpBlur(this,${year},${month},${d},'${field}')"
+      onkeydown="if(event.key==='Enter')this.blur()">`;
+  };
 
   let rows = '';
   for (let d = 1; d <= days; d++) {
@@ -3680,71 +3776,39 @@ function renderSalesTable() {
     const isSat = date.getDay() === 6;
     const rowColor = isSun ? '#fff5f5' : isSat ? '#f5f0ff' : (d % 2 === 0 ? '#f8fffe' : '#fff');
     const textColor = isSun ? '#e03c6e' : isSat ? '#8060d0' : '#333';
-    const key = `d${d}`;
-    const row = data[key] || {};
-
-    const cv = Number(row.coupang || 0);
-    const ca = Number(row.coupangAd || 0);
-    const nv = Number(row.naver || 0);
-    const na = Number(row.naverAd || 0);
-    const total = cv + nv;
-    totalCoupang += cv; totalCoupangAd += ca;
-    totalNaver += nv; totalNaverAd += na;
-
-    const inp = (field, val) => `<input type="number" min="0" placeholder="-"
-      value="${val||''}"
-      onchange="updateSalesCell(${year},${month},${d},'${field}',this.value)"
-      style="width:90px;border:1px solid #d0f0e0;border-radius:7px;padding:5px 6px;font-size:.8rem;text-align:right;background:transparent;outline:none;color:#2a7a4a"
-      onfocus="this.style.borderColor='#3dbb8f';this.style.background='#f0fff8'"
-      onblur="this.style.borderColor='#d0f0e0';this.style.background='transparent'">`;
+    const r = data[`d${d}`] || {};
+    const coupangTotal = parseNum(r.gross) + parseNum(r.seller);
+    const total = coupangTotal + parseNum(r.naver);
 
     rows += `<tr style="background:${rowColor}">
       <td style="padding:6px 10px;text-align:center;color:${textColor};font-weight:600;white-space:nowrap">${month}/${d}</td>
-      <td style="padding:6px 10px;text-align:center;color:${textColor};font-weight:600">${dow}</td>
-      <td style="padding:4px 6px;text-align:center">${inp('coupang', row.coupang)}</td>
-      <td style="padding:4px 6px;text-align:center">${inp('coupangAd', row.coupangAd)}</td>
-      <td style="padding:4px 6px;text-align:center">${inp('naver', row.naver)}</td>
-      <td style="padding:4px 6px;text-align:center">${inp('naverAd', row.naverAd)}</td>
-      <td style="padding:6px 10px;text-align:right;font-weight:700;color:#2a7a4a;white-space:nowrap">${total > 0 ? total.toLocaleString() : '-'}</td>
+      <td style="padding:6px 8px;text-align:center;color:${textColor};font-weight:700">${dow}</td>
+      <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'gross',r.gross)}</td>
+      <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'seller',r.seller)}</td>
+      <td id="sales-ctotal-${d}" style="padding:6px 8px;text-align:right;font-weight:700;color:#2a9a6a;white-space:nowrap;background:#f0fff8">${coupangTotal > 0 ? coupangTotal.toLocaleString() : '-'}</td>
+      <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'coupangAd',r.coupangAd)}</td>
+      <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naver',r.naver)}</td>
+      <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naverSearch',r.naverSearch)}</td>
+      <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naverAi',r.naverAi)}</td>
+      <td id="sales-total-${d}" style="padding:6px 10px;text-align:right;font-weight:800;color:#8b60d0;white-space:nowrap">${total > 0 ? total.toLocaleString() : '-'}</td>
     </tr>`;
   }
 
   // 합계 행
-  rows += `<tr style="background:linear-gradient(135deg,#e0f8ee,#d0f4e0);font-weight:800">
+  rows += `<tr id="sales-sum-row" style="background:linear-gradient(135deg,#e0f8ee,#d0f4e0);font-weight:800">
     <td colspan="2" style="padding:10px;text-align:center;color:#2a7a4a">합계</td>
-    <td style="padding:10px;text-align:right;color:#2a7a4a">${totalCoupang.toLocaleString()}</td>
-    <td style="padding:10px;text-align:right;color:#e03c6e">${totalCoupangAd.toLocaleString()}</td>
-    <td style="padding:10px;text-align:right;color:#2a7a4a">${totalNaver.toLocaleString()}</td>
-    <td style="padding:10px;text-align:right;color:#e03c6e">${totalNaverAd.toLocaleString()}</td>
-    <td style="padding:10px;text-align:right;color:#2a7a4a">${(totalCoupang+totalNaver).toLocaleString()}</td>
+    <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
+    <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
+    <td style="padding:10px;text-align:right;color:#2a9a6a">-</td>
+    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
+    <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
+    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
+    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
+    <td style="padding:10px;text-align:right;color:#8b60d0">-</td>
   </tr>`;
 
   tbody.innerHTML = rows;
-
-  // 요약 카드
-  if (summary) {
-    const cards = [
-      { label:'쿠팡 총매출', val: totalCoupang, color:'#3dbb8f', bg:'#f0fff8' },
-      { label:'쿠팡 광고비', val: totalCoupangAd, color:'#e03c6e', bg:'#fff0f5' },
-      { label:'네이버 총매출', val: totalNaver, color:'#3dbb8f', bg:'#f0fff8' },
-      { label:'네이버 광고비', val: totalNaverAd, color:'#e03c6e', bg:'#fff0f5' },
-    ];
-    summary.innerHTML = cards.map(c => `
-      <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:12px;padding:12px 14px">
-        <div style="font-size:.75rem;color:#888;margin-bottom:4px">${c.label}</div>
-        <div style="font-size:1.05rem;font-weight:800;color:${c.color}">${c.val.toLocaleString()}원</div>
-      </div>`).join('');
-  }
-}
-
-function updateSalesCell(year, month, day, field, value) {
-  const data = loadSales(year, month);
-  const key = `d${day}`;
-  if (!data[key]) data[key] = {};
-  data[key][field] = value === '' ? '' : Number(value);
-  saveSales(year, month, data);
-  // 합계만 업데이트
-  renderSalesTable();
+  updateSalesSummary(year, month);
 }
 
 function renderSales() {
