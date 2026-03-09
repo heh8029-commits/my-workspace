@@ -2126,7 +2126,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed'];
+    const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json', { cache: 'no-cache' });
@@ -2151,6 +2151,9 @@ async function syncFromSheet() {
       renderRecipe();
       renderOrder();
       renderExp();
+      TAX_KEYS.forEach(renderTaxList);
+      renderTaxMemoList();
+      renderFridgeMemo();
       const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
       const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
       toast('✅ 동기화 완료!');
@@ -3283,7 +3286,14 @@ const TAX_KEYS = ['tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-inco
 function loadTaxList(key) {
   try { return JSON.parse(localStorage.getItem('ws5_'+key)||'[]'); } catch { return []; }
 }
-function saveTaxList(key, data) { localStorage.setItem('ws5_'+key, JSON.stringify(data)); }
+function saveTaxList(key, data) {
+  localStorage.setItem('ws5_'+key, JSON.stringify(data));
+  fetch(FB_URL + '/' + key + '.json', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).catch(e => console.log('❌ tax 저장 실패:', key, e));
+}
 
 function addTaxItem(key) {
   const inp = document.getElementById(key+'-inp');
