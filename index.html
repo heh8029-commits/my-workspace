@@ -472,6 +472,27 @@ body.mobile-view .app-icon-img {
   word-break: keep-all;
 }
 
+/* ── 등록일 뱃지 ── */
+.cat-badge { margin-top: 3px; padding-left: 2px; }
+.cat-today {
+  font-size: .72rem; font-weight: 800;
+  color: var(--rose);
+  background: linear-gradient(135deg,#ffe0ec,#ffc0d4);
+  border-radius: 20px; padding: 1px 8px;
+  animation: todayPulse 2s ease-in-out infinite;
+}
+@keyframes todayPulse {
+  0%,100% { opacity:1; } 50% { opacity:.6; }
+}
+.cat-yesterday {
+  font-size: .72rem; font-weight: 700; color: #e8a000;
+  background: #fff8e0; border-radius: 20px; padding: 1px 8px;
+}
+.cat-old {
+  font-size: .70rem; color: #aaa;
+  background: #f5f5f5; border-radius: 20px; padding: 1px 7px;
+}
+
 .drag-handle {
   cursor: grab; color: #ccc; font-size: 1rem;
   padding: 0 4px; user-select: none;
@@ -2056,6 +2077,24 @@ function toggleMore(uid) {
   }
 }
 
+
+// ── 등록일 표시 ──
+function formatCreatedAt(ts) {
+  if (!ts) return '';
+  const now = new Date();
+  const d = new Date(ts);
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tDay  = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff  = Math.round((nowDay - tDay) / 86400000);
+  const week  = ['일','월','화','수','목','금','토'];
+  if (diff === 0) return '<span class="cat-today">오늘</span>';
+  if (diff === 1) return '<span class="cat-yesterday">어제</span>';
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const wd = week[d.getDay()];
+  return `<span class="cat-old">${mm}.${dd}(${wd})</span>`;
+}
+
 // ── 드래그앤드롭 (PC + 모바일 터치) ──
 let dragSrc = null;
 
@@ -2167,7 +2206,7 @@ function addTodo() {
   const v = document.getElementById('todo-inp').value.trim();
   if (!v) return;
   const urgent = document.getElementById('todo-urgent').checked;
-  DBS.todo.add({ id:Date.now(), text:v, done:false, urgent });
+  DBS.todo.add({ id:Date.now(), text:v, done:false, urgent, createdAt:Date.now() });
   document.getElementById('todo-urgent').checked = false;
   document.getElementById('todo-inp').value='';
   rerender('todo'); toast('🎀 저장됐어요!');
@@ -2176,7 +2215,7 @@ function addTodo() {
 function addApp() {
   const v = document.getElementById('app-inp').value.trim();
   if (!v) return;
-  DBS['app'].add({ id:Date.now(), text:v, done:false });
+  DBS['app'].add({ id:Date.now(), text:v, done:false, createdAt:Date.now() });
   document.getElementById('app-inp').value='';
   rerender('app');
   toast('💡 메모됐어요!');
@@ -2185,7 +2224,7 @@ function addApp() {
 function addSched() {
   const v = document.getElementById('sched-inp').value.trim();
   if (!v) return;
-  DBS.sched.add({ id:Date.now(), text:v, done:false,
+  DBS.sched.add({ id:Date.now(), text:v, done:false, createdAt:Date.now(),
     date: document.getElementById('sched-date').value||'',
     time: '' });
   document.getElementById('sched-inp').value='';
@@ -2195,7 +2234,7 @@ function addSched() {
 function addMemo() {
   const v = document.getElementById('memo-inp').value.trim();
   if (!v) return;
-  DBS.memo.add({ id:Date.now(), text:v, done:false });
+  DBS.memo.add({ id:Date.now(), text:v, done:false, createdAt:Date.now() });
   document.getElementById('memo-inp').value='';
   rerender('memo'); toast('🎀 저장됐어요!');
 }
@@ -2390,7 +2429,7 @@ function editOrder(id) {
 function addEun() {
   const v = document.getElementById('eun-inp').value.trim();
   if (!v) return;
-  DBS.eun.add({ id:Date.now(), text:v, done:false });
+  DBS.eun.add({ id:Date.now(), text:v, done:false, createdAt:Date.now() });
   document.getElementById('eun-inp').value='';
   rerender('eun'); toast('🎀 저장됐어요!');
 }
@@ -2398,7 +2437,7 @@ function addEun() {
 function addJin() {
   const v = document.getElementById('jin-inp').value.trim();
   if (!v) return;
-  DBS.jin.add({ id:Date.now(), text:v, done:false });
+  DBS.jin.add({ id:Date.now(), text:v, done:false, createdAt:Date.now() });
   document.getElementById('jin-inp').value='';
   rerender('jin'); toast('🎀 저장됐어요!');
 }
