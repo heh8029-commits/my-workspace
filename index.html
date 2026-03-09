@@ -100,6 +100,8 @@ body {
 /* ── 모바일 뷰 ── */
 body.mobile-view .main { padding: 14px 5% 60px; }
 body.mobile-view .three-col { grid-template-columns: 1fr; gap: 12px; }
+body.mobile-view .three-col > .card { height: auto !important; max-height: none !important; }
+body.mobile-view .three-col > .card .ilist { max-height: 300px !important; }
 body.mobile-view .two-col   { grid-template-columns: 1fr; gap: 12px; }
 body.mobile-view .week-row  { grid-template-columns: repeat(3,1fr); gap: 8px; }
 
@@ -109,7 +111,7 @@ body.mobile-view .tab    { padding: 5px 11px; font-size: .72rem; }
 body.mobile-view .divider { display: none; }
 body.mobile-view .tb-icons { display: none; }
 
-body.mobile-view .flow-wrap { gap: 0; }
+body.mobile-view .flow-wrap { gap: 0; row-gap: 6px; }
 body.mobile-view .flow-item { padding: 6px 10px; font-size: .76rem; }
 body.mobile-view .flow-arrow { font-size: .9rem; }
 
@@ -1550,7 +1552,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <textarea rows="2" placeholder="내용 입력..." class="ra-inp" id="tax-2026-vat-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2026-vat')}"></textarea>
               <button class="abtn ylw-btn" onclick="addTaxItem('tax-2026-vat')">+</button>
             </div>
-            <div class="ilist" id="tax-2026-vat-list"></div>
+            <div class="ilist" id="tax-2026-vat-list" style="max-height:300px"></div>
           </div>
           <div class="card cy">
             <div style="font-size:.95rem;color:#a07800;font-weight:700;margin-bottom:10px">📋 2025년 부가세</div>
@@ -1558,7 +1560,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <textarea rows="2" placeholder="내용 입력..." class="ra-inp" id="tax-2025-vat-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2025-vat')}"></textarea>
               <button class="abtn ylw-btn" onclick="addTaxItem('tax-2025-vat')">+</button>
             </div>
-            <div class="ilist" id="tax-2025-vat-list"></div>
+            <div class="ilist" id="tax-2025-vat-list" style="max-height:300px"></div>
           </div>
         </div>
 
@@ -1570,7 +1572,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <textarea rows="2" placeholder="내용 입력..." class="ra-inp" style="border-color:#b0a0f8;background:#f8f4ff" id="tax-2026-income-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2026-income')}"></textarea>
               <button class="abtn lav-btn" onclick="addTaxItem('tax-2026-income')">+</button>
             </div>
-            <div class="ilist" id="tax-2026-income-list"></div>
+            <div class="ilist" id="tax-2026-income-list" style="max-height:300px"></div>
           </div>
           <div class="card" style="border-top:3px solid #b0a0f8">
             <div style="font-size:.95rem;color:#8060e0;font-weight:700;margin-bottom:10px">📋 2025년 종소세</div>
@@ -1578,7 +1580,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <textarea rows="2" placeholder="내용 입력..." class="ra-inp" style="border-color:#b0a0f8;background:#f8f4ff" id="tax-2025-income-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-2025-income')}"></textarea>
               <button class="abtn lav-btn" onclick="addTaxItem('tax-2025-income')">+</button>
             </div>
-            <div class="ilist" id="tax-2025-income-list"></div>
+            <div class="ilist" id="tax-2025-income-list" style="max-height:300px"></div>
           </div>
         </div>
 
@@ -3136,11 +3138,15 @@ let memoTargetId = null;
 let currentBankFilter = '전체';
 
 // ── 초기 렌더 ──
-['boss','basic','design'].forEach(renderFlow);
-renderWeek();
-Object.keys(renderCfg).forEach(rerender);
-renderOrder();
-renderRecipe();
+document.addEventListener('DOMContentLoaded', function() {
+  ['boss','basic','design'].forEach(renderFlow);
+  renderWeek();
+  Object.keys(renderCfg).forEach(rerender);
+  renderOrder();
+  renderRecipe();
+  TAX_KEYS.forEach(renderTaxList);
+  renderExp();
+});
 
 function loadExp() { return load('exp_fixed'); }
 function saveExp(data) { stor('exp_fixed', data); }
@@ -3367,14 +3373,12 @@ function renderTaxList(key) {
     </div>`).join('');
 }
 
-TAX_KEYS.forEach(renderTaxList);
 
 // ── 사이드 메뉴 초기 활성화 ──
 document.getElementById('m1-sm-1') && document.getElementById('m1-sm-1').classList.add('active');
 document.getElementById('m4-sm-1') && document.getElementById('m4-sm-1').classList.add('active');
 document.getElementById('m5-sm-1') && document.getElementById('m5-sm-1').classList.add('active');
 document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
-renderExp();
 
 // ── Firebase 동기화 (최초 1회) ── 주석처리: 자동sync 끔 (수동으로만)
 // syncFromSheet();
