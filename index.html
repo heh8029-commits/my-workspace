@@ -410,6 +410,32 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 }
 .more-btn:hover { color: var(--rose); }
 
+/* ── 주문제작요청 ── */
+.order-form { margin-bottom: 14px; }
+.order-row {
+  display: flex; align-items: flex-start;
+  gap: 10px; margin-bottom: 10px;
+}
+.order-label {
+  font-size: .82rem; color: #8060e0; font-weight: 700;
+  white-space: nowrap; padding-top: 8px; min-width: 52px;
+}
+.order-item {
+  background: #f5f0ff; border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 8px;
+  border-left: 4px solid #b0a0f8;
+}
+.order-item-date {
+  font-size: .75rem; color: #8060e0; font-weight: 700;
+  margin-bottom: 4px;
+}
+.order-item-memo {
+  font-size: .82rem; color: #444; white-space: pre-wrap; word-break: break-all;
+}
+.order-item-acts {
+  display: flex; gap: 6px; margin-top: 6px; justify-content: flex-end;
+}
+
 .drag-handle {
   cursor: grab; color: #ccc; font-size: 1rem;
   padding: 0 4px; user-select: none;
@@ -1030,9 +1056,9 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="week-row" id="week-row"></div>
     </div>
 
-    <!-- 할일 | 일정 | 메모 -->
-    <div class="sec">✅ 할일 &nbsp;|&nbsp; 🗓️ 일정 &nbsp;|&nbsp; 📝 메모</div>
-    <div class="three-col">
+    <!-- 할일 | 메모 -->
+    <div class="sec">✅ 할일 &nbsp;|&nbsp; 📝 메모</div>
+    <div class="two-col">
 
       <!-- 할일 -->
       <div class="card cp">
@@ -1047,19 +1073,6 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
           <span class="urgent-txt">긴급</span>
         </label>
         <div class="ilist" id="todo-list"><div class="empty">할 일을 추가해요 🌸</div></div>
-      </div>
-
-      <!-- 일정 -->
-      <div class="card cm">
-        <div style="font-size:.95rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
-        <div class="inp-row">
-          <input id="sched-date" type="date" style="max-width:138px">
-        </div>
-        <div class="inp-row">
-          <textarea id="sched-inp" rows="2" placeholder="일정 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addSched()}"></textarea>
-          <button class="abtn mint-btn" onclick="addSched()">+</button>
-        </div>
-        <div class="ilist" id="sched-list"><div class="empty">일정을 추가해요 🗓️</div></div>
       </div>
 
       <!-- 메모 -->
@@ -1078,6 +1091,25 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
     <div class="sec">⏰ 기본 할일</div>
     <div class="card cm">
       <div class="flow-wrap" id="basic-flow"></div>
+    </div>
+
+    <!-- 주문제작요청 -->
+    <div class="sec">📦 주문제작요청</div>
+    <div class="card" style="border-top:3px solid #b0a0f8">
+      <div class="order-form">
+        <div class="order-row">
+          <label class="order-label">📅 요청일</label>
+          <input id="order-date" type="date" class="ra-inp" style="max-width:160px">
+        </div>
+        <div class="order-row">
+          <label class="order-label">📝 메모</label>
+          <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용을 자세히 적어줘요..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
+        </div>
+        <div style="text-align:right;margin-top:8px">
+          <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 요청 등록</button>
+        </div>
+      </div>
+      <div class="ilist order-list" id="order-list"><div class="empty">주문제작 요청을 등록해요 📦</div></div>
     </div>
 
     <!-- 은희 | 진우엄마 -->
@@ -1694,7 +1726,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','recipe','exp_fixed'];
+  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','recipe','exp_fixed'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json', { cache: 'no-cache' });
@@ -2066,6 +2098,60 @@ function addMemo() {
   rerender('memo'); toast('🎀 저장됐어요!');
 }
 
+// ── 주문제작요청 ──
+function loadOrder() { return load('order_list'); }
+function saveOrder(data) { stor('order_list', data); }
+
+function renderOrder() {
+  const data = loadOrder();
+  const el = document.getElementById('order-list');
+  if (!el) return;
+  if (!data.length) {
+    el.innerHTML = '<div class="empty">주문제작 요청을 등록해요 📦</div>'; return;
+  }
+  el.innerHTML = data.map(row => {
+    const dateStr = row.date ? `📅 요청일: <b>${row.date.replace(/-/g,'.')}</b>` : '📅 요청일 미정';
+    return `<div class="order-item" id="order-${row.id}">
+      <div class="order-item-date">${dateStr}</div>
+      <div class="order-item-memo">${linkify(row.memo||'')}</div>
+      <div class="order-item-acts">
+        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="editOrder(${row.id})">✏️ 수정</button>
+        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#f08080,#d04040)" onclick="delOrder(${row.id})">🗑️ 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addOrder() {
+  const date = document.getElementById('order-date').value;
+  const memo = document.getElementById('order-memo').value.trim();
+  if (!memo) { toast('요청 내용을 입력해줘요 📦'); return; }
+  const data = loadOrder();
+  data.unshift({ id: Date.now(), date, memo });
+  saveOrder(data);
+  document.getElementById('order-date').value = '';
+  document.getElementById('order-memo').value = '';
+  renderOrder();
+  toast('📦 요청 등록됐어요!');
+}
+
+function delOrder(id) {
+  if (!confirm('삭제할까요?')) return;
+  saveOrder(loadOrder().filter(r => r.id !== id));
+  renderOrder(); toast('🗑️ 삭제됐어요');
+}
+
+function editOrder(id) {
+  const row = loadOrder().find(r => r.id === id);
+  if (!row) return;
+  document.getElementById('order-date').value = row.date || '';
+  document.getElementById('order-memo').value = row.memo || '';
+  delOrder(id);
+  document.getElementById('order-memo').focus();
+  toast('✏️ 수정 모드예요!');
+}
+}
+
 function addEun() {
   const v = document.getElementById('eun-inp').value.trim();
   if (!v) return;
@@ -2277,8 +2363,7 @@ renderWeek();
 Object.keys(renderCfg).forEach(rerender);
 
 renderRecipe();
-
-// ── 월별 지출 ──
+renderOrder();
 let editingExpId = null;
 let memoTargetId = null;
 let currentBankFilter = '전체';
