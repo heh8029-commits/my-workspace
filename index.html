@@ -475,7 +475,7 @@ body.mobile-view .app-icon-img {
 }
 
 /* ── 등록일 뱃지 ── */
-.cat-badge { margin-top: 3px; padding-left: 2px; }
+.cat-badge { width:100%; margin-top:0; padding-left:2px; }
 .cat-today {
   font-size: .72rem; font-weight: 800;
   color: var(--rose);
@@ -521,7 +521,7 @@ body.mobile-view .app-icon-img {
 
 .it {
   background:var(--pink-pale); border:1.5px solid var(--pink-mid); border-radius:11px;
-  padding:9px 11px; display:flex; align-items:flex-start; gap:8px;
+  padding:9px 11px; display:flex; flex-wrap:wrap; align-items:flex-start; gap:6px;
   font-size:.87rem; line-height:1.5; animation:popIn .22s ease;
   transition:border-color .15s;
 }
@@ -560,10 +560,10 @@ body.mobile-view .app-icon-img {
 .badge-date { background:var(--pink-dark); color:white; }
 .badge-time { background:var(--rose); color:white; }
 
-.iacts { display:flex; gap:2px; flex-shrink:0; }
+.iacts { display:flex; gap:0px; flex-shrink:0; margin-left:auto; }
 .iacts button {
   background:none; border:none; cursor:pointer; font-size:.82rem;
-  padding:2px 4px; border-radius:6px; opacity:.35; transition:opacity .15s, background .15s;
+  padding:2px 3px; border-radius:6px; opacity:.35; transition:opacity .15s, background .15s;
 }
 .iacts button:hover { opacity:1; background:rgba(0,0,0,.06); }
 
@@ -1219,7 +1219,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
       <!-- 할일 -->
       <div class="card cp">
-        <div style="font-size:.95rem;color:var(--rose);margin-bottom:10px">✅ 할일</div>
+        <div style="font-size:.95rem;color:var(--rose);margin-bottom:10px;display:flex;align-items:center;gap:6px">✅ 할일 <span id="todo-urgent-badge" style="display:none;font-size:.72rem;font-weight:800;background:linear-gradient(135deg,#ff2255,#ff6600);color:white;border-radius:20px;padding:1px 8px">🚨 긴급있음</span></div>
         <div class="inp-row">
           <textarea id="todo-inp" rows="2" placeholder="할 일 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTodo()}"></textarea>
           <button class="abtn" onclick="addTodo()">+</button>
@@ -2098,7 +2098,6 @@ function renderList(key, elId, clsName, emptyMsg) {
           ${isLong ? `<button class="more-btn" onclick="toggleMore('${uid}')">▼ 더보기</button>` : ''}
         </div>`;
       })()}
-      ${item.urgent ? '<span class="urgent-badge">🚨 긴급</span>' : ''}
       ${dateBadge}${timeBadge}
       <div class="iacts">
         <button onclick="navigator.clipboard.writeText('${item.text.replace(/'/g,"\\'").replace(/\n/g,'\\n')}').then(()=>toast('📋 복사됐어요!'))" title="복사">📋</button>
@@ -2253,6 +2252,11 @@ const renderCfg = {
 function rerender(key) {
   const [elId, cls, msg] = renderCfg[key];
   renderList(key, elId, cls, msg);
+  // 할일 긴급 뱃지 타이틀 업데이트
+  if (key === 'todo') {
+    const badge = document.getElementById('todo-urgent-badge');
+    if (badge) badge.style.display = DBS.todo.data.some(i => i.urgent && !i.done) ? '' : 'none';
+  }
 }
 
 // ── 추가 함수 ──
