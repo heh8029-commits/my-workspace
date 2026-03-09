@@ -2756,16 +2756,54 @@ function renderOrder() {
     el.innerHTML = '<div class="empty">주문제작 요청을 등록해요 📦</div>'; return;
   }
   el.innerHTML = data.map(row => {
-    const dateStr = row.date ? `📅 요청일: <b>${row.date.replace(/-/g,'.')}</b>` : '📅 요청일 미정';
+    const dateStr = row.date ? `📅 ${row.date.replace(/-/g,'.')}` : '📅 날짜 미정';
     return `<div class="order-item" id="order-${row.id}">
-      <div class="order-item-date">${dateStr}</div>
-      <div class="order-item-memo">${linkify(row.memo||'')}</div>
-      <div class="order-item-acts">
-        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="editOrder(${row.id})">✏️ 수정</button>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span class="order-item-date" id="order-date-view-${row.id}" style="flex:1;cursor:pointer" ondblclick="orderEditMode(${row.id})">${dateStr}</span>
+        <input id="order-date-edit-${row.id}" type="date" value="${row.date||''}" style="display:none;flex:1;border:1.5px solid #b0a0f8;border-radius:8px;padding:4px 8px;font-family:'Pretendard',sans-serif;font-size:.82rem">
+      </div>
+      <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${linkify(row.memo||'')}</div>
+      <textarea id="order-memo-edit-${row.id}" style="display:none;width:100%;border:1.5px solid #b0a0f8;border-radius:8px;padding:8px 10px;font-family:'Pretendard',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;line-height:1.6;box-sizing:border-box">${esc(row.memo||'')}</textarea>
+      <div class="order-item-acts" id="order-acts-${row.id}">
+        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderEditMode(${row.id})">✏️ 편집</button>
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#f08080,#d04040)" onclick="delOrder(${row.id})">🗑️ 삭제</button>
+      </div>
+      <div id="order-edit-acts-${row.id}" style="display:none;display:none;justify-content:flex-end;gap:6px;margin-top:6px">
+        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#aaa,#888)" onclick="orderCancelEdit(${row.id})">취소</button>
+        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderSaveEdit(${row.id})">💾 저장</button>
       </div>
     </div>`;
   }).join('');
+}
+
+function orderEditMode(id) {
+  document.getElementById('order-memo-view-'+id).style.display = 'none';
+  document.getElementById('order-memo-edit-'+id).style.display = 'block';
+  document.getElementById('order-date-view-'+id).style.display = 'none';
+  document.getElementById('order-date-edit-'+id).style.display = 'block';
+  document.getElementById('order-acts-'+id).style.display = 'none';
+  document.getElementById('order-edit-acts-'+id).style.display = 'flex';
+  document.getElementById('order-memo-edit-'+id).focus();
+}
+
+function orderCancelEdit(id) {
+  document.getElementById('order-memo-view-'+id).style.display = 'block';
+  document.getElementById('order-memo-edit-'+id).style.display = 'none';
+  document.getElementById('order-date-view-'+id).style.display = 'flex';
+  document.getElementById('order-date-edit-'+id).style.display = 'none';
+  document.getElementById('order-acts-'+id).style.display = 'flex';
+  document.getElementById('order-edit-acts-'+id).style.display = 'none';
+}
+
+function orderSaveEdit(id) {
+  const memo = document.getElementById('order-memo-edit-'+id).value.trim();
+  const date = document.getElementById('order-date-edit-'+id).value;
+  const data = loadOrder();
+  const idx = data.findIndex(r => r.id === id);
+  if (idx !== -1) { data[idx].memo = memo; data[idx].date = date; }
+  saveOrder(data);
+  renderOrder();
+  toast('📦 수정됐어요!');
 }
 
 function addOrder() {
@@ -2787,16 +2825,7 @@ function delOrder(id) {
   renderOrder(); toast('🗑️ 삭제됐어요');
 }
 
-function editOrder(id) {
-  const row = loadOrder().find(r => r.id === id);
-  if (!row) return;
-  document.getElementById('order-date').value = row.date || '';
-  document.getElementById('order-memo').value = row.memo || '';
-  saveOrder(loadOrder().filter(r => r.id !== id));
-  renderOrder();
-  document.getElementById('order-memo').focus();
-  toast('✏️ 수정 모드예요!');
-}
+
 
 function addEun() {
   const v = document.getElementById('eun-inp').value.trim();
