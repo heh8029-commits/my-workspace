@@ -500,6 +500,69 @@ body.mobile-view .app-icon-img {
   color: #888;
 }
 
+
+/* ── 홈 사이드바 레이아웃 ── */
+.home-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+body.mobile-view .home-layout {
+  display: block;
+}
+.home-sidebar {
+  width: 168px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 62px;
+  max-height: calc(100vh - 70px);
+  overflow-y: auto;
+  padding: 10px 8px 20px;
+  scrollbar-width: none;
+}
+.home-sidebar::-webkit-scrollbar { display: none; }
+body.mobile-view .home-sidebar { display: none; }
+
+.home-content {
+  flex: 1;
+  min-width: 0;
+  padding-left: 14px;
+  border-left: 2px solid #fce8f0;
+  margin-left: 6px;
+}
+
+.sb-section {
+  margin-bottom: 10px;
+}
+.sb-header {
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--pink-dark);
+  padding: 6px 10px 4px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.sb-item {
+  font-size: .8rem;
+  color: #888;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .15s;
+  line-height: 1.3;
+  font-weight: 500;
+}
+.sb-item:hover {
+  background: #fce8f0;
+  color: var(--rose);
+  padding-left: 14px;
+}
+.sb-item.active {
+  background: linear-gradient(135deg, #fce8f0, #ffd6e7);
+  color: var(--rose);
+  font-weight: 700;
+}
+
 .drag-handle {
   cursor: grab; color: #ccc; font-size: 1rem;
   padding: 0 4px; user-select: none;
@@ -1101,7 +1164,40 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
   <!-- ══════════════ 홈 ══════════════ -->
   <div class="page active" id="home">
+    <div class="home-layout">
+    <!-- ── 왼쪽 사이드바 (PC only) ── -->
+    <nav class="home-sidebar" id="home-sidebar">
+      <div class="sb-section">
+        <div class="sb-header">🎀 홈</div>
+        <div class="sb-item active" onclick="sbScrollTo('sb-shortcuts')">🔗 바로가기</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-boss-flow')">📋 업무순서</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-design-flow')">🎨 디자인순서</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-week')">📅 요일별 할일</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-todo')">✅ 할일</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-order')">📦 주문제작요청</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-memo')">📝 메모</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-basic-flow')">⏰ 기본할일플로우</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-sched')">🗓️ 일정</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-header">👩 은희</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-eun')">🌸 은희 할일</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-jin')">🐣 진우엄마 할일</div>
+        <div class="sb-item" onclick="sbScrollTo('sb-app')">💡 어플개선메모</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-header">⚡ 바로가기</div>
+        <div class="sb-item" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1')">🛍️ 미리제작소</div>
+        <div class="sb-item" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2')">🏠 우리집</div>
+        <div class="sb-item" onclick="goTab(document.querySelector('.tab[onclick*=menu4]'),'menu4')">🎒 초딩진우</div>
+        <div class="sb-item" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5')">📈 투자</div>
+        <div class="sb-item" onclick="goTab(document.querySelector('.tab[onclick*=menu3]'),'menu3')">🍳 요리레시피</div>
+      </div>
+    </nav>
+    <!-- ── 홈 컨텐츠 ── -->
+    <div class="home-content">
 
+    <div id="sb-shortcuts"></div>
     <!-- 앱 아이콘 바로가기 -->
     <div class="app-icons-wrap" style="padding:10px 0 4px 0">
       <div class="app-icons" id="app-icons-grid">
@@ -1195,12 +1291,14 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       </div>
     </div>
 
+    <div id="sb-boss-flow"></div>
     <!-- 기본 업무 순서 플로우 -->
     <div class="sec">📋 기본 업무 순서</div>
     <div class="card cp">
       <div class="flow-wrap" id="boss-flow"></div>
     </div>
 
+    <div id="sb-design-flow"></div>
     <!-- 디자인 작업 순서 플로우 -->
     <div class="sec">🎨 디자인 작업 순서</div>
     <div class="card cl">
@@ -1258,6 +1356,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
     </div>
 
+    <div id="sb-basic-flow"></div>
     <!-- 기본 할일 플로우 -->
     <div class="sec">⏰ 기본 할일</div>
     <div class="card cm">
@@ -1265,6 +1364,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
     </div>
 
 
+    <div id="sb-sched"></div>
     <!-- 일정 -->
     <div class="sec">🗓️ 일정</div>
     <div class="card cm">
@@ -1315,6 +1415,10 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   </div><!-- /home -->
 
   <!-- ══════════════ 메뉴 1,2,3 ══════════════ -->
+    </div><!-- home-content -->
+    </div><!-- home-layout -->
+  </div><!-- #home -->
+
   <div class="page" id="menu1">
     <div class="sec">🛍️ 미리제작소</div>
     <div class="page-with-sidebar">
@@ -2125,6 +2229,37 @@ function toggleMore(uid) {
   }
 }
 
+
+
+// ── 사이드바 스크롤 ──
+function sbScrollTo(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 80;
+  window.scrollTo({ top, behavior: 'smooth' });
+  // active 표시
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => {
+    if (i.getAttribute('onclick') && i.getAttribute('onclick').includes(id)) i.classList.add('active');
+  });
+}
+
+// 스크롤 시 사이드바 활성 메뉴 자동 변경
+(function() {
+  const anchors = ['sb-shortcuts','sb-boss-flow','sb-design-flow','sb-week','sb-todo','sb-order','sb-memo','sb-basic-flow','sb-sched','sb-eun','sb-jin','sb-app'];
+  window.addEventListener('scroll', () => {
+    if (document.getElementById('home') && !document.getElementById('home').classList.contains('active')) return;
+    let current = anchors[0];
+    for (const id of anchors) {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top < 120) current = id;
+    }
+    document.querySelectorAll('.sb-item').forEach(i => {
+      const oc = i.getAttribute('onclick') || '';
+      i.classList.toggle('active', oc.includes(current));
+    });
+  }, { passive: true });
+})();
 
 // ── 등록일 표시 ──
 function formatCreatedAt(ts) {
