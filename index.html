@@ -1112,7 +1112,20 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="flow-wrap" id="basic-flow"></div>
     </div>
 
-    <!-- 은희 | 진우엄마 -->
+
+    <!-- 일정 -->
+    <div class="sec">🗓️ 일정</div>
+    <div class="card cm">
+      <div style="font-size:.95rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
+      <div class="inp-row">
+        <input id="sched-date" type="date" style="max-width:150px">
+        <textarea id="sched-inp" rows="2" placeholder="일정 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addSched()}" style="flex:1"></textarea>
+        <button class="abtn mint-btn" onclick="addSched()">+</button>
+      </div>
+      <div class="ilist" id="sched-list"><div class="empty">일정을 추가해요 🗓️</div></div>
+    </div>
+
+    <!-- 은희 | 진우엄마 | 어플개선메모 -->
     <div class="sec">🌸 은희 할일 &nbsp;|&nbsp; 🐣 진우엄마 할일 &nbsp;|&nbsp; 💡 어플개선메모</div>
     <div class="three-col">
 
@@ -2365,8 +2378,6 @@ function clearSearch() {
 ['boss','basic','design'].forEach(renderFlow);
 renderWeek();
 Object.keys(renderCfg).forEach(rerender);
-
-renderRecipe();
 renderOrder();
 let editingExpId = null;
 let memoTargetId = null;
