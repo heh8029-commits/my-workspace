@@ -1628,6 +1628,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">검색광고</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">AI광고</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총매출</th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총광고비</th>
             </tr>
           </thead>
           <tbody id="sales-tbody"></tbody>
@@ -2157,13 +2158,15 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const keys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
     const all = await res.json();
     if (!all) { toast('🎀 최신 데이터예요!'); return; }
-    for (const k of keys) {
+    // 고정 키 + sales_ 로 시작하는 키 모두 저장
+    const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_'))];
+    for (const k of allKeys) {
       if (all[k] !== undefined && all[k] !== null) {
         localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
       }
@@ -2184,6 +2187,7 @@ async function syncFromSheet() {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
     renderFridgeMemo();
+    renderSalesTable();
     const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
     const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
     toast('✅ 동기화 완료!');
@@ -3676,10 +3680,13 @@ function updateSalesRowTotal(year, month, day, data) {
   const r = (data || loadSales(year, month))[`d${day}`] || {};
   const coupangTotal = parseNum(r.gross) + parseNum(r.seller);
   const total = coupangTotal + parseNum(r.naver);
+  const adTotal = parseNum(r.coupangAd) + parseNum(r.naverSearch) + parseNum(r.naverAi);
   const cCell = document.getElementById(`sales-ctotal-${day}`);
   const tCell = document.getElementById(`sales-total-${day}`);
+  const aCell = document.getElementById(`sales-adtotal-${day}`);
   if (cCell) cCell.textContent = coupangTotal > 0 ? coupangTotal.toLocaleString() : '-';
   if (tCell) tCell.textContent = total > 0 ? total.toLocaleString() : '-';
+  if (aCell) aCell.textContent = adTotal > 0 ? adTotal.toLocaleString() : '-';
 }
 
 function updateSalesSummary(year, month) {
@@ -3699,22 +3706,22 @@ function updateSalesSummary(year, month) {
   const summary = document.getElementById('sales-summary');
   if (!summary) return;
   const cards = [
-    { label:'쿠팡 그로스',     val: tg,    color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'쿠팡 판매자배송', val: ts,    color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'쿠팡 총매출',     val: tc,    color:'#2a9a6a', bg:'#e8fff4' },
-    { label:'쿠팡 광고비',     val: tca,   color:'#e03c6e', bg:'#fff0f5' },
-    { label:'네이버 총매출',   val: tn,    color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'검색광고',        val: tns,   color:'#e8648a', bg:'#fff0f5' },
-    { label:'AI광고',          val: tna,   color:'#e8648a', bg:'#fff0f5' },
-    { label:'전체 총매출',     val: tc+tn, color:'#8b60d0', bg:'#f8f4ff' },
+    { label:'쿠팡 그로스',     val: tg,       color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 판매자배송', val: ts,       color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 총매출',     val: tc,       color:'#2a9a6a', bg:'#e8fff4' },
+    { label:'쿠팡 광고비',     val: tca,      color:'#e03c6e', bg:'#fff0f5' },
+    { label:'네이버 총매출',   val: tn,       color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'검색광고',        val: tns,      color:'#e8648a', bg:'#fff0f5' },
+    { label:'AI광고',          val: tna,      color:'#e8648a', bg:'#fff0f5' },
+    { label:'전체 총광고비',   val: tca+tns+tna, color:'#e03c6e', bg:'#fff0f5' },
+    { label:'전체 총매출',     val: tc+tn,    color:'#8b60d0', bg:'#f8f4ff' },
   ];
-  summary.style.gridTemplateColumns = 'repeat(4,1fr)';
+  summary.style.gridTemplateColumns = 'repeat(3,1fr)';
   summary.innerHTML = cards.map(c => `
     <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:12px;padding:12px 14px">
       <div style="font-size:.75rem;color:#888;margin-bottom:4px">${c.label}</div>
       <div style="font-size:1rem;font-weight:800;color:${c.color}">${c.val.toLocaleString()}원</div>
     </div>`).join('');
-  // 합계행 갱신
   const sr = document.getElementById('sales-sum-row');
   if (sr) {
     sr.cells[2].textContent = tg.toLocaleString();
@@ -3725,6 +3732,7 @@ function updateSalesSummary(year, month) {
     sr.cells[7].textContent = tns.toLocaleString();
     sr.cells[8].textContent = tna.toLocaleString();
     sr.cells[9].textContent = (tc+tn).toLocaleString();
+    sr.cells[10].textContent = (tca+tns+tna).toLocaleString();
   }
 }
 
@@ -3791,6 +3799,7 @@ function renderSalesTable() {
       <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naverSearch',r.naverSearch)}</td>
       <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naverAi',r.naverAi)}</td>
       <td id="sales-total-${d}" style="padding:6px 10px;text-align:right;font-weight:800;color:#8b60d0;white-space:nowrap">${total > 0 ? total.toLocaleString() : '-'}</td>
+      <td id="sales-adtotal-${d}" style="padding:6px 10px;text-align:right;font-weight:700;color:#e03c6e;white-space:nowrap">${(parseNum(r.coupangAd)+parseNum(r.naverSearch)+parseNum(r.naverAi)) > 0 ? (parseNum(r.coupangAd)+parseNum(r.naverSearch)+parseNum(r.naverAi)).toLocaleString() : '-'}</td>
     </tr>`;
   }
 
@@ -3805,6 +3814,7 @@ function renderSalesTable() {
     <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
     <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
     <td style="padding:10px;text-align:right;color:#8b60d0">-</td>
+    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
   </tr>`;
 
   tbody.innerHTML = rows;
