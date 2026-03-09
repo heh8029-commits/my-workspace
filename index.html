@@ -3046,15 +3046,16 @@ function clearSearch() {
   renderRecipe();
 }
 
+let editingExpId = null;
+let memoTargetId = null;
+let currentBankFilter = '전체';
+
 // ── 초기 렌더 ──
 ['boss','basic','design'].forEach(renderFlow);
 renderWeek();
 Object.keys(renderCfg).forEach(rerender);
 renderOrder();
 renderRecipe();
-let editingExpId = null;
-let memoTargetId = null;
-let currentBankFilter = '전체';
 
 function loadExp() { return load('exp_fixed'); }
 function saveExp(data) { stor('exp_fixed', data); }
