@@ -2947,9 +2947,10 @@ function linkify(text) {
     const display = (http || www).replace(/\/+$/, '');
     const isImg = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?[^\s<]*)?$/i.test(href);
     if (isImg) {
-      return `<span onclick="openImgModal('${href}')" style="cursor:pointer;display:inline-block;margin:4px 0">
-        <img src="${href}" style="max-width:160px;max-height:120px;border-radius:8px;border:2px solid var(--pink-mid);object-fit:cover;vertical-align:middle;transition:transform .15s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-        <a href="${href}" target="_blank" rel="noopener" style="display:none;color:#e8648a;text-decoration:underline;word-break:break-all">${display}</a>
+      const safeHref = href.replace(/"/g, '&quot;');
+      return `<span style="cursor:pointer;display:inline-block;margin:4px 0" onclick="openImgModal(this.dataset.src)" data-src="${safeHref}">
+        <img src="${safeHref}" style="max-width:160px;max-height:120px;border-radius:8px;border:2px solid var(--pink-mid);object-fit:cover;vertical-align:middle;transition:transform .15s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+        <a href="${safeHref}" target="_blank" rel="noopener" style="display:none;color:#e8648a;text-decoration:underline;word-break:break-all">${display}</a>
       </span>`;
     }
     return `<a href="${href}" target="_blank" rel="noopener" style="color:#e8648a;text-decoration:underline;word-break:break-all">${display}</a>`;
