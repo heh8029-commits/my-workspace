@@ -442,10 +442,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   grid-template-columns: repeat(10, 1fr);
   gap: 10px;
 }
-body.mobile-view .app-icons {
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-}
+body.mobile-view .app-icons-wrap { display: none !important; }
 .app-icon {
   display: flex; flex-direction: column;
   align-items: center; gap: 5px;
@@ -1078,7 +1075,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   <div class="page active" id="home">
 
     <!-- 앱 아이콘 바로가기 -->
-    <div style="padding:10px 0 4px 0">
+    <div class="app-icons-wrap" style="padding:10px 0 4px 0">
       <div class="app-icons" id="app-icons-grid">
         <a class="app-icon" href="https://partner.talk.kakao.com" target="_blank">
           <div class="app-icon-img" style="background:linear-gradient(135deg,#f7c5d5,#e8648a)">💬</div>
@@ -2249,7 +2246,8 @@ function editShortcuts() {
 
       <div id="sc-list">
         ${items.map((it,i) => `
-          <div class="sc-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <div class="sc-row" draggable="true" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <span class="sc-drag" style="cursor:grab;color:#ccc;font-size:1.1rem;padding:0 2px;user-select:none" title="드래그해서 순서 변경">⠿</span>
             <input value="${it.emoji}" style="width:42px;text-align:center;border:1px solid #eee;border-radius:8px;padding:6px;font-size:1.1rem">
             <input value="${it.label}" placeholder="이름" style="flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem">
             <input value="${it.href}" placeholder="URL" style="flex:2;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.75rem">
@@ -2262,7 +2260,7 @@ function editShortcuts() {
         const row = document.createElement('div');
         row.className = 'sc-row';
         row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
-        row.innerHTML = \`<input value='🔗' style='width:42px;text-align:center;border:1px solid #eee;border-radius:8px;padding:6px;font-size:1.1rem'><input placeholder='이름' style='flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem'><input placeholder='https://' style='flex:2;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.75rem'><button onclick='this.closest(&quot;.sc-row&quot;).remove()' style='background:#fee;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem'>🗑️</button>\`;
+        row.innerHTML = \`<span class='sc-drag' style='cursor:grab;color:#ccc;font-size:1.1rem;padding:0 2px;user-select:none'>⠿</span><input value='🔗' style='width:42px;text-align:center;border:1px solid #eee;border-radius:8px;padding:6px;font-size:1.1rem'><input placeholder='이름' style='flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem'><input placeholder='https://' style='flex:2;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.75rem'><button onclick='this.closest(&quot;.sc-row&quot;).remove()' style='background:#fee;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem'>🗑️</button>\`;
         scList.appendChild(row);
       " style="width:100%;padding:8px;background:#f9f0ff;border:2px dashed #b0a0f8;border-radius:10px;cursor:pointer;font-size:.82rem;color:#8060e0;margin-bottom:12px">+ 추가</button>
       <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -2272,6 +2270,42 @@ function editShortcuts() {
     </div>
   `;
   document.body.appendChild(modal);
+  initScDrag();
+}
+
+function initScDrag() {
+  const list = document.getElementById('sc-list');
+  if (!list) return;
+  let dragEl = null;
+
+  list.querySelectorAll('.sc-row').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragEl = row;
+      setTimeout(() => row.style.opacity = '.4', 0);
+    });
+    row.addEventListener('dragend', () => {
+      row.style.opacity = '';
+      list.querySelectorAll('.sc-row').forEach(r => r.style.background = '');
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (row === dragEl) return;
+      list.querySelectorAll('.sc-row').forEach(r => r.style.background = '');
+      row.style.background = '#fff0f5';
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragEl && dragEl !== row) {
+        const rows = [...list.querySelectorAll('.sc-row')];
+        const si = rows.indexOf(dragEl);
+        const ti = rows.indexOf(row);
+        if (si < ti) row.after(dragEl);
+        else row.before(dragEl);
+        initScDrag();
+      }
+      list.querySelectorAll('.sc-row').forEach(r => r.style.background = '');
+    });
+  });
 }
 
 function saveShortcuts() {
