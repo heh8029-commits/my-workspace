@@ -2226,7 +2226,27 @@ function editShortcuts() {
   }));
   modal.innerHTML = `
     <div style="background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;font-family:'Pretendard',sans-serif">
-      <div style="font-size:1rem;font-weight:700;color:var(--rose);margin-bottom:14px">✏️ 바로가기 편집</div>
+      <div style="font-size:1rem;font-weight:700;color:var(--rose);margin-bottom:10px">✏️ 바로가기 편집</div>
+
+      <!-- 이모지 모음 -->
+      <div style="background:#fff5f8;border-radius:12px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:.72rem;color:#aaa;margin-bottom:7px;font-weight:700">이모지 클릭하면 복사돼요 👆</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;line-height:1">
+          ${[
+            '🛍️','🏪','💬','🎧','📦','🚚','💰','📊','📈','📉',
+            '🔍','🔗','🌐','📱','💻','🖥️','⌨️','🖨️','📷','📸',
+            '✉️','📧','📨','📩','📬','📮','📝','📋','📌','📍',
+            '🗂️','📁','📂','🗃️','🗄️','💾','💿','📀','🖱️','⌚',
+            '🏠','🏢','🏬','🏭','🏗️','🏡','🏨','🏦','🏥','🏫',
+            '🛒','🎁','🎀','🎪','🎨','🎭','🎬','🎤','🎵','🎶',
+            '💳','💵','💴','💶','💷','💸','🏧','💹','🤑','💱',
+            '⭐','🌟','✨','💫','🔥','❤️','🧡','💛','💚','💙',
+            '💜','🖤','🤍','🩷','🩵','🟥','🟧','🟨','🟩','🟦',
+            '📅','📆','🗓️','⏰','⏱️','⏲️','🕐','🕑','🕒','🕓',
+          ].map(e => `<span onclick="navigator.clipboard.writeText('${e}').then(()=>toast('${e} 복사!'))" style="cursor:pointer;font-size:1.3rem;padding:3px;border-radius:6px;transition:background .1s" onmouseover="this.style.background='#ffe0ec'" onmouseout="this.style.background=''">${e}</span>`).join('')}
+        </div>
+      </div>
+
       <div id="sc-list">
         ${items.map((it,i) => `
           <div class="sc-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
