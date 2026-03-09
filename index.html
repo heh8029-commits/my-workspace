@@ -1907,19 +1907,20 @@ function renderList(key, elId, clsName, emptyMsg) {
       <div class="drag-handle" title="드래그해서 순서 변경">⠿</div>
       ${hideChk ? '' : `<div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>`}
       ${(()=>{
-        const lines = item.text.split('\n');
+        const txt = item.text || '';
+        const lines = txt.split('\n');
         const isLong = lines.length > 8;
-        const shortText = isLong ? lines.slice(0,8).join('\n') : item.text;
+        const shortText = isLong ? lines.slice(0,8).join('\n') : txt;
         const uid = key+'_'+item.id;
         return `<div class="itxt-wrap">
           <div class="itxt" id="itxt_${uid}" contenteditable="false"
             ondblclick="this.contentEditable='true';this.focus()"
             onblur="${key}Edit(${item.id},this.textContent);this.contentEditable='false'"
             onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
-            data-full="${encodeURIComponent(item.text)}"
+            data-full="${encodeURIComponent(txt)}"
             data-short="${encodeURIComponent(shortText)}"
             data-expanded="false"
-          >${isLong ? linkify(shortText) : linkify(item.text)}</div>
+          >${isLong ? linkify(shortText) : linkify(txt)}</div>
           ${isLong ? `<button class="more-btn" onclick="toggleMore('${uid}')">▼ 더보기</button>` : ''}
         </div>`;
       })()}
