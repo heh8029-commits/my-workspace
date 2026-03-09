@@ -332,9 +332,11 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
    할일 / 일정 / 메모 공통
 ──────────────────────────────── */
 .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:16px; align-items:stretch; }
-.three-col > .card { display:flex; flex-direction:column; height:900px; }
-.three-col > .card .ilist { flex:1; max-height:none; overflow-y:auto; }
+.three-col > .card { display:flex; flex-direction:column; height:900px; overflow:hidden; }
+.three-col > .card .ilist { flex:1; max-height:none !important; overflow-y:auto; }
 .three-col > .card .order-form { flex-shrink:0; }
+.three-col > .card .inp-row { flex-shrink:0; }
+.three-col > .card #order-list { flex:1; overflow-y:auto; max-height:none !important; }
 .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 
 .inp-row { display:flex; gap:7px; margin-bottom:10px; align-items:flex-start; }
