@@ -1041,6 +1041,12 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
 
 /* ── 냉장고 메모 ── */
+.fridge-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
 .fridge-bar {
   display: flex;
   align-items: center;
@@ -1049,15 +1055,30 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   border: 1.5px solid var(--mint);
   border-radius: 14px;
   padding: 10px 16px;
-  margin-bottom: 16px;
   cursor: pointer;
   transition: all .15s;
 }
 .fridge-bar:hover { border-color: var(--mint-dark); box-shadow: 0 3px 12px rgba(61,187,143,.15); }
+.fridge-bar2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fff8f0, #ffeedd);
+  border: 1.5px solid var(--peach);
+  border-radius: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.fridge-bar2:hover { border-color: var(--peach-dark); box-shadow: 0 3px 12px rgba(232,131,74,.15); }
 .fridge-bar-icon { font-size: 1.2rem; flex-shrink: 0; }
 .fridge-bar-text { flex: 1; font-size: .88rem; color: #3a7a5a; line-height: 1.5; }
 .fridge-bar-text.empty { color: #aaa; }
+.fridge-bar-text2 { flex: 1; font-size: .88rem; color: #7a4a2a; line-height: 1.5; }
+.fridge-bar-text2.empty { color: #aaa; }
 .fridge-bar-edit { font-size: .75rem; color: var(--mint-dark); font-weight: 700; flex-shrink: 0; }
+.fridge-bar-edit2 { font-size: .75rem; color: var(--peach-dark); font-weight: 700; flex-shrink: 0; }
+@media(max-width:600px) { .fridge-wrap { grid-template-columns: 1fr; } }
 
 .fridge-modal-overlay {
   display: none; position: fixed;
@@ -1913,17 +1934,24 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
 
     <!-- 냉장고 메모 -->
-    <div class="fridge-bar" onclick="openFridgeMemo()">
-      <span class="fridge-bar-icon">🧊</span>
-      <div class="fridge-bar-text empty" id="fridge-bar-text">냉장고 재료 메모... (클릭해서 편집)</div>
-      <span class="fridge-bar-edit">✏️ 편집</span>
+    <div class="fridge-wrap">
+      <div class="fridge-bar" onclick="openFridgeMemo('ingredient')">
+        <span class="fridge-bar-icon">🧊</span>
+        <div class="fridge-bar-text empty" id="fridge-bar-text">재료 남은거 메모... (클릭해서 편집)</div>
+        <span class="fridge-bar-edit">✏️</span>
+      </div>
+      <div class="fridge-bar2" onclick="openFridgeMemo('side')">
+        <span class="fridge-bar-icon">🍱</span>
+        <div class="fridge-bar-text2 empty" id="fridge-bar-text2">반찬 남은거 메모... (클릭해서 편집)</div>
+        <span class="fridge-bar-edit2">✏️</span>
+      </div>
     </div>
 
     <!-- 냉장고 메모 모달 -->
     <div class="fridge-modal-overlay" id="fridge-overlay" onclick="closeFridgeMemo()"></div>
     <div class="fridge-modal" id="fridge-modal">
-      <div class="fridge-modal-title">🧊 냉장고 재료 메모</div>
-      <textarea id="fridge-textarea" placeholder="예) 두부, 계란 3개, 파, 된장, 고추장&#10;남은 재료나 사야 할 재료 자유롭게 메모해요!"></textarea>
+      <div class="fridge-modal-title" id="fridge-modal-title">🧊 재료 남은거</div>
+      <textarea id="fridge-textarea" placeholder=""></textarea>
       <div class="fridge-modal-btns">
         <button class="fridge-cancel-btn" onclick="closeFridgeMemo()">취소</button>
         <button class="fridge-save-btn" onclick="saveFridgeMemo()">💾 저장</button>
@@ -2825,22 +2853,30 @@ let currentCatFilter = '전체';
 
 
 // ── 냉장고 메모 ──
+let fridgeMemoType = 'ingredient';
 function renderFridgeMemo() {
-  const text = load('fridge_memo') || '';
-  const el = document.getElementById('fridge-bar-text');
-  if (el) {
-    if (text.trim()) {
-      el.textContent = text;
-      el.classList.remove('empty');
-    } else {
-      el.textContent = '냉장고 재료 메모... (클릭해서 편집)';
-      el.classList.add('empty');
-    }
+  const t1 = load('fridge_ingredient') || '';
+  const t2 = load('fridge_side') || '';
+  const el1 = document.getElementById('fridge-bar-text');
+  const el2 = document.getElementById('fridge-bar-text2');
+  if (el1) {
+    if (t1.trim()) { el1.textContent = t1; el1.classList.remove('empty'); }
+    else { el1.textContent = '재료 남은거 메모... (클릭해서 편집)'; el1.classList.add('empty'); }
+  }
+  if (el2) {
+    if (t2.trim()) { el2.textContent = t2; el2.classList.remove('empty'); }
+    else { el2.textContent = '반찬 남은거 메모... (클릭해서 편집)'; el2.classList.add('empty'); }
   }
 }
-function openFridgeMemo() {
-  const text = load('fridge_memo') || '';
-  document.getElementById('fridge-textarea').value = text;
+function openFridgeMemo(type) {
+  fridgeMemoType = type;
+  const isIngredient = type === 'ingredient';
+  document.getElementById('fridge-modal-title').textContent = isIngredient ? '🧊 재료 남은거' : '🍱 반찬 남은거';
+  const key = isIngredient ? 'fridge_ingredient' : 'fridge_side';
+  document.getElementById('fridge-textarea').value = load(key) || '';
+  document.getElementById('fridge-textarea').placeholder = isIngredient
+    ? '예) 두부, 계란 3개, 파, 된장...'
+    : '예) 김치찌개, 계란말이, 멸치볶음...';
   document.getElementById('fridge-overlay').classList.add('show');
   document.getElementById('fridge-modal').classList.add('show');
   setTimeout(() => document.getElementById('fridge-textarea').focus(), 100);
@@ -2850,11 +2886,11 @@ function closeFridgeMemo() {
   document.getElementById('fridge-modal').classList.remove('show');
 }
 function saveFridgeMemo() {
-  const text = document.getElementById('fridge-textarea').value;
-  stor('fridge_memo', text);
+  const key = fridgeMemoType === 'ingredient' ? 'fridge_ingredient' : 'fridge_side';
+  stor(key, document.getElementById('fridge-textarea').value);
   renderFridgeMemo();
   closeFridgeMemo();
-  toast('냉장고 메모 저장됐어요! 🧊');
+  toast(fridgeMemoType === 'ingredient' ? '재료 메모 저장됐어요! 🧊' : '반찬 메모 저장됐어요! 🍱');
 }
 renderFridgeMemo();
 
@@ -3015,6 +3051,7 @@ function clearSearch() {
 renderWeek();
 Object.keys(renderCfg).forEach(rerender);
 renderOrder();
+renderRecipe();
 let editingExpId = null;
 let memoTargetId = null;
 let currentBankFilter = '전체';
@@ -3197,8 +3234,8 @@ document.getElementById('m5-sm-1') && document.getElementById('m5-sm-1').classLi
 document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classList.add('active');
 renderExp();
 
-// ── Firebase 동기화 (최초 1회) ──
-syncFromSheet();
+// ── Firebase 동기화 (최초 1회) ── 주석처리: 자동sync 끔 (수동으로만)
+// syncFromSheet();
 
 // ── PWA 서비스워커 등록 ──
 if ('serviceWorker' in navigator) {
