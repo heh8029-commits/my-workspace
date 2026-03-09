@@ -1032,7 +1032,23 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 <body>
 
 <!-- 상단 탭바 -->
-<!-- ── 글로벌 네비 사이드바 ── -->
+<div class="topbar">
+  <div class="tabs">
+    <div class="tb-icon" onclick="reloadCurrentPage()" title="새로고침">🔄</div>
+    <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
+    <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
+    <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
+    <div class="tab" onclick="goTab(this,'menu4')">🎒 초딩진우</div>
+    <div class="tab" onclick="goTab(this,'menu5')">📈 투자</div>
+    <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
+  </div>
+  <div class="divider"></div>
+  <div class="tb-right">
+    <div class="tb-icon view-btn active-view" id="btn-pc" onclick="setView('pc')" title="PC 버전">🖥️</div>
+    <div class="tb-icon view-btn" id="btn-mobile" onclick="setView('mobile')" title="모바일 버전">📱</div>
+  </div>
+</div>
+
 <div class="app-wrapper">
 <nav class="gnav" id="gnav">
   <div class="gnav-logo" style="display:flex;align-items:center;justify-content:space-between">
@@ -1122,24 +1138,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
 </nav>
 <div class="app-body">
-<div class="topbar">
-  <div class="tabs">
-    <div class="tb-icon" onclick="reloadCurrentPage()" title="새로고침">🔄</div>
-    <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
-    <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
-    <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
-    <div class="tab" onclick="goTab(this,'menu4')">🎒 초딩진우</div>
-    <div class="tab" onclick="goTab(this,'menu5')">📈 투자</div>
-    <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
-  </div>
-  <div class="divider"></div>
-  <div class="tb-right">
-    <div class="tb-icon view-btn active-view" id="btn-pc" onclick="setView('pc')" title="PC 버전">🖥️</div>
-    <div class="tb-icon view-btn" id="btn-mobile" onclick="setView('mobile')" title="모바일 버전">📱</div>
-  </div>
-</div>
 
-<!-- 날짜 바 -->
 <div class="datebar">
   <span>🎀</span>
   <span class="dtxt" id="dtxt"></span>
