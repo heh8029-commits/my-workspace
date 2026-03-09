@@ -1587,11 +1587,14 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
         <!-- 3열: 세금관련 메모 -->
         <div class="card cm">
           <div style="font-size:.95rem;color:var(--mint-dark);font-weight:700;margin-bottom:10px">📝 세금관련 메모</div>
-          <div class="inp-row">
-            <textarea rows="2" placeholder="메모 입력..." class="ra-inp" style="border-color:var(--mint);background:#f0fff8" id="tax-memo-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxItem('tax-memo')}"></textarea>
-            <button class="abtn mint-btn" onclick="addTaxItem('tax-memo')">+</button>
+          <div class="inp-row" style="flex-direction:column;gap:6px">
+            <input type="text" placeholder="제목 입력..." class="ra-inp" id="tax-memo-title-inp" style="border-color:var(--mint);background:#f0fff8">
+            <div style="display:flex;gap:6px">
+              <textarea rows="2" placeholder="내용 입력..." class="ra-inp" style="border-color:var(--mint);background:#f0fff8" id="tax-memo-inp" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxMemoItem()}"></textarea>
+              <button class="abtn mint-btn" onclick="addTaxMemoItem()">+</button>
+            </div>
           </div>
-          <div class="ilist" id="tax-memo-list" style="height:700px;max-height:700px"></div>
+          <div id="tax-memo-list" style="height:700px;max-height:700px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px"></div>
         </div>
 
       </div>
@@ -3145,6 +3148,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderOrder();
   renderRecipe();
   TAX_KEYS.forEach(renderTaxList);
+  renderTaxMemoList();
   renderExp();
 });
 
@@ -3319,8 +3323,147 @@ function deleteExpMemo() {
   toast('🗑️ 메모 삭제됐어요');
 }
 
-// ── 세금 메모 리스트 ──
-const TAX_KEYS = ['tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
+// ── 세금 메모 아코디언 ──
+function addTaxMemoItem() {
+  const title = document.getElementById('tax-memo-title-inp').value.trim();
+  const content = document.getElementById('tax-memo-inp').value.trim();
+  if (!title) { toast('제목을 입력해요 📝'); return; }
+  const data = loadTaxList('tax-memo');
+  data.unshift({ id: Date.now(), title, content, createdAt: Date.now() });
+  saveTaxList('tax-memo', data);
+  document.getElementById('tax-memo-title-inp').value = '';
+  document.getElementById('tax-memo-inp').value = '';
+  renderTaxMemoList();
+  toast('🎀 저장됐어요!');
+}
+
+function toggleTaxMemo(id) {
+  const body = document.getElementById('tax-memo-body-' + id);
+  const arrow = document.getElementById('tax-memo-arrow-' + id);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.textContent = isOpen ? '▶' : '▼';
+}
+
+function delTaxMemoItem(id) {
+  saveTaxList('tax-memo', loadTaxList('tax-memo').filter(i => i.id !== id));
+  renderTaxMemoList();
+  toast('🗑️ 삭제했어요');
+}
+
+function editTaxMemoContent(id, field, val) {
+  const data = loadTaxList('tax-memo');
+  const item = data.find(i => i.id === id);
+  if (item && val.trim()) { item[field] = val.trim(); saveTaxList('tax-memo', data); }
+}
+
+function renderTaxMemoList() {
+  const el = document.getElementById('tax-memo-list');
+  if (!el) return;
+  const data = loadTaxList('tax-memo');
+  if (!data.length) { el.innerHTML = '<div class="empty">메모를 추가해요 📝</div>'; return; }
+  el.innerHTML = data.map(item => `
+    <div class="it" id="txit_taxmemo_${item.id}" draggable="true" data-id="${item.id}" data-key="tax-memo" style="background:#f0fff8;border:1.5px solid var(--mint);border-radius:11px;overflow:hidden;padding:0">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer">
+        <div class="drag-handle" title="드래그해서 순서 변경" onclick="event.stopPropagation()">⠿</div>
+        <span id="tax-memo-arrow-${item.id}" style="color:var(--mint-dark);font-size:.8rem;flex-shrink:0" onclick="toggleTaxMemo(${item.id})">▶</span>
+        <div style="flex:1;font-size:.88rem;font-weight:700;color:#2a6a4a;outline:none"
+          contenteditable="false"
+          onclick="toggleTaxMemo(${item.id})"
+          ondblclick="event.stopPropagation();this.contentEditable='true';this.focus()"
+          onblur="editTaxMemoContent(${item.id},'title',this.textContent);this.contentEditable='false'"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        >${esc(item.title)}</div>
+        <button onclick="event.stopPropagation();delTaxMemoItem(${item.id})" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.85rem;padding:2px 4px;border-radius:6px;opacity:.5" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">🗑️</button>
+      </div>
+      <div id="tax-memo-body-${item.id}" style="display:none;padding:0 12px 12px;border-top:1px dashed var(--mint)">
+        <div style="font-size:.85rem;color:#3a6a4a;line-height:1.7;padding-top:8px;outline:none;white-space:pre-wrap;word-break:break-all"
+          contenteditable="false"
+          ondblclick="this.contentEditable='true';this.focus()"
+          onblur="editTaxMemoContent(${item.id},'content',this.textContent);this.contentEditable='false'"
+        >${linkify(item.content||'')}</div>
+        <div style="text-align:right;margin-top:6px">
+          <span onclick="toggleTaxMemo(${item.id})" style="font-size:.75rem;color:var(--mint-dark);cursor:pointer;padding:2px 8px;border:1px solid var(--mint);border-radius:10px">▲ 닫기</span>
+        </div>
+      </div>
+    </div>`).join('');
+  initTaxMemoDrag(el);
+}
+
+function initTaxMemoDrag(container) {
+  let dragSrcTax = null;
+  container.querySelectorAll('.it[draggable]').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragSrcTax = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      container.querySelectorAll('.it').forEach(i => i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (item !== dragSrcTax) {
+        container.querySelectorAll('.it').forEach(i => i.classList.remove('drag-over'));
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcTax && dragSrcTax !== item) {
+        const srcId = parseInt(dragSrcTax.dataset.id);
+        const tgtId = parseInt(item.dataset.id);
+        const data = loadTaxList('tax-memo');
+        const si = data.findIndex(d => d.id === srcId);
+        const ti = data.findIndex(d => d.id === tgtId);
+        if (si !== -1 && ti !== -1) {
+          const [moved] = data.splice(si, 1);
+          data.splice(ti, 0, moved);
+          saveTaxList('tax-memo', data);
+          renderTaxMemoList();
+        }
+      }
+    });
+    // 모바일 터치
+    const handle = item.querySelector('.drag-handle');
+    if (!handle) return;
+    handle.addEventListener('touchstart', e => {
+      dragSrcTax = item;
+      item.classList.add('dragging');
+    }, { passive: true });
+    handle.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const y = e.touches[0].clientY;
+      const els = [...container.querySelectorAll('.it:not(.dragging)')];
+      const target = els.find(el => { const r = el.getBoundingClientRect(); return y > r.top && y < r.bottom; });
+      els.forEach(e => e.classList.remove('drag-over'));
+      if (target) target.classList.add('drag-over');
+    }, { passive: false });
+    handle.addEventListener('touchend', e => {
+      item.classList.remove('dragging');
+      const target = container.querySelector('.it.drag-over');
+      if (target && dragSrcTax && target !== dragSrcTax) {
+        const srcId = parseInt(dragSrcTax.dataset.id);
+        const tgtId = parseInt(target.dataset.id);
+        const data = loadTaxList('tax-memo');
+        const si = data.findIndex(d => d.id === srcId);
+        const ti = data.findIndex(d => d.id === tgtId);
+        if (si !== -1 && ti !== -1) {
+          const [moved] = data.splice(si, 1);
+          data.splice(ti, 0, moved);
+          saveTaxList('tax-memo', data);
+          renderTaxMemoList();
+        }
+      }
+      container.querySelectorAll('.it').forEach(i => i.classList.remove('drag-over', 'dragging'));
+      dragSrcTax = null;
+    });
+  });
+}
+
+const TAX_KEYS = ['tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income'];
 
 function loadTaxList(key) {
   try { return JSON.parse(localStorage.getItem('ws5_'+key)||'[]'); } catch { return []; }
