@@ -2371,7 +2371,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4476,6 +4476,9 @@ function initRender(pageId) {
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
     renderFridgeMemo && renderFridgeMemo();
+    renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
+    renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
+    renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu3') {
     renderRecipe && renderRecipe();
