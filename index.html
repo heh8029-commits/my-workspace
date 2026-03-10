@@ -4037,8 +4037,8 @@ function renderHourlyTable() {
   rows += sumRow;
 
   tbody.innerHTML = rows;
-  renderHourlyDowSummary(year, month);
   updateHourlySums(year, month);
+  renderHourlyDowSummary(year, month);
 }
 
 
@@ -4066,7 +4066,7 @@ function hourlyInpBlur(el, year, month, day, hour) {
   }
   saveHourly(year, month, data);
   updateHourlySums(year, month);
-  renderHourlyDowSummary(hourlyCurrentYear, hourlyCurrentMonth);
+  // renderHourlyDowSummary는 호출 안 함 - innerHTML 변경이 blur 루프 유발
 }
 
 function updateHourlySums(year, month) {
