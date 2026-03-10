@@ -3132,14 +3132,46 @@ function renderSimpleList(storKey, elId, emptyMsg, color, chk) {
   const data = loadObj(storKey);
   const items = data.items || [];
   if (!items.length) { el.innerHTML = '<div class="empty">' + emptyMsg + '</div>'; return; }
-  el.innerHTML = items.map((it,i) => {
-    const chkHtml = showChk ? '<input type="checkbox" ' + (it.done?'checked':'') + ' onchange="toggleSimpleItem(\''+storKey+'\',\''+elId+'\',\''+emptyMsg+'\',\''+color+'\',true,'+i+')" style="width:17px;height:17px;accent-color:'+color+';cursor:pointer;flex-shrink:0">' : '';
-    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:white;border-radius:12px;margin-bottom:6px;border:1.5px solid #eee;' + (it.done?'opacity:.55;':'') + '">'
+  el.innerHTML = items.map(function(it,i) {
+    const sc = showChk ? 'true' : 'false';
+    const args = "'" + storKey + "','" + elId + "','" + emptyMsg + "','" + color + "'";
+    const chkHtml = showChk
+      ? '<input type="checkbox"' + (it.done ? ' checked' : '') + ' onchange="toggleSimpleItem(\'' + storKey + '\',\'' + elId + '\',\'' + emptyMsg + '\',\'' + color + '\',' + i + ')" style="width:17px;height:17px;accent-color:' + color + ';cursor:pointer;flex-shrink:0">'
+      : '';
+    const txt = escHtml(it.text);
+    const doneStyle = it.done ? 'text-decoration:line-through;color:#bbb' : '';
+    const wrapStyle = 'display:flex;align-items:center;gap:8px;padding:10px 12px;background:white;border-radius:12px;margin-bottom:6px;border:1.5px solid #eee;' + (it.done ? 'opacity:.55' : '');
+    return '<div id="sitem-' + storKey + '-' + i + '" style="' + wrapStyle + '">'
       + chkHtml
-      + '<span style="flex:1;font-size:.88rem;' + (it.done?'text-decoration:line-through;color:#bbb':'') + '">' + escHtml(it.text) + '</span>'
-      + '<button onclick="delSimpleItem(\''+storKey+'\',\''+elId+'\',\''+emptyMsg+'\',\''+color+'\',' + (showChk?'true':'false') + ','+i+')" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">🗑️</button>'
+      + '<span id="stxt-' + storKey + '-' + i + '" style="flex:1;font-size:.88rem;' + doneStyle + '">' + txt + '</span>'
+      + '<input id="sedit-' + storKey + '-' + i + '" type="text" value="' + txt + '" style="display:none;flex:1;border:1.5px solid ' + color + ';border-radius:8px;padding:4px 8px;font-size:.85rem;font-family:inherit" onkeydown="if(event.key===\'Enter\')saveEditSimple(\'' + storKey + '\',\'' + elId + '\',\'' + emptyMsg + '\',\'' + color + '\',' + showChk + ',' + i + ');if(event.key===\'Escape\')renderSimpleList(\'' + storKey + '\',\'' + elId + '\',\'' + emptyMsg + '\',\'' + color + '\',' + showChk + ')">'
+      + '<button id="sbtn-edit-' + storKey + '-' + i + '" onclick="startEditSimple(\'' + storKey + '\',\'' + elId + '\',\'' + emptyMsg + '\',\'' + color + '\',' + showChk + ',' + i + ')" title="편집" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.85rem;padding:0 2px">✏️</button>'
+      + '<button id="sbtn-save-' + storKey + '-' + i + '" onclick="saveEditSimple(\'' + storKey + '\',\'' + elId + '\',\'' + emptyMsg + '\',\'' + color + '\',' + showChk + ',' + i + ')" style="display:none;background:none;border:none;cursor:pointer;color:' + color + ';font-size:.82rem;font-weight:700;padding:0 4px">저장</button>'
+      + '<button onclick="delSimpleItem(\'' + storKey + '\',\'' + elId + '\',\'' + emptyMsg + '\',\'' + color + '\',' + showChk + ',' + i + ')" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;padding:0 2px">🗑️</button>'
       + '</div>';
   }).join('');
+}
+function startEditSimple(sk, ei, em, co, sc, i) {
+  document.getElementById('stxt-'+sk+'-'+i).style.display = 'none';
+  const inp = document.getElementById('sedit-'+sk+'-'+i);
+  inp.style.display = 'inline-block'; inp.style.flex = '1'; inp.focus();
+  document.getElementById('sbtn-edit-'+sk+'-'+i).style.display = 'none';
+  document.getElementById('sbtn-save-'+sk+'-'+i).style.display = 'inline';
+}
+function saveEditSimple(sk, ei, em, co, sc, i) {
+  const val = document.getElementById('sedit-'+sk+'-'+i).value.trim();
+  if (!val) return;
+  const data = loadObj(sk);
+  data.items[i].text = val;
+  stor(sk, data);
+  renderSimpleList(sk, ei, em, co, sc);
+}
+function toggleSimpleItem(storKey, elId, emptyMsg, color, idx) {
+  const data = loadObj(storKey);
+  data.items[idx].done = !data.items[idx].done;
+  stor(storKey, data);
+  const showChk = true;
+  renderSimpleList(storKey, elId, emptyMsg, color, showChk);
 }
 function addSimpleItem(inpId, storKey, elId, emptyMsg, color, chk) {
   const inp = document.getElementById(inpId);
@@ -3152,7 +3184,7 @@ function addSimpleItem(inpId, storKey, elId, emptyMsg, color, chk) {
   inp.value = '';
   renderSimpleList(storKey, elId, emptyMsg, color, chk);
 }
-function toggleSimpleItem(storKey, elId, emptyMsg, color, chk, idx) {
+function toggleSimpleItem(el, storKey, elId, emptyMsg, color, chk, idx) {
   const data = loadObj(storKey);
   data.items[idx].done = !data.items[idx].done;
   stor(storKey, data);
