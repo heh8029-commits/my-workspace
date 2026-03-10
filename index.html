@@ -1615,11 +1615,14 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡<br><span style="font-size:.72rem;font-weight:600;color:#3dbb8f">판매자배송</span></th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡매출<br><span style="font-size:.72rem;font-weight:500;color:#888">합계</span></th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">쿠팡광고비</th>
+              <th style="padding:10px 4px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;color:#e8648a;font-size:.72rem">쿠팡<br>광고%</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">네이버매출</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">검색광고</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">AI광고</th>
+              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">네이버<br><span style="font-size:.72rem;font-weight:600">AI광고</span></th>
+              <th style="padding:10px 4px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;color:#e8648a;font-size:.72rem">네이버<br>광고%</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총매출</th>
               <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총광고비</th>
+              <th style="padding:10px 4px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;color:#e8648a;font-size:.72rem">총<br>광고%</th>
             </tr>
           </thead>
           <tbody id="sales-tbody"></tbody>
@@ -3668,6 +3671,15 @@ function updateSalesRowTotal(year, month, day, data) {
   if (cCell) cCell.textContent = coupangTotal > 0 ? coupangTotal.toLocaleString() : '-';
   if (tCell) tCell.textContent = total > 0 ? total.toLocaleString() : '-';
   if (aCell) aCell.textContent = adTotal > 0 ? adTotal.toLocaleString() : '-';
+  // % 셀 실시간 업데이트
+  const cpctCell = document.getElementById(`sales-cpct-${day}`);
+  const npctCell = document.getElementById(`sales-npct-${day}`);
+  const tpctCell = document.getElementById(`sales-tpct-${day}`);
+  const nAd = parseNum(r.naverSearch) + parseNum(r.naverAi);
+  const nSales = parseNum(r.naver);
+  if (cpctCell) cpctCell.textContent = coupangTotal>0&&parseNum(r.coupangAd)>0 ? (parseNum(r.coupangAd)/coupangTotal*100).toFixed(1)+'%' : '-';
+  if (npctCell) npctCell.textContent = nSales>0&&nAd>0 ? (nAd/nSales*100).toFixed(1)+'%' : '-';
+  if (tpctCell) tpctCell.textContent = total>0&&adTotal>0 ? (adTotal/total*100).toFixed(1)+'%' : '-';
 }
 
 function updateSalesSummary(year, month) {
@@ -3709,11 +3721,14 @@ function updateSalesSummary(year, month) {
     sr.cells[2].textContent = ts.toLocaleString();
     sr.cells[3].textContent = tc.toLocaleString();
     sr.cells[4].textContent = tca.toLocaleString();
-    sr.cells[5].textContent = tn.toLocaleString();
-    sr.cells[6].textContent = tns.toLocaleString();
-    sr.cells[7].textContent = tna.toLocaleString();
-    sr.cells[8].textContent = (tc+tn).toLocaleString();
-    sr.cells[9].textContent = (tca+tns+tna).toLocaleString();
+    sr.cells[5].textContent = tc>0&&tca>0 ? (tca/tc*100).toFixed(1)+'%' : '-';
+    sr.cells[6].textContent = tn.toLocaleString();
+    sr.cells[7].textContent = tns.toLocaleString();
+    sr.cells[8].textContent = tna.toLocaleString();
+    sr.cells[9].textContent = tn>0&&(tns+tna)>0 ? ((tns+tna)/tn*100).toFixed(1)+'%' : '-';
+    sr.cells[10].textContent = (tc+tn).toLocaleString();
+    sr.cells[11].textContent = (tca+tns+tna).toLocaleString();
+    sr.cells[12].textContent = (tc+tn)>0&&(tca+tns+tna)>0 ? ((tca+tns+tna)/(tc+tn)*100).toFixed(1)+'%' : '-';
   }
 }
 
@@ -3795,11 +3810,14 @@ function renderSalesTable() {
       <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'seller',r.seller)}</td>
       <td id="sales-ctotal-${d}" style="padding:6px 8px;text-align:right;font-weight:700;color:#2a9a6a;white-space:nowrap;background:#f0fff8">${coupangTotal > 0 ? coupangTotal.toLocaleString() : '-'}</td>
       <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'coupangAd',r.coupangAd)}</td>
+      <td id="sales-cpct-${d}" style="padding:6px 5px;text-align:center;font-size:.78rem;font-weight:700;color:#e8648a;white-space:nowrap">${coupangTotal>0&&parseNum(r.coupangAd)>0 ? (parseNum(r.coupangAd)/coupangTotal*100).toFixed(1)+'%' : '-'}</td>
       <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naver',r.naver)}</td>
       <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naverSearch',r.naverSearch)}</td>
       <td style="padding:4px 5px;text-align:center">${mkInp(year,month,d,'naverAi',r.naverAi)}</td>
+      <td id="sales-npct-${d}" style="padding:6px 5px;text-align:center;font-size:.78rem;font-weight:700;color:#e8648a;white-space:nowrap">${(()=>{const nAd=parseNum(r.naverSearch)+parseNum(r.naverAi);const nSales=parseNum(r.naver);return nSales>0&&nAd>0?(nAd/nSales*100).toFixed(1)+'%':'-'})()}</td>
       <td id="sales-total-${d}" style="padding:6px 10px;text-align:right;font-weight:800;color:#8b60d0;white-space:nowrap">${total > 0 ? total.toLocaleString() : '-'}</td>
       <td id="sales-adtotal-${d}" style="padding:6px 10px;text-align:right;font-weight:700;color:#e03c6e;white-space:nowrap">${(parseNum(r.coupangAd)+parseNum(r.naverSearch)+parseNum(r.naverAi)) > 0 ? (parseNum(r.coupangAd)+parseNum(r.naverSearch)+parseNum(r.naverAi)).toLocaleString() : '-'}</td>
+      <td id="sales-tpct-${d}" style="padding:6px 5px;text-align:center;font-size:.78rem;font-weight:700;color:#e8648a;white-space:nowrap">${(()=>{const tAd=parseNum(r.coupangAd)+parseNum(r.naverSearch)+parseNum(r.naverAi);return total>0&&tAd>0?(tAd/total*100).toFixed(1)+'%':'-'})()}</td>
     </tr>`;
   }
 
@@ -3810,11 +3828,14 @@ function renderSalesTable() {
     <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
     <td style="padding:10px;text-align:right;color:#2a9a6a">-</td>
     <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
+    <td id="sum-cpct" style="padding:10px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
     <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
     <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
     <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
+    <td id="sum-npct" style="padding:10px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
     <td style="padding:10px;text-align:right;color:#8b60d0">-</td>
     <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
+    <td id="sum-tpct" style="padding:10px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
   </tr>`;
 
   tbody.innerHTML = rows;
