@@ -647,6 +647,8 @@ body.mobile-view .mobile-subnav.active {
   min-height: 100vh;
 }
 body.mobile-view .app-wrapper { display: block; }
+body.mobile-view .app-body { width: 100vw; overflow-x: hidden; }
+body.mobile-view .main { overflow-x: hidden; max-width: 100vw; }
 
 .app-body {
   flex: 1;
@@ -2158,9 +2160,9 @@ function goTab(el, id) {
   localStorage.setItem('ws5_curtab', id);
   gnavActivate(id);
   // 해당 mobile-subnav 표시
-  document.querySelectorAll('.mobile-subnav').forEach(n => n.style.display='none');
+  document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+id);
-  if (mn) mn.style.display='';
+  if (mn) mn.classList.add('active');
   initRender(id);
 }
 
@@ -3936,15 +3938,15 @@ let hourlyCurrentYear = 2026;
 let hourlyCurrentMonth = 3;
 
 function hourlyKey(year, month) { return `hourly_${year}_${month}`; }
-function loadHourly(year, month) { return loadObj(hourlyKey(year, month)); }
+function loadHourly(year, month) {
+  try { return JSON.parse(localStorage.getItem('ws5_' + hourlyKey(year, month)) || '{}'); } catch { return {}; }
+}
 function saveHourly(year, month, data) {
-  stor(hourlyKey(year, month), data);
-  try {
-    fetch(`${FB_URL}/${hourlyKey(year,month)}.json`, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-  } catch(e) {}
+  const k = hourlyKey(year, month);
+  localStorage.setItem('ws5_' + k, JSON.stringify(data));
+  fetch(FB_URL + '/' + k + '.json', {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  }).catch(e => console.log('hourly save err', e));
 }
 
 function switchHourlyMonth(year, month) {
@@ -4287,8 +4289,9 @@ function initRender(pageId) {
   });
   gnavActivate(savedTab);
   document.querySelectorAll('.mobile-subnav').forEach(n => n.style.display='none');
+  document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
-  if (mn) mn.style.display='';
+  if (mn) mn.classList.add('active');
   // 데이터 렌더
   initRender(savedTab);
   // Firebase sync
