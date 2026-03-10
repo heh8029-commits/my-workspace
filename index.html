@@ -3945,9 +3945,8 @@ function renderHourlyTable() {
   let hdrHtml = '<tr>';
   hdrHtml += '<th style="' + TH + ';background:#c8e4f4">날짜</th>';
   hdrHtml += '<th style="' + TH + ';background:#c8e4f4">요일</th>';
-  hdrHtml += '<th style="' + TH + ';background:#d8ecf8;font-size:.68rem;color:#888">기록시각</th>';
   HOURLY_SLOT_LABELS.forEach(function(l) {
-    hdrHtml += '<th style="' + TH + ';background:#daeef8">' + l + '</th>';
+    hdrHtml += '<th style="' + TH + ';background:#daeef8">' + l + '<br><span style="font-size:.63rem;color:#aaa;font-weight:500">금액 / 분</span></th>';
   });
   hdrHtml += '</tr>';
   thead.innerHTML = hdrHtml;
@@ -3967,11 +3966,14 @@ function renderHourlyTable() {
     let row = '<tr style="background:' + rowBg + ';' + todayAnim + '">';
     row += '<td style="padding:5px 8px;text-align:center;color:' + txtC + ';font-weight:' + (isToday?'800':'600') + ';white-space:nowrap">' + (isToday?'✨ ':'') + month + '/' + d + '</td>';
     row += '<td style="padding:5px 6px;text-align:center;color:' + txtC + ';font-weight:700">' + dow + '</td>';
-    row += '<td style="padding:3px 4px;text-align:center;white-space:nowrap" id="hourly-savetime-' + year + '-' + month + '-' + d + '"><span style="font-size:.68rem;color:#aaa">' + (r.savedAt||'') + '</span></td>';
     HOURLY_SLOTS.forEach(function(h) {
       const raw = r['h'+h] || '';
       const disp = raw ? Number(raw).toLocaleString() : '';
-      row += '<td style="padding:3px 3px;text-align:center"><input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + INP + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key===\'Enter\')this.blur()"></td>';
+      const min = r['m'+h] || '';
+      row += '<td style="padding:3px 3px;text-align:center">'
+        + '<input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + INP + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()" placeholder="금액">'
+        + '<br><input type="text" inputmode="numeric" maxlength="2" value="' + min + '" style="border:none;border-bottom:1px solid #c8e0f4;padding:1px 2px;font-size:.68rem;text-align:center;background:transparent;outline:none;color:#4da6e8;width:36px;font-family:inherit" onblur="hourlyMinBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()" placeholder="분">'
+        + '</td>';
     });
     row += '</tr>';
     rows += row;
@@ -3979,7 +3981,7 @@ function renderHourlyTable() {
 
   // ── 합계 행 ──
   let sumRow = '<tr id="hourly-sum-row" style="background:linear-gradient(135deg,#daeef8,#c0e0f4);font-weight:800">';
-  sumRow += '<td colspan="3" style="padding:10px;text-align:center;color:#1a5f8a">합계</td>';
+  sumRow += '<td colspan="2" style="padding:10px;text-align:center;color:#1a5f8a">합계</td>';
   HOURLY_SLOTS.forEach(function(h) {
     sumRow += '<td id="hourly-sum-h' + h + '" style="padding:8px 4px;text-align:right;color:#1a5f8a;font-size:.78rem">-</td>';
   });
@@ -3992,6 +3994,15 @@ function renderHourlyTable() {
 }
 
 
+
+function hourlyMinBlur(el, year, month, day, hour) {
+  const val = el.value.replace(/[^0-9]/g,'').slice(0,2);
+  el.value = val;
+  const data = loadHourly(year, month);
+  if (!data['d'+day]) data['d'+day] = {};
+  data['d'+day]['m'+hour] = val;
+  saveHourly(year, month, data);
+}
 
 function hourlyInpFocus(el) {
   const raw = el.dataset.raw;
@@ -4007,17 +4018,6 @@ function hourlyInpBlur(el, year, month, day, hour) {
   const data = loadHourly(year, month);
   if (!data['d'+day]) data['d'+day] = {};
   data['d'+day]['h'+hour] = num;
-  // 저장 시각 자동 기록
-  if (num !== '') {
-    const now = new Date();
-    const hh = now.getHours();
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    const ampm = hh < 12 ? '오전' : '오후';
-    const h12 = hh === 0 ? 12 : hh > 12 ? hh-12 : hh;
-    data['d'+day].savedAt = ampm + h12 + '시' + mm + '분';
-    const cell = document.getElementById('hourly-savetime-'+year+'-'+month+'-'+day);
-    if (cell) cell.innerHTML = '<span style="font-size:.68rem;color:#4da6e8;font-weight:700">' + data['d'+day].savedAt + '</span>';
-  }
   saveHourly(year, month, data);
   updateHourlySums(year, month);
   renderHourlyDowSummary(year, month);
