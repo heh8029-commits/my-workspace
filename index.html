@@ -231,6 +231,20 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 }
 .flow-item:hover { background:var(--pink-mid); border-color:var(--pink-dark); }
 .flow-item.done-flow { opacity:.5; text-decoration:line-through; }
+@keyframes flowBlink {
+  0%,100% { background:var(--pink-mid); box-shadow:0 0 0 0 rgba(232,100,138,0); transform:scale(1); }
+  50%      { background:linear-gradient(135deg,#ffb6cc,#ff6fa0); box-shadow:0 0 14px 4px rgba(232,100,138,.45); transform:scale(1.07); }
+}
+.flow-item.now-active {
+  animation: flowBlink 1.1s ease-in-out infinite;
+  border-color: var(--rose) !important;
+  z-index: 1;
+}
+.flow-time-badge {
+  font-size:.62rem; color:#e03c6e; background:#fff0f5;
+  border-radius:10px; padding:1px 6px; margin-left:4px;
+  font-weight:700; white-space:nowrap; flex-shrink:0;
+}
 
 .flow-item .fi-del {
   display:none; position:absolute; top:-7px; right:-7px;
@@ -2407,6 +2421,23 @@ async function syncFromSheet() {
 }
 
 // ── FLOW 데이터 ──
+// 기본업무순서 시간 슬롯 (오전10시~오후9시)
+const FLOW_TIME_SLOTS = [
+  {val:'10:00',label:'오전10시~11시'},{val:'11:00',label:'오전11시~12시'},
+  {val:'12:00',label:'오후12시~1시'},{val:'13:00',label:'오후1시~2시'},
+  {val:'14:00',label:'오후2시~3시'},{val:'15:00',label:'오후3시~4시'},
+  {val:'16:00',label:'오후4시~5시'},{val:'17:00',label:'오후5시~6시'},
+  {val:'18:00',label:'오후6시~7시'},{val:'19:00',label:'오후7시~8시'},
+  {val:'20:00',label:'오후8시~9시'},{val:'21:00',label:'오후9시~10시'}
+];
+function isFlowTimeNow(val) {
+  if (!val) return false;
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes();
+  const nowMin = h*60+m;
+  const startH = parseInt(val.split(':')[0]);
+  return nowMin >= startH*60 && nowMin < (startH+1)*60;
+}
 const flowData = {
   boss:   load('boss_flow'),
   basic:  load('basic_flow'),
@@ -2426,11 +2457,15 @@ function renderFlow(type) {
   let html = '';
   flowData[type].forEach((item, i) => {
     if (i > 0) html += `<span class="flow-arrow ${arrCls}">→</span>`;
-    html += `<div class="flow-item ${cls}" id="fi_${type}_${item.id}">
+    const isNow = type==='boss' && isFlowTimeNow(item.time);
+    const nowCls = isNow ? ' now-active' : '';
+    const timeBadge = item.time ? '<span class="flow-time-badge">'+FLOW_TIME_SLOTS.find(t=>t.val===item.time)?.label.replace('~','↗')+'</span>' : '';
+    html += `<div class="flow-item ${cls}${nowCls}" id="fi_${type}_${item.id}">
       <span class="flow-txt" contenteditable="true"
         onblur="editFlow('${type}',${item.id},this.textContent)"
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
       >${esc(item.text)}</span>
+      ${timeBadge}
       <button class="fi-del" onclick="delFlow('${type}',${item.id})">✕</button>
     </div>`;
   });
@@ -2443,10 +2478,35 @@ function renderFlow(type) {
 }
 
 function addFlow(type) {
-  const text = prompt('항목 이름을 입력하세요');
-  if (!text || !text.trim()) return;
-  flowData[type].push({ id: Date.now(), text: text.trim(), done: false });
-  saveFlow(type); renderFlow(type); toast('🎀 추가됐어요!');
+  // 팝업 직접 생성
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const timeOpts = FLOW_TIME_SLOTS.map(t => '<option value="'+t.val+'">'+t.label+'</option>').join('');
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:'Pretendard',sans-serif;box-shadow:0 8px 32px rgba(232,100,138,.2)">
+      <div style="font-size:1rem;font-weight:700;color:#e03c6e;margin-bottom:14px">🎀 업무 추가</div>
+      <input id="flow-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #f7a8c0;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+      <select id="flow-add-time" style="width:100%;border:1.5px solid #f7a8c0;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+        <option value="">시간대 없음</option>
+        ${timeOpts}
+      </select>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+        <button id="flow-add-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);color:white;font-weight:700;cursor:pointer;font-size:.85rem">추가</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const inp = overlay.querySelector('#flow-add-txt');
+  inp.focus();
+  overlay.querySelector('#flow-add-ok').onclick = function() {
+    const text = inp.value.trim();
+    if (!text) { inp.focus(); return; }
+    const timeVal = overlay.querySelector('#flow-add-time').value;
+    flowData[type].push({ id: Date.now(), text, done: false, time: timeVal });
+    saveFlow(type); renderFlow(type); overlay.remove(); toast('🎀 추가됐어요!');
+  };
+  inp.onkeydown = function(e) { if(e.key==='Enter') overlay.querySelector('#flow-add-ok').click(); };
+  overlay.onclick = function(e) { if(e.target===overlay) overlay.remove(); };
 }
 
 function delFlow(type, id) {
@@ -4501,6 +4561,8 @@ function initRender(pageId) {
   // 날짜
   updateDate();
   setInterval(updateDate, 60000);
+  // 1분마다 업무순서 시간 갱신
+  setInterval(function() { renderFlow('boss'); }, 60000);
   // 초기 탭 표시
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const pg = document.getElementById(savedTab);
