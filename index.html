@@ -600,17 +600,6 @@ body.mobile-view .mobile-subnav.active {
 }
 .gnav-main-icon { font-size: 1.05rem; }
 
-.sales-inner-tab {
-  padding:8px 20px;border-radius:24px;border:1.5px solid #b2e8d4;
-  background:white;color:#3dbb8f;font-size:.85rem;font-weight:600;
-  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
-}
-.sales-inner-tab:hover { background:#f0fff8; }
-.sales-inner-tab.active {
-  background:linear-gradient(135deg,#3dbb8f,#2a9a6a);
-  color:white;border-color:#2a9a6a;
-}
-
 .shop-sub-btn {
   padding:7px 16px;border-radius:22px;border:1.5px solid var(--pink);
   background:white;color:var(--soft);font-size:.82rem;font-weight:500;
@@ -675,17 +664,6 @@ body.mobile-view .app-wrapper { display: block; }
 }
 .gnav.collapsed .gnav-logo span,
 .gnav.collapsed .gnav-main span:last-child,
-.shop-sub-btn {
-  padding:7px 16px;border-radius:22px;border:1.5px solid var(--pink);
-  background:white;color:var(--soft);font-size:.82rem;font-weight:500;
-  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
-}
-.shop-sub-btn:hover { background:var(--pink-pale);color:var(--rose); }
-.shop-sub-btn.active {
-  background:linear-gradient(135deg,var(--pink-dark),var(--rose));
-  color:white;border-color:var(--rose);font-weight:700;
-}
-
 .gnav-subs { display: none; }
 .gnav.collapsed .gnav-main { padding: 10px; justify-content: center; }
 .gnav.collapsed .gnav-main-icon { font-size: 1.2rem; }
@@ -1279,6 +1257,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   <div class="gnav-subs" id="gnav-subs-menu1">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',1,null)">💰 부가세/종소세/세금</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',2,null)">📊 매출정리/광고비</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',7,null)">⏰ 그로스시간별매출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',3,null)">🎨 디자인/상품관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null)">📦 재고관리(단가)</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
@@ -1562,15 +1541,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
 
   <!-- ══════════════ 미리제작소 ══════════════ -->
   <div class="page" id="menu1">
-    <!-- 미리제작소 서브탭 버튼 바 -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
-      <button class="shop-sub-btn" onclick="switchSub('menu1',1,this)">💰 부가세/종소세/세금</button>
-      <button class="shop-sub-btn" onclick="switchSub('menu1',2,this)">📊 매출정리/광고비</button>
-      <button class="shop-sub-btn" onclick="switchSub('menu1',3,this)">🎨 디자인/상품관리</button>
-      <button class="shop-sub-btn" onclick="switchSub('menu1',4,this)">📦 재고관리(단가)</button>
-      <button class="shop-sub-btn" onclick="switchSub('menu1',5,this)">👥 직원관리</button>
-      <button class="shop-sub-btn" onclick="switchSub('menu1',6,this)">🌸 시즌관리</button>
-    </div>
+
     <div class="subpage active" id="menu1-sub-1">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff8e0,#ffe880)">💰</div>
@@ -1640,14 +1611,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
         <div><div class="subpage-title">매출정리 / 광고비</div><div class="subpage-desc">월별 매출과 광고비를 날짜별로 정리해요</div></div>
       </div>
 
-      <!-- 내부 탭 -->
-      <div style="display:flex;gap:8px;margin-bottom:18px">
-        <button class="sales-inner-tab active" id="sales-inner-tab-1" onclick="switchSalesInner(1)">📊 매출정리/광고비</button>
-        <button class="sales-inner-tab" id="sales-inner-tab-2" onclick="switchSalesInner(2)">⏰ 그로스시간별매출</button>
-      </div>
 
-      <!-- 내부 탭 1: 매출정리/광고비 -->
-      <div id="sales-inner-1">
       <!-- 월 탭 -->
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="sales-month-tabs"></div>
 
@@ -1678,20 +1642,22 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
           <tbody id="sales-tbody"></tbody>
         </table>
       </div>
-      </div><!-- sales-inner-1 끝 -->
 
-      <!-- 내부 탭 2: 그로스 시간별 매출 -->
-      <div id="sales-inner-2" style="display:none">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="hourly-month-tabs"></div>
-        <div id="hourly-dow-summary" style="margin-bottom:16px"></div>
-        <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #b2d8f8">
-          <table id="hourly-table" style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:1200px">
-            <thead id="hourly-thead"></thead>
-            <tbody id="hourly-tbody"></tbody>
-          </table>
-        </div>
-      </div><!-- sales-inner-2 끝 -->
 
+    </div>
+    <div class="subpage" id="menu1-sub-7">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">⏰</div>
+        <div><div class="subpage-title">그로스 시간별 매출</div><div class="subpage-desc">시간대별 매출 추이를 날짜별로 기록해요 (9시~23시)</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="hourly-month-tabs"></div>
+      <div id="hourly-dow-summary" style="margin-bottom:16px"></div>
+      <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #b2d8f8">
+        <table id="hourly-table" style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:1200px">
+          <thead id="hourly-thead"></thead>
+          <tbody id="hourly-tbody"></tbody>
+        </table>
+      </div>
     </div>
     <div class="subpage" id="menu1-sub-3">
       <div class="subpage-header">
@@ -2990,16 +2956,6 @@ const savedView = localStorage.getItem('ws5_viewmode') || 'pc';
 setView(savedView);
 
 // ── 사이드 메뉴 전환 ──
-function switchSalesInner(num) {
-  document.getElementById('sales-inner-1').style.display = num===1 ? '' : 'none';
-  document.getElementById('sales-inner-2').style.display = num===2 ? '' : 'none';
-  document.querySelectorAll('.sales-inner-tab').forEach(t => t.classList.remove('active'));
-  const tab = document.getElementById('sales-inner-tab-'+num);
-  if (tab) tab.classList.add('active');
-  if (num===1) { renderSales(); }
-  if (num===2) { renderHourly(); }
-}
-
 function switchSub(pageId, num, el) {
   document.querySelectorAll(`#${pageId} .subpage`).forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`${pageId}-sub-${num}`);
@@ -4239,6 +4195,7 @@ function initRender(pageId) {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
     renderSales && renderSales();
+    renderHourly && renderHourly();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
