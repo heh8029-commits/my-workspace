@@ -1,4 +1,4 @@
-const CACHE_NAME = 'urij-v7';
+const CACHE_NAME = 'urij-v9';
 const ASSETS = [
   './index.html',
   './shop.html',
