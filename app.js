@@ -101,19 +101,8 @@ async function syncFromSheet() {
     WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
     Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
     recipeDB.data = load('recipe');
-    // 전체 렌더
-    ['boss','basic','design'].forEach(renderFlow);
-    renderWeek();
-    Object.keys(renderCfg).forEach(rerender);
-    renderRecipe();
-    renderOrder();
-    renderExp();
-    TAX_KEYS.forEach(renderTaxList);
-    renderTaxMemoList();
-    renderFridgeMemo();
-    renderSalesTable();
-    const sc = load('shortcuts'); if (sc && sc.length) renderShortcuts(sc);
-    const sc2 = load('shortcuts2'); if (sc2 && sc2.length) renderShortcuts2(sc2);
+    // 현재 페이지에 맞는 렌더만 실행
+    if (window._currentPage) initRender(window._currentPage);
     toast('✅ 동기화 완료!');
   } catch(e) {
     console.log('sync err', e);
@@ -1825,23 +1814,7 @@ function closeFabMenu() {
   btn.style.color = '';
 }
 
-// ── 초기 렌더 (모든 함수 정의 후 실행) ──
-['boss','basic','design'].forEach(renderFlow);
-renderWeek();
-Object.keys(renderCfg).forEach(rerender);
-renderOrder();
-renderRecipe();
-TAX_KEYS.forEach(renderTaxList);
-renderTaxMemoList();
-renderExp();
-renderFridgeMemo();
-renderSales();
-(function(){ const sc=load('shortcuts'); if(sc&&sc.length) renderShortcuts(sc); })();
-(function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
-renderFabIcons();
-
-// 페이지 로드 시 Firebase 자동 동기화
-syncFromSheet();
+// ── 초기 렌더는 initPage()가 담당 ──
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(() => {
@@ -1855,6 +1828,7 @@ if ('serviceWorker' in navigator) {
 // 페이지 초기화 (각 HTML에서 호출)
 // ────────────────────────────────
 function initPage(pageId) {
+  window._currentPage = pageId;  // 현재 페이지 기억
   // 탭 active
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const fileMap = {home:'index', menu1:'shop', menu2:'house', menu4:'jinwoo', menu5:'invest', menu3:'recipe'};
