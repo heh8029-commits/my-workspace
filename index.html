@@ -3473,7 +3473,7 @@ function renderPnlIncomeCard() {
   const data = loadPnl(pnlCurrentPeriod);
   const items = data.incomes || [];
   const bc = '#b2e8d4', bg = '#f5fff8';
-  const inpS = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
+  const inpBase = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
   let html = '<div style="background:'+bg+';border:1.5px solid '+bc+';border-radius:14px;padding:14px">';
   html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
   html += '<div style="font-size:.88rem;font-weight:800;color:#2a9a6a">&#128181; 이번달 번 돈</div>';
@@ -3484,8 +3484,8 @@ function renderPnlIncomeCard() {
   } else {
     items.forEach(function(it, i) {
       html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
-      html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목명" onblur="pnlSaveIncome(this,'+i+',\'label\')" style="width:80px;flex-shrink:0;'+inpS+'">';
-      html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveIncome(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpS+'">';
+      html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목" onblur="pnlSaveIncome(this,'+i+',\'label\')" style="flex:1;min-width:0;'+inpBase+'">';
+      html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveIncome(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpBase+'">';
       html += '<button data-idx="'+i+'" onclick="pnlDelIncome(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.85rem;flex-shrink:0;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">&#10005;</button>';
       html += '</div>';
     });
@@ -3500,7 +3500,7 @@ function renderPnlExpenseCard() {
   const data = loadPnl(pnlCurrentPeriod);
   const items = data.expenses || [];
   const bc = '#f7c8b0', bg = '#fff8f5';
-  const inpS = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
+  const inpBase = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
   let html = '<div style="background:'+bg+';border:1.5px solid '+bc+';border-radius:14px;padding:14px">';
   html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
   html += '<div style="font-size:.88rem;font-weight:800;color:#c05020">&#128184; 이번달 나간 돈</div>';
@@ -3510,10 +3510,10 @@ function renderPnlExpenseCard() {
     html += '<div class="empty" style="font-size:.8rem">지출 항목을 추가해요</div>';
   } else {
     items.forEach(function(it, i) {
-      html += '<div draggable="true" data-pnl-idx="'+i+'" ondragstart="pnlExpDragStart(event,'+i+')" ondragover="pnlExpDragOver(event)" ondragleave="pnlExpDragLeave(event)" ondrop="pnlExpDrop(event,'+i+')" style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
-      html += '<span style="cursor:grab;color:#ccc;font-size:.82rem;flex-shrink:0;user-select:none" title="순서이동">&#10887;</span>';
-      html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목명" onblur="pnlSaveExpense(this,'+i+',\'label\')" style="width:80px;flex-shrink:0;'+inpS+'">';
-      html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveExpense(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpS+'">';
+      html += '<div draggable="true" ondragstart="pnlExpDragStart(event,'+i+')" ondragover="pnlExpDragOver(event)" ondragleave="pnlExpDragLeave(event)" ondrop="pnlExpDrop(event,'+i+')" style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
+      html += '<span style="cursor:grab;color:#ccc;font-size:.82rem;flex-shrink:0;user-select:none">&#10887;</span>';
+      html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목" onblur="pnlSaveExpense(this,'+i+',\'label\')" style="flex:1;min-width:0;'+inpBase+'">';
+      html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveExpense(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpBase+'">';
       html += '<button data-idx="'+i+'" onclick="pnlDelExpense(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.85rem;flex-shrink:0;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">&#10005;</button>';
       html += '</div>';
     });
@@ -3521,6 +3521,16 @@ function renderPnlExpenseCard() {
   html += '</div>';
   el.innerHTML = html;
 }
+
+function pnlFmtNum(el) {
+  const pos = el.selectionStart;
+  const raw = el.value.replace(/[^0-9]/g, '');
+  const formatted = raw ? Number(raw).toLocaleString() : '';
+  const diff = formatted.length - el.value.length;
+  el.value = formatted;
+  try { el.setSelectionRange(pos + diff, pos + diff); } catch(e) {}
+}
+
 
 let _pnlExpDragFrom = null;
 function pnlExpDragStart(e, i) { _pnlExpDragFrom = i; e.dataTransfer.effectAllowed='move'; }
