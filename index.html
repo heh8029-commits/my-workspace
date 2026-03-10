@@ -3376,7 +3376,7 @@ const STAFF_PERIODS = (function() {
     const endM = m===12 ? 1 : m+1;
     list.push({
       key: y+'_'+m,
-      label: (String(y).slice(2))+'년 '+m+'월',
+      label: m+'월11일~'+endM+'월10일 ('+String(y).slice(2)+'년)',
       range: m+'월11일~'+endM+'월10일'
     });
   });
@@ -3415,50 +3415,74 @@ function switchStaffPeriod(key) {
 function renderStaffMonthContent() {
   const el = document.getElementById('staff-month-content');
   if (!el) return;
-  const period = STAFF_PERIODS.find(p=>p.key===staffCurrentPeriod);
   const masters = loadStaffMaster();
   const pay = loadStaffPay(staffCurrentPeriod);
+  if (!masters.length) { el.innerHTML = '<div class="empty">먼저 직원 정보를 등록해주세요 👤</div>'; return; }
 
-  if (!masters.length) {
-    el.innerHTML = '<div class="empty">먼저 직원 정보를 등록해주세요 👤</div>';
-    return;
-  }
-
-  const rangeLabel = period ? '<span style="font-size:.78rem;color:#aaa;font-weight:400;margin-left:8px">'+period.range+'</span>' : '';
-  let html = '<div style="font-size:.88rem;font-weight:700;color:#5a30c0;margin-bottom:12px">'+period.label+rangeLabel+'</div>';
-
-  masters.forEach(staff => {
+  let html = '';
+  masters.forEach(function(staff) {
     const sp = pay[staff.id] || {};
     const base = sp.base || '';
     const bonus = sp.bonus || '';
-    const subs = sp.subs || [{type:'',unit:0,qty:0},{type:'',unit:0,qty:0}];
-    const subTotal = subs.reduce((s,sub)=>s+(parseFloat(sub.unit||0)*parseFloat(sub.qty||0)),0);
-    const total = (parseFloat(base||0)+parseFloat(bonus||0)+subTotal);
+    const subs = sp.subs || [];
+    const subTotal = subs.reduce(function(s,sub){ return s + parseFloat(sub.unit||0)*parseFloat(sub.qty||0); }, 0);
+    const total = parseFloat(base||0) + parseFloat(bonus||0) + subTotal;
+    const sid = staff.id;
 
-    html += '<div style="background:#f8f5ff;border:1.5px solid #ddd0f8;border-radius:14px;padding:14px;margin-bottom:12px">';
-    // 이름 + 합산
-    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
-    html += '<div style="font-size:.95rem;font-weight:800;color:#5a30c0">👤 '+escHtml(staff.name)+'</div>';
-    if (total > 0) html += '<div style="margin-left:auto;font-size:.92rem;font-weight:800;color:#e03c6e;background:#fff0f5;padding:3px 12px;border-radius:20px">합계 '+total.toLocaleString()+'원</div>';
+    const resigned = !!(pay[staff.id] && pay[staff.id].resigned);
+    html += '<div style="background:' + (resigned?'#f7f7f7':'#f8f5ff') + ';border:1.5px solid ' + (resigned?'#ddd':'#ddd0f8') + ';border-radius:14px;padding:14px;margin-bottom:12px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:' + (resigned?'0':'12px') + '">';
+    html += '<div style="font-size:.95rem;font-weight:800;color:' + (resigned?'#aaa':'#5a30c0') + '">👤 ' + escHtml(staff.name) + (resigned?'<span style="font-size:.7rem;background:#eee;color:#aaa;padding:2px 8px;border-radius:10px;margin-left:6px">퇴사</span>':'') + '</div>';
+    if (!resigned && total > 0) html += '<div style="margin-left:auto;font-size:.9rem;font-weight:800;color:#e03c6e;background:#fff0f5;padding:3px 12px;border-radius:20px">💰 합계 ' + total.toLocaleString() + '원</div>';
+    html += '<button data-sid="' + sid + '" onclick="staffToggleResign(this.dataset.sid)" style="'+(resigned?'margin-left:auto;':'')+'background:none;border:1.5px solid #ddd;border-radius:8px;padding:3px 10px;font-size:.68rem;color:#bbb;cursor:pointer">' + (resigned?'↩ 복직':'퇴사 처리') + '</button>';
+    html += '</div>';
+    if (resigned) { html += '</div>'; return; }
+
+    const mb = subs.length ? '10px' : '4px';
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:' + mb + '">';
+    html += '<div style="flex:1;min-width:110px">'
+          + '<div style="font-size:.72rem;color:#888;margin-bottom:4px">\u{1F4B0} 월급</div>'
+          + '<input type="text" value="' + (base ? Number(base).toLocaleString() : '') + '" placeholder="\uAE08\uC561"'
+          + ' oninput="formatStaffNum(this)" onblur="staffSaveBase(this,\'' + sid + '\',\'base\')"'
+          + ' style="width:100%;border:1.5px solid #ddd0f8;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box">'
+          + '</div>';
+    html += '<div style="flex:1;min-width:110px">'
+          + '<div style="font-size:.72rem;color:#888;margin-bottom:4px">\u{1F381} 보너스</div>'
+          + '<input type="text" value="' + (bonus ? Number(bonus).toLocaleString() : '') + '" placeholder="\uC5C6\uC73C\uBA74 \uBE44\uC6CC\uC694"'
+          + ' oninput="formatStaffNum(this)" onblur="staffSaveBase(this,\'' + sid + '\',\'bonus\')"'
+          + ' style="width:100%;border:1.5px solid #ddd0f8;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box">'
+          + '</div>';
+    html += '<div style="flex-shrink:0;padding-bottom:2px">'
+          + '<button data-sid="' + sid + '" onclick="staffAddSub(this.dataset.sid)"'
+          + ' style="background:linear-gradient(135deg,#ede0ff,#c8a8f8);border:none;border-radius:8px;padding:7px 12px;font-size:.78rem;font-weight:700;color:#5a30c0;cursor:pointer;white-space:nowrap">'
+          + '\u{1F527} \uBD80\uC5C5 \uCD94\uAC00</button></div>';
     html += '</div>';
 
-    // 월급 + 보너스
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
-    html += '<div><div style="font-size:.72rem;color:#888;margin-bottom:4px">💰 월급</div><input type="text" value="'+(base?Number(base).toLocaleString():'')+'" placeholder="금액 입력" oninput="formatStaffNum(this)" onblur="saveStaffField(\''+staffCurrentPeriod+'\',\''+staff.id+'\',\'base\',this.value)" style="width:100%;border:1.5px solid #ddd0f8;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:\'Pretendard\',sans-serif;box-sizing:border-box"></div>';
-    html += '<div><div style="font-size:.72rem;color:#888;margin-bottom:4px">🎁 보너스</div><input type="text" value="'+(bonus?Number(bonus).toLocaleString():'')+'" placeholder="없으면 비워요" oninput="formatStaffNum(this)" onblur="saveStaffField(\''+staffCurrentPeriod+'\',\''+staff.id+'\',\'bonus\',this.value)" style="width:100%;border:1.5px solid #ddd0f8;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:\'Pretendard\',sans-serif;box-sizing:border-box"></div>';
-    html += '</div>';
-
-    // 부업 (2종)
-    if (staff.hasSub) {
-      html += '<div style="margin-top:4px"><div style="font-size:.72rem;color:#888;margin-bottom:6px">🔧 부업</div>';
-      [0,1].forEach(idx => {
-        const sub = subs[idx] || {type:'',unit:0,qty:0};
-        const subAmt = parseFloat(sub.unit||0)*parseFloat(sub.qty||0);
-        html += '<div style="display:grid;grid-template-columns:1fr 90px 70px 80px;gap:6px;margin-bottom:6px;align-items:center">';
-        html += '<input type="text" value="'+escHtml(sub.type||'')+'" placeholder="종류 (예: 포장)" onblur="saveStaffSub(\''+staffCurrentPeriod+'\',\''+staff.id+'\','+idx+',\'type\',this.value)" style="border:1.5px solid #e8d8f8;border-radius:8px;padding:6px 8px;font-size:.82rem;font-family:\'Pretendard\',sans-serif;min-width:0">';
-        html += '<input type="text" value="'+(sub.unit?Number(sub.unit).toLocaleString():'')+'" placeholder="단가" oninput="formatStaffNum(this)" onblur="saveStaffSub(\''+staffCurrentPeriod+'\',\''+staff.id+'\','+idx+',\'unit\',this.value)" style="border:1.5px solid #e8d8f8;border-radius:8px;padding:6px 8px;font-size:.82rem;font-family:\'Pretendard\',sans-serif;min-width:0">';
-        html += '<input type="text" value="'+(sub.qty||'')+'" placeholder="수량" onblur="saveStaffSub(\''+staffCurrentPeriod+'\',\''+staff.id+'\','+idx+',\'qty\',this.value)" style="border:1.5px solid #e8d8f8;border-radius:8px;padding:6px 8px;font-size:.82rem;font-family:\'Pretendard\',sans-serif;min-width:0">';
-        html += '<div style="font-size:.8rem;font-weight:700;color:#8060d0;text-align:right;padding-right:4px">'+(subAmt>0?subAmt.toLocaleString()+'원':'')+'</div>';
+    if (subs.length) {
+      html += '<div style="background:white;border:1.5px solid #e8d8f8;border-radius:10px;padding:10px">';
+      html += '<div style="font-size:.72rem;color:#8060d0;font-weight:700;margin-bottom:8px">\u{1F527} \uBD80\uC5C5 \uB0B4\uC5ED</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 100px 80px 80px 24px;gap:6px;margin-bottom:4px">'
+            + '<div style="font-size:.68rem;color:#aaa">\uC885\uB958</div>'
+            + '<div style="font-size:.68rem;color:#aaa">\uB2E8\uAC00</div>'
+            + '<div style="font-size:.68rem;color:#aaa">\uC218\uB7C9</div>'
+            + '<div style="font-size:.68rem;color:#aaa;text-align:right">\uAE08\uC561</div>'
+            + '<div></div></div>';
+      subs.forEach(function(sub, idx) {
+        const subAmt = parseFloat(sub.unit||0) * parseFloat(sub.qty||0);
+        html += '<div style="display:grid;grid-template-columns:1fr 100px 80px 80px 24px;gap:6px;margin-bottom:6px;align-items:center">';
+        html += '<input type="text" value="' + escHtml(sub.type||'') + '" placeholder="\uC608: \uD3EC\uC7A5"'
+              + ' onblur="staffSaveSub(this,\'' + sid + '\',' + idx + ',\'type\')"'
+              + ' style="border:1.5px solid #e8d8f8;border-radius:7px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
+        html += '<input type="text" value="' + (sub.unit ? Number(sub.unit).toLocaleString() : '') + '" placeholder="\uB2E8\uAC00"'
+              + ' oninput="formatStaffNum(this)" onblur="staffSaveSub(this,\'' + sid + '\',' + idx + ',\'unit\')"'
+              + ' style="border:1.5px solid #e8d8f8;border-radius:7px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
+        html += '<input type="text" value="' + (sub.qty||'') + '" placeholder="\uC218\uB7C9"'
+              + ' onblur="staffSaveSub(this,\'' + sid + '\',' + idx + ',\'qty\')"'
+              + ' style="border:1.5px solid #e8d8f8;border-radius:7px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
+        html += '<div style="font-size:.8rem;font-weight:700;color:#8060d0;text-align:right">' + (subAmt>0?subAmt.toLocaleString()+'\uC6D0':'') + '</div>';
+        html += '<button data-sid="' + sid + '" data-idx="' + idx + '" onclick="staffDelSub(this.dataset.sid,+this.dataset.idx)"'
+              + ' style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.8rem;padding:0"'
+              + ' onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">\u2715</button>';
         html += '</div>';
       });
       html += '</div>';
@@ -3466,36 +3490,54 @@ function renderStaffMonthContent() {
 
     html += '</div>';
   });
-
   el.innerHTML = html;
 }
 
-function formatStaffNum(el) {
-  const raw = el.value.replace(/[^0-9]/g,'');
-  el.dataset.raw = raw;
-  el.value = raw ? Number(raw).toLocaleString() : '';
-}
 
-function saveStaffField(periodKey, staffId, field, val) {
-  const raw = String(val).replace(/,/g,'').trim();
+function staffToggleResign(staffId) {
+  const pay = loadStaffPay(staffCurrentPeriod);
+  if (!pay[staffId]) pay[staffId] = {};
+  pay[staffId].resigned = !pay[staffId].resigned;
+  saveStaffPay(staffCurrentPeriod, pay);
+  renderStaffMonthContent();
+  toast(pay[staffId].resigned ? '👋 퇴사 처리됐어요' : '✅ 복직 처리됐어요');
+}
+function staffSaveBase(el, staffId, field) {
+  const raw = el.value.replace(/,/g,'').trim();
   const num = raw ? Number(raw) : '';
-  const pay = loadStaffPay(periodKey);
+  const pay = loadStaffPay(staffCurrentPeriod);
   if (!pay[staffId]) pay[staffId] = {};
   pay[staffId][field] = num;
-  saveStaffPay(periodKey, pay);
+  saveStaffPay(staffCurrentPeriod, pay);
+  renderStaffMonthContent();
+}
+function staffAddSub(staffId) {
+  const pay = loadStaffPay(staffCurrentPeriod);
+  if (!pay[staffId]) pay[staffId] = {};
+  if (!pay[staffId].subs) pay[staffId].subs = [];
+  pay[staffId].subs.push({type:'', unit:0, qty:0});
+  saveStaffPay(staffCurrentPeriod, pay);
+  renderStaffMonthContent();
+}
+function staffDelSub(staffId, idx) {
+  const pay = loadStaffPay(staffCurrentPeriod);
+  if (pay[staffId] && pay[staffId].subs) {
+    pay[staffId].subs.splice(idx, 1);
+    saveStaffPay(staffCurrentPeriod, pay);
+    renderStaffMonthContent();
+  }
+}
+function staffSaveSub(el, staffId, idx, field) {
+  const raw = String(el.value).replace(/,/g,'').trim();
+  const pay = loadStaffPay(staffCurrentPeriod);
+  if (!pay[staffId]) pay[staffId] = {};
+  if (!pay[staffId].subs) pay[staffId].subs = [];
+  if (!pay[staffId].subs[idx]) pay[staffId].subs[idx] = {};
+  pay[staffId].subs[idx][field] = (field==='type') ? raw : (raw ? Number(raw) : 0);
+  saveStaffPay(staffCurrentPeriod, pay);
   renderStaffMonthContent();
 }
 
-function saveStaffSub(periodKey, staffId, idx, field, val) {
-  const raw = String(val).replace(/,/g,'').trim();
-  const pay = loadStaffPay(periodKey);
-  if (!pay[staffId]) pay[staffId] = {};
-  if (!pay[staffId].subs) pay[staffId].subs = [{},{} ];
-  if (!pay[staffId].subs[idx]) pay[staffId].subs[idx] = {};
-  pay[staffId].subs[idx][field] = (field==='type') ? raw : (raw ? Number(raw) : 0);
-  saveStaffPay(periodKey, pay);
-  renderStaffMonthContent();
-}
 
 // 직원 마스터 등록 폼
 function showStaffMasterForm(editId) {
@@ -3518,10 +3560,7 @@ function showStaffMasterForm(editId) {
         <div style="font-size:.75rem;color:#888;margin-bottom:4px">근로계약서 이미지 URL</div>
         <input id="sm-contract" type="text" value="${edit?escHtml(edit.contract||''):''}" placeholder="이미지 URL 붙여넣기" style="width:100%;border:1.5px solid #ddd0f8;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;outline:none">
       </div>
-      <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
-        <input id="sm-hassub" type="checkbox" ${edit&&edit.hasSub?'checked':''} style="width:16px;height:16px;accent-color:#8060d0;cursor:pointer">
-        <label for="sm-hassub" style="font-size:.85rem;color:#555;cursor:pointer">부업 있음 (단가×수량 입력 가능)</label>
-      </div>
+
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
         ${edit?'<button onclick="delStaffMaster(\''+editId+'\',this)" style="padding:8px 14px;border:none;border-radius:10px;background:#fee;color:#c03030;cursor:pointer;font-size:.85rem">삭제</button>':''}
@@ -3534,13 +3573,12 @@ function showStaffMasterForm(editId) {
     if (!name) { overlay.querySelector('#sm-name').focus(); return; }
     const account = overlay.querySelector('#sm-account').value.trim();
     const contract = overlay.querySelector('#sm-contract').value.trim();
-    const hasSub = overlay.querySelector('#sm-hassub').checked;
     const masters = loadStaffMaster();
     if (edit) {
       const idx = masters.findIndex(s=>s.id===editId);
-      if (idx>=0) masters[idx] = {...masters[idx], name, account, contract, hasSub};
+      if (idx>=0) masters[idx] = {...masters[idx], name, account, contract};
     } else {
-      masters.push({id:'s'+Date.now(), name, account, contract, hasSub});
+      masters.push({id:'s'+Date.now(), name, account, contract});
     }
     saveStaffMaster(masters);
     overlay.remove();
@@ -3574,7 +3612,7 @@ function renderStaffMasterList() {
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:white;border-radius:12px;margin-bottom:6px;border:1.5px solid #ddd0f8">'
       + '<div style="font-size:.92rem;font-weight:700;color:#5a30c0">'+escHtml(s.name)+'</div>'
       + '<div style="font-size:.78rem;color:#888;flex:1">'+escHtml(s.account||'계좌 미입력')+'</div>'
-      + (s.hasSub?'<span style="font-size:.68rem;background:#f0e8ff;color:#8060d0;padding:2px 7px;border-radius:10px;font-weight:600">부업</span>':'')
+
       + contractBtn
       + '<button onclick="showStaffMasterForm(\''+s.id+'\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;color:#aaa" title="편집">✏️</button>'
       + '</div>';
@@ -4745,10 +4783,6 @@ function renderHourlyDowSummary(year, month) {
     '<div style="background:#f5fbff;border:1.5px solid #b2d8f8;border-radius:14px;padding:14px;margin-bottom:12px">'
     + '<div style="font-size:.82rem;font-weight:700;color:#1a5f8a;margin-bottom:10px">⏰ 시간별 평균 매출 <span style="font-size:.7rem;font-weight:400;color:#aaa">(해당 시간 기록 기준)</span></div>'
     + '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">' + hourCards + '</div>'
-    + '</div>'
-    + '<div style="background:#f5f9ff;border:1.5px solid #c8d8f4;border-radius:14px;padding:14px;margin-bottom:12px">'
-    + '<div style="font-size:.82rem;font-weight:700;color:#2260c0;margin-bottom:10px">📅 요일별 평균 매출</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">' + dowCards + '</div>'
     + '</div>';
 }
 
