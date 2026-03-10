@@ -2485,7 +2485,7 @@ function renderFlow(type) {
     if (i > 0) html += `<span class="flow-arrow ${arrCls}">→</span>`;
     const isNow = type==='boss' && isFlowTimeNow(item.time);
     const nowCls = isNow ? ' now-active' : '';
-    const timeBadge = item.time ? '<span class="flow-time-badge">'+FLOW_TIME_SLOTS.find(t=>t.val===item.time)?.label.replace('~','↗')+'</span>' : '';
+    const timeBadge = ''; // 시간 뱃지 숨김 (번쩍 효과는 item.time 기준으로 유지)
     html += `<div class="flow-item ${cls}${nowCls}" id="fi_${type}_${item.id}" draggable="true"
       ondragstart="flowDragStart(event,'${type}',${item.id})"
       ondragover="flowDragOver(event)"
@@ -3420,7 +3420,36 @@ function renderStaffMonthContent() {
   const pay = loadStaffPay(staffCurrentPeriod);
   if (!masters.length) { el.innerHTML = '<div class="empty">먼저 직원 정보를 등록해주세요 👤</div>'; return; }
 
+  // 총합계 계산
+  let grandTotal = 0, grandBase = 0, grandBonus = 0, grandSub = 0;
+  masters.forEach(function(staff) {
+    const sp = pay[staff.id] || {};
+    if (sp.resigned) return;
+    const base = parseFloat(sp.base||0), bonus = parseFloat(sp.bonus||0);
+    const subs = sp.subs || [];
+    const subT = subs.reduce(function(s,sub){ return s + parseFloat(sub.unit||0)*parseFloat(sub.qty||0); }, 0);
+    grandBase += base; grandBonus += bonus; grandSub += subT;
+    grandTotal += base + bonus + subT;
+  });
+  const period = STAFF_PERIODS.find(p=>p.key===staffCurrentPeriod);
+  const activeCount = masters.filter(s => !(pay[s.id] && pay[s.id].resigned)).length;
   let html = '';
+  // 총합계 상단 카드
+  html += '<div style="background:linear-gradient(135deg,#f0ebff,#e0d4ff);border:1.5px solid #c8b4f8;border-radius:14px;padding:14px 16px;margin-bottom:14px">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">';
+  html += '<div style="font-size:.88rem;font-weight:800;color:#5a30c0">💰 이번달 급여 총합계</div>';
+  html += '<div style="font-size:.72rem;color:#9a7ad0;margin-left:auto">재직 '+activeCount+'명</div>';
+  html += '</div>';
+  html += '<div style="font-size:1.3rem;font-weight:900;color:#5a30c0;margin-bottom:10px">' + grandTotal.toLocaleString() + '<span style="font-size:.75rem;font-weight:600;margin-left:4px">원</span></div>';
+  if (grandTotal > 0) {
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    if (grandBase) html += '<div style="background:white;border-radius:10px;padding:5px 12px;font-size:.75rem;color:#5a30c0"><span style="color:#aaa">월급 </span>' + grandBase.toLocaleString() + '원</div>';
+    if (grandBonus) html += '<div style="background:white;border-radius:10px;padding:5px 12px;font-size:.75rem;color:#e03c6e"><span style="color:#aaa">보너스 </span>' + grandBonus.toLocaleString() + '원</div>';
+    if (grandSub) html += '<div style="background:white;border-radius:10px;padding:5px 12px;font-size:.75rem;color:#8060d0"><span style="color:#aaa">부업 </span>' + grandSub.toLocaleString() + '원</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
   masters.forEach(function(staff) {
     const sp = pay[staff.id] || {};
     const base = sp.base || '';
