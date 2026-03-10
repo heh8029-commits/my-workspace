@@ -3732,15 +3732,15 @@ function updateSalesSummary(year, month) {
     </div>`).join('');
   const sr = document.getElementById('sales-sum-row');
   if (sr) {
-    sr.cells[2].textContent = tg.toLocaleString();
-    sr.cells[3].textContent = ts.toLocaleString();
-    sr.cells[4].textContent = tc.toLocaleString();
-    sr.cells[5].textContent = tca.toLocaleString();
-    sr.cells[6].textContent = tn.toLocaleString();
-    sr.cells[7].textContent = tns.toLocaleString();
-    sr.cells[8].textContent = tna.toLocaleString();
-    sr.cells[9].textContent = (tc+tn).toLocaleString();
-    sr.cells[10].textContent = (tca+tns+tna).toLocaleString();
+    sr.cells[1].textContent = tg.toLocaleString();
+    sr.cells[2].textContent = ts.toLocaleString();
+    sr.cells[3].textContent = tc.toLocaleString();
+    sr.cells[4].textContent = tca.toLocaleString();
+    sr.cells[5].textContent = tn.toLocaleString();
+    sr.cells[6].textContent = tns.toLocaleString();
+    sr.cells[7].textContent = tna.toLocaleString();
+    sr.cells[8].textContent = (tc+tn).toLocaleString();
+    sr.cells[9].textContent = (tca+tns+tna).toLocaleString();
   }
 }
 
@@ -3779,7 +3779,7 @@ function switchSalesMonth(year, month) {
 
 function renderSalesTable() {
   const tbody = document.getElementById('sales-tbody');
-  if (!tbody) return;
+  if (!tbody) return;  // 매출 탭 아닐 때 스킵
 
   const year = salesCurrentYear;
   const month = salesCurrentMonth;
