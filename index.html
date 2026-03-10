@@ -1250,6 +1250,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null)">📦 재고관리(단가)</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',6,null)">🌸 시즌관리</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',7,null)">⏰ 그로스시간별매출</div>
   </div>
   <div class="gnav-main" id="gnav-menu2" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');gnavActivate('menu2')">
     <span class="gnav-main-icon">🏠</span> 우리집
@@ -1658,6 +1659,27 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">시즌 일정, 기획 등을 여기에 채워요</span></div>
     </div>
   </div>
+
+    <div class="subpage" id="menu1-sub-7">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">⏰</div>
+        <div><div class="subpage-title">그로스 시간별 매출</div><div class="subpage-desc">시간대별 매출 추이를 날짜별로 기록해요 (9시~23시)</div></div>
+      </div>
+
+      <!-- 월 탭 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="hourly-month-tabs"></div>
+
+      <!-- 요일별 요약 카드 -->
+      <div id="hourly-dow-summary" style="margin-bottom:16px"></div>
+
+      <!-- 테이블 -->
+      <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #b2d8f8">
+        <table id="hourly-table" style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:1200px">
+          <thead id="hourly-thead"></thead>
+          <tbody id="hourly-tbody"></tbody>
+        </table>
+      </div>
+    </div>
 
   <!-- ══════════════ 우리집 ══════════════ -->
   <div class="page" id="menu2">
@@ -2164,7 +2186,7 @@ async function syncFromSheet() {
     const all = await res.json();
     if (!all) { toast('🎀 최신 데이터예요!'); return; }
     // 고정 키 + sales_ 로 시작하는 키 모두 저장
-    const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_'))];
+    const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_'))];
     for (const k of allKeys) {
       if (all[k] !== undefined && all[k] !== null) {
         localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
@@ -3847,6 +3869,226 @@ function renderSales() {
   renderSalesTable();
 }
 
+// ══════════════════════════════════════════
+// ⏰ 그로스 시간별 매출
+// ══════════════════════════════════════════
+const HOURLY_SLOTS = [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
+const HOURLY_SLOT_LABELS = HOURLY_SLOTS.map(h => `${h}시`);
+const DOW_LABELS = ['일','월','화','수','목','금','토'];
+let hourlyCurrentYear = 2026;
+let hourlyCurrentMonth = 3;
+
+function hourlyKey(year, month) { return `hourly_${year}_${month}`; }
+function loadHourly(year, month) { return load(hourlyKey(year, month)) || {}; }
+function saveHourly(year, month, data) {
+  stor(hourlyKey(year, month), data);
+  try {
+    fetch(`${FB_URL}/${hourlyKey(year,month)}.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e) {}
+}
+
+function switchHourlyMonth(year, month) {
+  hourlyCurrentYear = year;
+  hourlyCurrentMonth = month;
+  renderHourlyMonthTabs();
+  renderHourlyTable();
+}
+
+function renderHourlyMonthTabs() {
+  const el = document.getElementById('hourly-month-tabs');
+  if (!el) return;
+  el.innerHTML = SALES_MONTHS.map((m, i) => {
+    const mn = SALES_MONTH_NUMS[i];
+    const yr = mn <= 2 ? 2027 : 2026;
+    const active = (mn === hourlyCurrentMonth && yr === hourlyCurrentYear);
+    return `<button onclick="switchHourlyMonth(${yr},${mn})"
+      style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'#4da6e8':'#b2d8f8'};
+      background:${active?'linear-gradient(135deg,#4da6e8,#2280c0)':'white'};
+      color:${active?'white':'#2280c0'};font-size:.82rem;font-weight:${active?'700':'500'};
+      cursor:pointer;font-family:inherit">${yr}년 ${m}</button>`;
+  }).join('');
+}
+
+function renderHourlyTable() {
+  const thead = document.getElementById('hourly-thead');
+  const tbody = document.getElementById('hourly-tbody');
+  if (!tbody) return;
+
+  const year = hourlyCurrentYear;
+  const month = hourlyCurrentMonth;
+  const days = getDaysInMonth(year, month);
+  const data = loadHourly(year, month);
+  const todayD = (NOW.getFullYear()===year && (NOW.getMonth()+1)===month) ? NOW.getDate() : -1;
+
+  // ── 헤더 ──
+  const thStyle = (bg='#daeef8') => `padding:8px 6px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2d8f8;font-size:.78rem;background:${bg};color:#1a5f8a`;
+  thead.innerHTML = `<tr>
+    <th style="${thStyle('#c8e4f4')}">날짜</th>
+    <th style="${thStyle('#c8e4f4')}">요일</th>
+    ${HOURLY_SLOT_LABELS.map(l => `<th style="${thStyle()}">${l}</th>`).join('')}
+    <th style="${thStyle('#b8d4f0')}">일합계</th>
+  </tr>`;
+
+  const INP = `border:1px solid #b2d8f8;border-radius:6px;padding:4px 4px;font-size:.78rem;
+    text-align:right;background:transparent;outline:none;color:#1a5f8a;width:72px;font-family:inherit`;
+
+  // ── 행 ──
+  let rows = '';
+  for (let d = 1; d <= days; d++) {
+    const date = new Date(year, month-1, d);
+    const dow = WEEK_KO[date.getDay()];
+    const isSun = date.getDay()===0, isSat = date.getDay()===6;
+    const isToday = d===todayD;
+    const rowBg = isToday ? '#f0f8ff' : isSun ? '#fff5f5' : isSat ? '#f5f0ff' : (d%2===0?'#f5fbff':'#fff');
+    const txtC = isToday ? '#1a6fbf' : isSun ? '#e03c6e' : isSat ? '#8060d0' : '#333';
+    const todayAnim = isToday ? 'animation:salesTodayShimmer 2s ease-in-out infinite;outline:2px solid #4da6e8;outline-offset:-1px;' : '';
+    const r = data[`d${d}`] || {};
+    const dayTotal = HOURLY_SLOTS.reduce((s, h) => s + parseNum(r[`h${h}`]), 0);
+
+    rows += `<tr style="background:${rowBg};${todayAnim}">
+      <td style="padding:5px 8px;text-align:center;color:${txtC};font-weight:${isToday?'800':'600'};white-space:nowrap">${isToday?'✨ ':''}${month}/${d}</td>
+      <td style="padding:5px 6px;text-align:center;color:${txtC};font-weight:700">${dow}</td>
+      ${HOURLY_SLOTS.map(h => `<td style="padding:3px 3px;text-align:center">
+        <input type="text" inputmode="numeric"
+          data-raw="${r[`h${h}`]||''}"
+          value="${r[`h${h}`] ? Number(r[`h${h}`]).toLocaleString() : ''}"
+          style="${INP}"
+          onfocus="hourlyInpFocus(this)"
+          onblur="hourlyInpBlur(this,${year},${month},${d},${h})"
+          onkeydown="if(event.key==='Enter')this.blur()">
+      </td>`).join('')}
+      <td id="hourly-dtotal-${d}" style="padding:5px 8px;text-align:right;font-weight:800;color:#1a5f8a;white-space:nowrap;background:#e8f4fc">${dayTotal>0?dayTotal.toLocaleString():'-'}</td>
+    </tr>`;
+  }
+
+  // ── 합계 행 ──
+  rows += `<tr id="hourly-sum-row" style="background:linear-gradient(135deg,#daeef8,#c0e0f4);font-weight:800">
+    <td colspan="2" style="padding:10px;text-align:center;color:#1a5f8a">합계</td>
+    ${HOURLY_SLOTS.map(h => `<td id="hourly-sum-h${h}" style="padding:8px 4px;text-align:right;color:#1a5f8a;font-size:.78rem">-</td>`).join('')}
+    <td id="hourly-sum-total" style="padding:10px;text-align:right;color:#1a5f8a">-</td>
+  </tr>`;
+
+  tbody.innerHTML = rows;
+  renderHourlyDowSummary(year, month);
+  updateHourlySums(year, month);
+}
+
+function hourlyInpFocus(el) {
+  const raw = el.dataset.raw;
+  el.value = raw ? String(raw) : '';
+  el.select();
+}
+
+function hourlyInpBlur(el, year, month, day, hour) {
+  const raw = el.value.replace(/,/g,'').trim();
+  const num = raw === '' ? '' : (isNaN(Number(raw)) ? '' : Number(raw));
+  el.dataset.raw = num;
+  el.value = num !== '' ? Number(num).toLocaleString() : '';
+  const data = loadHourly(year, month);
+  if (!data[`d${day}`]) data[`d${day}`] = {};
+  data[`d${day}`][`h${hour}`] = num;
+  saveHourly(year, month, data);
+  // 일합계 업데이트
+  const r = data[`d${day}`] || {};
+  const dayTotal = HOURLY_SLOTS.reduce((s,h) => s+parseNum(r[`h${h}`]), 0);
+  const dtCell = document.getElementById(`hourly-dtotal-${day}`);
+  if (dtCell) dtCell.textContent = dayTotal>0 ? dayTotal.toLocaleString() : '-';
+  updateHourlySums(year, month);
+  renderHourlyDowSummary(year, month);
+}
+
+function updateHourlySums(year, month) {
+  const data = loadHourly(year, month);
+  const days = getDaysInMonth(year, month);
+  let grandTotal = 0;
+  HOURLY_SLOTS.forEach(h => {
+    let colSum = 0;
+    for (let d=1; d<=days; d++) {
+      colSum += parseNum((data[`d${d}`]||{})[`h${h}`]);
+    }
+    grandTotal += colSum;
+    const cell = document.getElementById(`hourly-sum-h${h}`);
+    if (cell) cell.textContent = colSum>0 ? colSum.toLocaleString() : '-';
+  });
+  const totalCell = document.getElementById('hourly-sum-total');
+  if (totalCell) totalCell.textContent = grandTotal>0 ? grandTotal.toLocaleString() : '-';
+}
+
+function renderHourlyDowSummary(year, month) {
+  const el = document.getElementById('hourly-dow-summary');
+  if (!el) return;
+  const data = loadHourly(year, month);
+  const days = getDaysInMonth(year, month);
+
+  // 요일별 합산 & 시간대별 합산
+  const dowTotals = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  const dowCounts = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  const hourTotals = {};
+  HOURLY_SLOTS.forEach(h => hourTotals[h] = 0);
+
+  for (let d=1; d<=days; d++) {
+    const dow = new Date(year, month-1, d).getDay();
+    const r = data[`d${d}`] || {};
+    const daySum = HOURLY_SLOTS.reduce((s,h) => s+parseNum(r[`h${h}`]), 0);
+    if (daySum > 0) {
+      dowTotals[dow] += daySum;
+      dowCounts[dow]++;
+    }
+    HOURLY_SLOTS.forEach(h => { hourTotals[h] += parseNum(r[`h${h}`]); });
+  }
+
+  // 피크 시간대 찾기
+  const peakHour = HOURLY_SLOTS.reduce((a,b) => hourTotals[a]>=hourTotals[b]?a:b);
+  const peakHourVal = hourTotals[peakHour];
+
+  // 요일별 카드
+  const dowColors = ['#e03c6e','#333','#333','#333','#333','#333','#8060d0'];
+  const dowBgs   = ['#fff5f5','#f0f8ff','#f0f8ff','#f0f8ff','#f0f8ff','#f5fff8','#f5f0ff'];
+  const dowCards = DOW_LABELS.map((lbl,i) => {
+    const avg = dowCounts[i]>0 ? Math.round(dowTotals[i]/dowCounts[i]) : 0;
+    return `<div style="background:${dowBgs[i]};border:1.5px solid ${dowColors[i]}30;border-radius:12px;padding:10px 12px;text-align:center">
+      <div style="font-size:.82rem;font-weight:800;color:${dowColors[i]};margin-bottom:4px">${lbl}요일</div>
+      <div style="font-size:.72rem;color:#888;margin-bottom:2px">평균매출</div>
+      <div style="font-size:.9rem;font-weight:800;color:${dowColors[i]}">${avg>0?avg.toLocaleString()+' 원':'-'}</div>
+      <div style="font-size:.68rem;color:#aaa;margin-top:2px">${dowCounts[i]}일 기록</div>
+    </div>`;
+  }).join('');
+
+  // 피크 시간대 바
+  const maxVal = Math.max(...HOURLY_SLOTS.map(h=>hourTotals[h]), 1);
+  const hourBars = HOURLY_SLOTS.map(h => {
+    const pct = Math.round(hourTotals[h]/maxVal*100);
+    const isPeak = h===peakHour && peakHourVal>0;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:36px">
+      <div style="font-size:.65rem;color:#1a5f8a;font-weight:700">${hourTotals[h]>0?Math.round(hourTotals[h]/10000)+'만':''}</div>
+      <div style="width:28px;height:${4+pct*0.6}px;border-radius:6px 6px 2px 2px;
+        background:${isPeak?'linear-gradient(180deg,#f7a8c0,#e03c6e)':'linear-gradient(180deg,#7ec8e8,#4da6e8)'};
+        min-height:4px"></div>
+      <div style="font-size:.68rem;color:${isPeak?'#e03c6e':'#666'};font-weight:${isPeak?'800':'500'}">${h}시</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="background:#f5fbff;border:1.5px solid #b2d8f8;border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-size:.82rem;font-weight:700;color:#1a5f8a;margin-bottom:10px">📅 요일별 평균 매출</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">${dowCards}</div>
+    </div>
+    <div style="background:#f5fbff;border:1.5px solid #b2d8f8;border-radius:14px;padding:14px">
+      <div style="font-size:.82rem;font-weight:700;color:#1a5f8a;margin-bottom:10px">
+        ⏰ 시간대별 누적 매출 ${peakHourVal>0?`<span style="margin-left:8px;font-size:.75rem;color:#e03c6e;background:#fff0f5;padding:2px 10px;border-radius:20px">🏆 피크 ${peakHour}시</span>`:''}
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:4px;overflow-x:auto;padding-bottom:4px">${hourBars}</div>
+    </div>`;
+}
+
+function renderHourly() {
+  renderHourlyMonthTabs();
+  renderHourlyTable();
+}
+
 // ── 퀵 바로가기 FAB ──
 function renderFabIcons() {
   const sc1 = load('shortcuts');
@@ -3943,6 +4185,7 @@ function initRender(pageId) {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
     renderSales && renderSales();
+    renderHourly && renderHourly();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
