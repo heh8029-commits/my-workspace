@@ -1886,6 +1886,40 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             </table>
           </div>
 
+          <!-- 하단 3개 섹션 -->
+          <div class="three-col" style="margin-top:20px">
+
+            <!-- 돈나가는거 확인 체크리스트 -->
+            <div class="card" style="border-top:4px solid #e0b000">
+              <div style="font-size:.92rem;font-weight:700;color:#a07800;margin-bottom:10px">💸 돈나가는거 확인 체크리스트</div>
+              <div style="display:flex;gap:6px;margin-bottom:10px">
+                <input id="money-check-inp" type="text" class="ra-inp" placeholder="항목 추가..." style="flex:1;font-size:.82rem;padding:7px 10px" onkeydown="if(event.key==='Enter'){event.preventDefault();addMoneyCheck()}">
+                <button class="abtn" style="background:linear-gradient(135deg,#ffe060,#e0b000);color:#5a4000;padding:7px 12px" onclick="addMoneyCheck()">+</button>
+              </div>
+              <div id="money-check-list"><div class="empty">체크할 항목을 추가해요 💸</div></div>
+            </div>
+
+            <!-- 구독 리스트 -->
+            <div class="card" style="border-top:4px solid #4da6e8">
+              <div style="font-size:.92rem;font-weight:700;color:#1a5f8a;margin-bottom:10px">📋 구독 리스트</div>
+              <div style="display:flex;gap:6px;margin-bottom:10px">
+                <input id="sub-list-inp" type="text" class="ra-inp" placeholder="구독 추가..." style="flex:1;font-size:.82rem;padding:7px 10px" onkeydown="if(event.key==='Enter'){event.preventDefault();addSubList()}">
+                <button class="abtn" style="background:linear-gradient(135deg,#7ec8f0,#4da6e8);padding:7px 12px" onclick="addSubList()">+</button>
+              </div>
+              <div id="sub-list-list"><div class="empty">구독 중인 서비스를 추가해요 📋</div></div>
+            </div>
+
+            <!-- 기타 메모 -->
+            <div class="card" style="border-top:4px solid #3dbb8f">
+              <div style="font-size:.92rem;font-weight:700;color:#1a7a58;margin-bottom:10px">📝 기타 메모</div>
+              <div style="display:flex;gap:6px;margin-bottom:10px">
+                <input id="etc-memo-inp" type="text" class="ra-inp" placeholder="메모 추가..." style="flex:1;font-size:.82rem;padding:7px 10px" onkeydown="if(event.key==='Enter'){event.preventDefault();addEtcMemo()}">
+                <button class="abtn" style="background:linear-gradient(135deg,#80ddb8,#3dbb8f);padding:7px 12px" onclick="addEtcMemo()">+</button>
+              </div>
+              <div id="etc-memo-list"><div class="empty">메모를 추가해요 📝</div></div>
+            </div>
+
+          </div>
 
         </div>
 
@@ -3091,20 +3125,23 @@ function setOrderStatus(id, status) {
 
 
 // ── 심플 체크/메모 리스트 (돈체크, 구독, 기타메모) ──
-function renderSimpleList(storKey, elId, emptyMsg, color) {
+function renderSimpleList(storKey, elId, emptyMsg, color, chk) {
+  const showChk = chk !== false;
   const el = document.getElementById(elId);
   if (!el) return;
   const data = loadObj(storKey);
   const items = data.items || [];
   if (!items.length) { el.innerHTML = '<div class="empty">' + emptyMsg + '</div>'; return; }
-  el.innerHTML = items.map((it,i) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:white;border-radius:12px;margin-bottom:6px;border:1.5px solid #eee;transition:all .15s;${it.done?'opacity:.55;':''}">
-      <input type="checkbox" ${it.done?'checked':''} onchange="toggleSimpleItem('${storKey}','${elId}','${emptyMsg}','${color}',${i})" style="width:17px;height:17px;accent-color:${color};cursor:pointer;flex-shrink:0">
-      <span style="flex:1;font-size:.88rem;${it.done?'text-decoration:line-through;color:#bbb':''}">${escHtml(it.text)}</span>
-      <button onclick="delSimpleItem('${storKey}','${elId}','${emptyMsg}','${color}',${i})" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;padding:0 2px" onmouseover="this.style.color='#e03c6e'" onmouseout="this.style.color='#ddd'">🗑️</button>
-    </div>`).join('');
+  el.innerHTML = items.map((it,i) => {
+    const chkHtml = showChk ? '<input type="checkbox" ' + (it.done?'checked':'') + ' onchange="toggleSimpleItem(\''+storKey+'\',\''+elId+'\',\''+emptyMsg+'\',\''+color+'\',true,'+i+')" style="width:17px;height:17px;accent-color:'+color+';cursor:pointer;flex-shrink:0">' : '';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:white;border-radius:12px;margin-bottom:6px;border:1.5px solid #eee;' + (it.done?'opacity:.55;':'') + '">'
+      + chkHtml
+      + '<span style="flex:1;font-size:.88rem;' + (it.done?'text-decoration:line-through;color:#bbb':'') + '">' + escHtml(it.text) + '</span>'
+      + '<button onclick="delSimpleItem(\''+storKey+'\',\''+elId+'\',\''+emptyMsg+'\',\''+color+'\',' + (showChk?'true':'false') + ','+i+')" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">🗑️</button>'
+      + '</div>';
+  }).join('');
 }
-function addSimpleItem(inpId, storKey, elId, emptyMsg, color) {
+function addSimpleItem(inpId, storKey, elId, emptyMsg, color, chk) {
   const inp = document.getElementById(inpId);
   const text = inp.value.trim();
   if (!text) return;
@@ -3113,28 +3150,28 @@ function addSimpleItem(inpId, storKey, elId, emptyMsg, color) {
   data.items.push({ text, done: false });
   stor(storKey, data);
   inp.value = '';
-  renderSimpleList(storKey, elId, emptyMsg, color);
+  renderSimpleList(storKey, elId, emptyMsg, color, chk);
 }
-function toggleSimpleItem(storKey, elId, emptyMsg, color, idx) {
+function toggleSimpleItem(storKey, elId, emptyMsg, color, chk, idx) {
   const data = loadObj(storKey);
   data.items[idx].done = !data.items[idx].done;
   stor(storKey, data);
-  renderSimpleList(storKey, elId, emptyMsg, color);
+  renderSimpleList(storKey, elId, emptyMsg, color, chk);
 }
-function delSimpleItem(storKey, elId, emptyMsg, color, idx) {
+function delSimpleItem(storKey, elId, emptyMsg, color, chk, idx) {
   const data = loadObj(storKey);
   data.items.splice(idx, 1);
   stor(storKey, data);
-  renderSimpleList(storKey, elId, emptyMsg, color);
+  renderSimpleList(storKey, elId, emptyMsg, color, chk);
 }
-function addMoneyCheck() { addSimpleItem('money-check-inp','money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000'); }
-function addSubList()     { addSimpleItem('sub-list-inp','sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8'); }
-function addEtcMemo()     { addSimpleItem('etc-memo-inp','etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f'); }
+function addMoneyCheck() { addSimpleItem('money-check-inp','money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true); }
+function addSubList()     { addSimpleItem('sub-list-inp','sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false); }
+function addEtcMemo()     { addSimpleItem('etc-memo-inp','etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false); }
 
 // 초기 렌더
-renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000');
-renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8');
-renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f');
+renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
+renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
+renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
 
 function addEun() {
   const v = document.getElementById('eun-inp').value.trim();
