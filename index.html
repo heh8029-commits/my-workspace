@@ -1332,7 +1332,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 </div>
 
 <div class="mobile-subnav" id="msubnav-menu1">
-  <button class="msub-btn" onclick="switchSub('menu1',1,null);setMobileSubActive(this)">💰 부가세/종소세/세금</button>
+  <button class="msub-btn" onclick="switchSub('menu1',8,null);setMobileSubActive(this)">📉 월별손익</button>
+    <button class="msub-btn" onclick="switchSub('menu1',1,null);setMobileSubActive(this)">💰 부가세/종소세/세금</button>
   <button class="msub-btn" onclick="switchSub('menu1',2,null);setMobileSubActive(this)">📊 매출정리/광고비</button>
   <button class="msub-btn" onclick="switchSub('menu1',7,null);setMobileSubActive(this)">⏰ 그로스시간별매출</button>
   <button class="msub-btn" onclick="switchSub('menu1',3,null);setMobileSubActive(this)">🎨 디자인/상품관리</button>
@@ -1393,7 +1394,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <span class="gnav-main-icon">🛍️</span> 미리제작소
   </div>
   <div class="gnav-subs" id="gnav-subs-menu1">
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',1,null)">💰 부가세/종소세/세금</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',8,null)">📉 월별손익</div>
+        <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',1,null)">💰 부가세/종소세/세금</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',2,null)">📊 매출정리/광고비</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',7,null)">⏰ 그로스시간별매출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',3,null)">🎨 디자인/상품관리</div>
@@ -1836,7 +1838,22 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div id="staff-month-content"></div>
       </div>
     </div>
-    <div class="subpage" id="menu1-sub-6">
+    <div class="subpage" id="menu1-sub-8">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">📉</div>
+        <div><div class="subpage-title">월별 손익</div><div class="subpage-desc">매월 수입과 지출을 정리해요</div></div>
+      </div>
+      <!-- 월 탭 -->
+      <div id="pnl-month-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+      <!-- 순이익 요약 -->
+      <div id="pnl-summary"></div>
+      <!-- 수입/지출 입력 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="pnl-body">
+        <div id="pnl-income-card"></div>
+        <div id="pnl-expense-card"></div>
+      </div>
+    </div>
+        <div class="subpage" id="menu1-sub-6">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7a8c0)">🌸</div>
         <div><div class="subpage-title">시즌관리</div><div class="subpage-desc">시즌별 이벤트와 상품을 관리해요</div></div>
@@ -2411,7 +2428,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2424,7 +2441,7 @@ async function syncFromSheet() {
     const all = await res.json();
     if (!all) { toast('🎀 최신 데이터예요!'); return; }
     // 고정 키 + sales_ 로 시작하는 키 모두 저장
-    const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_'))];
+    const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
     for (const k of allKeys) {
       if (all[k] !== undefined && all[k] !== null) {
         localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
@@ -3357,6 +3374,221 @@ renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가�
 renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
 
 
+
+// ══════════════════════════════════════════
+// 월별 손익 (PnL)
+// ══════════════════════════════════════════
+
+// 탭: 2024년 12월 ~ 현재월 (매 실행 시 동적 생성)
+const PNL_PERIODS = (function() {
+  const list = [];
+  let y = 2026, m = 3;
+  while (y < 2027 || (y === 2027 && m <= 12)) {
+    list.push({ key: y + '_' + m, label: (String(y).slice(2)) + '년 ' + m + '월' });
+    m++;
+    if (m > 12) { m = 1; y++; }
+  }
+  return list;
+})();
+
+function loadPnl(key) { return loadObj('pnl_' + key); }
+function savePnl(key, data) { stor('pnl_' + key, data); }
+// 지출 항목 템플릿 (달마다 자동 복사용)
+function loadPnlExpenseTemplate() { return loadObj('pnl_expense_template').items || []; }
+function savePnlExpenseTemplate(items) { stor('pnl_expense_template', { items }); }
+
+let pnlCurrentPeriod = (function() {
+  const now = new Date();
+  const key = now.getFullYear() + '_' + (now.getMonth() + 1);
+  return PNL_PERIODS.find(p => p.key === key) ? key : PNL_PERIODS[PNL_PERIODS.length - 1].key;
+})();
+
+function renderPnlMonthTabs() {
+  const el = document.getElementById('pnl-month-tabs');
+  if (!el) return;
+  el.innerHTML = PNL_PERIODS.slice().reverse().map(function(p) {
+    const active = p.key === pnlCurrentPeriod;
+    return '<button onclick="switchPnlPeriod(\'' + p.key + '\')" style="'
+      + 'padding:4px 10px;border-radius:16px;border:1.5px solid ' + (active ? '#3dbb8f' : '#ddd') + ';'
+      + 'background:' + (active ? 'linear-gradient(135deg,#d4f5e8,#80ddb8)' : '#fafafa') + ';'
+      + 'color:' + (active ? '#0a6040' : '#999') + ';font-size:.7rem;'
+      + 'font-weight:' + (active ? '700' : '400') + ';cursor:pointer;'
+      + 'font-family:Pretendard,sans-serif;white-space:nowrap">'
+      + p.label + '</button>';
+  }).join('');
+}
+
+function switchPnlPeriod(key) {
+  pnlCurrentPeriod = key;
+  renderPnlMonthTabs();
+  renderPnl();
+}
+
+function renderPnl() {
+  renderPnlSummary();
+  renderPnlIncomeCard();
+  renderPnlExpenseCard();
+}
+
+function renderPnlSummary() {
+  const el = document.getElementById('pnl-summary');
+  if (!el) return;
+  const data = loadPnl(pnlCurrentPeriod);
+  const incomes = data.incomes || [];
+  const expenses = data.expenses || [];
+  const totalIncome = incomes.reduce(function(s, r) { return s + parseFloat(r.amount || 0); }, 0);
+  const totalExpense = expenses.reduce(function(s, r) { return s + parseFloat(r.amount || 0); }, 0);
+  const net = totalIncome - totalExpense;
+  const netColor = net >= 0 ? '#0a6040' : '#c03030';
+  const netBg = net >= 0 ? 'linear-gradient(135deg,#d4f5e8,#a0e8c8)' : 'linear-gradient(135deg,#ffe0e0,#ffc0c0)';
+  const netBorder = net >= 0 ? '#3dbb8f' : '#e08080';
+
+  el.innerHTML = '<div style="background:' + netBg + ';border:2px solid ' + netBorder + ';border-radius:16px;padding:16px;margin-bottom:14px">'
+    + '<div style="font-size:.8rem;font-weight:700;color:' + netColor + ';margin-bottom:10px">📊 이번달 손익 요약</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'
+    + '<div style="background:rgba(255,255,255,.7);border-radius:10px;padding:10px;text-align:center">'
+    +   '<div style="font-size:.68rem;color:#888;margin-bottom:4px">💵 번 돈</div>'
+    +   '<div style="font-size:.9rem;font-weight:800;color:#2a9a6a">' + totalIncome.toLocaleString() + '<span style="font-size:.62rem">원</span></div>'
+    + '</div>'
+    + '<div style="background:rgba(255,255,255,.7);border-radius:10px;padding:10px;text-align:center">'
+    +   '<div style="font-size:.68rem;color:#888;margin-bottom:4px">💸 나간 돈</div>'
+    +   '<div style="font-size:.9rem;font-weight:800;color:#c03030">' + totalExpense.toLocaleString() + '<span style="font-size:.62rem">원</span></div>'
+    + '</div>'
+    + '<div style="background:rgba(255,255,255,.85);border-radius:10px;padding:10px;text-align:center;border:1.5px solid ' + netBorder + '">'
+    +   '<div style="font-size:.68rem;color:#888;margin-bottom:4px">🎯 순이익</div>'
+    +   '<div style="font-size:.95rem;font-weight:900;color:' + netColor + '">' + net.toLocaleString() + '<span style="font-size:.62rem">원</span></div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="font-size:.72rem;color:' + netColor + ';text-align:center;font-weight:600">'
+    +   (totalIncome > 0 || totalExpense > 0
+       ? totalIncome.toLocaleString() + ' - ' + totalExpense.toLocaleString() + ' = ' + net.toLocaleString() + '원'
+       : '아직 입력된 내용이 없어요')
+    + '</div>'
+    + '</div>';
+}
+
+function renderPnlIncomeCard() {
+  const el = document.getElementById('pnl-income-card');
+  if (!el) return;
+  const data = loadPnl(pnlCurrentPeriod);
+  const items = data.incomes || [];
+  let html = '<div style="background:#f5fff8;border:1.5px solid #b2e8d4;border-radius:14px;padding:12px;height:100%">';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
+  html += '<div style="font-size:.85rem;font-weight:800;color:#2a9a6a">💵 이번달 번 돈</div>';
+  html += '<button onclick="pnlAddIncome()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>';
+  html += '</div>';
+  if (!items.length) {
+    html += '<div class="empty" style="font-size:.78rem">수입 항목을 추가해요</div>';
+  } else {
+    items.forEach(function(it, i) {
+      html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
+      html += '<input type="text" value="' + escHtml(it.label || '') + '" placeholder="항목" onblur="pnlSaveIncome(this,' + i + ',\'label\')" style="flex:1;border:1.5px solid #b2e8d4;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
+      html += '<input type="text" value="' + (it.amount ? Number(it.amount).toLocaleString() : '') + '" placeholder="금액" oninput="formatStaffNum(this)" onblur="pnlSaveIncome(this,' + i + ',\'amount\')" style="width:90px;border:1.5px solid #b2e8d4;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;box-sizing:border-box;text-align:right">';
+      html += '<button data-idx="' + i + '" onclick="pnlDelIncome(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.82rem;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function renderPnlExpenseCard() {
+  const el = document.getElementById('pnl-expense-card');
+  if (!el) return;
+  const data = loadPnl(pnlCurrentPeriod);
+  const items = data.expenses || [];
+  let html = '<div style="background:#fff8f5;border:1.5px solid #f7c8b0;border-radius:14px;padding:12px;height:100%">';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
+  html += '<div style="font-size:.85rem;font-weight:800;color:#c05020">💸 이번달 나간 돈</div>';
+  html += '<button onclick="pnlAddExpense()" style="margin-left:auto;background:linear-gradient(135deg,#f7c8b0,#e08050);border:none;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>';
+  html += '</div>';
+  if (!items.length) {
+    html += '<div class="empty" style="font-size:.78rem">지출 항목을 추가해요</div>';
+  } else {
+    items.forEach(function(it, i) {
+      html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
+      html += '<input type="text" value="' + escHtml(it.label || '') + '" placeholder="항목" onblur="pnlSaveExpense(this,' + i + ',\'label\')" style="flex:1;border:1.5px solid #f7c8b0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
+      html += '<input type="text" value="' + (it.amount ? Number(it.amount).toLocaleString() : '') + '" placeholder="금액" oninput="formatStaffNum(this)" onblur="pnlSaveExpense(this,' + i + ',\'amount\')" style="width:90px;border:1.5px solid #f7c8b0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;box-sizing:border-box;text-align:right">';
+      html += '<button data-idx="' + i + '" onclick="pnlDelExpense(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.82rem;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── 수입 추가/저장/삭제 ──
+function pnlAddIncome() {
+  const data = loadPnl(pnlCurrentPeriod);
+  if (!data.incomes) data.incomes = [];
+  data.incomes.push({ label: '', amount: 0 });
+  savePnl(pnlCurrentPeriod, data);
+  renderPnl();
+}
+function pnlSaveIncome(el, idx, field) {
+  const raw = el.value.replace(/,/g, '').trim();
+  const data = loadPnl(pnlCurrentPeriod);
+  if (!data.incomes) data.incomes = [];
+  if (!data.incomes[idx]) data.incomes[idx] = {};
+  data.incomes[idx][field] = field === 'amount' ? (raw ? Number(raw) : 0) : raw;
+  savePnl(pnlCurrentPeriod, data);
+  renderPnlSummary();
+}
+function pnlDelIncome(idx) {
+  const data = loadPnl(pnlCurrentPeriod);
+  data.incomes.splice(idx, 1);
+  savePnl(pnlCurrentPeriod, data);
+  renderPnl();
+}
+
+// ── 지출 추가/저장/삭제 ──
+// 새 달 첫 추가 시 이전 달 항목 템플릿 자동 복사
+function pnlAddExpense() {
+  const data = loadPnl(pnlCurrentPeriod);
+  if (!data.expenses) data.expenses = [];
+  // 이 달 첫 추가라면 템플릿에서 항목명 불러오기
+  if (data.expenses.length === 0) {
+    const tmpl = loadPnlExpenseTemplate();
+    if (tmpl.length > 0) {
+      // 항목명만 가져오고 금액은 비움
+      tmpl.forEach(function(t) { data.expenses.push({ label: t.label, amount: 0 }); });
+      savePnl(pnlCurrentPeriod, data);
+      renderPnl();
+      toast('📋 지난달 항목을 불러왔어요!');
+      return;
+    }
+  }
+  data.expenses.push({ label: '', amount: 0 });
+  savePnl(pnlCurrentPeriod, data);
+  renderPnl();
+}
+function pnlSaveExpense(el, idx, field) {
+  const raw = el.value.replace(/,/g, '').trim();
+  const data = loadPnl(pnlCurrentPeriod);
+  if (!data.expenses) data.expenses = [];
+  if (!data.expenses[idx]) data.expenses[idx] = {};
+  data.expenses[idx][field] = field === 'amount' ? (raw ? Number(raw) : 0) : raw;
+  savePnl(pnlCurrentPeriod, data);
+  // 항목명 변경 시 템플릿도 업데이트
+  if (field === 'label') {
+    savePnlExpenseTemplate(data.expenses.map(function(e) { return { label: e.label }; }));
+  }
+  renderPnlSummary();
+}
+function pnlDelExpense(idx) {
+  const data = loadPnl(pnlCurrentPeriod);
+  data.expenses.splice(idx, 1);
+  savePnl(pnlCurrentPeriod, data);
+  // 삭제 후 템플릿 업데이트
+  savePnlExpenseTemplate(data.expenses.map(function(e) { return { label: e.label }; }));
+  renderPnl();
+}
+
+function renderPnlPage() {
+  renderPnlMonthTabs();
+  renderPnl();
+}
+
 // ══════════════════════════════════════════
 // 직원 관리
 // ══════════════════════════════════════════
@@ -3367,9 +3599,9 @@ const STAFF_PERIODS = (function() {
   const list = [];
   // 2025년 2월 ~ 2026년 4월 (15개)
   const months = [
-    [2025,2],[2025,3],[2025,4],[2025,5],[2025,6],[2025,7],
-    [2025,8],[2025,9],[2025,10],[2025,11],[2025,12],
-    [2026,1],[2026,2],[2026,3],[2026,4]
+    [2026,2],[2026,3],[2026,4],[2026,5],[2026,6],[2026,7],
+    [2026,8],[2026,9],[2026,10],[2026,11],[2026,12],
+    [2027,1],[2027,2],[2027,3],[2027,4]
   ];
   months.forEach(([y,m]) => {
     const endY = m===12 ? y+1 : y;
@@ -4933,6 +5165,7 @@ function initRender(pageId) {
     renderSales && renderSales();
     renderHourly && renderHourly();
     renderStaff && renderStaff();
+    renderPnlPage && renderPnlPage();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
