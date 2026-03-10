@@ -366,18 +366,12 @@ function toggleGnav() {
 
 function gnavActivate(pageId) {
   document.querySelectorAll('.gnav-main').forEach(el => el.classList.remove('active'));
-
   const mainEl = document.getElementById('gnav-' + pageId);
   if (mainEl) mainEl.classList.add('active');
+  document.querySelectorAll('.gnav-subs').forEach(s => s.classList.remove('open'));
   const subsEl = document.getElementById('gnav-subs-' + pageId);
-
+  if (subsEl) subsEl.classList.add('open');
 }
-
-// 초기 로드 시 현재 탭에 맞게 활성화
-(function() {
-  const savedTab = localStorage.getItem('ws5_curtab') || 'home';
-  gnavActivate(savedTab);
-})();
 
 // ── 등록일 표시 ──
 function formatCreatedAt(ts) {
@@ -1863,16 +1857,25 @@ if ('serviceWorker' in navigator) {
 function initPage(pageId) {
   // 탭 active
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const at = document.querySelector(`.tab[href*="${pageId === 'home' ? 'index' : pageId === 'menu1' ? 'shop' : pageId === 'menu2' ? 'house' : pageId === 'menu4' ? 'jinwoo' : pageId === 'menu5' ? 'invest' : 'recipe'}"]`);
+  const fileMap = {home:'index', menu1:'shop', menu2:'house', menu4:'jinwoo', menu5:'invest', menu3:'recipe'};
+  const at = document.querySelector(`.tab[href*="${fileMap[pageId]}"]`);
   if (at) at.classList.add('active');
+
+  // page div active (콘텐츠 표시)
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById(pageId);
+  if (pg) pg.classList.add('active');
+
   // gnav active
   document.querySelectorAll('.gnav-main').forEach(g => g.classList.remove('active'));
   const ag = document.getElementById('gnav-' + pageId);
   if (ag) ag.classList.add('active');
-  // gnav subs 펼치기
-  document.querySelectorAll('.gnav-subs').forEach(s => s.style.maxHeight = '0');
+
+  // gnav subs — open 클래스로 토글
+  document.querySelectorAll('.gnav-subs').forEach(s => s.classList.remove('open'));
   const subs = document.getElementById('gnav-subs-' + pageId);
-  if (subs) subs.style.maxHeight = '500px';
+  if (subs) subs.classList.add('open');
+
   // 뷰모드 복원
   const vm = localStorage.getItem('ws5_viewmode') || 'pc';
   setView(vm, true);
