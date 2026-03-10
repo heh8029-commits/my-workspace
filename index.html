@@ -4013,9 +4013,12 @@ function renderHourlyTable() {
       const raw = r['h'+h] || '';
       const disp = raw ? Number(raw).toLocaleString() : '';
       const min = r['m'+h] || '';
-      row += '<td style="padding:3px 3px;text-align:center">'
-        + '<input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + INP + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()" placeholder="금액">'
-        + '<br><input type="text" inputmode="numeric" maxlength="2" value="' + min + '" style="border:none;border-bottom:1px solid #c8e0f4;padding:1px 2px;font-size:.68rem;text-align:center;background:transparent;outline:none;color:#4da6e8;width:36px;font-family:inherit" onblur="hourlyMinBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()" placeholder="분">'
+      const minDisp = min ? '<span style="font-size:.65rem;color:#4da6e8;font-weight:600;margin-left:2px">' + min + '분</span>' : '<span style="font-size:.65rem;color:#ccc">--분</span>';
+      row += '<td style="padding:3px 4px;text-align:center">'
+        + '<div style="display:flex;align-items:center;gap:3px;justify-content:center">'
+        + '<input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + INP + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()">'
+        + '<input type="text" inputmode="numeric" maxlength="2" value="' + min + '" id="hmin-' + year + '-' + month + '-' + d + '-' + h + '" style="border:none;border-bottom:1.5px solid #b2d8f8;padding:2px 2px;font-size:.72rem;text-align:center;background:transparent;outline:none;color:#4da6e8;width:26px;font-family:inherit;font-weight:700" onblur="hourlyMinBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()" placeholder="분">'
+        + '</div>'
         + '</td>';
     });
     row += '</tr>';
@@ -4063,7 +4066,8 @@ function hourlyInpBlur(el, year, month, day, hour) {
   data['d'+day]['h'+hour] = num;
   saveHourly(year, month, data);
   updateHourlySums(year, month);
-  renderHourlyDowSummary(year, month);
+  // 요약은 테이블 재렌더 없이 별도 업데이트
+  renderHourlyDowSummary(hourlyCurrentYear, hourlyCurrentMonth);
 }
 
 function updateHourlySums(year, month) {
