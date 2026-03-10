@@ -3936,7 +3936,7 @@ let hourlyCurrentYear = 2026;
 let hourlyCurrentMonth = 3;
 
 function hourlyKey(year, month) { return `hourly_${year}_${month}`; }
-function loadHourly(year, month) { return load(hourlyKey(year, month)) || {}; }
+function loadHourly(year, month) { return loadObj(hourlyKey(year, month)); }
 function saveHourly(year, month, data) {
   stor(hourlyKey(year, month), data);
   try {
@@ -4013,11 +4013,11 @@ function renderHourlyTable() {
       const raw = r['h'+h] || '';
       const disp = raw ? Number(raw).toLocaleString() : '';
       const min = r['m'+h] || '';
-      const minDisp = min ? '<span style="font-size:.65rem;color:#4da6e8;font-weight:600;margin-left:2px">' + min + '분</span>' : '<span style="font-size:.65rem;color:#ccc">--분</span>';
+      const minDisp = min ? '<span style="font-size:.65rem;color:#4da6e8;font-weight:700">' + min + '분</span>' : '<span style="font-size:.63rem;color:#ddd">-분</span>';
       row += '<td style="padding:3px 4px;text-align:center">'
         + '<div style="display:flex;align-items:center;gap:3px;justify-content:center">'
         + '<input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + INP + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()">'
-        + '<input type="text" inputmode="numeric" maxlength="2" value="' + min + '" id="hmin-' + year + '-' + month + '-' + d + '-' + h + '" style="border:none;border-bottom:1.5px solid #b2d8f8;padding:2px 2px;font-size:.72rem;text-align:center;background:transparent;outline:none;color:#4da6e8;width:26px;font-family:inherit;font-weight:700" onblur="hourlyMinBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()" placeholder="분">'
+        + '<span id="hmin-' + year + '-' + month + '-' + d + '-' + h + '">' + minDisp + '</span>'
         + '</div>'
         + '</td>';
     });
@@ -4041,15 +4041,6 @@ function renderHourlyTable() {
 
 
 
-function hourlyMinBlur(el, year, month, day, hour) {
-  const val = el.value.replace(/[^0-9]/g,'').slice(0,2);
-  el.value = val;
-  const data = loadHourly(year, month);
-  if (!data['d'+day]) data['d'+day] = {};
-  data['d'+day]['m'+hour] = val;
-  saveHourly(year, month, data);
-}
-
 function hourlyInpFocus(el) {
   const raw = el.dataset.raw;
   el.value = raw ? String(raw) : '';
@@ -4064,9 +4055,15 @@ function hourlyInpBlur(el, year, month, day, hour) {
   const data = loadHourly(year, month);
   if (!data['d'+day]) data['d'+day] = {};
   data['d'+day]['h'+hour] = num;
+  // 저장 시각의 분 자동 기록
+  if (num !== '') {
+    const nowMin = String(new Date().getMinutes()).padStart(2,'0');
+    data['d'+day]['m'+hour] = nowMin;
+    const minSpan = document.getElementById('hmin-'+year+'-'+month+'-'+day+'-'+hour);
+    if (minSpan) minSpan.innerHTML = '<span style="font-size:.65rem;color:#4da6e8;font-weight:700">' + nowMin + '분</span>';
+  }
   saveHourly(year, month, data);
   updateHourlySums(year, month);
-  // 요약은 테이블 재렌더 없이 별도 업데이트
   renderHourlyDowSummary(hourlyCurrentYear, hourlyCurrentMonth);
 }
 
