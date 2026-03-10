@@ -3392,10 +3392,11 @@ function saveStaffPay(key, data) { stor(staffPeriodKey(key), data); }
 let staffCurrentPeriod = (function() {
   const n = new Date();
   const y = n.getFullYear(), m = n.getMonth()+1, d = n.getDate();
-  // 11일 이후면 현재 월, 이전이면 전달
-  if (d >= 11) return y+'_'+m;
-  const pm = m===1?12:m-1, py=m===1?y-1:y;
-  return py+'_'+pm;
+  // 월급 기준: 11일 이후면 이번달 탭, 10일 이전이면 전달 탭
+  const key = (d >= 11) ? y+'_'+m : ((m===1 ? y-1 : y)+'_'+(m===1 ? 12 : m-1));
+  // STAFF_PERIODS에 해당 키가 있으면 사용, 없으면 마지막 탭
+  const keys = STAFF_PERIODS.map(p=>p.key);
+  return keys.includes(key) ? key : keys[keys.length-1];
 })();
 
 function renderStaffMonthTabs() {
@@ -3560,6 +3561,16 @@ function showStaffMasterForm(editId) {
         <div style="font-size:.75rem;color:#888;margin-bottom:4px">근로계약서 이미지 URL</div>
         <input id="sm-contract" type="text" value="${edit?escHtml(edit.contract||''):''}" placeholder="이미지 URL 붙여넣기" style="width:100%;border:1.5px solid #ddd0f8;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;outline:none">
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:.75rem;color:#888;margin-bottom:4px">📅 입사일</div>
+          <input id="sm-joindate" type="date" value="${edit?escHtml(edit.joinDate||''):''}" style="width:100%;border:1.5px solid #ddd0f8;border-radius:10px;padding:9px 10px;font-size:.85rem;font-family:inherit;box-sizing:border-box;outline:none;color:#555">
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:#888;margin-bottom:4px">📅 퇴사일</div>
+          <input id="sm-leavedate" type="date" value="${edit?escHtml(edit.leaveDate||''):''}" style="width:100%;border:1.5px solid #ddd0f8;border-radius:10px;padding:9px 10px;font-size:.85rem;font-family:inherit;box-sizing:border-box;outline:none;color:#555">
+        </div>
+      </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
@@ -3573,12 +3584,14 @@ function showStaffMasterForm(editId) {
     if (!name) { overlay.querySelector('#sm-name').focus(); return; }
     const account = overlay.querySelector('#sm-account').value.trim();
     const contract = overlay.querySelector('#sm-contract').value.trim();
+    const joinDate = overlay.querySelector('#sm-joindate').value;
+    const leaveDate = overlay.querySelector('#sm-leavedate').value;
     const masters = loadStaffMaster();
     if (edit) {
       const idx = masters.findIndex(s=>s.id===editId);
-      if (idx>=0) masters[idx] = {...masters[idx], name, account, contract};
+      if (idx>=0) masters[idx] = {...masters[idx], name, account, contract, joinDate, leaveDate};
     } else {
-      masters.push({id:'s'+Date.now(), name, account, contract});
+      masters.push({id:'s'+Date.now(), name, account, contract, joinDate, leaveDate});
     }
     saveStaffMaster(masters);
     overlay.remove();
@@ -3612,6 +3625,8 @@ function renderStaffMasterList() {
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:white;border-radius:12px;margin-bottom:6px;border:1.5px solid #ddd0f8">'
       + '<div style="font-size:.92rem;font-weight:700;color:#5a30c0">'+escHtml(s.name)+'</div>'
       + '<div style="font-size:.78rem;color:#888;flex:1">'+escHtml(s.account||'계좌 미입력')+'</div>'
+      + (s.joinDate?'<span style="font-size:.68rem;color:#3dbb8f;background:#f0fff8;padding:2px 7px;border-radius:10px;white-space:nowrap">입사 '+s.joinDate.replace(/-/g,'.')+'</span>':'')
+      + (s.leaveDate?'<span style="font-size:.68rem;color:#e03c6e;background:#fff0f5;padding:2px 7px;border-radius:10px;white-space:nowrap">퇴사 '+s.leaveDate.replace(/-/g,'.')+'</span>':'')
 
       + contractBtn
       + '<button onclick="showStaffMasterForm(\''+s.id+'\')" style="background:none;border:none;cursor:pointer;font-size:.85rem;color:#aaa" title="편집">✏️</button>'
