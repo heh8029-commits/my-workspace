@@ -589,6 +589,13 @@ body.mobile-view .mobile-subnav.active {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  padding: 0 0 0 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .2s ease, padding .2s ease;
+}
+.gnav-subs.open {
+  max-height: 500px;
   padding: 2px 0 4px 10px;
 }
 
