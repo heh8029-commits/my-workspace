@@ -586,17 +586,13 @@ body.mobile-view .mobile-subnav.active {
 .gnav-main-icon { font-size: 1.05rem; }
 
 .gnav-subs {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 1px;
-  padding: 0 0 0 10px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .2s ease, padding .2s ease;
+  padding: 2px 0 4px 10px;
 }
 .gnav-subs.open {
-  max-height: 500px;
-  padding: 2px 0 4px 10px;
+  display: flex;
 }
 
 
