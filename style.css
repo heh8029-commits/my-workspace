@@ -65,6 +65,7 @@ body {
   color:var(--soft); cursor:pointer;
   transition:all .18s; white-space:nowrap;
   box-shadow:0 2px 5px var(--shadow);
+  text-decoration:none; display:inline-flex; align-items:center;
 }
 .tab:hover { background:var(--pink-pale); color:var(--rose); transform:translateY(-1px); }
 .tab.active {
