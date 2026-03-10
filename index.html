@@ -104,10 +104,11 @@ body {
 /* ── 모바일 뷰 ── */
 body.mobile-view .main { padding: 14px 10px 60px; }
 body.mobile-view .three-col { grid-template-columns: 1fr; gap: 12px; }
-body.mobile-view .three-col > .card { height: auto !important; max-height: none !important; }
+body.mobile-view .three-col > .card {
+  min-width: 0; height: auto !important; max-height: none !important; }
 body.mobile-view .three-col > .card .ilist { max-height: 300px !important; }
 body.mobile-view .two-col   { grid-template-columns: 1fr; gap: 12px; }
-body.mobile-view .week-row  { grid-template-columns: repeat(3,1fr); gap: 8px; }
+body.mobile-view .week-row  { grid-template-columns: repeat(3,1fr); gap: 6px; }
 
 body.mobile-view .topbar { padding: 7px 10px; gap: 4px; }
 body.mobile-view .tabs   { gap: 4px; }
@@ -147,6 +148,22 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   color:white; font-size:.89rem;
 }
 .datebar .dtxt { font-size:1rem; letter-spacing:.5px; }
+@keyframes salaryBlink {
+  0%,100% { background:rgba(255,255,100,.15); box-shadow:0 0 0 0 rgba(255,220,0,0); transform:scale(1); }
+  50%      { background:rgba(255,220,0,.55);  box-shadow:0 0 18px 6px rgba(255,200,0,.5); transform:scale(1.06); }
+}
+.salary-alarm {
+  display:none;
+  margin-left:auto;
+  background:rgba(255,220,0,.3);
+  border:1.5px solid rgba(255,220,0,.7);
+  padding:3px 14px; border-radius:20px;
+  font-size:.82rem; font-weight:800; color:#fff8c0;
+  animation:salaryBlink 1s ease-in-out infinite;
+  white-space:nowrap;
+}
+.salary-alarm.show { display:block; }
+
 .datebar .dpill {
   margin-left:auto; background:rgba(255,255,255,.2);
   padding:2px 12px; border-radius:20px; font-size:.79rem;
@@ -652,19 +669,17 @@ body.mobile-view .mobile-subnav.active {
   display: flex;
   align-items: flex-start;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 .hourly-dow-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
-body.mobile-view .hourly-dow-grid { grid-template-columns:repeat(4,1fr); gap:6px; }
-
 .sales-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-body.mobile-view .hourly-dow-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+
+body.mobile-view .app-wrapper { display: block; width: 100%; overflow-x: hidden; }
+body.mobile-view .app-body { width: 100%; overflow-x: hidden; }
+body.mobile-view .main { padding: 14px 10px 60px; width: 100%; overflow-x: hidden; }
 body.mobile-view .hourly-dow-grid { grid-template-columns:repeat(4,1fr); gap:6px; }
-
-.sales-summary-grid { grid-template-columns:repeat(2,1fr); }
-
-body.mobile-view .app-wrapper { display: block; }
-body.mobile-view .app-body { overflow-x: hidden; }
-body.mobile-view .main { padding: 14px 12px 60px; overflow-x: hidden; }
+body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 
 .app-body {
   flex: 1;
@@ -1254,6 +1269,7 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
   <span>🎀</span>
   <span class="dtxt" id="dtxt"></span>
   <span>✨</span>
+  <span class="salary-alarm" id="salary-alarm"></span>
   <div class="dpill" id="dpill"></div>
 </div>
 
@@ -2165,6 +2181,19 @@ const TOD   = DAYS[NOW.getDay()];
 document.getElementById('dtxt').textContent =
   `${NOW.getFullYear()}년 ${NOW.getMonth()+1}월 ${NOW.getDate()}일 (${TOD}) ✨`;
 document.getElementById('dpill').textContent = `🔔 오늘은 ${DAYKO[NOW.getDay()]}`;
+// 월급날 알람 (매달 9일, 10일)
+(function() {
+  const d = NOW.getDate();
+  const alarmEl = document.getElementById('salary-alarm');
+  if (!alarmEl) return;
+  if (d === 9) {
+    alarmEl.textContent = '💸 오늘 월급날(9일)! 입금 확인하세요!';
+    alarmEl.classList.add('show');
+  } else if (d === 10) {
+    alarmEl.textContent = '💸 오늘 월급날(10일)! 입금 확인하세요!';
+    alarmEl.classList.add('show');
+  }
+})();
 
 // ── 탭 전환 ──
 function goTab(el, id) {
