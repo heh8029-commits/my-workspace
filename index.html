@@ -982,15 +982,20 @@ body.mobile-view .ra-row { flex-direction: column; }
 .exp-form { margin-bottom: 16px; }
 .exp-inp-grid {
   display: grid;
-  grid-template-columns: 90px 1fr 130px 150px;
+  grid-template-columns: 80px 1fr 120px 160px;
   gap: 8px;
+  align-items: center;
+  box-sizing: border-box;
 }
+.exp-inp-grid > * { box-sizing: border-box; width: 100%; min-width: 0; }
 .exp-inp-row2 {
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
   margin-top: 8px;
+  box-sizing: border-box;
 }
+.exp-inp-row2 > * { box-sizing: border-box; width: 100%; min-width: 0; }
 .exp-table-wrap {
   overflow-x: auto; border-radius: 14px;
   border: 2px solid var(--peach); box-shadow: 0 3px 12px rgba(232,131,74,.1);
@@ -1068,8 +1073,9 @@ body.mobile-view .ra-row { flex-direction: column; }
   margin-bottom: 14px; font-weight: 700;
 }
 
-body.mobile-view .exp-inp-grid { grid-template-columns: 1fr 1fr; }
-body.mobile-view .exp-inp-grid input:first-child { grid-column: 1; }
+body.mobile-view .exp-inp-grid { grid-template-columns: 70px 1fr; }
+body.mobile-view .exp-inp-grid > input:nth-child(3) { grid-column: 1; }
+body.mobile-view .exp-inp-grid > select { grid-column: 2; }
 body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 6px; font-size: .72rem; }
 body.mobile-view .exp-td-item { min-width: 90px; font-size:.78rem; }
 body.mobile-view .exp-td-amt { min-width: 72px; }
@@ -1880,17 +1886,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             </table>
           </div>
 
-          <!-- 메모 팝업 -->
-          <div class="exp-memo-overlay" id="exp-memo-overlay" onclick="closeExpMemo()"></div>
-          <div class="exp-memo-popup" id="exp-memo-popup">
-            <div class="exp-memo-popup-title">📝 메모</div>
-            <textarea id="exp-memo-text" class="ra-inp ra-memo" placeholder="확인 사항, 수정 내용 등 자유롭게 메모해요..." style="min-height:100px;margin-bottom:10px"></textarea>
-            <div class="ra-btns">
-              <button class="abtn" onclick="saveExpMemo()" style="background:linear-gradient(135deg,var(--peach-dark),#d06030)">저장</button>
-              <button class="abtn" onclick="deleteExpMemo()" style="background:linear-gradient(135deg,#e05050,#c03030)">🗑️ 삭제</button>
-              <button class="abtn" onclick="closeExpMemo()" style="background:linear-gradient(135deg,#aaa,#888)">닫기</button>
-            </div>
-          </div>
+
         </div>
 
         <div class="subpage" id="menu2-sub-1">
@@ -2257,10 +2253,10 @@ document.getElementById('dpill').textContent = `🔔 오늘은 ${DAYKO[NOW.getDa
   const alarmEl = document.getElementById('salary-alarm');
   if (!alarmEl) return;
   if (d === 9) {
-    alarmEl.textContent = '💸 오늘 월급날(9일)! 입금 확인하세요!';
+    alarmEl.textContent = '💵 내일은 월급날!';
     alarmEl.classList.add('show');
   } else if (d === 10) {
-    alarmEl.textContent = '💸 오늘 월급날(10일)! 입금 확인하세요!';
+    alarmEl.textContent = '💵 오늘 월급날(10일)!';
     alarmEl.classList.add('show');
   }
 })();
@@ -4456,6 +4452,18 @@ function initRender(pageId) {
 })();
 
 </script>
+<!-- 지출 메모 팝업 -->
+<div class="exp-memo-overlay" id="exp-memo-overlay" onclick="closeExpMemo()"></div>
+<div class="exp-memo-popup" id="exp-memo-popup">
+  <div class="exp-memo-popup-title">📝 메모</div>
+  <textarea id="exp-memo-text" class="ra-inp ra-memo" placeholder="확인 사항, 수정 내용 등 자유롭게 메모해요..." style="min-height:100px;margin-bottom:10px"></textarea>
+  <div class="ra-btns">
+    <button class="abtn" onclick="saveExpMemo()" style="background:linear-gradient(135deg,var(--peach-dark),#d06030)">저장</button>
+    <button class="abtn" onclick="deleteExpMemo()" style="background:linear-gradient(135deg,#e05050,#c03030)">🗑️ 삭제</button>
+    <button class="abtn" onclick="closeExpMemo()" style="background:linear-gradient(135deg,#aaa,#888)">닫기</button>
+  </div>
+</div>
+
 <!-- 이미지 모달 -->
 <div id="img-modal-overlay" onclick="closeImgModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
   <img id="img-modal-img" src="" style="max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5);object-fit:contain" onclick="event.stopPropagation()">
