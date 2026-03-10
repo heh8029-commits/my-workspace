@@ -492,6 +492,10 @@ body.mobile-view .app-icon-img {
 @keyframes todayPulse {
   0%,100% { opacity:1; } 50% { opacity:.6; }
 }
+@keyframes salesTodayShimmer {
+  0%,100% { background-color:#fff0fa; box-shadow:inset 0 0 0 0 rgba(247,168,192,0); }
+  50%      { background-color:#ffe0f0; box-shadow:inset 0 0 12px 2px rgba(247,168,192,.35); }
+}
 .cat-yesterday {
   font-size: .72rem; font-weight: 700; color: #e8a000;
   background: #fff8e0; border-radius: 20px; padding: 1px 8px;
@@ -597,13 +601,10 @@ body.mobile-view .mobile-subnav.active {
 .gnav-main-icon { font-size: 1.05rem; }
 
 .gnav-subs {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 1px;
   padding: 2px 0 4px 10px;
-}
-.gnav-subs.open {
-  display: flex;
 }
 
 
@@ -3771,21 +3772,25 @@ function renderSalesTable() {
       onkeydown="if(event.key==='Enter')this.blur()">`;
   };
 
+  const todayD = (NOW.getFullYear()===year && (NOW.getMonth()+1)===month) ? NOW.getDate() : -1;
+
   let rows = '';
   for (let d = 1; d <= days; d++) {
     const date = new Date(year, month - 1, d);
     const dow = WEEK_KO[date.getDay()];
     const isSun = date.getDay() === 0;
     const isSat = date.getDay() === 6;
-    const rowColor = isSun ? '#fff5f5' : isSat ? '#f5f0ff' : (d % 2 === 0 ? '#f8fffe' : '#fff');
-    const textColor = isSun ? '#e03c6e' : isSat ? '#8060d0' : '#333';
+    const isToday = d === todayD;
+    const rowColor = isToday ? '#fff0fa' : isSun ? '#fff5f5' : isSat ? '#f5f0ff' : (d % 2 === 0 ? '#f8fffe' : '#fff');
+    const textColor = isToday ? '#e03c6e' : isSun ? '#e03c6e' : isSat ? '#8060d0' : '#333';
+    const todayStyle = isToday ? 'outline:2px solid #f7a8c0;outline-offset:-1px;animation:salesTodayShimmer 2s ease-in-out infinite;' : '';
     const r = data[`d${d}`] || {};
     const coupangTotal = parseNum(r.gross) + parseNum(r.seller);
     const total = coupangTotal + parseNum(r.naver);
 
-    rows += `<tr style="background:${rowColor}">
-      <td ondblclick="clearSalesRow(${year},${month},${d},this)" style="padding:6px 10px;text-align:center;color:${textColor};font-weight:600;white-space:nowrap;cursor:pointer;user-select:none" title="두번 클릭하면 이 줄 초기화">${month}/${d}</td>
-      <td style="padding:6px 8px;text-align:center;color:${textColor};font-weight:700">${dow}</td>
+    rows += `<tr style="background:${rowColor};${todayStyle}">
+      <td ondblclick="clearSalesRow(${year},${month},${d},this)" style="padding:6px 10px;text-align:center;color:${textColor};font-weight:${isToday?'800':'600'};white-space:nowrap;cursor:pointer;user-select:none${isToday?';text-shadow:0 0 6px rgba(232,100,138,.5)':''}" title="두번 클릭하면 이 줄 초기화">${isToday?'✨ ':''}${month}/${d}</td>
+      <td style="padding:6px 8px;text-align:center;color:${textColor};font-weight:700">${dow}${isToday?' ✨':''}</td>
       <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'gross',r.gross)}</td>
       <td style="padding:4px 5px;text-align:center;background:${rowColor === '#fff' ? '#fafffe' : ''}">${mkInp(year,month,d,'seller',r.seller)}</td>
       <td id="sales-ctotal-${d}" style="padding:6px 8px;text-align:right;font-weight:700;color:#2a9a6a;white-space:nowrap;background:#f0fff8">${coupangTotal > 0 ? coupangTotal.toLocaleString() : '-'}</td>
