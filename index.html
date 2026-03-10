@@ -1848,8 +1848,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <!-- 순이익 요약 -->
       <div id="pnl-summary"></div>
       <!-- 수입/지출 입력 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="pnl-body">
-        <div id="pnl-income-card"></div>
+      <div id="pnl-body">
+        <div id="pnl-income-card" style="margin-bottom:12px"></div>
         <div id="pnl-expense-card"></div>
       </div>
     </div>
@@ -3406,7 +3406,7 @@ let pnlCurrentPeriod = (function() {
 function renderPnlMonthTabs() {
   const el = document.getElementById('pnl-month-tabs');
   if (!el) return;
-  el.innerHTML = PNL_PERIODS.slice().reverse().map(function(p) {
+  el.innerHTML = PNL_PERIODS.map(function(p) {
     const active = p.key === pnlCurrentPeriod;
     return '<button onclick="switchPnlPeriod(\'' + p.key + '\')" style="'
       + 'padding:4px 10px;border-radius:16px;border:1.5px solid ' + (active ? '#3dbb8f' : '#ddd') + ';'
@@ -3472,19 +3472,21 @@ function renderPnlIncomeCard() {
   if (!el) return;
   const data = loadPnl(pnlCurrentPeriod);
   const items = data.incomes || [];
-  let html = '<div style="background:#f5fff8;border:1.5px solid #b2e8d4;border-radius:14px;padding:12px;height:100%">';
+  const bc = '#b2e8d4', bg = '#f5fff8';
+  const inpS = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
+  let html = '<div style="background:'+bg+';border:1.5px solid '+bc+';border-radius:14px;padding:14px">';
   html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
-  html += '<div style="font-size:.85rem;font-weight:800;color:#2a9a6a">💵 이번달 번 돈</div>';
-  html += '<button onclick="pnlAddIncome()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>';
+  html += '<div style="font-size:.88rem;font-weight:800;color:#2a9a6a">&#128181; 이번달 번 돈</div>';
+  html += '<button onclick="pnlAddIncome()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 12px;font-size:.75rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>';
   html += '</div>';
   if (!items.length) {
-    html += '<div class="empty" style="font-size:.78rem">수입 항목을 추가해요</div>';
+    html += '<div class="empty" style="font-size:.8rem">수입 항목을 추가해요</div>';
   } else {
     items.forEach(function(it, i) {
-      html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
-      html += '<input type="text" value="' + escHtml(it.label || '') + '" placeholder="항목" onblur="pnlSaveIncome(this,' + i + ',\'label\')" style="flex:1;border:1.5px solid #b2e8d4;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
-      html += '<input type="text" value="' + (it.amount ? Number(it.amount).toLocaleString() : '') + '" placeholder="금액" oninput="formatStaffNum(this)" onblur="pnlSaveIncome(this,' + i + ',\'amount\')" style="width:90px;border:1.5px solid #b2e8d4;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;box-sizing:border-box;text-align:right">';
-      html += '<button data-idx="' + i + '" onclick="pnlDelIncome(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.82rem;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>';
+      html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
+      html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목명" onblur="pnlSaveIncome(this,'+i+',\'label\')" style="width:80px;flex-shrink:0;'+inpS+'">';
+      html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveIncome(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpS+'">';
+      html += '<button data-idx="'+i+'" onclick="pnlDelIncome(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.85rem;flex-shrink:0;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">&#10005;</button>';
       html += '</div>';
     });
   }
@@ -3497,19 +3499,22 @@ function renderPnlExpenseCard() {
   if (!el) return;
   const data = loadPnl(pnlCurrentPeriod);
   const items = data.expenses || [];
-  let html = '<div style="background:#fff8f5;border:1.5px solid #f7c8b0;border-radius:14px;padding:12px;height:100%">';
+  const bc = '#f7c8b0', bg = '#fff8f5';
+  const inpS = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
+  let html = '<div style="background:'+bg+';border:1.5px solid '+bc+';border-radius:14px;padding:14px">';
   html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
-  html += '<div style="font-size:.85rem;font-weight:800;color:#c05020">💸 이번달 나간 돈</div>';
-  html += '<button onclick="pnlAddExpense()" style="margin-left:auto;background:linear-gradient(135deg,#f7c8b0,#e08050);border:none;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>';
+  html += '<div style="font-size:.88rem;font-weight:800;color:#c05020">&#128184; 이번달 나간 돈</div>';
+  html += '<button onclick="pnlAddExpense()" style="margin-left:auto;background:linear-gradient(135deg,#f7c8b0,#e08050);border:none;border-radius:8px;padding:5px 12px;font-size:.75rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>';
   html += '</div>';
   if (!items.length) {
-    html += '<div class="empty" style="font-size:.78rem">지출 항목을 추가해요</div>';
+    html += '<div class="empty" style="font-size:.8rem">지출 항목을 추가해요</div>';
   } else {
     items.forEach(function(it, i) {
-      html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
-      html += '<input type="text" value="' + escHtml(it.label || '') + '" placeholder="항목" onblur="pnlSaveExpense(this,' + i + ',\'label\')" style="flex:1;border:1.5px solid #f7c8b0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;min-width:0;box-sizing:border-box">';
-      html += '<input type="text" value="' + (it.amount ? Number(it.amount).toLocaleString() : '') + '" placeholder="금액" oninput="formatStaffNum(this)" onblur="pnlSaveExpense(this,' + i + ',\'amount\')" style="width:90px;border:1.5px solid #f7c8b0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;box-sizing:border-box;text-align:right">';
-      html += '<button data-idx="' + i + '" onclick="pnlDelExpense(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.82rem;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>';
+      html += '<div draggable="true" data-pnl-idx="'+i+'" ondragstart="pnlExpDragStart(event,'+i+')" ondragover="pnlExpDragOver(event)" ondragleave="pnlExpDragLeave(event)" ondrop="pnlExpDrop(event,'+i+')" style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
+      html += '<span style="cursor:grab;color:#ccc;font-size:.82rem;flex-shrink:0;user-select:none" title="순서이동">&#10887;</span>';
+      html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목명" onblur="pnlSaveExpense(this,'+i+',\'label\')" style="width:80px;flex-shrink:0;'+inpS+'">';
+      html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveExpense(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpS+'">';
+      html += '<button data-idx="'+i+'" onclick="pnlDelExpense(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.85rem;flex-shrink:0;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">&#10005;</button>';
       html += '</div>';
     });
   }
@@ -3517,7 +3522,23 @@ function renderPnlExpenseCard() {
   el.innerHTML = html;
 }
 
-// ── 수입 추가/저장/삭제 ──
+let _pnlExpDragFrom = null;
+function pnlExpDragStart(e, i) { _pnlExpDragFrom = i; e.dataTransfer.effectAllowed='move'; }
+function pnlExpDragOver(e) { e.preventDefault(); e.currentTarget.style.outline='2px dashed #e08050'; }
+function pnlExpDragLeave(e) { e.currentTarget.style.outline=''; }
+function pnlExpDrop(e, toIdx) {
+  e.preventDefault(); e.currentTarget.style.outline='';
+  if (_pnlExpDragFrom === null || _pnlExpDragFrom === toIdx) return;
+  const data = loadPnl(pnlCurrentPeriod);
+  const arr = data.expenses || [];
+  const [moved] = arr.splice(_pnlExpDragFrom, 1);
+  arr.splice(toIdx, 0, moved);
+  data.expenses = arr;
+  savePnl(pnlCurrentPeriod, data);
+  savePnlExpenseTemplate(arr.map(function(ex){ return {label:ex.label}; }));
+  renderPnl();
+}
+
 function pnlAddIncome() {
   const data = loadPnl(pnlCurrentPeriod);
   if (!data.incomes) data.incomes = [];
