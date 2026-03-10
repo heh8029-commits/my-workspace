@@ -441,6 +441,17 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .more-btn:hover { color: var(--rose); }
 
 /* ── 주문제작요청 ── */
+.order-status-btns { display:flex; gap:4px; flex-wrap:wrap; margin:6px 0 4px; }
+.order-status-btn {
+  font-size:.68rem; padding:3px 9px; border-radius:20px; border:1.5px solid #ccc;
+  background:#f5f5f5; color:#999; cursor:pointer; font-family:'Pretendard',sans-serif;
+  font-weight:600; transition:all .15s;
+}
+.order-status-btn.active-0 { background:linear-gradient(135deg,#e8e0ff,#c8b4f8); border-color:#8060e0; color:#5a30c0; box-shadow:0 2px 8px #8060e040; transform:scale(1.08); }
+.order-status-btn.active-1 { background:linear-gradient(135deg,#ffe0f5,#f7a8c0); border-color:#e8648a; color:#c0205a; box-shadow:0 2px 8px #e8648a40; transform:scale(1.08); }
+.order-status-btn.active-2 { background:linear-gradient(135deg,#fff0c0,#ffe060); border-color:#e0b000; color:#a07000; box-shadow:0 2px 8px #e0b00040; transform:scale(1.08); }
+.order-status-btn.active-3 { background:linear-gradient(135deg,#c0f4dc,#60d8a0); border-color:#1a9a60; color:#0a6040; box-shadow:0 2px 8px #1a9a6040; transform:scale(1.08); }
+
 .order-form { margin-bottom: 14px; }
 .order-row {
   display: flex; align-items: flex-start;
@@ -2940,9 +2951,14 @@ function renderOrder() {
   el.innerHTML = data.map(row => {
     const dateStr = row.date ? `📅 ${row.date.replace(/-/g,'.')}` : '📅 날짜 미정';
     return `<div class="order-item" id="order-${row.id}">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
         <span class="order-item-date" id="order-date-view-${row.id}" style="flex:1;cursor:pointer" ondblclick="orderEditMode(${row.id})">${dateStr}</span>
         <input id="order-date-edit-${row.id}" type="date" value="${row.date||''}" style="display:none;flex:1;border:1.5px solid #b0a0f8;border-radius:8px;padding:4px 8px;font-family:'Pretendard',sans-serif;font-size:.82rem">
+      </div>
+      <div class="order-status-btns">
+        ${['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'].map((lbl,i) =>
+          `<button class="order-status-btn${(row.status===i?' active-'+i:'')}" onclick="setOrderStatus(${row.id},${i})">${lbl}</button>`
+        ).join('')}
       </div>
       <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${linkify(row.memo||'')}</div>
       <textarea id="order-memo-edit-${row.id}" style="display:none;width:100%;border:1.5px solid #b0a0f8;border-radius:8px;padding:8px 10px;font-family:'Pretendard',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;line-height:1.6;box-sizing:border-box">${esc(row.memo||'')}</textarea>
@@ -2982,7 +2998,7 @@ function orderSaveEdit(id) {
   const date = document.getElementById('order-date-edit-'+id).value;
   const data = loadOrder();
   const idx = data.findIndex(r => r.id === id);
-  if (idx !== -1) { data[idx].memo = memo; data[idx].date = date; }
+  if (idx !== -1) { data[idx].memo = memo; data[idx].date = date; /* status 유지 */ }
   saveOrder(data);
   renderOrder();
   toast('📦 수정됐어요!');
@@ -2993,7 +3009,7 @@ function addOrder() {
   const memo = document.getElementById('order-memo').value.trim();
   if (!memo) { toast('요청 내용을 입력해줘요 📦'); return; }
   const data = loadOrder();
-  data.unshift({ id: Date.now(), date, memo });
+  data.unshift({ id: Date.now(), date, memo, status: -1 });
   saveOrder(data);
   document.getElementById('order-date').value = '';
   document.getElementById('order-memo').value = '';
@@ -3008,6 +3024,16 @@ function delOrder(id) {
 }
 
 
+
+function setOrderStatus(id, status) {
+  const data = loadOrder();
+  const idx = data.findIndex(r => r.id === id);
+  if (idx === -1) return;
+  // 같은 버튼 다시 누르면 해제
+  data[idx].status = data[idx].status === status ? -1 : status;
+  saveOrder(data);
+  renderOrder();
+}
 
 function addEun() {
   const v = document.getElementById('eun-inp').value.trim();
@@ -4325,5 +4351,10 @@ function initRender(pageId) {
 })();
 
 </script>
+<!-- 이미지 모달 -->
+<div id="img-modal-overlay" onclick="closeImgModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
+  <img id="img-modal-img" src="" style="max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5);object-fit:contain" onclick="event.stopPropagation()">
+  <button onclick="closeImgModal()" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,.18);border:none;color:white;font-size:1.6rem;width:40px;height:40px;border-radius:50%;cursor:pointer;line-height:1">✕</button>
+</div>
 </body>
 </html>
