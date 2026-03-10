@@ -3843,6 +3843,7 @@ function renderSales() {
   renderSalesTable();
 }
 
+<<<<<<< HEAD
 // ── 퀵 바로가기 FAB ──
 function renderFabIcons() {
   const sc1 = load('shortcuts');
@@ -3909,6 +3910,8 @@ function closeFabMenu() {
   btn.style.color = '';
 }
 
+=======
+>>>>>>> 35c502646f8406abbd63a66173ffb04409504903
 // ── 초기 렌더 (모든 함수 정의 후 실행) ──
 ['boss','basic','design'].forEach(renderFlow);
 renderWeek();
@@ -3922,7 +3925,10 @@ renderFridgeMemo();
 renderSales();
 (function(){ const sc=load('shortcuts'); if(sc&&sc.length) renderShortcuts(sc); })();
 (function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
+<<<<<<< HEAD
 renderFabIcons();
+=======
+>>>>>>> 35c502646f8406abbd63a66173ffb04409504903
 
 // 페이지 로드 시 Firebase 자동 동기화
 syncFromSheet();
