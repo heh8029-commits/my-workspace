@@ -675,17 +675,6 @@ body.mobile-view .app-wrapper { display: block; }
 }
 .gnav.collapsed .gnav-logo span,
 .gnav.collapsed .gnav-main span:last-child,
-.gnav.collapsed .sales-inner-tab {
-  padding:8px 20px;border-radius:24px;border:1.5px solid #b2e8d4;
-  background:white;color:#3dbb8f;font-size:.85rem;font-weight:600;
-  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
-}
-.sales-inner-tab:hover { background:#f0fff8; }
-.sales-inner-tab.active {
-  background:linear-gradient(135deg,#3dbb8f,#2a9a6a);
-  color:white;border-color:#2a9a6a;
-}
-
 .shop-sub-btn {
   padding:7px 16px;border-radius:22px;border:1.5px solid var(--pink);
   background:white;color:var(--soft);font-size:.82rem;font-weight:500;
@@ -1733,24 +1722,6 @@ body.mobile-view .exp-table th, body.mobile-view .exp-table td { padding: 7px 8p
       <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">시즌 일정, 기획 등을 여기에 채워요</span></div>
     </div>
   </div>
-
-        <div><div class="subpage-title">그로스 시간별 매출</div><div class="subpage-desc">시간대별 매출 추이를 날짜별로 기록해요 (9시~23시)</div></div>
-      </div>
-
-      <!-- 월 탭 -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="hourly-month-tabs"></div>
-
-      <!-- 요일별 요약 카드 -->
-      <div id="hourly-dow-summary" style="margin-bottom:16px"></div>
-
-      <!-- 테이블 -->
-      <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #b2d8f8">
-        <table id="hourly-table" style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:1200px">
-          <thead id="hourly-thead"></thead>
-          <tbody id="hourly-tbody"></tbody>
-        </table>
-      </div>
-    </div>
 
   <!-- ══════════════ 우리집 ══════════════ -->
   <div class="page" id="menu2">
