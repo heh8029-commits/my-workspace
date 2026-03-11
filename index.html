@@ -2235,16 +2235,43 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="subpage" id="menu2-sub-17">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff8e0,#ffe080)">🎊</div>
-        <div><div class="subpage-title">경조사 기록</div><div class="subpage-desc">경조사 내역을 기록해요</div></div>
+        <div><div class="subpage-title">경조사 기록</div><div class="subpage-desc">날짜·메모로 생일/경조사를 기록해요</div></div>
       </div>
+
+      <!-- 2열: 왼쪽=기록 입력, 오른쪽=간단메모 -->
+      <div class="two-col" style="margin-bottom:18px">
+
+        <!-- 왼쪽: 기록 입력 -->
+        <div class="card" style="border-top:3px solid #ffe080">
+          <div style="font-size:.9rem;font-weight:700;color:#a07000;margin-bottom:12px">🎊 기록 추가</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">날짜</label>
+              <input id="event-rec-date" type="date" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">이름</label>
+              <input id="event-rec-name" type="text" placeholder="이름 / 관계" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">메모</label>
+              <input id="event-rec-memo" type="text" placeholder="생일 / 결혼 / 기타..." style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')eventRecAdd()">
+            </div>
+            <button onclick="eventRecAdd()" style="background:linear-gradient(135deg,#ffe080,#e0a800);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%;margin-top:2px">+ 추가</button>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 간단 메모 -->
+        <div class="card" style="border-top:3px solid #f7a8c0">
+          <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:12px">📝 간단 메모</div>
+          <textarea id="event-side-memo" rows="8" placeholder="자유롭게 메모해요..." style="width:100%;border:1.5px solid #f7d0e0;border-radius:8px;padding:9px 11px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.7;color:#333;box-sizing:border-box" oninput="eventSideMemoSave()"></textarea>
+        </div>
+
+      </div>
+
+      <!-- 리스트: 날짜순 -->
+      <div style="font-size:.82rem;font-weight:700;color:#a07000;margin-bottom:8px;border-bottom:1px solid #f0e0a0;padding-bottom:6px">📋 기록 목록 (날짜순)</div>
       <div id="event-rec-wrap"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <input id="event-rec-date" type="date" style="border:1.5px solid #ffe080;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;flex-shrink:0">
-        <input id="event-rec-name" type="text" placeholder="이름/관계" style="width:90px;border:1.5px solid #ffe080;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;flex-shrink:0">
-        <input id="event-rec-type" type="text" placeholder="구분 (결혼/장례/생일...)" style="flex:1;min-width:100px;border:1.5px solid #ffe080;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none">
-        <input id="event-rec-amt" type="text" placeholder="금액" style="width:80px;border:1.5px solid #ffe080;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;flex-shrink:0">
-        <button onclick="eventRecAdd()" style="background:linear-gradient(135deg,#ffe080,#e0a800);border:none;border-radius:10px;padding:7px 16px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+ 추가</button>
-      </div>
     </div>
   </div>
 
@@ -2537,7 +2564,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','event_rec'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','event_rec','event_side_memo'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4342,47 +4369,72 @@ function saveEventRec(list) { stor('event_rec', {list}); }
 function renderEventRec() {
   var el = document.getElementById('event-rec-wrap');
   if (!el) return;
+  var sideEl = document.getElementById('event-side-memo');
+  if (sideEl && !sideEl._loaded) { sideEl.value = loadObj('event_side_memo').v || ''; sideEl._loaded=true; }
   var items = loadEventRec();
-  items.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
-  if (!items.length) { el.innerHTML = '<div class="empty">경조사 내역을 추가해요 🎊</div>'; return; }
-  el.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.84rem">'
-    + '<thead><tr style="background:#fff8e0;color:#a07000">'
-    + '<th style="padding:7px 10px;text-align:left;white-space:nowrap">날짜</th>'
-    + '<th style="padding:7px 10px;text-align:left">이름/관계</th>'
-    + '<th style="padding:7px 10px;text-align:left">구분</th>'
-    + '<th style="padding:7px 10px;text-align:right">금액</th>'
-    + '<th style="padding:7px 4px"></th>'
-    + '</tr></thead><tbody>'
-    + items.map(function(it) {
-      var amt = parseInt((it.amt||'0').replace(/[^0-9]/g,''))||0;
-      return '<tr style="border-bottom:1px solid #f0e8c0">'
-        + '<td style="padding:7px 10px;white-space:nowrap;color:#888;font-size:.78rem">'+escHtml(it.date||'')+'</td>'
-        + '<td style="padding:7px 10px;font-weight:600">'+escHtml(it.name||'')+'</td>'
-        + '<td style="padding:7px 10px;color:#555">'+escHtml(it.type||'')+'</td>'
-        + '<td style="padding:7px 10px;text-align:right;color:#c07800;font-weight:700">'+(amt?amt.toLocaleString()+'원':'')+'</td>'
-        + '<td style="padding:7px 4px;text-align:center"><button data-id="'+it.id+'" onclick="eventRecDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">✕</button></td>'
-        + '</tr>';
-    }).join('')
-    + '</tbody></table></div>';
+  items.sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+  if (!items.length) { el.innerHTML = '<div class="empty">기록을 추가해요 🎊</div>'; return; }
+  el.innerHTML = items.map(function(it) {
+    if (it._editing) {
+      return '<div style="display:flex;gap:6px;align-items:center;padding:8px 10px;border:1.5px solid #ffe080;border-radius:10px;margin-bottom:6px;background:#fffdf0;flex-wrap:wrap">'
+        + '<input id="er-ed-date-'+it.id+'" type="date" value="'+escHtml(it.date||'')+'" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;width:120px">'
+        + '<input id="er-ed-name-'+it.id+'" type="text" value="'+escHtml(it.name||'')+'" placeholder="이름/관계" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;width:90px">'
+        + '<input id="er-ed-memo-'+it.id+'" type="text" value="'+escHtml(it.memo||'')+'" placeholder="메모" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;flex:1;min-width:80px">'
+        + '<button data-id="'+it.id+'" onclick="eventRecEditSave(+this.dataset.id)" style="background:#e0a800;border:none;border-radius:6px;padding:4px 10px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0">저장</button>'
+        + '<button data-id="'+it.id+'" onclick="eventRecEditCancel(+this.dataset.id)" style="background:#eee;border:none;border-radius:6px;padding:4px 8px;color:#888;font-size:.78rem;cursor:pointer;flex-shrink:0">취소</button>'
+        + '</div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #f0e0a0;border-radius:10px;margin-bottom:6px;background:#fffdf5">'
+      + '<span style="font-size:.76rem;color:#b08000;font-weight:700;flex-shrink:0;min-width:72px">'+escHtml(it.date||'')+'</span>'
+      + '<span style="font-size:.85rem;font-weight:600;color:#444;flex-shrink:0">'+escHtml(it.name||'')+'</span>'
+      + '<span style="font-size:.82rem;color:#888;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(it.memo||'')+'</span>'
+      + '<button data-id="'+it.id+'" onclick="eventRecEditStart(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;flex-shrink:0" onmouseover="this.style.color=\'#e0a800\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
+      + '<button data-id="'+it.id+'" onclick="eventRecDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">✕</button>'
+      + '</div>';
+  }).join('');
 }
 function eventRecAdd() {
   var date = document.getElementById('event-rec-date').value;
   var name = document.getElementById('event-rec-name').value.trim();
-  var type = document.getElementById('event-rec-type').value.trim();
-  var amt  = document.getElementById('event-rec-amt').value.trim();
-  if (!name && !type) return;
+  var memo = document.getElementById('event-rec-memo').value.trim();
+  if (!name && !memo) return;
   var list = loadEventRec();
-  list.push({id: Date.now(), date, name, type, amt});
+  list.push({id: Date.now(), date, name, memo});
   saveEventRec(list);
   document.getElementById('event-rec-name').value = '';
-  document.getElementById('event-rec-type').value = '';
-  document.getElementById('event-rec-amt').value = '';
+  document.getElementById('event-rec-memo').value = '';
   renderEventRec();
-  toast('🎊 경조사 추가됐어요!');
+  toast('🎊 기록 추가됐어요!');
 }
 function eventRecDel(id) {
   saveEventRec(loadEventRec().filter(function(x){ return x.id!==id; }));
   renderEventRec();
+}
+function eventRecEditStart(id) {
+  var list = loadEventRec();
+  list.forEach(function(x){ x._editing = (x.id===id); });
+  saveEventRec(list); renderEventRec();
+}
+function eventRecEditCancel(id) {
+  var list = loadEventRec();
+  list.forEach(function(x){ delete x._editing; });
+  saveEventRec(list); renderEventRec();
+}
+function eventRecEditSave(id) {
+  var list = loadEventRec();
+  list = list.map(function(x){
+    if (x.id!==id) return x;
+    return {id:x.id,
+      date: document.getElementById('er-ed-date-'+id).value,
+      name: document.getElementById('er-ed-name-'+id).value.trim(),
+      memo: document.getElementById('er-ed-memo-'+id).value.trim()};
+  });
+  saveEventRec(list); renderEventRec();
+  toast('✅ 수정됐어요!');
+}
+function eventSideMemoSave() {
+  var v = (document.getElementById('event-side-memo')||{}).value||'';
+  stor('event_side_memo',{v});
 }
 
 function loadImpCheck() { return loadObj('imp_check').list || []; }
