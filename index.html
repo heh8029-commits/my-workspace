@@ -2496,7 +2496,12 @@ async function syncFromSheet() {
     // 현재 페이지에 맞는 렌더만 실행
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
-    toast('✅ 동기화 완료!');
+    if (!window._syncedOnce) {
+      window._syncedOnce = true;
+      // 첫 sync는 조용히
+    } else {
+      toast('✅ 동기화 완료!');
+    }
   } catch(e) {
     console.log('sync err', e);
     toast('❌ ' + (e.message || '동기화 실패'));
@@ -5329,10 +5334,13 @@ function initRender(pageId) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
-  // 데이터 렌더
-  initRender(savedTab);
-  // Firebase sync
-  syncFromSheet();
+  // Firebase sync 후 렌더 (첫 로드 시 sync 완료 후 렌더)
+  syncFromSheet().then(function() {
+    initRender(savedTab);
+  }).catch(function() {
+    // sync 실패해도 로컬 데이터로 렌더
+    initRender(savedTab);
+  });
   // SW
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW:', e));
