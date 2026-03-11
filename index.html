@@ -1157,42 +1157,61 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 /* ── 냉장고 메모 ── */
 .fridge-wrap {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
   margin-bottom: 16px;
 }
-.fridge-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, #f0fff8, #e0f8ee);
-  border: 1.5px solid var(--mint);
-  border-radius: 14px;
-  padding: 10px 16px;
-  cursor: pointer;
+@media(max-width:700px) { .fridge-wrap { grid-template-columns: 1fr; } }
+/* 공통 카드 */
+.fridge-card {
+  border-radius: 16px; padding: 12px 14px;
+  border: 1.5px solid transparent;
+  display: flex; flex-direction: column; gap: 8px;
   transition: all .15s;
 }
-.fridge-bar:hover { border-color: var(--mint-dark); box-shadow: 0 3px 12px rgba(61,187,143,.15); }
-.fridge-bar2 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, #fff8f0, #ffeedd);
-  border: 1.5px solid var(--peach);
-  border-radius: 14px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all .15s;
+/* 장봐야될거 🛒 - 노란 계열 */
+.fridge-card.shop {
+  background: linear-gradient(145deg,#fffdf0,#fff8d4);
+  border-color: #f0d060;
 }
-.fridge-bar2:hover { border-color: var(--peach-dark); box-shadow: 0 3px 12px rgba(232,131,74,.15); }
+.fridge-card.shop:hover { border-color: #d4a800; box-shadow: 0 3px 12px rgba(212,168,0,.15); }
+.fridge-card-title.shop { color: #7a5a00; }
+/* 재료남은거 🧊 - 민트 계열 */
+.fridge-card.ingredient {
+  background: linear-gradient(145deg,#f0fff8,#ddfaee);
+  border-color: var(--mint);
+}
+.fridge-card.ingredient:hover { border-color: var(--mint-dark); box-shadow: 0 3px 12px rgba(61,187,143,.15); }
+.fridge-card-title.ingredient { color: #1a7a5a; }
+/* 냉장고남은거 🍱 - 피치 계열 */
+.fridge-card.fridge {
+  background: linear-gradient(145deg,#fff8f0,#ffeedd);
+  border-color: var(--peach);
+}
+.fridge-card.fridge:hover { border-color: var(--peach-dark); box-shadow: 0 3px 12px rgba(232,131,74,.15); }
+.fridge-card-title.fridge { color: #7a4a1a; }
+/* 카드 헤더 */
+.fridge-card-header { display:flex; align-items:center; gap:6px; margin-bottom:2px; }
+.fridge-card-title { font-size:.8rem; font-weight:800; }
+.fridge-card-edit { font-size:.72rem; font-weight:700; flex-shrink:0; margin-left:auto; cursor:pointer; opacity:.7; }
+.fridge-card-edit:hover { opacity:1; }
+/* 장보기 체크 아이템 */
+.shop-item { display:flex; align-items:center; gap:7px; padding:4px 0; }
+.shop-item input[type=checkbox] { width:15px; height:15px; cursor:pointer; flex-shrink:0; accent-color:#d4a800; }
+.shop-item-txt { font-size:.85rem; color:#5a4800; flex:1; }
+.shop-item.checked .shop-item-txt { text-decoration:line-through; color:#bbb; }
+/* 메모 텍스트 */
+.fridge-memo-body { font-size:.84rem; line-height:1.65; white-space:pre-wrap; word-break:break-all; }
+.fridge-memo-body.empty { color:#bbb; font-size:.78rem; }
+/* 장보기 입력 */
+.shop-add-row { display:flex; gap:5px; margin-top:4px; }
+.shop-add-inp { flex:1; border:1.5px solid #f0d060; border-radius:8px; padding:5px 8px; font-size:.8rem; font-family:Pretendard,sans-serif; outline:none; background:#fffef5; }
+.shop-add-btn { background:linear-gradient(135deg,#f5d840,#d4a800); border:none; border-radius:8px; padding:5px 10px; font-size:.8rem; font-weight:700; color:white; cursor:pointer; flex-shrink:0; }
+
+/* 기존 호환 유지 */
 .fridge-bar-icon { font-size: 1.2rem; flex-shrink: 0; }
-.fridge-bar-text { flex: 1; font-size: .88rem; color: #3a7a5a; line-height: 1.5; }
-.fridge-bar-text.empty { color: #aaa; }
-.fridge-bar-text2 { flex: 1; font-size: .88rem; color: #7a4a2a; line-height: 1.5; }
-.fridge-bar-text2.empty { color: #aaa; }
 .fridge-bar-edit { font-size: .75rem; color: var(--mint-dark); font-weight: 700; flex-shrink: 0; }
 .fridge-bar-edit2 { font-size: .75rem; color: var(--peach-dark); font-weight: 700; flex-shrink: 0; }
-@media(max-width:600px) { .fridge-wrap { grid-template-columns: 1fr; } }
 
 .fridge-modal-overlay {
   display: none; position: fixed;
@@ -2259,17 +2278,38 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     </div>
 
 
-    <!-- 냉장고 메모 -->
+    <!-- 냉장고 메모 3열 -->
     <div class="fridge-wrap">
-      <div class="fridge-bar" onclick="openFridgeMemo('ingredient')">
-        <span class="fridge-bar-icon">🧊</span>
-        <div class="fridge-bar-text empty" id="fridge-bar-text">재료 남은거 메모... (클릭해서 편집)</div>
-        <span class="fridge-bar-edit">✏️</span>
+      <!-- 장봐야될거 -->
+      <div class="fridge-card shop">
+        <div class="fridge-card-header">
+          <span>🛒</span>
+          <span class="fridge-card-title shop">장봐야 될 거</span>
+          <span class="fridge-card-edit" onclick="shopClearChecked()" title="체크된 항목 삭제">🗑️</span>
+        </div>
+        <div id="shop-list-wrap"></div>
+        <div class="shop-add-row">
+          <input id="shop-add-inp" class="shop-add-inp" type="text" placeholder="추가할 재료..." onkeydown="if(event.key==='Enter'){event.preventDefault();shopAddItem()}">
+          <button class="shop-add-btn" onclick="shopAddItem()">+</button>
+        </div>
       </div>
-      <div class="fridge-bar2" onclick="openFridgeMemo('side')">
-        <span class="fridge-bar-icon">🍱</span>
-        <div class="fridge-bar-text2 empty" id="fridge-bar-text2">반찬 남은거 메모... (클릭해서 편집)</div>
-        <span class="fridge-bar-edit2">✏️</span>
+      <!-- 재료 남은거 -->
+      <div class="fridge-card ingredient" onclick="openFridgeMemo('ingredient')" style="cursor:pointer">
+        <div class="fridge-card-header">
+          <span>🧊</span>
+          <span class="fridge-card-title ingredient">재료 남은 거</span>
+          <span class="fridge-card-edit">✏️</span>
+        </div>
+        <div class="fridge-memo-body empty" id="fridge-bar-text">클릭해서 편집</div>
+      </div>
+      <!-- 냉장고 남은거 -->
+      <div class="fridge-card fridge" onclick="openFridgeMemo('side')" style="cursor:pointer">
+        <div class="fridge-card-header">
+          <span>🍱</span>
+          <span class="fridge-card-title fridge">냉장고 남은 거</span>
+          <span class="fridge-card-edit">✏️</span>
+        </div>
+        <div class="fridge-memo-body empty" id="fridge-bar-text2">클릭해서 편집</div>
       </div>
     </div>
 
@@ -2428,7 +2468,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3998,12 +4038,61 @@ function renderFridgeMemo() {
   const el2 = document.getElementById('fridge-bar-text2');
   if (el1) {
     if (t1.trim()) { el1.textContent = t1; el1.classList.remove('empty'); }
-    else { el1.textContent = '재료 남은거 메모... (클릭해서 편집)'; el1.classList.add('empty'); }
+    else { el1.textContent = '클릭해서 편집'; el1.classList.add('empty'); }
   }
   if (el2) {
     if (t2.trim()) { el2.textContent = t2; el2.classList.remove('empty'); }
-    else { el2.textContent = '반찬 남은거 메모... (클릭해서 편집)'; el2.classList.add('empty'); }
+    else { el2.textContent = '클릭해서 편집'; el2.classList.add('empty'); }
   }
+  renderShopList();
+}
+
+// ── 장보기 리스트 ──
+function loadShopList() { return loadObj('shop_list').items || []; }
+function saveShopList(items) { stor('shop_list', {items}); }
+function renderShopList() {
+  const el = document.getElementById('shop-list-wrap');
+  if (!el) return;
+  const items = loadShopList();
+  if (!items.length) { el.innerHTML = '<div style="font-size:.75rem;color:#ccc;padding:4px 0">아직 없어요</div>'; return; }
+  el.innerHTML = items.map(function(it, i) {
+    const chk = it.done ? ' checked' : '';
+    const cls = it.done ? ' checked' : '';
+    const delBtn = '<button data-si="'+i+'" onclick="event.stopPropagation();shopDel(+this.dataset.si)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.75rem;padding:0 2px" onmouseover="this.style.color=\u0027#e03c6e\u0027" onmouseout="this.style.color=\u0027#ddd\u0027">&#10005;</button>';
+    return '<div class="shop-item'+cls+'">'
+      + '<input type="checkbox"'+chk+' onchange="shopToggle('+i+')" onclick="event.stopPropagation()">'
+      + '<span class="shop-item-txt">'+escHtml(it.text)+'</span>'
+      + delBtn
+      + '</div>';
+  }).join('');
+}
+function shopAddItem() {
+  const inp = document.getElementById('shop-add-inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  const items = loadShopList();
+  items.push({text, done:false});
+  saveShopList(items);
+  inp.value = '';
+  renderShopList();
+}
+function shopToggle(idx) {
+  const items = loadShopList();
+  items[idx].done = !items[idx].done;
+  saveShopList(items);
+  renderShopList();
+}
+function shopDel(idx) {
+  const items = loadShopList();
+  items.splice(idx, 1);
+  saveShopList(items);
+  renderShopList();
+}
+function shopClearChecked() {
+  const items = loadShopList().filter(function(it){ return !it.done; });
+  saveShopList(items);
+  renderShopList();
+  toast('✅ 체크된 항목 삭제됐어요');
 }
 function openFridgeMemo(type) {
   fridgeMemoType = type;
