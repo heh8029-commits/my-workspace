@@ -166,42 +166,13 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 
 .datebar .dpill {
   margin-left:auto; background:rgba(255,255,255,.2);
-  padding:2px 12px; border-radius:20px; font-size:.79rem;
+  padding:3px 14px; border-radius:20px; font-size:.79rem;
   border:1px solid rgba(255,255,255,.25);
+  max-width:55vw; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+  cursor:default;
 }
 
-/* ── 오늘 일정/지출 배너 ── */
-@keyframes tsbSlideDown {
-  from { opacity:0; max-height:0; padding-top:0; padding-bottom:0; }
-  to   { opacity:1; max-height:40px; }
-}
-.today-sched-bar {
-  background: #f5f5f7;
-  border-bottom: 1px solid #e8e0ec;
-  padding: 4px 24px;
-  display: flex; align-items: center; justify-content: center;
-  gap: 10px; flex-wrap: nowrap; overflow: hidden;
-  animation: tsbSlideDown .3s ease;
-  min-height: 28px;
-}
-.tsb-sched-item {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: .75rem; font-weight: 700; color: #333;
-  white-space: nowrap;
-}
-.tsb-sched-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  flex-shrink: 0; display: inline-block;
-}
-.tsb-sep { color: #ccc; font-size: .75rem; }
-.tsb-exp-item {
-  font-size: .7rem; color: #e03c6e;
-  white-space: nowrap; font-weight: 600;
-}
-.tsb-divider {
-  width: 1px; height: 12px;
-  background: #ddd; flex-shrink: 0;
-}
+
 
 /* ────────────────────────────────
    페이지 전환
@@ -1477,9 +1448,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <span class="dtxt" id="dtxt"></span>
   <span>✨</span>
   <span class="salary-alarm" id="salary-alarm"></span>
-  <div class="dpill" id="dpill"></div>
+  <div class="dpill" id="dpill" style="max-width:55vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
 </div>
-<div id="today-sched-bar" class="today-sched-bar" style="display:none"></div>
 
 <div class="mobile-subnav" id="msubnav-menu1">
   <button class="msub-btn" onclick="switchSub('menu1',8,null);setMobileSubActive(this)">📉 월별손익</button>
@@ -2612,7 +2582,7 @@ const TOD   = DAYS[NOW.getDay()];
 
 document.getElementById('dtxt').textContent =
   `${NOW.getFullYear()}년 ${NOW.getMonth()+1}월 ${NOW.getDate()}일 (${TOD}) ✨`;
-document.getElementById('dpill').textContent = `🔔 오늘은 ${DAYKO[NOW.getDay()]}`;
+// dpill은 updateTodaySchedBar()가 처리
 // 월급날 알람 (매달 9일, 10일)
 (function() {
   const d = NOW.getDate();
@@ -2732,7 +2702,7 @@ async function syncFromSheet() {
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
     // 배너: 반드시 initRender 완료 후 실행
-    setTimeout(function(){ updateTodaySchedBar && updateTodaySchedBar(); }, 0);
+    updateTodaySchedBar && updateTodaySchedBar();
     if (!window._syncedOnce) {
       window._syncedOnce = true;
     } else {
@@ -4296,8 +4266,8 @@ let calSelectedDay = null;
 
 
 function updateTodaySchedBar() {
-  const bar = document.getElementById('today-sched-bar');
-  if (!bar) return;
+  const pill = document.getElementById('dpill');
+  if (!pill) return;
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
   const todayStr = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
@@ -4310,37 +4280,11 @@ function updateTodaySchedBar() {
     return parseInt((r.day||'').match(/\d+/)?.[0]||'0') === d;
   });
 
-  if (!todayScheds.length && !todayExps.length) {
-    bar.style.display = 'none'; bar.innerHTML = ''; return;
-  }
-  bar.style.display = 'flex';
-
   const parts = [];
-
-  // 일정: 컬러도트 + 텍스트, 여러 개면 | 로 구분
-  todayScheds.forEach(function(s, i) {
-    if (i > 0) parts.push('<span class="tsb-sep">·</span>');
-    parts.push(
-      '<span class="tsb-sched-item">'
-      + '<span class="tsb-sched-dot" style="background:'+escHtml(s.color||'#fff')+'"></span>'
-      + escHtml(s.text)
-      + '</span>'
-    );
-  });
-
-  // 지출: 일정이 있으면 구분선 후 표시
-  if (todayExps.length) {
-    if (todayScheds.length) parts.push('<span class="tsb-divider"></span>');
-    todayExps.forEach(function(r, i) {
-      if (i > 0) parts.push('<span class="tsb-exp-item">·</span>');
-      const amt = parseInt((r.amt||'0').replace(/[^0-9]/g,'')||0);
-      parts.push('<span class="tsb-exp-item">💸 '+escHtml(r.item||'')+(amt?' '+amt.toLocaleString()+'원':'')+'</span>');
-    });
-  }
-
-  bar.innerHTML = parts.join('');
+  todayScheds.forEach(function(s) { parts.push('● ' + s.text); });
+  todayExps.forEach(function(r) { parts.push('💸 ' + (r.item||'')); });
+  pill.textContent = parts.length ? parts.join('  ·  ') : '';
 }
-
 
 
 // ── 중요체크리스트 3열 메모 ──
@@ -6128,12 +6072,11 @@ function initRender(pageId) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
-  // 로컬 데이터로 즉시 배너 표시
-  setTimeout(function(){ updateTodaySchedBar && updateTodaySchedBar(); }, 50);
+  updateTodaySchedBar();
   // Firebase sync (sync 내부에서 initRender + 배너 업데이트)
   syncFromSheet().catch(function() {
     initRender(savedTab);
-    setTimeout(function(){ updateTodaySchedBar && updateTodaySchedBar(); }, 0);
+    updateTodaySchedBar && updateTodaySchedBar();
   });
   // SW
   if ('serviceWorker' in navigator) {
