@@ -2024,6 +2024,45 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">✅</div>
         <div><div class="subpage-title">중요 체크리스트</div><div class="subpage-desc">꼭 확인해야 할 항목들을 체크해요</div></div>
       </div>
+
+      <!-- 3열 메모 -->
+      <div class="sec">🛍️ 오프라인 살 거 &nbsp;|&nbsp; 🛒 온라인으로 살 거 &nbsp;|&nbsp; 🐱 미노짱 할일</div>
+      <div class="three-col">
+
+        <!-- 오프라인 살 거 -->
+        <div class="card" style="border-top:3px solid #f7a8c0">
+          <div style="font-size:.95rem;color:#e03c6e;margin-bottom:10px">🛍️ 오프라인 살 거</div>
+          <div class="inp-row">
+            <textarea id="offline-inp" rows="2" placeholder="오프라인 살 것..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('offline')}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e)" onclick="impListAdd('offline')">+</button>
+          </div>
+          <div class="ilist" id="offline-list"><div class="empty">살 것을 추가해요 🛍️</div></div>
+        </div>
+
+        <!-- 온라인으로 살 거 -->
+        <div class="card" style="border-top:3px solid #4da6e8">
+          <div style="font-size:.95rem;color:#2a80c8;margin-bottom:10px">🛒 온라인으로 살 거</div>
+          <div class="inp-row">
+            <textarea id="online-inp" rows="2" placeholder="온라인 살 것..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('online')}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#7ac8f8,#2a80c8)" onclick="impListAdd('online')">+</button>
+          </div>
+          <div class="ilist" id="online-list"><div class="empty">살 것을 추가해요 🛒</div></div>
+        </div>
+
+        <!-- 미노짱 할일 -->
+        <div class="card" style="border-top:3px solid #3dbb8f">
+          <div style="font-size:.95rem;color:#1a8a60;margin-bottom:10px">🐱 미노짱 할일</div>
+          <div class="inp-row">
+            <textarea id="mino-inp" rows="2" placeholder="미노짱 할 일..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('mino')}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#80ddb8,#1a8a60)" onclick="impListAdd('mino')">+</button>
+          </div>
+          <div class="ilist" id="mino-list"><div class="empty">할 일을 추가해요 🐱</div></div>
+        </div>
+
+      </div>
+
+      <!-- 체크리스트 -->
+      <div class="sec" style="margin-top:14px">✅ 중요 체크리스트</div>
       <div id="imp-check-wrap"></div>
       <div style="display:flex;gap:8px;margin-top:10px">
         <input id="imp-check-inp" type="text" placeholder="체크 항목 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:10px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')impCheckAdd()">
@@ -2656,7 +2695,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2684,9 +2723,10 @@ async function syncFromSheet() {
     // 현재 페이지에 맞는 렌더만 실행
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
+    // 배너: 반드시 initRender 완료 후 실행
+    setTimeout(function(){ updateTodaySchedBar && updateTodaySchedBar(); }, 0);
     if (!window._syncedOnce) {
       window._syncedOnce = true;
-      // 첫 sync는 조용히
     } else {
       toast('✅ 동기화 완료!');
     }
@@ -4293,6 +4333,72 @@ function updateTodaySchedBar() {
   bar.innerHTML = parts.join('');
 }
 
+
+
+// ── 중요체크리스트 3열 메모 ──
+const IMP_LISTS = {
+  offline: { key:'imp_offline', listId:'offline-list', inpId:'offline-inp', empty:'살 것을 추가해요 🛍️', itemCls:'it' },
+  online:  { key:'imp_online',  listId:'online-list',  inpId:'online-inp',  empty:'살 것을 추가해요 🛒', itemCls:'it' },
+  mino:    { key:'imp_mino',    listId:'mino-list',    inpId:'mino-inp',    empty:'할 일을 추가해요 🐱', itemCls:'it' },
+};
+function loadImpList(type) { return loadObj(IMP_LISTS[type].key).list || []; }
+function saveImpList(type, list) { stor(IMP_LISTS[type].key, {list}); }
+
+function renderImpList(type) {
+  const cfg = IMP_LISTS[type];
+  const el = document.getElementById(cfg.listId);
+  if (!el) return;
+  const items = loadImpList(type);
+  if (!items.length) { el.innerHTML = '<div class="empty">'+cfg.empty+'</div>'; return; }
+  el.innerHTML = items.map(function(it, i) {
+    return '<div class="it'+(it.done?' done':'')+'" id="imp-'+type+'-'+it.id+'">'
+      + '<span class="ichk" onclick="impListToggle(\''+type+'\','+it.id+')"></span>'
+      + '<span class="itxt" ondblclick="impListEditStart(\''+type+'\','+it.id+',this)">'+escHtml(it.text)+'</span>'
+      + '<button class="idel" onclick="impListDel(\''+type+'\','+it.id+')">×</button>'
+      + '</div>';
+  }).join('');
+}
+function impListAdd(type) {
+  const cfg = IMP_LISTS[type];
+  const inp = document.getElementById(cfg.inpId);
+  const text = inp.value.trim();
+  if (!text) return;
+  const list = loadImpList(type);
+  list.push({id: Date.now(), text, done: false});
+  saveImpList(type, list);
+  inp.value = '';
+  renderImpList(type);
+}
+function impListToggle(type, id) {
+  const list = loadImpList(type);
+  const it = list.find(function(x){ return x.id===id; });
+  if (it) it.done = !it.done;
+  saveImpList(type, list);
+  renderImpList(type);
+}
+function impListDel(type, id) {
+  saveImpList(type, loadImpList(type).filter(function(x){ return x.id!==id; }));
+  renderImpList(type);
+}
+function impListEditStart(type, id, el) {
+  const list = loadImpList(type);
+  const it = list.find(function(x){ return x.id===id; });
+  if (!it) return;
+  const inp = document.createElement('input');
+  inp.value = it.text;
+  inp.style.cssText = 'width:100%;border:1px solid #f7a8c0;border-radius:6px;padding:2px 6px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none';
+  el.replaceWith(inp);
+  inp.focus();
+  inp.onblur = inp.onkeydown = function(e) {
+    if (e.type==='keydown' && e.key!=='Enter') return;
+    it.text = inp.value.trim() || it.text;
+    saveImpList(type, list);
+    renderImpList(type);
+  };
+}
+function renderAllImpLists() {
+  Object.keys(IMP_LISTS).forEach(function(t){ renderImpList(t); });
+}
 
 function loadImpCheck() { return loadObj('imp_check').list || []; }
 function saveImpCheck(list) { stor('imp_check', {list}); }
@@ -5931,6 +6037,7 @@ function initRender(pageId) {
     renderFridgeMemo && renderFridgeMemo();
     renderCalPage && renderCalPage();
     renderImpCheck && renderImpCheck();
+    renderAllImpLists && renderAllImpLists();
     renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
@@ -5970,13 +6077,12 @@ function initRender(pageId) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
-  // Firebase sync 후 렌더 (첫 로드 시 sync 완료 후 렌더)
-  syncFromSheet().then(function() {
+  // 로컬 데이터로 즉시 배너 표시
+  setTimeout(function(){ updateTodaySchedBar && updateTodaySchedBar(); }, 50);
+  // Firebase sync (sync 내부에서 initRender + 배너 업데이트)
+  syncFromSheet().catch(function() {
     initRender(savedTab);
-    updateTodaySchedBar && updateTodaySchedBar();
-  }).catch(function() {
-    initRender(savedTab);
-    updateTodaySchedBar && updateTodaySchedBar();
+    setTimeout(function(){ updateTodaySchedBar && updateTodaySchedBar(); }, 0);
   });
   // SW
   if ('serviceWorker' in navigator) {
