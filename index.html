@@ -1417,6 +1417,30 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   .week-row { grid-template-columns:repeat(3,1fr); }
   .recipe-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ── 진우 시간표 ── */
+.jinu-day-btn {
+  border: 1.5px solid #b2d8f8; background: white; border-radius: 8px;
+  padding: 5px 14px; font-size: .85rem; font-weight: 700; color: #4a90d0;
+  cursor: pointer; font-family: Pretendard, sans-serif; transition: all .15s;
+}
+.jinu-day-btn.active { background: linear-gradient(135deg,#b2d8f8,#4a90d0); color: white; border-color: #4a90d0; }
+.jinu-slot-row { display:flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid #ddeeff; border-radius:9px; background:#f8fbff; margin-bottom:6px; }
+.jinu-slot-label { font-size:.78rem; font-weight:700; color:#4a90d0; width:72px; flex-shrink:0; }
+.jinu-slot-inp { flex:1; border:1.5px solid #c8e4f8; border-radius:7px; padding:5px 9px; font-size:.83rem; font-family:Pretendard,sans-serif; outline:none; background:white; }
+.jinu-slot-quick { display:flex; gap:4px; flex-wrap:wrap; margin-top:3px; }
+.jinu-slot-quick button { border:1px solid #c8e4f8; background:#f0f8ff; border-radius:5px; padding:2px 8px; font-size:.72rem; color:#3070b0; cursor:pointer; font-family:Pretendard,sans-serif; }
+.jinu-slot-quick button:hover { background:#b2d8f8; color:white; border-color:#4a90d0; }
+.jinu-view-day { margin-bottom:10px; }
+.jinu-view-day-title { font-size:.8rem; font-weight:700; color:#2060a0; margin-bottom:5px; display:flex; align-items:center; gap:6px; }
+.jinu-view-row { display:flex; gap:8px; align-items:center; padding:5px 8px; border-left:3px solid #b2d8f8; margin-bottom:3px; background:#f8fbff; border-radius:0 7px 7px 0; }
+.jinu-view-slot { font-size:.72rem; color:#4a90d0; font-weight:700; width:68px; flex-shrink:0; }
+.jinu-view-val { font-size:.82rem; color:#333; }
+.jinu-memo-item { display:flex; align-items:flex-start; gap:8px; padding:9px 11px; border:1px solid #f7d0e0; border-radius:9px; background:#fff8fb; margin-bottom:7px; }
+.jinu-memo-badge { font-size:.72rem; font-weight:700; border-radius:5px; padding:2px 7px; flex-shrink:0; }
+.jinu-memo-badge.high { background:#e8f4ff; color:#2060a0; }
+.jinu-memo-badge.ealimi { background:#f0fff4; color:#1a7a40; }
+.jinu-memo-badge.etc { background:#f8f0ff; color:#7040b0; }
 </style>
 
 </style>
@@ -2222,13 +2246,49 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="subpage" id="menu2-sub-16">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">🎒</div>
-        <div><div class="subpage-title">💗 초딩진우 일정 💗</div><div class="subpage-desc">진우의 학교 일정과 중요한 날들을 기록해요</div></div>
+        <div><div class="subpage-title">💗 초딩진우 일정 💗</div><div class="subpage-desc">요일별 시간표 &amp; 알림 메모</div></div>
       </div>
-      <div id="jinu-sched-wrap"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <input id="jinu-sched-date" type="date" style="border:1.5px solid #b2d8f8;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;flex-shrink:0">
-        <input id="jinu-sched-inp" type="text" placeholder="진우 일정 입력..." style="flex:1;min-width:120px;border:1.5px solid #b2d8f8;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')jinuSchedAdd()">
-        <button onclick="jinuSchedAdd()" style="background:linear-gradient(135deg,#b2d8f8,#4a90d0);border:none;border-radius:10px;padding:7px 16px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+ 추가</button>
+
+      <div class="two-col">
+
+        <!-- 왼쪽: 시간표 -->
+        <div>
+          <div class="card" style="border-top:3px solid #b2d8f8;margin-bottom:14px">
+            <div style="font-size:.9rem;font-weight:700;color:#2060a0;margin-bottom:12px">🗓️ 주간 시간표 편집</div>
+            <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap" id="jinu-day-tabs">
+              <button class="jinu-day-btn active" onclick="jinuSetDay(this,'mon')">월</button>
+              <button class="jinu-day-btn" onclick="jinuSetDay(this,'tue')">화</button>
+              <button class="jinu-day-btn" onclick="jinuSetDay(this,'wed')">수</button>
+              <button class="jinu-day-btn" onclick="jinuSetDay(this,'thu')">목</button>
+              <button class="jinu-day-btn" onclick="jinuSetDay(this,'fri')">금</button>
+            </div>
+            <div id="jinu-timetable-form"></div>
+            <button onclick="jinuTimetableSave()" style="margin-top:10px;background:linear-gradient(135deg,#b2d8f8,#4a90d0);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">💾 저장</button>
+          </div>
+          <div style="font-size:.78rem;font-weight:700;color:#2060a0;margin-bottom:8px;border-bottom:1px solid #b2d8f8;padding-bottom:5px">📋 저장된 시간표</div>
+          <div id="jinu-timetable-view"></div>
+        </div>
+
+        <!-- 오른쪽: 알림 메모 -->
+        <div class="card" style="border-top:3px solid #f7a8c0">
+          <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:12px">📢 알림 메모</div>
+          <div id="jinu-memo-list"></div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:10px">
+            <div style="display:flex;gap:6px">
+              <select id="jinu-memo-cat" style="flex-shrink:0;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white;color:#555">
+                <option value="high">🏫 하이클래스</option>
+                <option value="ealimi">📱 e알리미</option>
+                <option value="etc">📋 기타</option>
+              </select>
+              <input id="jinu-memo-date" type="date" style="flex:1;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">
+            </div>
+            <div style="display:flex;gap:6px">
+              <input id="jinu-memo-inp" type="text" placeholder="알림 내용..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')jinuMemoAdd()">
+              <button onclick="jinuMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -2566,7 +2626,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','event_rec','event_side_memo'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
