@@ -3501,6 +3501,7 @@ function renderOrder() {
       <textarea id="order-memo-edit-${row.id}" style="display:none;width:100%;border:1.5px solid #b0a0f8;border-radius:8px;padding:8px 10px;font-family:'Pretendard',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;line-height:1.6;box-sizing:border-box">${esc(row.memo||'')}</textarea>
       <div class="order-item-acts" id="order-acts-${row.id}">
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderEditMode(${row.id})">✏️ 편집</button>
+        <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#80c8f8,#3090d0)" onclick="orderCopyAll(${row.id})">📋 복사</button>
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#f08080,#d04040)" onclick="delOrder(${row.id})">🗑️ 삭제</button>
       </div>
       <div id="order-edit-acts-${row.id}" style="display:none;justify-content:flex-end;gap:6px;margin-top:6px">
@@ -3509,6 +3510,25 @@ function renderOrder() {
       </div>
     </div>`;
   }).join('');
+}
+
+
+function orderCopyAll(id) {
+  const row = loadOrder().find(function(r){ return r.id === id; });
+  if (!row) return;
+  const dateStr = row.date ? row.date.replace(/-/g,'.') : '';
+  const statusLabels = ['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'];
+  const status = statusLabels[(row.status >= 0 && row.status <= 3) ? row.status : 0];
+  const text = [dateStr, status, row.memo||''].filter(Boolean).join('\n');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function(){ toast('📋 복사됐어요!'); });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('📋 복사됐어요!');
+  }
 }
 
 function orderEditMode(id) {
