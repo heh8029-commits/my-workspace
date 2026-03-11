@@ -4304,29 +4304,65 @@ function loadImpList(type) { return loadObj(IMP_LISTS[type].key).list || []; }
 function saveImpList(type, list) { stor(IMP_LISTS[type].key, {list}); }
 
 function renderImpList(type) {
-  const cfg = IMP_LISTS[type];
-  const el = document.getElementById(cfg.listId);
+  var cfg = IMP_LISTS[type];
+  var el = document.getElementById(cfg.listId);
   if (!el) return;
-  const items = loadImpList(type);
+  var items = loadImpList(type);
   if (!items.length) { el.innerHTML = '<div class="empty">'+cfg.empty+'</div>'; return; }
+
+  function fmtDate(id) {
+    var now = new Date(), d2 = new Date(id);
+    var diff = Math.floor(
+      (new Date(now.getFullYear(),now.getMonth(),now.getDate()) -
+       new Date(d2.getFullYear(),d2.getMonth(),d2.getDate())) / 86400000
+    );
+    if (diff === 0) return '오늘';
+    if (diff === 1) return '어제';
+    return (d2.getMonth()+1) + '/' + d2.getDate();
+  }
+
+  function linkText(text) {
+    var escaped = escHtml(text);
+    return escaped.replace(/(https?:\/\/[^\s<]+)/g, function(url) {
+      var display = url.length > 28 ? url.slice(0,28)+'…' : url;
+      return '<a href="'+url+'" target="_blank" rel="noopener"'
+        + ' style="color:#5080e0;text-decoration:underline;font-size:.82rem;word-break:break-all"'
+        + ' onclick="event.stopPropagation()">🔗 '+display+'</a>';
+    });
+  }
+
   el.innerHTML = items.map(function(it) {
-    const cs = it.cat ? CAT_STYLES[it.cat] : null;
-    const catBadge = cs
-      ? '<span style="display:inline-block;font-size:.68rem;font-weight:700;color:'+cs.text+';background:'+cs.bg+';border:1.5px solid '+cs.border+';border-radius:20px;padding:1px 7px;margin-right:5px;flex-shrink:0">'+cs.label+'</span>'
+    var cs = it.cat ? CAT_STYLES[it.cat] : null;
+    var catBadge = cs
+      ? '<span style="display:inline-block;font-size:.68rem;font-weight:700;color:'+cs.text
+        +';background:'+cs.bg+';border:1.5px solid '+cs.border
+        +';border-radius:20px;padding:1px 7px;margin-right:4px;flex-shrink:0">'+cs.label+'</span>'
       : '';
-    return '<div class="it'+(it.done?' done':'')+'" id="imp-'+type+'-'+it.id+'" draggable="true" '
-      + 'ondragstart="impDragStart(\''+type+'\','+it.id+',event)" '
-      + 'ondragover="impDragOver(event)" '
-      + 'ondrop="impDrop(\''+type+'\','+it.id+',event)" '
-      + 'ondragleave="impDragLeave(event)">'
+    var dateLabel = '<span style="font-size:.65rem;color:#bbb;margin-left:5px;flex-shrink:0">'
+      + fmtDate(it.id) + '</span>';
+    var drag = 'ondragstart="impDragStart(this)" ondragover="impDragOver(event)" '
+      + 'ondrop="impDrop(this)" ondragleave="impDragLeave(event)"';
+    var row = '<div class="it'+(it.done?' done':'')+'"'
+      + ' id="imp-'+type+'-'+it.id+'"'
+      + ' data-type="'+type+'" data-id="'+it.id+'"'
+      + ' draggable="true" '+drag+'>'
       + '<span style="cursor:grab;color:#ccc;font-size:.75rem;margin-right:2px;flex-shrink:0;user-select:none">⠿</span>'
       + '<span class="ichk" onclick="impListToggle(\''+type+'\','+it.id+')"></span>'
-      + '<span class="itxt" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px" ondblclick="impListEditStart(\''+type+'\','+it.id+',this)">'
-      + catBadge + '<span>'+escHtml(it.text)+'</span></span>'
+      + '<span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px;flex:1;min-width:0">'
+      + catBadge
+      + '<span id="imp-txt-'+type+'-'+it.id+'" style="flex:1;min-width:0;word-break:break-all;line-height:1.5">'
+      + linkText(it.text) + '</span>'
+      + dateLabel
+      + '</span>'
+      + '<button onclick="impListEditStart(\''+type+'\','+it.id+')"'
+      + ' style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0 2px;flex-shrink:0"'
+      + ' title="편집" onmouseover="this.style.color=\'#8060d0\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
       + '<button class="idel" onclick="impListDel(\''+type+'\','+it.id+')">×</button>'
       + '</div>';
+    return row;
   }).join('');
 }
+
 function impListAdd(type) {
   const cfg = IMP_LISTS[type];
   const inp = document.getElementById(cfg.inpId);
@@ -4351,45 +4387,53 @@ function impListDel(type, id) {
   saveImpList(type, loadImpList(type).filter(function(x){ return x.id!==id; }));
   renderImpList(type);
 }
-function impListEditStart(type, id, el) {
+function impListEditStart(type, id) {
   const list = loadImpList(type);
   const it = list.find(function(x){ return x.id===id; });
   if (!it) return;
+  const txtEl = document.getElementById('imp-txt-'+type+'-'+id);
+  if (!txtEl) return;
   const inp = document.createElement('input');
   inp.value = it.text;
-  inp.style.cssText = 'width:100%;border:1px solid #f7a8c0;border-radius:6px;padding:2px 6px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none';
-  el.replaceWith(inp);
-  inp.focus();
-  inp.onblur = inp.onkeydown = function(e) {
-    if (e.type==='keydown' && e.key!=='Enter') return;
-    it.text = inp.value.trim() || it.text;
+  inp.style.cssText = 'flex:1;min-width:80px;border:1.5px solid #f7a8c0;border-radius:6px;'
+    + 'padding:3px 7px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none';
+  txtEl.replaceWith(inp);
+  inp.focus(); inp.select();
+  function save() {
+    const v = inp.value.trim();
+    if (v) it.text = v;
     saveImpList(type, list);
     renderImpList(type);
-  };
+  }
+  inp.onblur = save;
+  inp.onkeydown = function(e) { if (e.key==='Enter') { e.preventDefault(); save(); } };
 }
-let _impDragId = null;
-function impDragStart(type, id, e) {
-  _impDragId = {type, id};
-  e.dataTransfer.effectAllowed = 'move';
+
+var _impDrag = null;
+function impDragStart(el) {
+  _impDrag = { type: el.dataset.type, id: +el.dataset.id };
+  event.dataTransfer.effectAllowed = 'move';
 }
 function impDragOver(e) {
   e.preventDefault();
   e.currentTarget.style.borderTop = '2px solid #f7a8c0';
 }
 function impDragLeave(e) { e.currentTarget.style.borderTop = ''; }
-function impDrop(type, targetId, e) {
-  e.preventDefault();
-  e.currentTarget.style.borderTop = '';
-  if (!_impDragId || _impDragId.type !== type || _impDragId.id === targetId) return;
-  const list = loadImpList(type);
-  const fromIdx = list.findIndex(function(x){ return x.id===_impDragId.id; });
-  const toIdx   = list.findIndex(function(x){ return x.id===targetId; });
+function impDrop(el) {
+  event.preventDefault();
+  el.style.borderTop = '';
+  if (!_impDrag) return;
+  var type = el.dataset.type, targetId = +el.dataset.id;
+  if (_impDrag.type !== type || _impDrag.id === targetId) return;
+  var list = loadImpList(type);
+  var fromIdx = list.findIndex(function(x){ return x.id===_impDrag.id; });
+  var toIdx   = list.findIndex(function(x){ return x.id===targetId; });
   if (fromIdx<0||toIdx<0) return;
-  const moved = list.splice(fromIdx,1)[0];
+  var moved = list.splice(fromIdx,1)[0];
   list.splice(toIdx,0,moved);
   saveImpList(type, list);
   renderImpList(type);
-  _impDragId = null;
+  _impDrag = null;
 }
 function renderAllImpLists() {
   Object.keys(IMP_LISTS).forEach(function(t){ renderImpList(t); });
