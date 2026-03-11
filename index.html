@@ -2238,40 +2238,42 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div><div class="subpage-title">경조사 기록</div><div class="subpage-desc">날짜·메모로 생일/경조사를 기록해요</div></div>
       </div>
 
-      <!-- 2열: 왼쪽=기록 입력, 오른쪽=간단메모 -->
-      <div class="two-col" style="margin-bottom:18px">
+      <!-- 2열: 왼쪽=기록, 오른쪽=메모리스트 -->
+      <div class="two-col">
 
-        <!-- 왼쪽: 기록 입력 -->
-        <div class="card" style="border-top:3px solid #ffe080">
-          <div style="font-size:.9rem;font-weight:700;color:#a07000;margin-bottom:12px">🎊 기록 추가</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;gap:8px;align-items:center">
-              <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">날짜</label>
-              <input id="event-rec-date" type="date" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
+        <!-- 왼쪽: 기록 입력 + 리스트 -->
+        <div>
+          <!-- 입력 폼 -->
+          <div class="card" style="border-top:3px solid #ffe080;margin-bottom:14px">
+            <div style="font-size:.9rem;font-weight:700;color:#a07000;margin-bottom:12px">🎊 기록 추가</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">날짜</label>
+                <input id="event-rec-date" type="date" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">메모</label>
+                <input id="event-rec-memo" type="text" placeholder="생일 / 결혼 / 기타..." style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')eventRecAdd()">
+              </div>
+              <button onclick="eventRecAdd()" style="background:linear-gradient(135deg,#ffe080,#e0a800);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%;margin-top:2px">+ 추가</button>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">이름</label>
-              <input id="event-rec-name" type="text" placeholder="이름 / 관계" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">메모</label>
-              <input id="event-rec-memo" type="text" placeholder="생일 / 결혼 / 기타..." style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')eventRecAdd()">
-            </div>
-            <button onclick="eventRecAdd()" style="background:linear-gradient(135deg,#ffe080,#e0a800);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%;margin-top:2px">+ 추가</button>
+          </div>
+          <!-- 리스트 -->
+          <div style="font-size:.78rem;font-weight:700;color:#a07000;margin-bottom:8px;border-bottom:1px solid #f0e0a0;padding-bottom:5px">📋 기록 목록</div>
+          <div id="event-rec-wrap"></div>
+        </div>
+
+        <!-- 오른쪽: 메모 리스트 -->
+        <div class="card" style="border-top:3px solid #f7a8c0">
+          <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:12px">📝 메모</div>
+          <div id="event-memo-list"></div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <input id="event-memo-inp" type="text" placeholder="메모 추가..." style="flex:1;border:1.5px solid #f7d0e0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')eventMemoAdd()">
+            <button onclick="eventMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+</button>
           </div>
         </div>
 
-        <!-- 오른쪽: 간단 메모 -->
-        <div class="card" style="border-top:3px solid #f7a8c0">
-          <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:12px">📝 간단 메모</div>
-          <textarea id="event-side-memo" rows="8" placeholder="자유롭게 메모해요..." style="width:100%;border:1.5px solid #f7d0e0;border-radius:8px;padding:9px 11px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.7;color:#333;box-sizing:border-box" oninput="eventSideMemoSave()"></textarea>
-        </div>
-
       </div>
-
-      <!-- 리스트: 날짜순 -->
-      <div style="font-size:.82rem;font-weight:700;color:#a07000;margin-bottom:8px;border-bottom:1px solid #f0e0a0;padding-bottom:6px">📋 기록 목록 (날짜순)</div>
-      <div id="event-rec-wrap"></div>
     </div>
   </div>
 
@@ -4364,6 +4366,64 @@ function jinuSchedDel(id) {
   renderJinuScheds();
 }
 
+
+function loadEventMemos() { return loadObj('event_memos').list || []; }
+function saveEventMemos(list) { stor('event_memos', {list}); }
+function renderEventMemos() {
+  var el = document.getElementById('event-memo-list');
+  if (!el) return;
+  var items = loadEventMemos();
+  if (!items.length) { el.innerHTML = '<div class="empty" style="font-size:.82rem">메모를 추가해요 📝</div>'; return; }
+  el.innerHTML = items.map(function(it) {
+    if (it._editing) {
+      return '<div style="display:flex;gap:6px;align-items:center;padding:7px 8px;border:1.5px solid #f7a8c0;border-radius:8px;margin-bottom:6px;background:#fff5f8">'
+        + '<input id="em-ed-'+it.id+'" type="text" value="'+escHtml(it.text||'')+'" style="flex:1;border:1px solid #f7a8c0;border-radius:6px;padding:4px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')eventMemoEditSave('+it.id+')">'
+        + '<button onclick="eventMemoEditSave('+it.id+')" style="background:#e03c6e;border:none;border-radius:6px;padding:4px 10px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0">저장</button>'
+        + '<button onclick="eventMemoEditCancel('+it.id+')" style="background:#eee;border:none;border-radius:6px;padding:4px 8px;color:#888;font-size:.78rem;cursor:pointer;flex-shrink:0">취소</button>'
+        + '</div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #f7d0e0;border-radius:8px;margin-bottom:6px;background:#fff8fb">'
+      + '<span style="flex:1;font-size:.84rem;color:#444;line-height:1.5;word-break:break-all">'+escHtml(it.text||'')+'</span>'
+      + '<button data-id="'+it.id+'" onclick="eventMemoEdit(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0" onmouseover="this.style.color=\'#e0a800\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
+      + '<button data-id="'+it.id+'" onclick="eventMemoDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
+      + '</div>';
+  }).join('');
+}
+function eventMemoAdd() {
+  var inp = document.getElementById('event-memo-inp');
+  var text = inp.value.trim();
+  if (!text) return;
+  var list = loadEventMemos();
+  list.push({id: Date.now(), text});
+  saveEventMemos(list);
+  inp.value = '';
+  renderEventMemos();
+}
+function eventMemoDel(id) {
+  saveEventMemos(loadEventMemos().filter(function(x){ return x.id!==id; }));
+  renderEventMemos();
+}
+function eventMemoEdit(id) {
+  var list = loadEventMemos();
+  list.forEach(function(x){ x._editing = (x.id===id); });
+  saveEventMemos(list); renderEventMemos();
+  var inp = document.getElementById('em-ed-'+id);
+  if (inp) { inp.focus(); inp.select(); }
+}
+function eventMemoEditCancel(id) {
+  var list = loadEventMemos();
+  list.forEach(function(x){ delete x._editing; });
+  saveEventMemos(list); renderEventMemos();
+}
+function eventMemoEditSave(id) {
+  var list = loadEventMemos();
+  list = list.map(function(x){
+    if (x.id!==id) return x;
+    return {id:x.id, text: document.getElementById('em-ed-'+id).value.trim()};
+  });
+  saveEventMemos(list.filter(function(x){ return x.text; }));
+  renderEventMemos();
+}
 function loadEventRec() { return loadObj('event_rec').list || []; }
 function saveEventRec(list) { stor('event_rec', {list}); }
 function renderEventRec() {
@@ -4395,13 +4455,11 @@ function renderEventRec() {
 }
 function eventRecAdd() {
   var date = document.getElementById('event-rec-date').value;
-  var name = document.getElementById('event-rec-name').value.trim();
   var memo = document.getElementById('event-rec-memo').value.trim();
-  if (!name && !memo) return;
+  if (!memo) return;
   var list = loadEventRec();
-  list.push({id: Date.now(), date, name, memo});
+  list.push({id: Date.now(), date, memo});
   saveEventRec(list);
-  document.getElementById('event-rec-name').value = '';
   document.getElementById('event-rec-memo').value = '';
   renderEventRec();
   toast('🎊 기록 추가됐어요!');
@@ -4426,7 +4484,6 @@ function eventRecEditSave(id) {
     if (x.id!==id) return x;
     return {id:x.id,
       date: document.getElementById('er-ed-date-'+id).value,
-      name: document.getElementById('er-ed-name-'+id).value.trim(),
       memo: document.getElementById('er-ed-memo-'+id).value.trim()};
   });
   saveEventRec(list); renderEventRec();
@@ -6077,6 +6134,7 @@ function initRender(pageId) {
     renderAllImpLists && renderAllImpLists();
     renderJinuScheds && renderJinuScheds();
     renderEventRec && renderEventRec();
+    renderEventMemos && renderEventMemos();
     renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
