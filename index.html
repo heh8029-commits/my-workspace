@@ -1231,18 +1231,18 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   border-left: 3px solid #e03c6e;
 }
 .cal-exp-dot {
-  font-size: .75rem;
-  color: #c03030;
-  background: #fff0f0;
-  border: 1px solid #f7c8c8;
-  border-radius: 6px;
-  padding: 1px 5px;
+  font-size: .72rem;
+  color: #888;
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1px 4px;
   margin-bottom: 1px;
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: 600;
+  font-weight: 500;
 }
 .cal-day-num { font-size: .88rem; width: 26px; height: 26px; }
 .cal-cell { min-height: 90px; }
@@ -1949,7 +1949,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
       <!-- 3열 메모 -->
-      <div class="sec">🛒 구매해야 될 항목 &nbsp;|&nbsp; 💸 납부해야 될 항목 &nbsp;|&nbsp; 🐱 미노짱 할일</div>
+      <div class="sec">🛒 구매해야 될 항목 &nbsp;|&nbsp; 💸 납부해야 될 항목 &nbsp;|&nbsp; ✅ 체크해야 할 거</div>
       <div class="three-col">
 
         <!-- 구매해야 될 항목 (분류 기능) -->
@@ -1980,28 +1980,19 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           <div class="ilist" id="online-list"><div class="empty">납부 항목을 추가해요 💸</div></div>
         </div>
 
-        <!-- 미노짱 할일 -->
-        <div class="card" style="border-top:3px solid #3dbb8f">
-          <div style="font-size:.95rem;color:#1a8a60;margin-bottom:10px">🐱 미노짱 할일</div>
+        <!-- 체크해야 할 거 -->
+        <div class="card" style="border-top:3px solid #8060d0">
+          <div style="font-size:.95rem;color:#6040b0;margin-bottom:10px">✅ 체크해야 할 거</div>
           <div class="inp-row">
-            <textarea id="mino-inp" rows="2" placeholder="미노짱 할 일..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('mino')}"></textarea>
-            <button class="abtn" style="background:linear-gradient(135deg,#80ddb8,#1a8a60)" onclick="impListAdd('mino')">+</button>
+            <textarea id="check-inp" rows="2" placeholder="체크할 것..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('check')}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#c0a8f8,#6040b0)" onclick="impListAdd('check')">+</button>
           </div>
-          <div class="ilist" id="mino-list"><div class="empty">할 일을 추가해요 🐱</div></div>
+          <div class="ilist" id="check-list"><div class="empty">체크할 것을 추가해요 ✅</div></div>
         </div>
 
       </div>
 
-      <!-- 체크리스트 -->
-      <div class="sec" style="margin-top:14px">✅ 중요 체크리스트</div>
-      <div id="imp-check-wrap"></div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <input id="imp-check-inp" type="text" placeholder="체크 항목 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:10px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')impCheckAdd()">
-        <button onclick="impCheckAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:8px 16px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+ 추가</button>
-      </div>
-      <div style="margin-top:8px;text-align:right">
-        <button onclick="impCheckClearDone()" style="background:none;border:none;font-size:.75rem;color:#ccc;cursor:pointer" onmouseover="this.style.color='#e03c6e'" onmouseout="this.style.color='#ccc'">🗑️ 완료항목 삭제</button>
-      </div>
+
     </div>
 
     <div class="subpage" id="menu2-sub-14">
@@ -2546,7 +2537,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','jinu_scheds','event_rec'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','event_rec'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4165,6 +4156,7 @@ const IMP_LISTS = {
   offline: { key:'imp_offline', listId:'offline-list', inpId:'offline-inp', catId:'offline-cat', empty:'구매 항목을 추가해요 🛒' },
   online:  { key:'imp_online',  listId:'online-list',  inpId:'online-inp',  catId:null,           empty:'납부 항목을 추가해요 💸' },
   mino:    { key:'imp_mino',    listId:'mino-list',    inpId:'mino-inp',    catId:null,           empty:'할 일을 추가해요 🐱' },
+  check:   { key:'imp_check2',  listId:'check-list',   inpId:'check-inp',   catId:null,           empty:'체크할 것을 추가해요 ✅' },
 };
 const CAT_STYLES = {
   daiso:   { label:'다이소',  border:'#e03030', bg:'#fff0f0', text:'#c02020' },
