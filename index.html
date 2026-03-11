@@ -4126,14 +4126,14 @@ function renderCal() {
   titleEl.textContent = calYear + '년 ' + calMonth + '월';
 
   const scheds = loadCalScheds();
-  // 월별지출 데이터 (day 필드: "10일" or "10")
+  // 월별지출: exp_fixed는 월 구분 없이 day(날짜)만 저장 → 달력 현재 월 기준으로 표시
   const expData = loadExp ? (loadExp() || []) : [];
 
-  // 해당 월 지출 날짜별 맵
+  // 날짜별 맵 (item 필드 사용)
   const expMap = {};
   expData.forEach(function(r) {
     const d = parseInt((r.day || '').match(/\d+/)?.[0] || '0');
-    if (d > 0) {
+    if (d > 0 && d <= 31) {
       if (!expMap[d]) expMap[d] = [];
       expMap[d].push(r);
     }
@@ -4195,24 +4195,27 @@ function renderCal() {
       const dayScheds = schedMap[day] || [];
       const dayExps = expMap[day] || [];
 
-      html += '<div class="cal-cell '+dowCls+(isToday?' today':'')+(isSelected?' selected':'')+'" onclick="calSelectDay('+day+')">';
+      // 지출 표시 (맨 아래)
+      let expDot = '';
+      if (dayExps.length === 1) {
+        expDot = '<span class="cal-exp-dot">💸 ' + escHtml(dayExps[0].item || '') + '</span>';
+      } else if (dayExps.length >= 2) {
+        expDot = '<span class="cal-exp-dot">💸 ' + escHtml(dayExps[0].item || '') + ' 외 ' + (dayExps.length-1) + '개</span>';
+      }
+
+      html += '<div class="cal-cell '+dowCls+(isToday?' today':'')+(isSelected?' selected':'')+'" onclick="calSelectDay('+day+')" style="display:flex;flex-direction:column">';
       html += '<div class="cal-day-num">'+day+'</div>';
 
-      // 일정 표시 (최대 2개)
+      // 일정 표시 (최대 2개) — 위에
       const showScheds = dayScheds.slice(0, 2);
       showScheds.forEach(function(s) {
         html += '<span class="cal-event-dot" style="background:'+escHtml(s.color||'#e03c6e')+'">'+escHtml(s.text)+'</span>';
       });
-
-      // 지출 표시 (최대 1개)
-      if (dayExps.length > 0) {
-        const expSum = dayExps.reduce(function(s,r){ return s+parseFloat(r.amount||0); }, 0);
-        html += '<span class="cal-exp-dot">💸'+expSum.toLocaleString()+'</span>';
-      }
-
-      // 더보기
       const more = dayScheds.length - 2;
       if (more > 0) html += '<div class="cal-more">+'+more+'더</div>';
+
+      // 지출은 맨 밑에 붙임
+      html += '<div style="margin-top:auto">'+expDot+'</div>';
 
       html += '</div>';
       day++;
@@ -4273,12 +4276,13 @@ function calRenderDayDetail() {
     html += '<div style="background:#fff5f5;border-radius:10px;padding:8px 10px">';
     html += '<div style="font-size:.72rem;color:#c03030;font-weight:700;margin-bottom:5px">💸 이날 지출</div>';
     dayExps.forEach(function(r) {
+      const amt = parseInt((r.amt||'0').replace(/[^0-9]/g,'')) || 0;
       html += '<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px">'
-        + '<span style="color:#555">'+escHtml(r.label||'')+'</span>'
-        + '<span style="color:#c03030;font-weight:700">'+parseFloat(r.amount||0).toLocaleString()+'원</span>'
+        + '<span style="color:#555">'+escHtml(r.item||'')+'</span>'
+        + '<span style="color:#c03030;font-weight:700">'+(amt ? amt.toLocaleString()+'원' : (r.amt||'-'))+'</span>'
         + '</div>';
     });
-    const sum = dayExps.reduce(function(s,r){ return s+parseFloat(r.amount||0); },0);
+    const sum = dayExps.reduce(function(s,r){ return s+parseInt((r.amt||'0').replace(/[^0-9]/g,'')||0); },0);
     html += '<div style="border-top:1px solid #f7c8c8;margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;font-size:.82rem;font-weight:700">'
       + '<span style="color:#888">합계</span><span style="color:#c03030">'+sum.toLocaleString()+'원</span></div>';
     html += '</div>';
