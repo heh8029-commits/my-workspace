@@ -2273,7 +2273,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
                 <button class="jinu-day-btn" onclick="jinuSetDay(this,'fri')">금</button>
               </div>
               <div id="jinu-timetable-form"></div>
-              <button onclick="jinuTimetableSave()" style="margin-top:10px;background:linear-gradient(135deg,#b2d8f8,#4a90d0);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">💾 저장</button>
+              <div style="display:flex;gap:8px;margin-top:10px"><button onclick="jinuTimetableSave()" style="flex:1;background:linear-gradient(135deg,#b2d8f8,#4a90d0);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer">💾 저장</button><button onclick="jinuTimetableReset()" style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:10px;padding:9px 14px;color:#e03c6e;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">🗑️ 초기화</button></div>
             </div>
           </div>
         </div>
@@ -2281,11 +2281,11 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <!-- 오른쪽: 알림 메모 -->
         <div class="card" style="border-top:3px solid #f7a8c0">
           <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:12px">📢 알림 메모</div>
-          <div id="jinu-memo-list"></div>
-          <div style="display:flex;flex-direction:column;gap:7px;margin-top:10px">
+          <!-- 입력 폼 (위) -->
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <select id="jinu-memo-cat" style="flex-shrink:0;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white;color:#555">
-                <option value="high">🏫 하이클래스</option>
+                <option value="high">🏫 하이-알림장</option>
                 <option value="ealimi">📱 e알리미</option>
                 <option value="etc">📋 기타</option>
               </select>
@@ -2293,6 +2293,11 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             </div>
             <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}"></textarea>
             <button onclick="jinuMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">+ 추가</button>
+          </div>
+          <!-- 메모 리스트 (아래) -->
+          <div style="border-top:1px solid #f7d0e0;padding-top:12px">
+            <div style="font-size:.75rem;color:#c04070;font-weight:700;margin-bottom:8px">📋 저장된 메모</div>
+            <div id="jinu-memo-list"></div>
           </div>
         </div>
 
@@ -2316,7 +2321,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <div style="display:flex;flex-direction:column;gap:8px">
               <div style="display:flex;gap:8px;align-items:center">
                 <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">날짜</label>
-                <input id="event-rec-date" type="date" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
+                <input id="event-rec-date" type="text" placeholder="날짜 (예: 2025.03.12)" style="flex:1;border:1.5px solid #ffe8a0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">
               </div>
               <div style="display:flex;gap:8px;align-items:center">
                 <label style="font-size:.78rem;color:#888;width:40px;flex-shrink:0">메모</label>
@@ -4548,6 +4553,17 @@ function renderJinuTimetableView() {
   html += '</tbody></table></div>';
   el.innerHTML = html;
 }
+
+function jinuTimetableReset() {
+  var dayName = _jinuDayNames[_jinuDay] || _jinuDay;
+  if (!confirm(dayName + ' 시간표를 모두 초기화할까요?')) return;
+  var data = loadJinuTT();
+  data[_jinuDay] = {};
+  saveJinuTT(data);
+  renderJinuForm();
+  renderJinuTimetableView();
+  toast('🗑️ ' + dayName + ' 시간표 초기화됐어요!');
+}
 function jinuToggleEdit() {
   var area = document.getElementById('jinu-edit-area');
   var btn  = document.getElementById('jinu-edit-toggle-btn');
@@ -4558,7 +4574,7 @@ function jinuToggleEdit() {
   if (!open) { renderJinuForm(); }
 }
 /* ── 진우 알림 메모 ── */
-var _jinuMemoCatNames = {high:'🏫 하이클래스', ealimi:'📱 e알리미', etc:'📋 기타'};
+var _jinuMemoCatNames = {high:'🏫 하이-알림장', ealimi:'📱 e알리미', etc:'📋 기타'};
 function loadJinuMemos() { return loadObj('jinu_memos').list || []; }
 function saveJinuMemos(list) { stor('jinu_memos', {list}); }
 function jinuLinkify(text) {
@@ -4707,7 +4723,7 @@ function renderEventRec() {
   el.innerHTML = items.map(function(it) {
     if (it._editing) {
       return '<div style="display:flex;gap:6px;align-items:center;padding:8px 10px;border:1.5px solid #ffe080;border-radius:10px;margin-bottom:6px;background:#fffdf0;flex-wrap:wrap">'
-        + '<input id="er-ed-date-'+it.id+'" type="date" value="'+escHtml(it.date||'')+'" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;width:120px">'
+        + '<input id="er-ed-date-'+it.id+'" type="text" value="'+escHtml(it.date||'')+'" placeholder="날짜" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;width:100px">'
         + '<input id="er-ed-name-'+it.id+'" type="text" value="'+escHtml(it.name||'')+'" placeholder="이름/관계" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;width:90px">'
         + '<input id="er-ed-memo-'+it.id+'" type="text" value="'+escHtml(it.memo||'')+'" placeholder="메모" style="border:1px solid #ffe080;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;flex:1;min-width:80px">'
         + '<button data-id="'+it.id+'" onclick="eventRecEditSave(+this.dataset.id)" style="background:#e0a800;border:none;border-radius:6px;padding:4px 10px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0">저장</button>'
