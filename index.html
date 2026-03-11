@@ -170,55 +170,35 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
   border:1px solid rgba(255,255,255,.25);
 }
 
-/* ── 오늘 일정/지출 배너 ── */
-@keyframes schedSlide {
-  0%   { opacity:0; transform:translateY(-6px); }
-  100% { opacity:1; transform:translateY(0); }
-}
-@keyframes schedPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(247,168,192,.0); }
-  50%      { box-shadow: 0 0 12px 3px rgba(247,168,192,.35); }
-}
-#today-sched-bar {
-  background: linear-gradient(90deg,#c0205a,#e03c6e,#c0205a);
-  padding: 7px 24px;
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  animation: schedSlide .3s ease;
-  border-bottom: 2px solid rgba(255,255,255,.15);
-  min-height: 36px;
-}
-.tsb-label {
-  font-size: .72rem; font-weight: 800; color: rgba(255,255,255,.6);
-  letter-spacing: .04em; white-space: nowrap; flex-shrink: 0;
-}
-.tsb-scheds {
-  display: flex; gap: 8px; flex-wrap: wrap; flex: 1; align-items: center;
+/* ── 오늘 일정/지출 배너 (datebar 내부) ── */
+@keyframes schedFadeIn {
+  from { opacity:0; transform:scale(.92); }
+  to   { opacity:1; transform:scale(1); }
 }
 .tsb-sched-item {
   display: inline-flex; align-items: center; gap: 5px;
-  background: rgba(255,255,255,.18);
-  border: 1.5px solid rgba(255,255,255,.35);
-  border-radius: 20px;
-  padding: 3px 11px;
-  font-size: .8rem; font-weight: 700; color: white;
-  animation: schedPulse 2.5s ease-in-out infinite;
+  font-size: .82rem; font-weight: 700; color: white;
   white-space: nowrap;
+  animation: schedFadeIn .4s ease;
+  letter-spacing: .01em;
 }
 .tsb-sched-dot {
   width: 7px; height: 7px; border-radius: 50%;
   flex-shrink: 0; display: inline-block;
-  border: 1.5px solid rgba(255,255,255,.6);
+  opacity: .9;
 }
-.tsb-exps {
-  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
-  border-left: 1px solid rgba(255,255,255,.2);
-  padding-left: 12px;
+.tsb-sep {
+  color: rgba(255,255,255,.35); font-size: .85rem;
 }
 .tsb-exp-item {
-  font-size: .73rem; color: rgba(255,255,220,.85);
-  background: rgba(0,0,0,.15);
-  border-radius: 12px; padding: 2px 8px;
+  font-size: .73rem; color: rgba(255,255,200,.75);
   white-space: nowrap;
+  letter-spacing: .01em;
+}
+.tsb-divider {
+  width: 1px; height: 14px;
+  background: rgba(255,255,255,.25);
+  flex-shrink: 0;
 }
 
 /* ────────────────────────────────
@@ -1488,10 +1468,10 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <span>🎀</span>
   <span class="dtxt" id="dtxt"></span>
   <span>✨</span>
+  <div id="today-sched-bar" style="flex:1;display:flex;align-items:center;justify-content:center;gap:10px;overflow:hidden;min-width:0"></div>
   <span class="salary-alarm" id="salary-alarm"></span>
   <div class="dpill" id="dpill"></div>
 </div>
-<div id="today-sched-bar" style="display:none"></div>
 
 <div class="mobile-subnav" id="msubnav-menu1">
   <button class="msub-btn" onclick="switchSub('menu1',8,null);setMobileSubActive(this)">📉 월별손익</button>
@@ -4249,46 +4229,42 @@ function updateTodaySchedBar() {
   const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
   const todayStr = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
 
-  // 오늘 일정
   const scheds = loadCalScheds ? loadCalScheds() : [];
   const todayScheds = scheds.filter(function(s){ return s.date === todayStr; });
 
-  // 오늘 지출 (exp_fixed: day 필드 숫자 비교)
   const expData = loadExp ? (loadExp() || []) : [];
   const todayExps = expData.filter(function(r){
     return parseInt((r.day||'').match(/\d+/)?.[0]||'0') === d;
   });
 
   if (!todayScheds.length && !todayExps.length) {
-    bar.style.display = 'none'; return;
+    bar.innerHTML = ''; return;
   }
 
-  bar.style.display = 'flex';
-  let html = '';
+  const parts = [];
 
-  if (todayScheds.length) {
-    html += '<span class="tsb-label">📅 오늘</span>';
-    html += '<div class="tsb-scheds">';
-    todayScheds.forEach(function(s) {
-      html += '<span class="tsb-sched-item">'
-        + '<span class="tsb-sched-dot" style="background:'+escHtml(s.color||'#fff')+'"></span>'
-        + escHtml(s.text)
-        + '</span>';
-    });
-    html += '</div>';
-  }
+  // 일정: 컬러도트 + 텍스트, 여러 개면 | 로 구분
+  todayScheds.forEach(function(s, i) {
+    if (i > 0) parts.push('<span class="tsb-sep">·</span>');
+    parts.push(
+      '<span class="tsb-sched-item">'
+      + '<span class="tsb-sched-dot" style="background:'+escHtml(s.color||'#fff')+'"></span>'
+      + escHtml(s.text)
+      + '</span>'
+    );
+  });
 
+  // 지출: 일정이 있으면 구분선 후 표시
   if (todayExps.length) {
-    html += '<div class="tsb-exps">';
-    if (!todayScheds.length) html += '<span class="tsb-label">💸 오늘 지출</span>';
-    todayExps.forEach(function(r) {
+    if (todayScheds.length) parts.push('<span class="tsb-divider"></span>');
+    todayExps.forEach(function(r, i) {
+      if (i > 0) parts.push('<span class="tsb-exp-item">·</span>');
       const amt = parseInt((r.amt||'0').replace(/[^0-9]/g,'')||0);
-      html += '<span class="tsb-exp-item">💸 '+escHtml(r.item||'')+(amt?' '+amt.toLocaleString()+'원':'')+'</span>';
+      parts.push('<span class="tsb-exp-item">💸 '+escHtml(r.item||'')+(amt?' '+amt.toLocaleString()+'원':'')+'</span>');
     });
-    html += '</div>';
   }
 
-  bar.innerHTML = html;
+  bar.innerHTML = parts.join('');
 }
 
 function loadCalScheds() { return loadObj('cal_scheds').list || []; }
