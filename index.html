@@ -1715,10 +1715,12 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <label class="order-label">📝 메모</label>
             <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
           </div>
-          <div style="text-align:right;margin-top:6px">
-            <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px;flex-wrap:wrap">
+            <div id="order-count-bar" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
+            <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0);flex-shrink:0" onclick="addOrder()">+ 등록</button>
           </div>
         </div>
+        <div id="order-filter-bar" style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px"></div>
         <div class="ilist order-list" id="order-list"><div class="empty">주문제작 요청을 등록해요 📦</div></div>
       </div>
 
@@ -3369,23 +3371,82 @@ function renderShortcuts(data) {
   if (saved && saved.length) renderShortcuts(saved);
 })();
 
+let orderFilter = -1; // -1=전체
+
+const ORDER_STATUS_LABELS = ['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'];
+const ORDER_STATUS_COLORS = ['#8060e0','#4da6e8','#3dbb8f','#e8648a'];
+const ORDER_STATUS_BG    = ['#f0eeff','#e8f4ff','#e8fff6','#fff0f5'];
+
+function renderOrderCountBar() {
+  const data = loadOrder();
+  const countEl = document.getElementById('order-count-bar');
+  const filterEl = document.getElementById('order-filter-bar');
+  if (!countEl || !filterEl) return;
+
+  // 전체 건수 뱃지
+  const total = data.length;
+
+  // 상태별 카운트
+  const counts = [0,0,0,0];
+  data.forEach(function(r) { if (r.status >= 0 && r.status <= 3) counts[r.status]++; else counts[0]++; });
+
+  // 카운트 바 (등록 버튼 옆)
+  countEl.innerHTML = '<span style="font-size:.75rem;font-weight:700;color:#8060e0;background:#f0eeff;border-radius:10px;padding:3px 9px;white-space:nowrap">총 '+total+'건</span>';
+
+  // 필터 탭 (있을 때만 표시)
+  if (!total) { filterEl.innerHTML = ''; return; }
+
+  let filterHtml = '';
+  // 전체 탭
+  const allActive = orderFilter === -1;
+  filterHtml += '<button onclick="setOrderFilter(-1)" style="'
+    + 'font-size:.72rem;padding:4px 10px;border-radius:12px;border:1.5px solid '+(allActive?'#8060e0':'#ddd')+';'
+    + 'background:'+(allActive?'linear-gradient(135deg,#e8e0ff,#c8b8f8)':'#fafafa')+';'
+    + 'color:'+(allActive?'#5040b0':'#999')+';font-weight:'+(allActive?'700':'400')+';cursor:pointer;font-family:Pretendard,sans-serif">전체 '+total+'</button>';
+  // 상태별 탭
+  ORDER_STATUS_LABELS.forEach(function(lbl, i) {
+    if (!counts[i]) return;
+    const active = orderFilter === i;
+    filterHtml += '<button onclick="setOrderFilter('+i+')" style="'
+      + 'font-size:.72rem;padding:4px 10px;border-radius:12px;border:1.5px solid '+(active?ORDER_STATUS_COLORS[i]:'#ddd')+';'
+      + 'background:'+(active?'linear-gradient(135deg,'+ORDER_STATUS_BG[i]+','+ORDER_STATUS_BG[i]+')':'#fafafa')+';'
+      + 'color:'+(active?ORDER_STATUS_COLORS[i]:'#999')+';font-weight:'+(active?'700':'400')+';cursor:pointer;font-family:Pretendard,sans-serif">'
+      + lbl+' '+counts[i]+'</button>';
+  });
+  filterEl.innerHTML = filterHtml;
+}
+
+function setOrderFilter(status) {
+  orderFilter = status;
+  renderOrder();
+}
+
 function renderOrder() {
   const data = loadOrder();
   const el = document.getElementById('order-list');
   if (!el) return;
+  renderOrderCountBar();
   if (!data.length) {
     el.innerHTML = '<div class="empty">주문제작 요청을 등록해요 📦</div>'; return;
   }
-  el.innerHTML = data.map(row => {
+  const filtered = orderFilter === -1 ? data : data.filter(function(r) {
+    const s = (r.status === undefined || r.status === null) ? 0 : r.status;
+    return s === orderFilter;
+  });
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty" style="font-size:.82rem">해당 상태의 항목이 없어요</div>'; return;
+  }
+  el.innerHTML = filtered.map(row => {
     const dateStr = row.date ? `📅 ${row.date.replace(/-/g,'.')}` : '📅 날짜 미정';
+    const st = (row.status === undefined || row.status === null) ? 0 : row.status;
     return `<div class="order-item" id="order-${row.id}">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
         <span class="order-item-date" id="order-date-view-${row.id}" style="flex:1;cursor:pointer" ondblclick="orderEditMode(${row.id})">${dateStr}</span>
         <input id="order-date-edit-${row.id}" type="date" value="${row.date||''}" style="display:none;flex:1;border:1.5px solid #b0a0f8;border-radius:8px;padding:4px 8px;font-family:'Pretendard',sans-serif;font-size:.82rem">
       </div>
       <div class="order-status-btns">
-        ${['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'].map((lbl,i) =>
-          `<button class="order-status-btn${(row.status===i?' active-'+i:'')}" onclick="setOrderStatus(${row.id},${i})">${lbl}</button>`
+        ${ORDER_STATUS_LABELS.map((lbl,i) =>
+          `<button class="order-status-btn${(st===i?' active-'+i:'')}" onclick="setOrderStatus(${row.id},${i})">${lbl}</button>`
         ).join('')}
       </div>
       <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${linkify(row.memo||'')}</div>
@@ -3394,7 +3455,7 @@ function renderOrder() {
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderEditMode(${row.id})">✏️ 편집</button>
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#f08080,#d04040)" onclick="delOrder(${row.id})">🗑️ 삭제</button>
       </div>
-      <div id="order-edit-acts-${row.id}" style="display:none;display:none;justify-content:flex-end;gap:6px;margin-top:6px">
+      <div id="order-edit-acts-${row.id}" style="display:none;justify-content:flex-end;gap:6px;margin-top:6px">
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#aaa,#888)" onclick="orderCancelEdit(${row.id})">취소</button>
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderSaveEdit(${row.id})">💾 저장</button>
       </div>
