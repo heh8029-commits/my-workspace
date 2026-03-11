@@ -4394,37 +4394,168 @@ function renderAllImpLists() {
 }
 
 
-function loadJinuScheds() { return loadObj('jinu_scheds').list || []; }
-function saveJinuScheds(list) { stor('jinu_scheds', {list}); }
-function renderJinuScheds() {
-  var el = document.getElementById('jinu-sched-wrap');
+/* ── 진우 시간표 & 메모 ── */
+var _jinuDay = 'mon';
+var _jinuDayNames = {mon:'월요일',tue:'화요일',wed:'수요일',thu:'목요일',fri:'금요일'};
+var _jinuSlots = [
+  {key:'p1',    label:'1교시'},
+  {key:'p2',    label:'2교시'},
+  {key:'p3',    label:'3교시'},
+  {key:'p4',    label:'4교시'},
+  {key:'p5',    label:'5교시'},
+  {key:'p6',    label:'6교시'},
+  {key:'lunch', label:'급식 후'},
+  {key:'nulum', label:'늘봄'},
+  {key:'home',  label:'하교'},
+  {key:'acad1', label:'학원1'},
+  {key:'acad2', label:'학원2'}
+];
+var _jinuQuick = {
+  p1:['수학','국어','영어','체육','미술','음악','과학','사회'],
+  p2:['수학','국어','영어','체육','미술','음악','과학','사회'],
+  p3:['수학','국어','영어','체육','미술','음악','과학','사회'],
+  p4:['수학','국어','영어','체육','미술','음악','과학','사회'],
+  p5:['수학','국어','영어','체육','미술','음악','과학','사회'],
+  p6:['수학','국어','영어','체육','미술','음악','과학','사회'],
+  lunch:['학교에서','집에서','학원에서'],
+  nulum:['늘봄 있음','늘봄 없음','늘봄→학원'],
+  home:['12:30','13:00','13:30','14:00','14:30','15:00','16:00','17:00'],
+  acad1:['태권도','피아노','수학학원','영어학원','축구','없음'],
+  acad2:['태권도','피아노','수학학원','영어학원','축구','없음']
+};
+function loadJinuTT() { return loadObj('jinu_tt').data || {}; }
+function saveJinuTT(data) { stor('jinu_tt', {data}); }
+function jinuSetDay(btn, day) {
+  _jinuDay = day;
+  document.querySelectorAll('.jinu-day-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderJinuForm();
+}
+function jinuFillQuick(slotKey, val) {
+  var inp = document.getElementById('jinu-slot-'+slotKey);
+  if (inp) inp.value = val;
+}
+function renderJinuForm() {
+  var el = document.getElementById('jinu-timetable-form');
   if (!el) return;
-  var items = loadJinuScheds();
-  items.sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
-  if (!items.length) { el.innerHTML = '<div class="empty">진우 일정을 추가해요 🎒</div>'; return; }
-  el.innerHTML = items.map(function(it) {
-    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid #d0e8f8;border-radius:12px;margin-bottom:7px;background:#f5faff">'
-      + '<span style="font-size:.78rem;color:#4a90d0;font-weight:700;flex-shrink:0;min-width:48px">' + escHtml(it.date||'') + '</span>'
-      + '<span style="flex:1;font-size:.88rem;color:#333">' + escHtml(it.text||'') + '</span>'
-      + '<button data-id="'+it.id+'" onclick="jinuSchedDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.8rem" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">✕</button>'
+  var data = loadJinuTT();
+  var dayData = (data[_jinuDay] || {});
+  el.innerHTML = _jinuSlots.map(function(sl) {
+    var val = dayData[sl.key] || '';
+    var quicks = (_jinuQuick[sl.key]||[]).map(function(q){
+      return '<button onclick="jinuFillQuick(\''+sl.key+'\',\''+q+'\')" tabindex="-1">'+q+'</button>';
+    }).join('');
+    return '<div style="margin-bottom:8px">'
+      + '<div class="jinu-slot-row">'
+      + '<span class="jinu-slot-label">'+sl.label+'</span>'
+      + '<input class="jinu-slot-inp" id="jinu-slot-'+sl.key+'" type="text" value="'+escHtml(val)+'" placeholder="입력...">'
+      + '</div>'
+      + (quicks ? '<div class="jinu-slot-quick">'+quicks+'</div>' : '')
       + '</div>';
   }).join('');
 }
-function jinuSchedAdd() {
-  var date = document.getElementById('jinu-sched-date').value;
-  var text = document.getElementById('jinu-sched-inp').value.trim();
+function jinuTimetableSave() {
+  var data = loadJinuTT();
+  if (!data[_jinuDay]) data[_jinuDay] = {};
+  _jinuSlots.forEach(function(sl){
+    var inp = document.getElementById('jinu-slot-'+sl.key);
+    data[_jinuDay][sl.key] = inp ? inp.value.trim() : '';
+  });
+  saveJinuTT(data);
+  renderJinuTimetableView();
+  toast('💾 '+_jinuDayNames[_jinuDay]+' 시간표 저장됐어요!');
+}
+function renderJinuTimetableView() {
+  var el = document.getElementById('jinu-timetable-view');
+  if (!el) return;
+  var data = loadJinuTT();
+  var days = ['mon','tue','wed','thu','fri'];
+  var html = '';
+  days.forEach(function(d){
+    var dayData = data[d];
+    if (!dayData) return;
+    var rows = _jinuSlots.filter(function(sl){ return dayData[sl.key]; }).map(function(sl){
+      return '<div class="jinu-view-row"><span class="jinu-view-slot">'+sl.label+'</span><span class="jinu-view-val">'+escHtml(dayData[sl.key])+'</span></div>';
+    }).join('');
+    if (!rows) return;
+    html += '<div class="jinu-view-day">'
+      + '<div class="jinu-view-day-title"><span style="background:#b2d8f8;color:#2060a0;border-radius:6px;padding:2px 10px">'+_jinuDayNames[d]+'</span></div>'
+      + rows + '</div>';
+  });
+  el.innerHTML = html || '<div class="empty">시간표를 저장해요 🗓️</div>';
+}
+/* ── 진우 알림 메모 ── */
+var _jinuMemoCatNames = {high:'🏫 하이클래스', ealimi:'📱 e알리미', etc:'📋 기타'};
+function loadJinuMemos() { return loadObj('jinu_memos').list || []; }
+function saveJinuMemos(list) { stor('jinu_memos', {list}); }
+function renderJinuMemos() {
+  var el = document.getElementById('jinu-memo-list');
+  if (!el) return;
+  var items = loadJinuMemos();
+  items.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  if (!items.length) { el.innerHTML = '<div class="empty" style="font-size:.82rem">알림 메모를 추가해요 📢</div>'; return; }
+  el.innerHTML = items.map(function(it){
+    if (it._editing) {
+      return '<div style="display:flex;gap:6px;align-items:center;padding:7px 8px;border:1.5px solid #f7a8c0;border-radius:9px;margin-bottom:7px;background:#fff5f8">'
+        + '<input id="jm-ed-'+it.id+'" type="text" value="'+escHtml(it.text||'')+'" style="flex:1;border:1px solid #f7a8c0;border-radius:6px;padding:4px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')jinuMemoEditSave('+it.id+')">'
+        + '<button onclick="jinuMemoEditSave('+it.id+')" style="background:#e03c6e;border:none;border-radius:6px;padding:4px 10px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0">저장</button>'
+        + '<button onclick="jinuMemoEditCancel('+it.id+')" style="background:#eee;border:none;border-radius:6px;padding:4px 8px;color:#888;font-size:.78rem;cursor:pointer;flex-shrink:0">취소</button>'
+        + '</div>';
+    }
+    return '<div class="jinu-memo-item">'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+      + '<span class="jinu-memo-badge '+escHtml(it.cat||'etc')+'">'+(_jinuMemoCatNames[it.cat]||'📋 기타')+'</span>'
+      + (it.date ? '<span style="font-size:.72rem;color:#aaa">'+escHtml(it.date)+'</span>' : '')
+      + '</div>'
+      + '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.5">'+escHtml(it.text||'')+'</span>'
+      + '</div>'
+      + '<button data-id="'+it.id+'" onclick="jinuMemoEdit(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e0a800\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
+      + '<button data-id="'+it.id+'" onclick="jinuMemoDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
+      + '</div>';
+  }).join('');
+}
+function jinuMemoAdd() {
+  var cat  = document.getElementById('jinu-memo-cat').value;
+  var date = document.getElementById('jinu-memo-date').value;
+  var inp  = document.getElementById('jinu-memo-inp');
+  var text = inp.value.trim();
   if (!text) return;
-  var list = loadJinuScheds();
-  list.push({id: Date.now(), date, text});
-  saveJinuScheds(list);
-  document.getElementById('jinu-sched-inp').value = '';
-  renderJinuScheds();
-  toast('🎒 진우 일정 추가됐어요!');
+  var list = loadJinuMemos();
+  list.push({id:Date.now(), cat:cat, date:date, text:text});
+  saveJinuMemos(list);
+  inp.value = '';
+  renderJinuMemos();
+  toast('📢 알림 메모 추가됐어요!');
 }
-function jinuSchedDel(id) {
-  saveJinuScheds(loadJinuScheds().filter(function(x){ return x.id!==id; }));
-  renderJinuScheds();
+function jinuMemoDel(id) {
+  saveJinuMemos(loadJinuMemos().filter(function(x){ return x.id!==id; }));
+  renderJinuMemos();
 }
+function jinuMemoEdit(id) {
+  var list = loadJinuMemos();
+  list.forEach(function(x){ x._editing=(x.id===id); });
+  saveJinuMemos(list); renderJinuMemos();
+  var inp = document.getElementById('jm-ed-'+id);
+  if (inp) { inp.focus(); inp.select(); }
+}
+function jinuMemoEditCancel(id) {
+  var list = loadJinuMemos();
+  list.forEach(function(x){ delete x._editing; });
+  saveJinuMemos(list); renderJinuMemos();
+}
+function jinuMemoEditSave(id) {
+  var list = loadJinuMemos().map(function(x){
+    if (x.id!==id) return x;
+    return {id:x.id, cat:x.cat, date:x.date, text:document.getElementById('jm-ed-'+id).value.trim()};
+  });
+  saveJinuMemos(list.filter(function(x){ return x.text; }));
+  renderJinuMemos();
+}
+/* 하위호환 */
+function loadJinuScheds() { return []; }
+function saveJinuScheds() {}
+function renderJinuScheds() { renderJinuForm(); renderJinuTimetableView(); renderJinuMemos(); }
 
 
 function loadEventMemos() { return loadObj('event_memos').list || []; }
