@@ -1460,7 +1460,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
     <div class="tab" onclick="goTab(this,'menu4')">🎒 초딩진우</div>
-    <div class="tab" onclick="goTab(this,'menu5')">📈 투자</div>
+    <div class="tab" onclick="goTab(this,'menu5')">📈 자산관리</div>
     <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
   </div>
   <div class="divider"></div>
@@ -1493,7 +1493,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 </div>
 <div class="mobile-subnav" id="msubnav-menu2">
   <button class="msub-btn" onclick="switchSub('menu2',14,null);setMobileSubActive(this)">📅 달력/일정</button>
-    <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
+  <button class="msub-btn" onclick="switchSub('menu2',15,null);setMobileSubActive(this)">✅ 중요체크리스트</button>
+  <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
   <button class="msub-btn" onclick="switchSub('menu2',1,null);setMobileSubActive(this)">🧹 청소루틴</button>
   <button class="msub-btn" onclick="switchSub('menu2',2,null);setMobileSubActive(this)">🛒 장보기</button>
   <button class="msub-btn" onclick="switchSub('menu2',3,null);setMobileSubActive(this)">💡 전기/수도</button>
@@ -1559,7 +1560,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   </div>
   <div class="gnav-subs" id="gnav-subs-menu2">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',14,null)">📅 달력/일정</div>
-        <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',15,null)">✅ 중요체크리스트</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',1,null)">🧹 청소 루틴</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',2,null)">🛒 장보기 목록</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',3,null)">💡 전기/수도</div>
@@ -1590,7 +1592,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu4]'),'menu4');switchSub('menu4',10,null)">🌟 칭찬 기록</div>
   </div>
   <div class="gnav-main" id="gnav-menu5" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');gnavActivate('menu5')">
-    <span class="gnav-main-icon">📈</span> 투자
+    <span class="gnav-main-icon">📈</span> 자산관리
   </div>
   <div class="gnav-subs" id="gnav-subs-menu5">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',1,null)">📊 보유 종목</div>
@@ -2017,6 +2019,21 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
   <!-- ══════════════ 우리집 ══════════════ -->
   <div class="page" id="menu2">
+    <div class="subpage" id="menu2-sub-15">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">✅</div>
+        <div><div class="subpage-title">중요 체크리스트</div><div class="subpage-desc">꼭 확인해야 할 항목들을 체크해요</div></div>
+      </div>
+      <div id="imp-check-wrap"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="imp-check-inp" type="text" placeholder="체크 항목 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:10px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')impCheckAdd()">
+        <button onclick="impCheckAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:8px 16px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+ 추가</button>
+      </div>
+      <div style="margin-top:8px;text-align:right">
+        <button onclick="impCheckClearDone()" style="background:none;border:none;font-size:.75rem;color:#ccc;cursor:pointer" onmouseover="this.style.color='#e03c6e'" onmouseout="this.style.color='#ccc'">🗑️ 완료항목 삭제</button>
+      </div>
+    </div>
+
     <div class="subpage" id="menu2-sub-14">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">📅</div>
@@ -2639,7 +2656,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4276,6 +4293,54 @@ function updateTodaySchedBar() {
   bar.innerHTML = parts.join('');
 }
 
+
+function loadImpCheck() { return loadObj('imp_check').list || []; }
+function saveImpCheck(list) { stor('imp_check', {list}); }
+
+function renderImpCheck() {
+  const el = document.getElementById('imp-check-wrap');
+  if (!el) return;
+  const items = loadImpCheck();
+  if (!items.length) {
+    el.innerHTML = '<div class="empty" style="font-size:.85rem">중요 항목을 추가해요 ✅</div>'; return;
+  }
+  el.innerHTML = items.map(function(it, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:'+(it.done?'#f8f8f8':'white')+';border:1.5px solid '+(it.done?'#e8e8e8':'#f7a8c0')+';border-radius:12px;margin-bottom:7px;transition:all .15s">'
+      + '<input type="checkbox"'+(it.done?' checked':'')+' onchange="impCheckToggle('+i+')" style="width:18px;height:18px;cursor:pointer;accent-color:#e03c6e;flex-shrink:0">'
+      + '<span style="flex:1;font-size:.9rem;font-weight:'+(it.done?'400':'600')+';color:'+(it.done?'#bbb':'#333')+';text-decoration:'+(it.done?'line-through':'none')+'">'
+      + escHtml(it.text) + '</span>'
+      + '<button data-ii="'+i+'" onclick="impCheckDel(+this.dataset.ii)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.82rem;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
+      + '</div>';
+  }).join('');
+}
+function impCheckAdd() {
+  const inp = document.getElementById('imp-check-inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  const list = loadImpCheck();
+  list.push({text, done:false});
+  saveImpCheck(list);
+  inp.value = '';
+  renderImpCheck();
+}
+function impCheckToggle(idx) {
+  const list = loadImpCheck();
+  list[idx].done = !list[idx].done;
+  saveImpCheck(list);
+  renderImpCheck();
+}
+function impCheckDel(idx) {
+  const list = loadImpCheck();
+  list.splice(idx, 1);
+  saveImpCheck(list);
+  renderImpCheck();
+}
+function impCheckClearDone() {
+  saveImpCheck(loadImpCheck().filter(function(it){ return !it.done; }));
+  renderImpCheck();
+  toast('🗑️ 완료 항목 삭제됐어요');
+}
+
 function loadCalScheds() { return loadObj('cal_scheds').list || []; }
 function saveCalScheds(list) { stor('cal_scheds', {list}); }
 
@@ -5865,6 +5930,7 @@ function initRender(pageId) {
     renderExp && renderExp();
     renderFridgeMemo && renderFridgeMemo();
     renderCalPage && renderCalPage();
+    renderImpCheck && renderImpCheck();
     renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
