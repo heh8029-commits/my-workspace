@@ -2026,27 +2026,35 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
       <!-- 3열 메모 -->
-      <div class="sec">🛍️ 오프라인 살 거 &nbsp;|&nbsp; 🛒 온라인으로 살 거 &nbsp;|&nbsp; 🐱 미노짱 할일</div>
+      <div class="sec">🛒 구매해야 될 항목 &nbsp;|&nbsp; 💸 납부해야 될 항목 &nbsp;|&nbsp; 🐱 미노짱 할일</div>
       <div class="three-col">
 
-        <!-- 오프라인 살 거 -->
+        <!-- 구매해야 될 항목 (분류 기능) -->
         <div class="card" style="border-top:3px solid #f7a8c0">
-          <div style="font-size:.95rem;color:#e03c6e;margin-bottom:10px">🛍️ 오프라인 살 거</div>
-          <div class="inp-row">
-            <textarea id="offline-inp" rows="2" placeholder="오프라인 살 것..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('offline')}"></textarea>
-            <button class="abtn" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e)" onclick="impListAdd('offline')">+</button>
+          <div style="font-size:.95rem;color:#e03c6e;margin-bottom:10px">🛒 구매해야 될 항목</div>
+          <div class="inp-row" style="flex-wrap:wrap;gap:5px">
+            <select id="offline-cat" style="flex-shrink:0;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;background:white;color:#555">
+              <option value="">분류없음</option>
+              <option value="daiso">🔴 다이소</option>
+              <option value="coupang">🔵 쿠팡</option>
+              <option value="naver">🟢 네이버</option>
+              <option value="online">🟣 온라인</option>
+              <option value="mart">🏪 마트</option>
+            </select>
+            <textarea id="offline-inp" rows="2" placeholder="구매 항목..." style="flex:1;min-width:80px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('offline')}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);align-self:flex-end" onclick="impListAdd('offline')">+</button>
           </div>
-          <div class="ilist" id="offline-list"><div class="empty">살 것을 추가해요 🛍️</div></div>
+          <div class="ilist" id="offline-list"><div class="empty">구매 항목을 추가해요 🛒</div></div>
         </div>
 
-        <!-- 온라인으로 살 거 -->
-        <div class="card" style="border-top:3px solid #4da6e8">
-          <div style="font-size:.95rem;color:#2a80c8;margin-bottom:10px">🛒 온라인으로 살 거</div>
+        <!-- 납부해야 될 항목 -->
+        <div class="card" style="border-top:3px solid #a0c4ff">
+          <div style="font-size:.95rem;color:#3060c0;margin-bottom:10px">💸 납부해야 될 항목</div>
           <div class="inp-row">
-            <textarea id="online-inp" rows="2" placeholder="온라인 살 것..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('online')}"></textarea>
-            <button class="abtn" style="background:linear-gradient(135deg,#7ac8f8,#2a80c8)" onclick="impListAdd('online')">+</button>
+            <textarea id="online-inp" rows="2" placeholder="납부 항목..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();impListAdd('online')}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#a0c4ff,#3060c0)" onclick="impListAdd('online')">+</button>
           </div>
-          <div class="ilist" id="online-list"><div class="empty">살 것을 추가해요 🛒</div></div>
+          <div class="ilist" id="online-list"><div class="empty">납부 항목을 추가해요 💸</div></div>
         </div>
 
         <!-- 미노짱 할일 -->
@@ -4337,9 +4345,16 @@ function updateTodaySchedBar() {
 
 // ── 중요체크리스트 3열 메모 ──
 const IMP_LISTS = {
-  offline: { key:'imp_offline', listId:'offline-list', inpId:'offline-inp', empty:'살 것을 추가해요 🛍️', itemCls:'it' },
-  online:  { key:'imp_online',  listId:'online-list',  inpId:'online-inp',  empty:'살 것을 추가해요 🛒', itemCls:'it' },
-  mino:    { key:'imp_mino',    listId:'mino-list',    inpId:'mino-inp',    empty:'할 일을 추가해요 🐱', itemCls:'it' },
+  offline: { key:'imp_offline', listId:'offline-list', inpId:'offline-inp', catId:'offline-cat', empty:'구매 항목을 추가해요 🛒' },
+  online:  { key:'imp_online',  listId:'online-list',  inpId:'online-inp',  catId:null,           empty:'납부 항목을 추가해요 💸' },
+  mino:    { key:'imp_mino',    listId:'mino-list',    inpId:'mino-inp',    catId:null,           empty:'할 일을 추가해요 🐱' },
+};
+const CAT_STYLES = {
+  daiso:   { label:'다이소',  border:'#e03030', bg:'#fff0f0', text:'#c02020' },
+  coupang: { label:'쿠팡',    border:'#2060e0', bg:'#f0f4ff', text:'#1040c0' },
+  naver:   { label:'네이버',  border:'#1a9a40', bg:'#f0fff4', text:'#0a7030' },
+  online:  { label:'온라인',  border:'#8040d0', bg:'#f6f0ff', text:'#6020b0' },
+  mart:    { label:'마트',    border:'#c06820', bg:'#fff5ee', text:'#a05010' },
 };
 function loadImpList(type) { return loadObj(IMP_LISTS[type].key).list || []; }
 function saveImpList(type, list) { stor(IMP_LISTS[type].key, {list}); }
@@ -4350,10 +4365,20 @@ function renderImpList(type) {
   if (!el) return;
   const items = loadImpList(type);
   if (!items.length) { el.innerHTML = '<div class="empty">'+cfg.empty+'</div>'; return; }
-  el.innerHTML = items.map(function(it, i) {
-    return '<div class="it'+(it.done?' done':'')+'" id="imp-'+type+'-'+it.id+'">'
+  el.innerHTML = items.map(function(it) {
+    const cs = it.cat ? CAT_STYLES[it.cat] : null;
+    const catBadge = cs
+      ? '<span style="display:inline-block;font-size:.68rem;font-weight:700;color:'+cs.text+';background:'+cs.bg+';border:1.5px solid '+cs.border+';border-radius:20px;padding:1px 7px;margin-right:5px;flex-shrink:0">'+cs.label+'</span>'
+      : '';
+    return '<div class="it'+(it.done?' done':'')+'" id="imp-'+type+'-'+it.id+'" draggable="true" '
+      + 'ondragstart="impDragStart(\''+type+'\','+it.id+',event)" '
+      + 'ondragover="impDragOver(event)" '
+      + 'ondrop="impDrop(\''+type+'\','+it.id+',event)" '
+      + 'ondragleave="impDragLeave(event)">'
+      + '<span style="cursor:grab;color:#ccc;font-size:.75rem;margin-right:2px;flex-shrink:0;user-select:none">⠿</span>'
       + '<span class="ichk" onclick="impListToggle(\''+type+'\','+it.id+')"></span>'
-      + '<span class="itxt" ondblclick="impListEditStart(\''+type+'\','+it.id+',this)">'+escHtml(it.text)+'</span>'
+      + '<span class="itxt" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px" ondblclick="impListEditStart(\''+type+'\','+it.id+',this)">'
+      + catBadge + '<span>'+escHtml(it.text)+'</span></span>'
       + '<button class="idel" onclick="impListDel(\''+type+'\','+it.id+')">×</button>'
       + '</div>';
   }).join('');
@@ -4363,8 +4388,10 @@ function impListAdd(type) {
   const inp = document.getElementById(cfg.inpId);
   const text = inp.value.trim();
   if (!text) return;
+  const catEl = cfg.catId ? document.getElementById(cfg.catId) : null;
+  const cat = catEl ? catEl.value : '';
   const list = loadImpList(type);
-  list.push({id: Date.now(), text, done: false});
+  list.push({id: Date.now(), text, done: false, cat});
   saveImpList(type, list);
   inp.value = '';
   renderImpList(type);
@@ -4395,6 +4422,30 @@ function impListEditStart(type, id, el) {
     saveImpList(type, list);
     renderImpList(type);
   };
+}
+let _impDragId = null;
+function impDragStart(type, id, e) {
+  _impDragId = {type, id};
+  e.dataTransfer.effectAllowed = 'move';
+}
+function impDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderTop = '2px solid #f7a8c0';
+}
+function impDragLeave(e) { e.currentTarget.style.borderTop = ''; }
+function impDrop(type, targetId, e) {
+  e.preventDefault();
+  e.currentTarget.style.borderTop = '';
+  if (!_impDragId || _impDragId.type !== type || _impDragId.id === targetId) return;
+  const list = loadImpList(type);
+  const fromIdx = list.findIndex(function(x){ return x.id===_impDragId.id; });
+  const toIdx   = list.findIndex(function(x){ return x.id===targetId; });
+  if (fromIdx<0||toIdx<0) return;
+  const moved = list.splice(fromIdx,1)[0];
+  list.splice(toIdx,0,moved);
+  saveImpList(type, list);
+  renderImpList(type);
+  _impDragId = null;
 }
 function renderAllImpLists() {
   Object.keys(IMP_LISTS).forEach(function(t){ renderImpList(t); });
