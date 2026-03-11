@@ -144,14 +144,9 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .datebar {
   background:linear-gradient(90deg,var(--rose),var(--pink-dark),#c03878);
   padding:7px 24px;
-  display:grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items:center; gap:8px;
+  display:flex; align-items:center; gap:10px;
   color:white; font-size:.89rem;
 }
-.datebar-left { display:flex; align-items:center; gap:8px; }
-.datebar-center { display:flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; }
-.datebar-right { display:flex; align-items:center; justify-content:flex-end; gap:8px; }
 .datebar .dtxt { font-size:1rem; letter-spacing:.5px; }
 @keyframes salaryBlink {
   0%,100% { background:rgba(255,255,100,.15); box-shadow:0 0 0 0 rgba(255,220,0,0); transform:scale(1); }
@@ -159,6 +154,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 }
 .salary-alarm {
   display:none;
+  margin-left:auto;
   background:rgba(255,220,0,.3);
   border:1.5px solid rgba(255,220,0,.7);
   padding:3px 14px; border-radius:20px;
@@ -169,40 +165,42 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 .salary-alarm.show { display:block; }
 
 .datebar .dpill {
-  background:rgba(255,255,255,.2);
+  margin-left:auto; background:rgba(255,255,255,.2);
   padding:2px 12px; border-radius:20px; font-size:.79rem;
   border:1px solid rgba(255,255,255,.25);
 }
 
-/* ── 오늘 일정/지출 배너 (datebar 내부) ── */
-@keyframes schedFadeIn {
-  from { opacity:0; transform:scale(.92); }
-  to   { opacity:1; transform:scale(1); }
+/* ── 오늘 일정/지출 배너 ── */
+@keyframes tsbSlideDown {
+  from { opacity:0; max-height:0; padding-top:0; padding-bottom:0; }
+  to   { opacity:1; max-height:40px; }
+}
+.today-sched-bar {
+  background: #f5f5f7;
+  border-bottom: 1px solid #e8e0ec;
+  padding: 4px 24px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; flex-wrap: nowrap; overflow: hidden;
+  animation: tsbSlideDown .3s ease;
+  min-height: 28px;
 }
 .tsb-sched-item {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: .82rem; font-weight: 700; color: white;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .75rem; font-weight: 700; color: #333;
   white-space: nowrap;
-  animation: schedFadeIn .4s ease;
-  letter-spacing: .01em;
 }
 .tsb-sched-dot {
-  width: 7px; height: 7px; border-radius: 50%;
+  width: 6px; height: 6px; border-radius: 50%;
   flex-shrink: 0; display: inline-block;
-  opacity: .9;
 }
-.tsb-sep {
-  color: rgba(255,255,255,.35); font-size: .85rem;
-}
+.tsb-sep { color: #ccc; font-size: .75rem; }
 .tsb-exp-item {
-  font-size: .73rem; color: rgba(255,255,200,.75);
-  white-space: nowrap;
-  letter-spacing: .01em;
+  font-size: .7rem; color: #e03c6e;
+  white-space: nowrap; font-weight: 600;
 }
 .tsb-divider {
-  width: 1px; height: 14px;
-  background: rgba(255,255,255,.25);
-  flex-shrink: 0;
+  width: 1px; height: 12px;
+  background: #ddd; flex-shrink: 0;
 }
 
 /* ────────────────────────────────
@@ -1471,17 +1469,13 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 </div>
 
 <div class="datebar">
-  <div class="datebar-left">
-    <span>🎀</span>
-    <span class="dtxt" id="dtxt"></span>
-    <span>✨</span>
-  </div>
-  <div class="datebar-center" id="today-sched-bar"></div>
-  <div class="datebar-right">
-    <span class="salary-alarm" id="salary-alarm"></span>
-    <div class="dpill" id="dpill"></div>
-  </div>
+  <span>🎀</span>
+  <span class="dtxt" id="dtxt"></span>
+  <span>✨</span>
+  <span class="salary-alarm" id="salary-alarm"></span>
+  <div class="dpill" id="dpill"></div>
 </div>
+<div id="today-sched-bar" class="today-sched-bar" style="display:none"></div>
 
 <div class="mobile-subnav" id="msubnav-menu1">
   <button class="msub-btn" onclick="switchSub('menu1',8,null);setMobileSubActive(this)">📉 월별손익</button>
@@ -4248,8 +4242,9 @@ function updateTodaySchedBar() {
   });
 
   if (!todayScheds.length && !todayExps.length) {
-    bar.innerHTML = ''; return;
+    bar.style.display = 'none'; bar.innerHTML = ''; return;
   }
+  bar.style.display = 'flex';
 
   const parts = [];
 
