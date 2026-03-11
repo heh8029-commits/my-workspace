@@ -1245,27 +1245,27 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 .cal-cell.sun .cal-day-num { color: #e03c6e; }
 .cal-cell.sat .cal-day-num { color: #4da6e8; }
 .cal-event-dot {
-  font-size: .62rem;
-  padding: 1px 4px 1px 5px;
+  font-size: .82rem;
+  padding: 1px 4px 1px 6px;
   border-radius: 2px;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
   color: #222;
   font-weight: 600;
-  line-height: 1.55;
+  line-height: 1.6;
   background: rgba(255,255,255,.75);
-  border-left: 2.5px solid #e03c6e;
+  border-left: 3px solid #e03c6e;
 }
 .cal-exp-dot {
-  font-size: .58rem;
+  font-size: .75rem;
   color: #c03030;
   background: #fff0f0;
   border: 1px solid #f7c8c8;
   border-radius: 6px;
-  padding: 1px 4px;
+  padding: 1px 5px;
   margin-bottom: 1px;
   display: block;
   white-space: nowrap;
@@ -1273,11 +1273,15 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   text-overflow: ellipsis;
   font-weight: 600;
 }
-.cal-more { font-size:.58rem; color:#aaa; }
+.cal-day-num { font-size: .88rem; width: 26px; height: 26px; }
+.cal-cell { min-height: 90px; }
+.cal-more { font-size:.72rem; color:#aaa; }
 @media(max-width:600px) {
   .cal-cell { min-height: 56px; padding: 3px; }
   .cal-day-num { width:18px; height:18px; font-size:.68rem; }
-  .cal-event-dot { font-size:.55rem; padding:1px 3px; }
+  .cal-event-dot { font-size:.62rem; padding:1px 3px; border-left-width:2.5px; }
+  .cal-exp-dot { font-size:.58rem; }
+  .cal-more { font-size:.58rem; }
 }
 
 /* ── 냉장고 메모 ── */
