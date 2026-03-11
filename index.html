@@ -1248,16 +1248,18 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 .cal-cell.sat .cal-day-num { color: #4da6e8; }
 .cal-event-dot {
   font-size: .62rem;
-  padding: 1px 5px;
-  border-radius: 8px;
+  padding: 1px 4px 1px 5px;
+  border-radius: 2px;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
-  color: white;
+  color: #222;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.55;
+  background: rgba(255,255,255,.75);
+  border-left: 2.5px solid #e03c6e;
 }
 .cal-exp-dot {
   font-size: .58rem;
@@ -4372,7 +4374,7 @@ function renderCal() {
       // 일정 표시 (최대 2개) — 위에
       const showScheds = dayScheds.slice(0, 2);
       showScheds.forEach(function(s) {
-        html += '<span class="cal-event-dot" style="background:'+escHtml(s.color||'#e03c6e')+'">'+escHtml(s.text)+'</span>';
+        html += '<span class="cal-event-dot" style="border-left-color:'+escHtml(s.color||'#e03c6e')+'">'+escHtml(s.text)+'</span>';
       });
       const more = dayScheds.length - 2;
       if (more > 0) html += '<div class="cal-more">+'+more+'더</div>';
