@@ -4405,18 +4405,19 @@ function renderAllImpLists() {
 var _jinuDay = 'mon';
 var _jinuDayNames = {mon:'월요일',tue:'화요일',wed:'수요일',thu:'목요일',fri:'금요일'};
 var _jinuSlots = [
-  {key:'p1',    label:'1교시'},
-  {key:'p2',    label:'2교시'},
-  {key:'p3',    label:'3교시'},
-  {key:'p4',    label:'4교시'},
-  {key:'p5',    label:'5교시'},
-  {key:'p6',    label:'6교시'},
-  {key:'lunch', label:'급식 후'},
-  {key:'nulum', label:'늘봄'},
-  {key:'home',  label:'하교'},
-  {key:'acad1', label:'학원1'},
-  {key:'acad2', label:'학원2'}
+  {key:'p1',    label:'1교시',  color:'#4a90d0'},
+  {key:'p2',    label:'2교시',  color:'#4a90d0'},
+  {key:'p3',    label:'3교시',  color:'#4a90d0'},
+  {key:'p4',    label:'4교시',  color:'#4a90d0'},
+  {key:'p5',    label:'5교시',  color:'#4a90d0'},
+  {key:'p6',    label:'6교시',  color:'#4a90d0'},
+  {key:'lunch', label:'🍱 급식', color:'#e07800'},
+  {key:'nulum', label:'🌱 늘봄', color:'#1a9a60'},
+  {key:'home',  label:'🏠 하교', color:'#9040c0'},
+  {key:'acad1', label:'🎯 학원1',color:'#c04070'},
+  {key:'acad2', label:'🎯 학원2',color:'#c04070'}
 ];
+var _jinuTimeQuick = ['09:00','09:40','10:00','10:40','11:00','11:40','12:00','12:20','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','18:00','19:00','20:00'];
 var _jinuQuick = {
   p1:['수학','국어','영어','체육','미술','음악','과학','사회'],
   p2:['수학','국어','영어','체육','미술','음악','과학','사회'],
@@ -4424,11 +4425,11 @@ var _jinuQuick = {
   p4:['수학','국어','영어','체육','미술','음악','과학','사회'],
   p5:['수학','국어','영어','체육','미술','음악','과학','사회'],
   p6:['수학','국어','영어','체육','미술','음악','과학','사회'],
-  lunch:['학교에서','집에서','학원에서'],
-  nulum:['늘봄 있음','늘봄 없음','늘봄→학원'],
-  home:['12:30','13:00','13:30','14:00','14:30','15:00','16:00','17:00'],
-  acad1:['태권도','피아노','수학학원','영어학원','축구','없음'],
-  acad2:['태권도','피아노','수학학원','영어학원','축구','없음']
+  lunch:['급식','도시락'],
+  nulum:['늘봄','없음','늘봄→학원'],
+  home:['하교'],
+  acad1:['태권도','피아노','수학학원','영어학원','축구'],
+  acad2:['태권도','피아노','수학학원','영어학원','축구']
 };
 function loadJinuTT() { return loadObj('jinu_tt').data || {}; }
 function saveJinuTT(data) { stor('jinu_tt', {data}); }
@@ -4442,22 +4443,38 @@ function jinuFillQuick(slotKey, val) {
   var inp = document.getElementById('jinu-slot-'+slotKey);
   if (inp) inp.value = val;
 }
+function jinuFillTime(slotKey, field, val) {
+  var inp = document.getElementById('jinu-time-'+field+'-'+slotKey);
+  if (inp) inp.value = val;
+}
 function renderJinuForm() {
   var el = document.getElementById('jinu-timetable-form');
   if (!el) return;
   var data = loadJinuTT();
   var dayData = (data[_jinuDay] || {});
   el.innerHTML = _jinuSlots.map(function(sl) {
-    var val = dayData[sl.key] || '';
+    var d = dayData[sl.key] || {};
+    var val   = typeof d === 'string' ? d : (d.val||'');
+    var start = typeof d === 'string' ? '' : (d.start||'');
+    var end   = typeof d === 'string' ? '' : (d.end||'');
     var quicks = (_jinuQuick[sl.key]||[]).map(function(q){
-      return '<button onclick="jinuFillQuick(\''+sl.key+'\',\''+q+'\')" tabindex="-1">'+q+'</button>';
+      return '<button onclick="jinuFillQuick(\''+sl.key+'\',\''+q+'\')">'+q+'</button>';
     }).join('');
-    return '<div style="margin-bottom:8px">'
-      + '<div class="jinu-slot-row">'
-      + '<span class="jinu-slot-label">'+sl.label+'</span>'
-      + '<input class="jinu-slot-inp" id="jinu-slot-'+sl.key+'" type="text" value="'+escHtml(val)+'" placeholder="입력...">'
+    var timeQuicks = _jinuTimeQuick.map(function(t){
+      return '<button onclick="jinuFillTime(\''+sl.key+'\',\'start\',\''+t+'\')" style="color:#4a90d0">'+t+'</button>';
+    }).join('');
+    return '<div style="border:1px solid #ddeeff;border-radius:10px;padding:9px 10px;margin-bottom:8px;background:#f8fbff">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      + '<span style="font-size:.78rem;font-weight:700;color:'+(sl.color||'#4a90d0')+';width:52px;flex-shrink:0">'+sl.label+'</span>'
+      + '<input class="jinu-slot-inp" id="jinu-slot-'+sl.key+'" type="text" value="'+escHtml(val)+'" placeholder="과목/내용...">'
       + '</div>'
-      + (quicks ? '<div class="jinu-slot-quick">'+quicks+'</div>' : '')
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
+      + '<span style="font-size:.72rem;color:#888;width:52px;flex-shrink:0">시작</span>'
+      + '<input type="time" id="jinu-time-start-'+sl.key+'" value="'+escHtml(start)+'" style="border:1px solid #c8e4f8;border-radius:7px;padding:3px 7px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;flex:1">'
+      + '<span style="font-size:.72rem;color:#888">종료</span>'
+      + '<input type="time" id="jinu-time-end-'+sl.key+'" value="'+escHtml(end)+'" style="border:1px solid #c8e4f8;border-radius:7px;padding:3px 7px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;flex:1">'
+      + '</div>'
+      + (quicks ? '<div class="jinu-slot-quick" style="margin-top:3px"><span style="font-size:.68rem;color:#aaa;margin-right:3px">과목</span>'+quicks+'</div>' : '')
       + '</div>';
   }).join('');
 }
@@ -4465,12 +4482,22 @@ function jinuTimetableSave() {
   var data = loadJinuTT();
   if (!data[_jinuDay]) data[_jinuDay] = {};
   _jinuSlots.forEach(function(sl){
-    var inp = document.getElementById('jinu-slot-'+sl.key);
-    data[_jinuDay][sl.key] = inp ? inp.value.trim() : '';
+    var inp   = document.getElementById('jinu-slot-'+sl.key);
+    var start = document.getElementById('jinu-time-start-'+sl.key);
+    var end   = document.getElementById('jinu-time-end-'+sl.key);
+    var val   = inp   ? inp.value.trim()   : '';
+    var s     = start ? start.value.trim() : '';
+    var e     = end   ? end.value.trim()   : '';
+    data[_jinuDay][sl.key] = (val||s||e) ? {val:val, start:s, end:e} : '';
   });
   saveJinuTT(data);
   renderJinuTimetableView();
   toast('💾 '+_jinuDayNames[_jinuDay]+' 시간표 저장됐어요!');
+}
+function _jinuCellVal(raw) {
+  if (!raw) return {val:'',start:'',end:''};
+  if (typeof raw === 'string') return {val:raw,start:'',end:''};
+  return {val:raw.val||'',start:raw.start||'',end:raw.end||''};
 }
 function renderJinuTimetableView() {
   var el = document.getElementById('jinu-timetable-view');
@@ -4478,31 +4505,43 @@ function renderJinuTimetableView() {
   var data = loadJinuTT();
   var days = ['mon','tue','wed','thu','fri'];
   var dayLabels = {mon:'월',tue:'화',wed:'수',thu:'목',fri:'금'};
-  // 데이터 있는 슬롯만 필터
   var usedSlots = _jinuSlots.filter(function(sl){
     return days.some(function(d){ return data[d] && data[d][sl.key]; });
   });
   if (!usedSlots.length) { el.innerHTML = '<div class="empty">✏️ 편집 버튼을 눌러 시간표를 입력해요</div>'; return; }
-  var today = new Date().getDay(); // 0=일,1=월...5=금
+  var today = new Date().getDay();
   var todayKey = ['','mon','tue','wed','thu','fri',''][today] || '';
-  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:320px">';
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem;min-width:340px">';
   // 헤더
   html += '<thead><tr>';
-  html += '<th style="padding:7px 8px;background:#e8f4ff;color:#2060a0;font-weight:700;border:1px solid #c8ddf0;white-space:nowrap;font-size:.75rem">시간대</th>';
+  html += '<th style="padding:6px 8px;background:#e8f4ff;color:#2060a0;font-weight:700;border:1px solid #c8ddf0;white-space:nowrap;font-size:.73rem;text-align:left">시간대</th>';
   days.forEach(function(d){
-    var isToday = (d === todayKey);
-    html += '<th style="padding:7px 8px;background:'+(isToday?'#4a90d0':'#e8f4ff')+';color:'+(isToday?'white':'#2060a0')+';font-weight:700;border:1px solid #c8ddf0;text-align:center;min-width:60px">'+dayLabels[d]+(isToday?'<br><span style="font-size:.65rem;opacity:.85">오늘</span>':'')+'</th>';
+    var isToday = (d===todayKey);
+    html += '<th style="padding:6px 8px;background:'+(isToday?'#4a90d0':'#e8f4ff')+';color:'+(isToday?'white':'#2060a0')+';font-weight:700;border:1px solid #c8ddf0;text-align:center;min-width:68px">'+dayLabels[d]+(isToday?'<br><span style="font-size:.62rem;opacity:.8">오늘</span>':'')+'</th>';
   });
   html += '</tr></thead><tbody>';
-  // 슬롯별 행
   usedSlots.forEach(function(sl, i){
-    var bg = (i%2===0) ? '#f8fbff' : '#ffffff';
+    var evenBg = (i%2===0) ? '#f8fbff' : '#ffffff';
     html += '<tr>';
-    html += '<td style="padding:6px 8px;background:#f0f6ff;color:#4a90d0;font-weight:700;border:1px solid #d8eaf8;white-space:nowrap;font-size:.75rem">'+sl.label+'</td>';
+    // 슬롯 라벨
+    html += '<td style="padding:6px 8px;background:#f0f6ff;border:1px solid #d8eaf8;white-space:nowrap;vertical-align:middle">'
+      + '<span style="font-size:.75rem;font-weight:700;color:'+(sl.color||'#4a90d0')+'">'+sl.label+'</span>'
+      + '</td>';
     days.forEach(function(d){
-      var val = (data[d] && data[d][sl.key]) || '';
-      var isToday = (d === todayKey);
-      html += '<td style="padding:6px 8px;border:1px solid #d8eaf8;text-align:center;background:'+(isToday ? (val?'#e8f4ff':'#f5f9ff') : (val?bg:'#fafafa'))+';color:'+(val?'#222':'#ccc')+';font-size:.8rem">'+escHtml(val||'–')+'</td>';
+      var raw = data[d] && data[d][sl.key];
+      var cv = _jinuCellVal(raw);
+      var hasData = !!(cv.val||cv.start||cv.end);
+      var isToday = (d===todayKey);
+      var bg = isToday ? (hasData?'#deeeff':'#f0f6ff') : (hasData?evenBg:'#fafafa');
+      var timeStr = '';
+      if (cv.start && cv.end)   timeStr = '<div style="font-size:.68rem;color:#4a90d0;margin-top:2px">'+cv.start+'~'+cv.end+'</div>';
+      else if (cv.start)         timeStr = '<div style="font-size:.68rem;color:#4a90d0;margin-top:2px">'+cv.start+'~</div>';
+      else if (cv.end)           timeStr = '<div style="font-size:.68rem;color:#9040c0;margin-top:2px">~'+cv.end+'</div>';
+      html += '<td style="padding:6px 8px;border:1px solid #d8eaf8;text-align:center;background:'+bg+';vertical-align:middle">'
+        + (hasData
+          ? '<div style="font-size:.8rem;font-weight:600;color:'+(isToday?'#1040a0':'#333')+'">'+escHtml(cv.val||'✓')+'</div>'+timeStr
+          : '<span style="color:#ddd;font-size:.75rem">–</span>')
+        + '</td>';
     });
     html += '</tr>';
   });
