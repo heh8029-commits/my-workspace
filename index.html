@@ -1715,9 +1715,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <label class="order-label">📝 메모</label>
             <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px;flex-wrap:wrap">
-            <div id="order-count-bar" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
-            <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0);flex-shrink:0" onclick="addOrder()">+ 등록</button>
+          <div style="text-align:right;margin-top:6px">
+            <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
           </div>
         </div>
         <div id="order-filter-bar" style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px"></div>
@@ -3379,19 +3378,13 @@ const ORDER_STATUS_BG    = ['#f0eeff','#e8f4ff','#e8fff6','#fff0f5'];
 
 function renderOrderCountBar() {
   const data = loadOrder();
-  const countEl = document.getElementById('order-count-bar');
   const filterEl = document.getElementById('order-filter-bar');
-  if (!countEl || !filterEl) return;
+  if (!filterEl) return;
 
-  // 전체 건수 뱃지
+  // 전체 건수 + 상태별 카운트
   const total = data.length;
-
-  // 상태별 카운트
   const counts = [0,0,0,0];
   data.forEach(function(r) { if (r.status >= 0 && r.status <= 3) counts[r.status]++; else counts[0]++; });
-
-  // 카운트 바 (등록 버튼 옆)
-  countEl.innerHTML = '<span style="font-size:.75rem;font-weight:700;color:#8060e0;background:#f0eeff;border-radius:10px;padding:3px 9px;white-space:nowrap">총 '+total+'건</span>';
 
   // 필터 탭 (있을 때만 표시)
   if (!total) { filterEl.innerHTML = ''; return; }
@@ -3449,7 +3442,7 @@ function renderOrder() {
           `<button class="order-status-btn${(st===i?' active-'+i:'')}" onclick="setOrderStatus(${row.id},${i})">${lbl}</button>`
         ).join('')}
       </div>
-      <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${linkify(row.memo||'')}</div>
+      <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${orderMemoHtml(row.memo||'')}</div>
       <textarea id="order-memo-edit-${row.id}" style="display:none;width:100%;border:1.5px solid #b0a0f8;border-radius:8px;padding:8px 10px;font-family:'Pretendard',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;line-height:1.6;box-sizing:border-box">${esc(row.memo||'')}</textarea>
       <div class="order-item-acts" id="order-acts-${row.id}">
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderEditMode(${row.id})">✏️ 편집</button>
@@ -4525,6 +4518,14 @@ function saveFridgeMemo() {
   renderFridgeMemo();
   closeFridgeMemo();
   toast(fridgeMemoType === 'ingredient' ? '재료 메모 저장됐어요! 🧊' : '반찬 메모 저장됐어요! 🍱');
+}
+
+function orderMemoHtml(memo) {
+  const lines = memo.split('\n');
+  if (!lines.length) return '';
+  const first = '<div style="font-size:1rem;font-weight:800;color:#5040b0;margin-bottom:3px;line-height:1.5">' + linkify(lines[0]) + '</div>';
+  const rest = lines.slice(1).join('\n');
+  return first + (rest ? '<div style="white-space:pre-wrap;word-break:break-all;font-size:.85rem;color:#555;line-height:1.6">' + linkify(rest) + '</div>' : '');
 }
 
 function linkify(text) {
