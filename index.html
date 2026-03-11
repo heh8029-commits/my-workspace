@@ -2024,7 +2024,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           </select>
         </div>
         <div style="display:flex;gap:8px;align-items:flex-end">
-          <textarea id="cal-sched-memo" rows="6" placeholder="메모 (줄바꿈 가능, 선택사항)" style="flex:1;border:1.5px solid #f7a8c0;border-radius:10px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:130px"></textarea>
+          <textarea id="cal-sched-memo" rows="9" placeholder="메모 (줄바꿈 가능, 선택사항)" style="flex:1;border:1.5px solid #f7a8c0;border-radius:10px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:200px"></textarea>
           <button onclick="calAddSched()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:9px 16px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0;align-self:flex-end">+ 추가</button>
         </div>
       </div>
@@ -4660,7 +4660,7 @@ function calRenderDayDetail() {
           }).join('')
         + '</select>'
         + '</div>';
-      html += '<textarea id="cal-ei-memo-'+s.id+'" rows="6" placeholder="메모 (선택)" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;min-height:130px">'+escHtml(s.memo||'')+'</textarea>';
+      html += '<textarea id="cal-ei-memo-'+s.id+'" rows="9" placeholder="메모 (선택)" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;min-height:200px">'+escHtml(s.memo||'')+'</textarea>';
       html += '<div style="display:flex;gap:6px;justify-content:flex-end">'
         + '<button onclick="calEditCancel(\''+s.id+'\')" style="background:#f0f0f0;border:none;border-radius:8px;padding:5px 12px;font-size:.78rem;cursor:pointer;color:#888">취소</button>'
         + '<button onclick="calEditSave(\''+s.id+'\')" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">💾 저장</button>'
