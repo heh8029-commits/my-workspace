@@ -1154,6 +1154,97 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 #menu5 .sec::after { background: linear-gradient(90deg,#4ab86a,transparent); }
 
 
+/* ── 달력 ── */
+.cal-grid-wrap {
+  background: white;
+  border-radius: 20px;
+  border: 2px solid #f7a8c0;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(232,100,138,.1);
+}
+.cal-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  background: linear-gradient(135deg,#fff0f5,#ffe0ee);
+}
+.cal-dow-cell {
+  text-align: center;
+  padding: 8px 2px;
+  font-size: .75rem;
+  font-weight: 800;
+}
+.cal-dow-cell.sun { color: #e03c6e; }
+.cal-dow-cell.sat { color: #4da6e8; }
+.cal-dow-cell.wkd { color: #888; }
+.cal-week-row {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  border-top: 1px solid #fce0ea;
+}
+.cal-cell {
+  min-height: 76px;
+  padding: 5px 5px 4px;
+  border-right: 1px solid #fce0ea;
+  cursor: pointer;
+  transition: background .12s;
+  position: relative;
+  overflow: hidden;
+}
+.cal-cell:last-child { border-right: none; }
+.cal-cell:hover { background: #fff8fb; }
+.cal-cell.today { background: linear-gradient(145deg,#fff0f5,#ffe8f0); }
+.cal-cell.selected { background: linear-gradient(145deg,#ffe0ee,#ffcce0) !important; }
+.cal-cell.other-month { opacity: .35; }
+.cal-day-num {
+  font-size: .78rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+}
+.cal-cell.today .cal-day-num {
+  background: linear-gradient(135deg,#f7a8c0,#e03c6e);
+  color: white;
+}
+.cal-cell.sun .cal-day-num { color: #e03c6e; }
+.cal-cell.sat .cal-day-num { color: #4da6e8; }
+.cal-event-dot {
+  font-size: .62rem;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  color: white;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.cal-exp-dot {
+  font-size: .58rem;
+  color: #c03030;
+  background: #fff0f0;
+  border: 1px solid #f7c8c8;
+  border-radius: 6px;
+  padding: 1px 4px;
+  margin-bottom: 1px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+.cal-more { font-size:.58rem; color:#aaa; }
+@media(max-width:600px) {
+  .cal-cell { min-height: 56px; padding: 3px; }
+  .cal-day-num { width:18px; height:18px; font-size:.68rem; }
+  .cal-event-dot { font-size:.55rem; padding:1px 3px; }
+}
+
 /* ── 냉장고 메모 ── */
 .fridge-wrap {
   display: grid;
@@ -1361,7 +1452,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <button class="msub-btn" onclick="switchSub('menu1',6,null);setMobileSubActive(this)">🌸 시즌관리</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu2">
-  <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
+  <button class="msub-btn" onclick="switchSub('menu2',14,null);setMobileSubActive(this)">📅 달력/일정</button>
+    <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
   <button class="msub-btn" onclick="switchSub('menu2',1,null);setMobileSubActive(this)">🧹 청소루틴</button>
   <button class="msub-btn" onclick="switchSub('menu2',2,null);setMobileSubActive(this)">🛒 장보기</button>
   <button class="msub-btn" onclick="switchSub('menu2',3,null);setMobileSubActive(this)">💡 전기/수도</button>
@@ -1426,7 +1518,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <span class="gnav-main-icon">🏠</span> 우리집
   </div>
   <div class="gnav-subs" id="gnav-subs-menu2">
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',14,null)">📅 달력/일정</div>
+        <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',1,null)">🧹 청소 루틴</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',2,null)">🛒 장보기 목록</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',3,null)">💡 전기/수도</div>
@@ -1883,6 +1976,40 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
   <!-- ══════════════ 우리집 ══════════════ -->
   <div class="page" id="menu2">
+    <div class="subpage" id="menu2-sub-14">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">📅</div>
+        <div><div class="subpage-title">달력 / 일정</div><div class="subpage-desc">일정을 등록하고 지출도 확인해요</div></div>
+      </div>
+      <!-- 달력 헤더 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <button onclick="calPrevMonth()" style="background:linear-gradient(135deg,#ffe0ee,#f7a8c0);border:none;border-radius:12px;padding:7px 14px;font-size:1rem;cursor:pointer;color:#c0205a">‹</button>
+        <div id="cal-title" style="font-size:1.05rem;font-weight:800;color:#c0205a"></div>
+        <button onclick="calNextMonth()" style="background:linear-gradient(135deg,#ffe0ee,#f7a8c0);border:none;border-radius:12px;padding:7px 14px;font-size:1rem;cursor:pointer;color:#c0205a">›</button>
+      </div>
+      <!-- 달력 그리드 -->
+      <div id="cal-grid" style="margin-bottom:16px"></div>
+      <!-- 일정 등록 -->
+      <div class="card" style="border-top:4px solid #f7a8c0;margin-bottom:12px">
+        <div style="font-size:.88rem;font-weight:700;color:#c0205a;margin-bottom:10px">✏️ 일정 등록</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input id="cal-sched-date" type="date" style="border:1.5px solid #f7a8c0;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;flex-shrink:0">
+          <input id="cal-sched-text" type="text" placeholder="일정 내용" style="flex:1;min-width:120px;border:1.5px solid #f7a8c0;border-radius:10px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')calAddSched()">
+          <select id="cal-sched-color" style="border:1.5px solid #f7a8c0;border-radius:10px;padding:7px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <option value="#e03c6e">🩷 핑크</option>
+            <option value="#4da6e8">💙 블루</option>
+            <option value="#3dbb8f">💚 민트</option>
+            <option value="#f0c800">💛 옐로</option>
+            <option value="#8060d0">💜 보라</option>
+            <option value="#e08050">🧡 피치</option>
+          </select>
+          <button onclick="calAddSched()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">+ 추가</button>
+        </div>
+      </div>
+      <!-- 선택된 날 일정 -->
+      <div id="cal-day-detail" style="display:none" class="card" style="border-top:4px solid #f7a8c0"></div>
+    </div>
+
             <!-- 월별지출 서브페이지 -->
         <div class="subpage active" id="menu2-sub-0">
           <div class="subpage-header">
@@ -2468,7 +2595,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3977,6 +4104,217 @@ function renderStaff() {
   renderStaffMonthContent();
 }
 
+
+// ══════════════════════════════════════════
+// 달력 / 일정
+// ══════════════════════════════════════════
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth() + 1;
+let calSelectedDay = null;
+
+function loadCalScheds() { return loadObj('cal_scheds').list || []; }
+function saveCalScheds(list) { stor('cal_scheds', {list}); }
+
+function calPrevMonth() { calMonth--; if (calMonth < 1) { calMonth = 12; calYear--; } renderCal(); }
+function calNextMonth() { calMonth++; if (calMonth > 12) { calMonth = 1; calYear++; } renderCal(); }
+
+function renderCal() {
+  const titleEl = document.getElementById('cal-title');
+  const gridEl  = document.getElementById('cal-grid');
+  if (!titleEl || !gridEl) return;
+
+  titleEl.textContent = calYear + '년 ' + calMonth + '월';
+
+  const scheds = loadCalScheds();
+  // 월별지출 데이터 (day 필드: "10일" or "10")
+  const expData = loadExp ? (loadExp() || []) : [];
+
+  // 해당 월 지출 날짜별 맵
+  const expMap = {};
+  expData.forEach(function(r) {
+    const d = parseInt((r.day || '').match(/\d+/)?.[0] || '0');
+    if (d > 0) {
+      if (!expMap[d]) expMap[d] = [];
+      expMap[d].push(r);
+    }
+  });
+
+  // 일정 날짜별 맵
+  const schedMap = {};
+  scheds.forEach(function(s) {
+    const dt = s.date || '';
+    const [sy, sm, sd] = dt.split('-').map(Number);
+    if (sy === calYear && sm === calMonth) {
+      if (!schedMap[sd]) schedMap[sd] = [];
+      schedMap[sd].push(s);
+    }
+  });
+
+  const today = new Date();
+  const todayY = today.getFullYear(), todayM = today.getMonth()+1, todayD = today.getDate();
+
+  const firstDay = new Date(calYear, calMonth-1, 1).getDay(); // 0=일
+  const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+  const prevDays = new Date(calYear, calMonth-1, 0).getDate();
+
+  const DOWS = ['일','월','화','수','목','금','토'];
+  let html = '<div class="cal-grid-wrap">';
+  html += '<div class="cal-dow-row">';
+  DOWS.forEach(function(d, i) {
+    const cls = i===0?'sun':i===6?'sat':'wkd';
+    html += '<div class="cal-dow-cell '+cls+'">'+d+'</div>';
+  });
+  html += '</div>';
+
+  let day = 1;
+  let prevDay = prevDays - firstDay + 1;
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  for (let cell = 0; cell < totalCells; cell++) {
+    if (cell % 7 === 0) html += '<div class="cal-week-row">';
+
+    const dow = cell % 7;
+    const dowCls = dow===0?'sun':dow===6?'sat':'';
+
+    if (cell < firstDay) {
+      // 이전달
+      html += '<div class="cal-cell other-month '+dowCls+'">';
+      html += '<div class="cal-day-num">'+prevDay+'</div>';
+      html += '</div>';
+      prevDay++;
+    } else if (day > daysInMonth) {
+      // 다음달
+      const nd = day - daysInMonth;
+      html += '<div class="cal-cell other-month '+dowCls+'">';
+      html += '<div class="cal-day-num">'+nd+'</div>';
+      html += '</div>';
+      day++;
+    } else {
+      const isToday = calYear===todayY && calMonth===todayM && day===todayD;
+      const isSelected = calSelectedDay === day;
+      const dayScheds = schedMap[day] || [];
+      const dayExps = expMap[day] || [];
+
+      html += '<div class="cal-cell '+dowCls+(isToday?' today':'')+(isSelected?' selected':'')+'" onclick="calSelectDay('+day+')">';
+      html += '<div class="cal-day-num">'+day+'</div>';
+
+      // 일정 표시 (최대 2개)
+      const showScheds = dayScheds.slice(0, 2);
+      showScheds.forEach(function(s) {
+        html += '<span class="cal-event-dot" style="background:'+escHtml(s.color||'#e03c6e')+'">'+escHtml(s.text)+'</span>';
+      });
+
+      // 지출 표시 (최대 1개)
+      if (dayExps.length > 0) {
+        const expSum = dayExps.reduce(function(s,r){ return s+parseFloat(r.amount||0); }, 0);
+        html += '<span class="cal-exp-dot">💸'+expSum.toLocaleString()+'</span>';
+      }
+
+      // 더보기
+      const more = dayScheds.length - 2;
+      if (more > 0) html += '<div class="cal-more">+'+more+'더</div>';
+
+      html += '</div>';
+      day++;
+    }
+
+    if (cell % 7 === 6) html += '</div>';
+  }
+  html += '</div>';
+  gridEl.innerHTML = html;
+  calRenderDayDetail();
+}
+
+function calSelectDay(d) {
+  calSelectedDay = (calSelectedDay === d) ? null : d;
+  renderCal();
+  // 날짜 입력 자동 세팅
+  const inp = document.getElementById('cal-sched-date');
+  if (inp && calSelectedDay) {
+    inp.value = calYear + '-' + String(calMonth).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  }
+}
+
+function calRenderDayDetail() {
+  const el = document.getElementById('cal-day-detail');
+  if (!el) return;
+  if (!calSelectedDay) { el.style.display='none'; return; }
+  el.style.display = 'block';
+
+  const scheds = loadCalScheds();
+  const expData = loadExp ? (loadExp() || []) : [];
+  const d = calSelectedDay;
+
+  const dayScheds = scheds.filter(function(s) {
+    const [sy,sm,sd] = (s.date||'').split('-').map(Number);
+    return sy===calYear && sm===calMonth && sd===d;
+  });
+  const dayExps = expData.filter(function(r) {
+    return parseInt((r.day||'').match(/\d+/)?.[0]||'0') === d;
+  });
+
+  let html = '<div style="font-size:.88rem;font-weight:700;color:#c0205a;margin-bottom:10px">'
+    + calYear+'년 '+calMonth+'월 '+d+'일</div>';
+
+  if (dayScheds.length) {
+    html += '<div style="margin-bottom:8px">';
+    dayScheds.forEach(function(s, i) {
+      const idx = scheds.findIndex(function(x){ return x.id===s.id; });
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        + '<span style="width:10px;height:10px;border-radius:50%;background:'+escHtml(s.color||'#e03c6e')+';flex-shrink:0;display:inline-block"></span>'
+        + '<span style="flex:1;font-size:.86rem">'+escHtml(s.text)+'</span>'
+        + '<button data-cid="'+s.id+'" onclick="calDelSched(this.dataset.cid)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.8rem" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  if (dayExps.length) {
+    html += '<div style="background:#fff5f5;border-radius:10px;padding:8px 10px">';
+    html += '<div style="font-size:.72rem;color:#c03030;font-weight:700;margin-bottom:5px">💸 이날 지출</div>';
+    dayExps.forEach(function(r) {
+      html += '<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px">'
+        + '<span style="color:#555">'+escHtml(r.label||'')+'</span>'
+        + '<span style="color:#c03030;font-weight:700">'+parseFloat(r.amount||0).toLocaleString()+'원</span>'
+        + '</div>';
+    });
+    const sum = dayExps.reduce(function(s,r){ return s+parseFloat(r.amount||0); },0);
+    html += '<div style="border-top:1px solid #f7c8c8;margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;font-size:.82rem;font-weight:700">'
+      + '<span style="color:#888">합계</span><span style="color:#c03030">'+sum.toLocaleString()+'원</span></div>';
+    html += '</div>';
+  }
+
+  if (!dayScheds.length && !dayExps.length) {
+    html += '<div class="empty">이날은 일정이 없어요 🎀</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function calAddSched() {
+  const date = document.getElementById('cal-sched-date').value;
+  const text = document.getElementById('cal-sched-text').value.trim();
+  const color = document.getElementById('cal-sched-color').value;
+  if (!date || !text) { toast('날짜와 내용을 입력해요!'); return; }
+  const list = loadCalScheds();
+  list.push({ id: 'c'+Date.now(), date, text, color });
+  saveCalScheds(list);
+  document.getElementById('cal-sched-text').value = '';
+  renderCal();
+  toast('🎀 일정 추가됐어요!');
+}
+
+function calDelSched(id) {
+  const list = loadCalScheds().filter(function(s){ return s.id !== id; });
+  saveCalScheds(list);
+  renderCal();
+  toast('🗑️ 삭제됐어요');
+}
+
+function renderCalPage() {
+  renderCal();
+}
+
 function addEun() {
   const v = document.getElementById('eun-inp').value.trim();
   if (!v) return;
@@ -5295,6 +5633,7 @@ function initRender(pageId) {
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
     renderFridgeMemo && renderFridgeMemo();
+    renderCalPage && renderCalPage();
     renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
