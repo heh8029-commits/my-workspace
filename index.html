@@ -4667,16 +4667,16 @@ function jinuThumbHover(img, on) {
     pop.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;border-radius:10px;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,.35);transition:opacity .15s;opacity:0;background:#000';
     var pi = document.createElement('img');
     pi.src = img.src;
-    pi.style.cssText = 'max-width:260px;max-height:220px;object-fit:contain;display:block';
+    pi.style.cssText = 'max-width:338px;max-height:286px;object-fit:contain;display:block';
     pop.appendChild(pi);
     document.body.appendChild(pop);
     // 위치: 썸네일 위
     var r = img.getBoundingClientRect();
     pi.onload = function() {
       var pw = pi.naturalWidth, ph = pi.naturalHeight;
-      var scale = Math.min(260/pw, 220/ph, 1);
-      var W = pw*scale, H = ph*scale;
-      var left = Math.min(r.left + r.width/2 - W/2, window.innerWidth - W - 10);
+      var scale = Math.min(338/pw, 286/ph, 1);
+      
+      var W = pw*scale, H = ph*scale; var left = Math.min(r.left + r.width/2 - W/2, window.innerWidth - W - 10);
       var top  = r.top - H - 10;
       if (top < 8) top = r.bottom + 8;
       pop.style.left = Math.max(8, left) + 'px';
