@@ -2354,12 +2354,9 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               <input id="jinu-memo-date" type="date" style="flex:1;min-width:120px;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">
             </div>
             <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗&#10;이미지는 Ctrl+V 또는 드래그로 첨부!" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}" onpaste="jinuHandlePaste(event)" ondragover="event.preventDefault()" ondrop="jinuHandleDrop(event)"></textarea>
-            <!-- 이미지 미리보기 -->
-            <div id="jinu-img-preview" style="display:none;margin-top:6px;position:relative;display:none">
-              <img id="jinu-img-preview-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1.5px solid #f7a8c0;object-fit:contain">
-              <button onclick="jinuClearImg()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:22px;height:22px;color:white;font-size:.75rem;cursor:pointer;line-height:1">✕</button>
-              <div id="jinu-img-status" style="font-size:.72rem;color:#e03c6e;margin-top:3px;text-align:center"></div>
-            </div>
+            <!-- 이미지 미리보기 (복수) -->
+            <div id="jinu-img-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+            <div id="jinu-img-status" style="font-size:.72rem;color:#e03c6e;margin-top:2px;text-align:center"></div>
             <button onclick="jinuMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">+ 추가</button>
           </div>
           <!-- 메모 리스트 (아래) -->
@@ -4925,38 +4922,55 @@ function closeImgModal() {
 }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeImgModal(); });
 /* ── 진우 이미지 업로드 (Cloudinary) ── */
-var _jinuPendingImgUrl = null;
+var _jinuPendingImgs = [];
 var _CLOUD_NAME = 'dfc05tbbk';
 var _UPLOAD_PRESET = 'hwx2iwfz';
 
-function jinuShowImgPreview(file) {
-  var preview = document.getElementById('jinu-img-preview');
-  var img     = document.getElementById('jinu-img-preview-img');
-  var status  = document.getElementById('jinu-img-status');
-  if (!preview || !img) return;
-  preview.style.display = 'block';
-  img.src = URL.createObjectURL(file);
-  status.textContent = '⬆️ 업로드 중...';
-  // Cloudinary 업로드
+function cloudinaryUpload(file, onDone, onError) {
   var fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', _UPLOAD_PRESET);
-  fetch('https://api.cloudinary.com/v1_1/' + _CLOUD_NAME + '/image/upload', {method:'POST', body:fd})
+  return fetch('https://api.cloudinary.com/v1_1/' + _CLOUD_NAME + '/image/upload', {method:'POST', body:fd})
     .then(function(r){ return r.json(); })
     .then(function(data){
-      if (data.secure_url) {
-        _jinuPendingImgUrl = data.secure_url;
-        status.textContent = '✅ 업로드 완료!';
-        status.style.color = '#1a9a60';
-      } else {
-        status.textContent = '❌ 업로드 실패: ' + (data.error&&data.error.message||'오류');
-        status.style.color = '#e03c6e';
-      }
+      if (data.secure_url) onDone(data.secure_url);
+      else onError(data.error && data.error.message || '업로드 실패');
     })
-    .catch(function(e){
-      status.textContent = '❌ 네트워크 오류';
-      status.style.color = '#e03c6e';
-    });
+    .catch(function(){ onError('네트워크 오류'); });
+}
+function jinuRenderImgList(containerId) {
+  var imgs = _jinuPendingImgs;
+  var el = document.getElementById(containerId || 'jinu-img-list');
+  if (!el) return;
+  el.innerHTML = '';
+  imgs.forEach(function(url, i) {
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;width:64px;height:64px;flex-shrink:0';
+    var img = document.createElement('img');
+    img.src = url; img.loading = 'lazy';
+    img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:7px;border:1.5px solid #f7a8c0';
+    wrap.appendChild(img);
+    var del = document.createElement('button');
+    del.textContent = '✕';
+    del.style.cssText = 'position:absolute;top:-5px;right:-5px;background:#e03c6e;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.6rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center';
+    del.onclick = (function(idx){ return function(){ _jinuPendingImgs.splice(idx,1); jinuRenderImgList(containerId); }; })(i);
+    wrap.appendChild(del);
+    el.appendChild(wrap);
+  });
+}
+function jinuUploadAndAdd(file, listId, statusId) {
+  var status = document.getElementById(statusId || 'jinu-img-status');
+  if (status) { status.textContent = '⬆️ 업로드 중...'; status.style.color='#9040c0'; }
+  cloudinaryUpload(file,
+    function(url) {
+      _jinuPendingImgs.push(url);
+      jinuRenderImgList(listId);
+      if (status) { status.textContent = '✅ 완료! ('+_jinuPendingImgs.length+'장)'; status.style.color='#1a9a60'; }
+    },
+    function(err) {
+      if (status) { status.textContent = '❌ ' + err; status.style.color='#e03c6e'; }
+    }
+  );
 }
 function jinuHandlePaste(e) {
   var items = e.clipboardData && e.clipboardData.items;
@@ -4964,7 +4978,7 @@ function jinuHandlePaste(e) {
   for (var i=0; i<items.length; i++) {
     if (items[i].type.indexOf('image') !== -1) {
       e.preventDefault();
-      jinuShowImgPreview(items[i].getAsFile());
+      jinuUploadAndAdd(items[i].getAsFile(), 'jinu-img-list', 'jinu-img-status');
       return;
     }
   }
@@ -4973,16 +4987,14 @@ function jinuHandleDrop(e) {
   e.preventDefault();
   var file = e.dataTransfer.files && e.dataTransfer.files[0];
   if (file && file.type.indexOf('image') !== -1) {
-    jinuShowImgPreview(file);
+    jinuUploadAndAdd(file, 'jinu-img-list', 'jinu-img-status');
   }
 }
 function jinuClearImg() {
-  _jinuPendingImgUrl = null;
-  var preview = document.getElementById('jinu-img-preview');
-  var img     = document.getElementById('jinu-img-preview-img');
-  var status  = document.getElementById('jinu-img-status');
-  if (preview) preview.style.display = 'none';
-  if (img) img.src = '';
+  _jinuPendingImgs = [];
+  var list = document.getElementById('jinu-img-list');
+  if (list) list.innerHTML = '';
+  var status = document.getElementById('jinu-img-status');
   if (status) status.textContent = '';
 }
 
@@ -5033,38 +5045,105 @@ function renderJinuMemos() {
   var items = loadJinuMemos();
   items.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   if (!items.length) { el.innerHTML = '<div class="empty" style="font-size:.82rem">알림 메모를 추가해요 📢</div>'; return; }
-  el.innerHTML = items.map(function(it){
+  el.innerHTML = '';
+  items.forEach(function(it){
+    var div = document.createElement('div');
     if (it._editing) {
-      return '<div style="display:flex;gap:6px;align-items:center;padding:7px 8px;border:1.5px solid #f7a8c0;border-radius:9px;margin-bottom:7px;background:#fff5f8">'
-        + '<input id="jm-ed-'+it.id+'" type="text" value="'+escHtml(it.text||'')+'" style="flex:1;border:1px solid #f7a8c0;border-radius:6px;padding:4px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')jinuMemoEditSave('+it.id+')">'
-        + '<button onclick="jinuMemoEditSave('+it.id+')" style="background:#e03c6e;border:none;border-radius:6px;padding:4px 10px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0">저장</button>'
-        + '<button onclick="jinuMemoEditCancel('+it.id+')" style="background:#eee;border:none;border-radius:6px;padding:4px 8px;color:#888;font-size:.78rem;cursor:pointer;flex-shrink:0">취소</button>'
-        + '</div>';
+      div.style.cssText = 'padding:10px;border:1.5px solid #f7a8c0;border-radius:9px;margin-bottom:7px;background:#fff5f8';
+      var ta = document.createElement('textarea');
+      ta.id='jm-ed-'+it.id; ta.rows=3;
+      ta.value=it.text||'';
+      ta.style.cssText='width:100%;box-sizing:border-box;border:1px solid #f7a8c0;border-radius:6px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;margin-bottom:8px';
+      div.appendChild(ta);
+      var imgLabel=document.createElement('div');
+      imgLabel.style.cssText='font-size:.72rem;color:#c04070;font-weight:700;margin-bottom:5px';
+      imgLabel.textContent='📎 이미지 (클릭 후 Ctrl+V로 추가)';
+      div.appendChild(imgLabel);
+      var imgGrid=document.createElement('div');
+      imgGrid.style.cssText='display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px';
+      var editImgs=it.imgs&&it.imgs.length?it.imgs.slice():(it.imgUrl?[it.imgUrl]:[]);
+      function refreshGrid(arr){
+        imgGrid.innerHTML='';
+        arr.forEach(function(url,i){
+          var w=document.createElement('div'); w.style.cssText='position:relative;width:58px;height:58px;flex-shrink:0';
+          var img=document.createElement('img'); img.src=url; img.loading='lazy';
+          img.style.cssText='width:58px;height:58px;object-fit:cover;border-radius:7px;border:1.5px solid #f7a8c0';
+          var xb=document.createElement('button'); xb.textContent='✕';
+          xb.style.cssText='position:absolute;top:-5px;right:-5px;background:#e03c6e;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.6rem;cursor:pointer;line-height:1';
+          xb.onclick=(function(idx){return function(){arr.splice(idx,1);refreshGrid(arr);};})(i);
+          w.appendChild(img); w.appendChild(xb); imgGrid.appendChild(w);
+        });
+        var addBox=document.createElement('div');
+        addBox.style.cssText='width:58px;height:58px;border:1.5px dashed #f7a8c0;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#f7a8c0;text-align:center;cursor:pointer;flex-shrink:0;outline:none';
+        addBox.innerHTML='📋<br>붙여넣기'; addBox.setAttribute('tabindex','0');
+        addBox.onpaste=function(e){
+          var its=e.clipboardData&&e.clipboardData.items; if(!its)return;
+          for(var k=0;k<its.length;k++){
+            if(its[k].type.indexOf('image')!==-1){
+              e.preventDefault();
+              var stE=document.getElementById('jm-ed-st-'+it.id);
+              if(stE){stE.textContent='⬆️ 업로드 중...';stE.style.color='#9040c0';}
+              cloudinaryUpload(its[k].getAsFile(),
+                function(url){arr.push(url);refreshGrid(arr);if(stE){stE.textContent='✅ 완료 ('+arr.length+'장)';stE.style.color='#1a9a60';}},
+                function(err){if(stE){stE.textContent='❌ '+err;stE.style.color='#e03c6e';}}
+              );return;
+            }
+          }
+        };
+        imgGrid.appendChild(addBox);
+      }
+      refreshGrid(editImgs);
+      div.appendChild(imgGrid);
+      var stDiv=document.createElement('div'); stDiv.id='jm-ed-st-'+it.id;
+      stDiv.style.cssText='font-size:.72rem;min-height:14px;margin-bottom:6px'; div.appendChild(stDiv);
+      var btns=document.createElement('div'); btns.style.cssText='display:flex;gap:6px;justify-content:flex-end';
+      var saveB=document.createElement('button'); saveB.textContent='저장';
+      saveB.style.cssText='background:#e03c6e;border:none;border-radius:6px;padding:5px 14px;color:white;font-size:.78rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+      saveB.onclick=(function(id,arr){return function(){jinuMemoEditSave(id,arr);};})(it.id,editImgs);
+      var cancelB=document.createElement('button'); cancelB.textContent='취소';
+      cancelB.style.cssText='background:#eee;border:none;border-radius:6px;padding:5px 10px;color:#888;font-size:.78rem;cursor:pointer;font-family:Pretendard,sans-serif';
+      cancelB.onclick=(function(id){return function(){jinuMemoEditCancel(id);};})(it.id);
+      btns.appendChild(cancelB); btns.appendChild(saveB); div.appendChild(btns);
+      el.appendChild(div); return;
     }
-    return '<div class="jinu-memo-item">'
-      + '<div style="flex:1;min-width:0">'
-      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-      + '<span class="jinu-memo-badge '+escHtml(it.cat||'etc')+'">'+(_jinuMemoCatNames[it.cat]||'📋 기타')+'</span>'
-      + (it.date ? '<span style="font-size:.72rem;color:#aaa">'+escHtml(it.date)+'</span>' : '')
-      + '</div>'
-      + '<div style="display:flex;align-items:flex-start;gap:8px">'
-      + (it.imgUrl ? '<div style="flex-shrink:0;position:relative" class="jinu-thumb-wrap"><img src="'+escHtml(it.imgUrl)+'" onclick="openImgModal(\''+escHtml(it.imgUrl)+'\')" style="width:62px;height:62px;border-radius:7px;border:1.5px solid #f7d0e0;object-fit:cover;cursor:zoom-in;display:block;transition:transform .18s" loading="lazy" onmouseover="jinuThumbHover(this,true)" onmouseout="jinuThumbHover(this,false)"></div>' : '')
-      + (it.text ? '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.6;white-space:pre-wrap;flex:1">'+jinuLinkify(it.text)+'</span>' : '')
-      + '</div>'
-      + '</div>'
-      + '<button data-id="'+it.id+'" onclick="jinuMemoEdit(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e0a800\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
-      + '<button data-id="'+it.id+'" onclick="jinuMemoDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
-      + '</div>';
-  }).join('');
+    div.className='jinu-memo-item';
+    var inner=document.createElement('div'); inner.style.cssText='flex:1;min-width:0';
+    var meta=document.createElement('div'); meta.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px';
+    var badge=document.createElement('span'); badge.className='jinu-memo-badge '+(it.cat||'etc'); badge.textContent=_jinuMemoCatNames[it.cat]||'📋 기타';
+    meta.appendChild(badge);
+    if(it.date){var ds=document.createElement('span');ds.style.cssText='font-size:.72rem;color:#aaa';ds.textContent=it.date;meta.appendChild(ds);}
+    inner.appendChild(meta);
+    var body=document.createElement('div'); body.style.cssText='display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap';
+    var allImgs=it.imgs&&it.imgs.length?it.imgs:(it.imgUrl?[it.imgUrl]:[]);
+    allImgs.forEach(function(url){
+      if(!url)return;
+      var tw=document.createElement('div'); tw.style.cssText='flex-shrink:0';
+      var ti=document.createElement('img'); ti.src=url; ti.loading='lazy';
+      ti.style.cssText='width:62px;height:62px;border-radius:7px;border:1.5px solid #f7d0e0;object-fit:cover;cursor:zoom-in;display:block';
+      ti.ondblclick=(function(u){return function(){openImgModal(u);};})(url);
+      ti.onmouseover=function(){jinuThumbHover(this,true);};
+      ti.onmouseout=function(){jinuThumbHover(this,false);};
+      tw.appendChild(ti); body.appendChild(tw);
+    });
+    if(it.text){var txt=document.createElement('span');txt.style.cssText='font-size:.84rem;color:#444;word-break:break-all;line-height:1.6;white-space:pre-wrap;flex:1;min-width:80px';txt.innerHTML=jinuLinkify(it.text);body.appendChild(txt);}
+    inner.appendChild(body); div.appendChild(inner);
+    var eb=document.createElement('button'); eb.textContent='✏️'; eb.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start';
+    eb.onmouseover=function(){this.style.color='#e0a800';}; eb.onmouseout=function(){this.style.color='#ddd';};
+    eb.onclick=(function(id){return function(){jinuMemoEdit(id);};})(it.id);
+    var db=document.createElement('button'); db.textContent='✕'; db.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start';
+    db.onmouseover=function(){this.style.color='#e03c6e';}; db.onmouseout=function(){this.style.color='#ddd';};
+    db.onclick=(function(id){return function(){jinuMemoDel(id);};})(it.id);
+    div.appendChild(eb); div.appendChild(db); el.appendChild(div);
+  });
 }
 function jinuMemoAdd() {
   var cat  = document.getElementById('jinu-memo-cat').value;
   var date = document.getElementById('jinu-memo-date').value;
   var inp  = document.getElementById('jinu-memo-inp');
   var text = inp.value.trim();
-  if (!text && !_jinuPendingImgUrl) return;
+  if (!text && !_jinuPendingImgs.length) return;
   var list = loadJinuMemos();
-  list.push({id:Date.now(), cat:cat, date:date, text:text, imgUrl:_jinuPendingImgUrl||''});
+  list.push({id:Date.now(), cat:cat, date:date, text:text, imgs:_jinuPendingImgs.slice()});
   saveJinuMemos(list);
   inp.value = '';
   jinuClearImg();
@@ -5089,13 +5168,15 @@ function jinuMemoEditCancel(id) {
   list.forEach(function(x){ delete x._editing; });
   saveJinuMemos(list); renderJinuMemos();
 }
-function jinuMemoEditSave(id) {
+function jinuMemoEditSave(id, imgs) {
   var list = loadJinuMemos().map(function(x){
     if (x.id!==id) return x;
-    return {id:x.id, cat:x.cat, date:x.date, text:document.getElementById('jm-ed-'+id).value.trim()};
+    var text = (document.getElementById('jm-ed-'+id)||{value:x.text||''}).value.trim();
+    return {id:x.id, cat:x.cat, date:x.date, text:text, imgs: imgs||[]};
   });
-  saveJinuMemos(list.filter(function(x){ return x.text; }));
+  saveJinuMemos(list.filter(function(x){ return x.text || (x.imgs && x.imgs.length); }));
   renderJinuMemos();
+  toast('✅ 저장됐어요!');
 }
 /* 하위호환 */
 function loadJinuScheds() { return []; }
