@@ -4722,85 +4722,178 @@ function _pcMakeCard(p) {
 
   /* ── 편집 폼 ── */
   if (p._editing) {
-    card.innerHTML =
-      '<div style="display:flex;gap:5px;margin-bottom:2px">'
-        +'<select id="pce-cat-'+p.id+'" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:4px 6px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
+    // 편집폼도 좌(이미지) + 우(입력) 레이아웃
+    var eWrap = document.createElement('div');
+    eWrap.style.cssText = 'display:flex;gap:10px;align-items:flex-start';
+
+    // 왼쪽: 메인이미지 + 작은슬롯3개
+    var eLeft = document.createElement('div');
+    eLeft.style.cssText = 'display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:86px';
+
+    var eMain = document.createElement('div');
+    eMain.style.cssText = 'width:86px;height:86px;border-radius:9px;border:2px dashed #d0b8f8;background:#f8f4ff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden';
+    if (p.mainImg) {
+      eMain.innerHTML = '<img src="'+p.mainImg+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    } else {
+      eMain.innerHTML = '<span style="font-size:.6rem;color:#c0a0e8;text-align:center;line-height:1.6">📷<br>메인</span>';
+    }
+    eMain.onclick = (function(id){ return function(){ pcMainImgOpen(id); }; })(p.id);
+
+    var eSmall = document.createElement('div');
+    eSmall.style.cssText = 'display:flex;gap:4px';
+    var eImgs = p.imgs || [];
+    for (var esi=0; esi<3; esi++) {
+      var es = document.createElement('div');
+      es.style.cssText = 'width:26px;height:26px;border-radius:5px;border:1.5px dashed #d0b8f8;background:#f8f4ff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative';
+      if (eImgs[esi]) {
+        es.innerHTML = '<img src="'+eImgs[esi]+'" style="width:100%;height:100%;object-fit:cover">';
+        var exb = document.createElement('button'); exb.textContent='✕';
+        exb.style.cssText='position:absolute;top:-2px;right:-2px;background:#e03c6e;border:none;border-radius:50%;width:12px;height:12px;color:white;font-size:.4rem;cursor:pointer;line-height:1';
+        exb.onclick=(function(id,idx){return function(e){e.stopPropagation();pcImgDel(id,idx);};})(p.id,esi);
+        es.appendChild(exb);
+      } else {
+        es.innerHTML='<span style="font-size:.55rem;color:#d0b8f8">+</span>';
+        es.onclick=(function(id){return function(){pcRefImgOpen(id);};})(p.id);
+      }
+      eSmall.appendChild(es);
+    }
+    // 등록 버튼
+    var eRegBtn = document.createElement('button');
+    eRegBtn.textContent='📷 등록';
+    eRegBtn.style.cssText='width:100%;border:none;border-radius:6px;padding:3px 0;background:linear-gradient(135deg,#ddd0f8,#b090e8);font-size:.65rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif';
+    eRegBtn.onclick=(function(id){return function(){pcMainImgOpen(id);};})(p.id);
+
+    eLeft.appendChild(eMain); eLeft.appendChild(eSmall); eLeft.appendChild(eRegBtn);
+
+    // 오른쪽: 입력 폼
+    var eRight = document.createElement('div');
+    eRight.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:6px';
+    eRight.innerHTML =
+      '<div style="display:flex;gap:5px;align-items:center">'
+        +'<select id="pce-cat-'+p.id+'" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none;background:white">'
           +'<option value="그로스"'+((p.cat||'일반')==='그로스'?' selected':'')+'>그로스</option>'
           +'<option value="일반"'+((p.cat||'일반')==='일반'?' selected':'')+'>일반</option>'
         +'</select>'
-        +'<button onclick="pcEditSave('+p.id+')" style="background:#7040c0;border:none;border-radius:7px;padding:4px 10px;color:white;font-size:.74rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">저장</button>'
-        +'<button onclick="pcEditCancel('+p.id+')" style="background:#eee;border:none;border-radius:7px;padding:4px 8px;color:#888;font-size:.74rem;cursor:pointer;font-family:Pretendard,sans-serif">취소</button>'
+        +'<button onclick="pcEditSave('+p.id+')" style="background:#7040c0;border:none;border-radius:7px;padding:5px 12px;color:white;font-size:.74rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">저장</button>'
+        +'<button onclick="pcEditCancel('+p.id+')" style="background:#eee;border:none;border-radius:7px;padding:5px 9px;color:#888;font-size:.74rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">취소</button>'
       +'</div>'
-      +'<input id="pce-title-'+p.id+'" type="text" value="'+escHtml(p.title||'')+'" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
-      +'<div style="display:flex;gap:5px">'
-        +'<input id="pce-code-'+p.id+'" type="text" value="'+escHtml(p.code||'')+'" placeholder="코드" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
-        +'<input id="pce-price-'+p.id+'" type="text" value="'+escHtml(p.price||'')+'" placeholder="가격" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
+      +'<input id="pce-title-'+p.id+'" type="text" value="'+escHtml(p.title||'')+'" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:7px;padding:6px 9px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      +'<div style="display:flex;gap:6px">'
+        +'<input id="pce-code-'+p.id+'" type="text" value="'+escHtml(p.code||'')+'" placeholder="코드" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;border-radius:7px;padding:6px 9px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
+        +'<input id="pce-price-'+p.id+'" type="text" value="'+escHtml(p.price||'')+'" placeholder="가격" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;border-radius:7px;padding:6px 9px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
       +'</div>'
-      +'<textarea id="pce-memo-'+p.id+'" rows="3" placeholder="내용..." style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 8px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical">'+escHtml(p.memo||'')+'</textarea>';
+      +'<textarea id="pce-memo-'+p.id+'" rows="3" placeholder="내용..." style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:7px;padding:6px 9px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical">'+escHtml(p.memo||'')+'</textarea>';
+
+    eWrap.appendChild(eLeft); eWrap.appendChild(eRight);
+    card.appendChild(eWrap);
     return card;
   }
 
   /* ── 뷰 모드 ── */
-  // 상단: 메인이미지(좌) + 메타(우)
+  // ── 왼쪽 이미지 컬럼: 큰 메인 + 작은 슬롯 3개 ──
   var mainImgUrl = p.mainImg || '';
-  var mainImgHtml = mainImgUrl
-    ? '<img src="'+mainImgUrl+'" loading="lazy" onclick="openImgModal(\''+mainImgUrl+'\')" onmouseover="jinuThumbHover(this,true)" onmouseout="jinuThumbHover(this,false)" style="width:80px;height:80px;object-fit:cover;border-radius:9px;border:1.5px solid #d0b8f8;cursor:zoom-in;display:block;flex-shrink:0">'
-    : '<div onclick="pcMainImgOpen('+p.id+')" style="width:80px;height:80px;border-radius:9px;border:2px dashed #d0b8f8;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#c0a0e8;font-size:.7rem;text-align:center;flex-shrink:0">📷<br>메인</div>';
+  var leftCol = document.createElement('div');
+  leftCol.style.cssText = 'display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:86px';
 
-  var catColor = (p.cat||'일반')==='그로스' ? '#7040c0' : '#3dbb8f';
-  var metaHtml =
-    '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">'
-      +'<div style="display:flex;align-items:center;gap:5px">'
-        +'<span style="font-size:.7rem;font-weight:700;color:'+catColor+';border:1.5px solid '+catColor+';border-radius:12px;padding:1px 8px">'+escHtml(p.cat||'일반')+'</span>'
-        +'<button onclick="pcEditOpen('+p.id+')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0" onmouseover="this.style.color=\'#7040c0\'" onmouseout="this.style.color=\'#bbb\'">✏️</button>'
-        +'<button onclick="pcCardDel('+p.id+')" style="background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#bbb\'">🗑️</button>'
-      +'</div>'
-      +'<div style="font-size:.84rem;font-weight:700;color:#3a1a6a;line-height:1.3;word-break:break-all">'+escHtml(p.title||'(제목없음)')+'</div>'
-      +(p.code||p.price ? '<div style="font-size:.72rem;color:#888">'+(p.code?'📦 '+escHtml(p.code):'')+(p.code&&p.price?' · ':'')+(p.price?'💰 '+escHtml(p.price):'')+'</div>' : '')
-    +'</div>';
-
-  var topDiv = document.createElement('div');
-  topDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start';
-  topDiv.innerHTML = mainImgHtml + metaHtml;
-  // 메인이미지 클릭으로 교체 가능
+  // 큰 메인 이미지 슬롯
+  var mainSlot = document.createElement('div');
+  mainSlot.style.cssText = 'width:86px;height:86px;border-radius:9px;overflow:hidden;flex-shrink:0;cursor:pointer';
   if (mainImgUrl) {
-    var mi = topDiv.querySelector('img');
-    if (mi) mi.ondblclick = (function(id){ return function(e){ e.stopPropagation(); pcMainImgOpen(id); }; })(p.id);
+    var mi = document.createElement('img');
+    mi.src = mainImgUrl; mi.loading = 'lazy';
+    mi.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+    mi.onmouseover = function(){ jinuThumbHover(this,true); };
+    mi.onmouseout  = function(){ jinuThumbHover(this,false); };
+    mi.onclick     = (function(u){ return function(){ openImgModal(u); }; })(mainImgUrl);
+    mi.ondblclick  = (function(id){ return function(e){ e.stopPropagation(); pcMainImgOpen(id); }; })(p.id);
+    mainSlot.appendChild(mi);
+  } else {
+    mainSlot.style.cssText += ';border:2px dashed #d0b8f8;display:flex;align-items:center;justify-content:center;background:#faf8ff';
+    mainSlot.innerHTML = '<span style="font-size:.65rem;color:#c0a0e8;text-align:center;line-height:1.4">📷<br>메인<br>이미지</span>';
+    mainSlot.onclick = (function(id){ return function(){ pcMainImgOpen(id); }; })(p.id);
   }
-  card.appendChild(topDiv);
+  leftCol.appendChild(mainSlot);
 
-  // 참고이미지 슬롯 (3개 + 추가버튼)
+  // 작은 슬롯 3개 (가로 한 줄)
   var imgs = p.imgs || [];
-  var imgRow = document.createElement('div');
-  imgRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px';
-  // 기존 이미지들
-  imgs.forEach(function(url, i) {
-    var w = document.createElement('div'); w.style.cssText='position:relative;flex-shrink:0';
-    var im = document.createElement('img'); im.src=url; im.loading='lazy';
-    im.style.cssText='width:44px;height:44px;object-fit:cover;border-radius:7px;border:1.5px solid #e0d0f8;cursor:zoom-in';
-    im.ondblclick=(function(u){return function(){openImgModal(u);};})(url);
-    im.onmouseover=function(){jinuThumbHover(this,true);};
-    im.onmouseout=function(){jinuThumbHover(this,false);};
-    var xb=document.createElement('button'); xb.textContent='✕';
-    xb.style.cssText='position:absolute;top:-4px;right:-4px;background:#e03c6e;border:none;border-radius:50%;width:15px;height:15px;color:white;font-size:.5rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center';
-    xb.onclick=(function(id,idx){return function(){pcImgDel(id,idx);};})(p.id,i);
-    w.appendChild(im); w.appendChild(xb); imgRow.appendChild(w);
-  });
-  // 추가 버튼
-  var addBtn = document.createElement('div');
-  addBtn.style.cssText='width:44px;height:44px;border-radius:7px;border:1.5px dashed #d0b8f8;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#c0a0e8;font-size:.65rem;text-align:center;flex-shrink:0';
-  addBtn.innerHTML='📎<br>추가';
-  addBtn.onclick=(function(id){return function(){pcRefImgOpen(id);};})(p.id);
-  imgRow.appendChild(addBtn);
-  card.appendChild(imgRow);
+  var smallRow = document.createElement('div');
+  smallRow.style.cssText = 'display:flex;gap:4px';
+  for (var si = 0; si < 3; si++) {
+    var slot = document.createElement('div');
+    slot.style.cssText = 'width:26px;height:26px;border-radius:5px;overflow:hidden;flex-shrink:0;cursor:pointer;position:relative';
+    if (imgs[si]) {
+      var sm = document.createElement('img');
+      sm.src = imgs[si]; sm.loading = 'lazy';
+      sm.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+      sm.onmouseover = function(){ jinuThumbHover(this,true); };
+      sm.onmouseout  = function(){ jinuThumbHover(this,false); };
+      sm.ondblclick  = (function(u){ return function(){ openImgModal(u); }; })(imgs[si]);
+      // ✕ 삭제
+      var xb = document.createElement('button'); xb.textContent = '✕';
+      xb.style.cssText = 'position:absolute;top:-3px;right:-3px;background:#e03c6e;border:none;border-radius:50%;width:13px;height:13px;color:white;font-size:.45rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2';
+      xb.onclick = (function(id,idx){ return function(e){ e.stopPropagation(); pcImgDel(id,idx); }; })(p.id, si);
+      slot.appendChild(sm); slot.appendChild(xb);
+    } else {
+      slot.style.cssText += ';border:1.5px dashed #d0b8f8;background:#faf8ff;display:flex;align-items:center;justify-content:center';
+      slot.innerHTML = '<span style="font-size:.5rem;color:#c0a0e8">+</span>';
+      slot.onclick = (function(id){ return function(){ pcRefImgOpen(id); }; })(p.id);
+    }
+    smallRow.appendChild(slot);
+  }
+  // 3개 이상이면 추가 이미지도 보여주기 (+추가버튼)
+  if (imgs.length >= 3) {
+    var moreBtn = document.createElement('div');
+    moreBtn.style.cssText = 'width:26px;height:26px;border-radius:5px;border:1.5px dashed #d0b8f8;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#faf8ff;flex-shrink:0';
+    moreBtn.innerHTML = '<span style="font-size:.5rem;color:#c0a0e8">+</span>';
+    moreBtn.onclick = (function(id){ return function(){ pcRefImgOpen(id); }; })(p.id);
+    smallRow.appendChild(moreBtn);
+  }
+  leftCol.appendChild(smallRow);
+
+  // ── 오른쪽 메타 컬럼 ──
+  var catColor = (p.cat||'일반')==='그로스' ? '#7040c0' : '#3dbb8f';
+  var rightCol = document.createElement('div');
+  rightCol.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:0';
+
+  // 분류 + 버튼행
+  var rowCat = document.createElement('div');
+  rowCat.style.cssText = 'display:flex;align-items:center;gap:4px;padding-bottom:5px;border-bottom:1px solid #f0e8ff;margin-bottom:5px';
+  rowCat.innerHTML =
+    '<span style="font-size:.68rem;font-weight:700;color:'+catColor+';border:1.5px solid '+catColor+';border-radius:12px;padding:1px 7px">'+escHtml(p.cat||'일반')+'</span>'
+    +'<button onclick="pcEditOpen('+p.id+')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;line-height:1" onmouseover="this.style.color=\'#7040c0\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
+    +'<button onclick="pcCardDel('+p.id+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;line-height:1" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">🗑️</button>';
+  rightCol.appendChild(rowCat);
+
+  // 제목
+  var rowTitle = document.createElement('div');
+  rowTitle.style.cssText = 'font-size:.84rem;font-weight:700;color:#3a1a6a;line-height:1.4;word-break:break-all;margin-bottom:4px';
+  rowTitle.textContent = p.title || '(제목없음)';
+  rightCol.appendChild(rowTitle);
+
+  // 코드 · 가격
+  if (p.code || p.price) {
+    var rowMeta = document.createElement('div');
+    rowMeta.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;padding:4px 0;border-top:1px solid #f0e8ff;margin-bottom:4px';
+    if (p.code)  { var sp=document.createElement('span'); sp.style.cssText='font-size:.72rem;color:#888;background:#f5f0ff;border-radius:5px;padding:1px 6px'; sp.textContent='📦 '+p.code;  rowMeta.appendChild(sp); }
+    if (p.price) { var sp2=document.createElement('span'); sp2.style.cssText='font-size:.72rem;color:#2a8a5a;font-weight:700;background:#f0fff8;border-radius:5px;padding:1px 6px'; sp2.textContent='💰 '+p.price; rowMeta.appendChild(sp2); }
+    rightCol.appendChild(rowMeta);
+  }
 
   // 내용
   if (p.memo) {
-    var memo = document.createElement('div');
-    memo.style.cssText='font-size:.76rem;color:#555;line-height:1.5;white-space:pre-wrap;word-break:break-all;border-top:1px solid #f0e8ff;padding-top:6px';
-    memo.textContent = p.memo;
-    card.appendChild(memo);
+    var rowMemo = document.createElement('div');
+    rowMemo.style.cssText = 'font-size:.76rem;color:#555;line-height:1.6;white-space:pre-wrap;word-break:break-all;padding-top:5px;border-top:1px solid #f0e8ff';
+    rowMemo.textContent = p.memo;
+    rightCol.appendChild(rowMemo);
   }
+
+  var topDiv = document.createElement('div');
+  topDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start';
+  topDiv.appendChild(leftCol);
+  topDiv.appendChild(rightCol);
+  card.appendChild(topDiv);
+
+  // memo는 rightCol 안에 포함됨
 
   return card;
 }
