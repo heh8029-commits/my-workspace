@@ -4580,6 +4580,22 @@ function jinuToggleEdit() {
   if (!open) { renderJinuForm(); }
 }
 
+
+/* ── 이미지 모달 & 호버 줌 ── */
+function openImgModal(url) {
+  var m = document.getElementById('img-modal');
+  var img = document.getElementById('img-modal-img');
+  if (!m || !img) return;
+  img.src = url;
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeImgModal() {
+  var m = document.getElementById('img-modal');
+  if (m) m.style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeImgModal(); });
 /* ── 진우 이미지 업로드 (Cloudinary) ── */
 var _jinuPendingImgUrl = null;
 var _CLOUD_NAME = 'dfc05tbbk';
@@ -4641,6 +4657,38 @@ function jinuClearImg() {
   if (img) img.src = '';
   if (status) status.textContent = '';
 }
+
+function jinuThumbHover(img, on) {
+  var wrap = img.parentElement;
+  if (on) {
+    // 팝업 미리보기
+    var pop = document.createElement('div');
+    pop.id = 'jinu-thumb-pop';
+    pop.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;border-radius:10px;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,.35);transition:opacity .15s;opacity:0;background:#000';
+    var pi = document.createElement('img');
+    pi.src = img.src;
+    pi.style.cssText = 'max-width:260px;max-height:220px;object-fit:contain;display:block';
+    pop.appendChild(pi);
+    document.body.appendChild(pop);
+    // 위치: 썸네일 위
+    var r = img.getBoundingClientRect();
+    pi.onload = function() {
+      var pw = pi.naturalWidth, ph = pi.naturalHeight;
+      var scale = Math.min(260/pw, 220/ph, 1);
+      var W = pw*scale, H = ph*scale;
+      var left = Math.min(r.left + r.width/2 - W/2, window.innerWidth - W - 10);
+      var top  = r.top - H - 10;
+      if (top < 8) top = r.bottom + 8;
+      pop.style.left = Math.max(8, left) + 'px';
+      pop.style.top  = top + 'px';
+      pop.style.opacity = '1';
+    };
+    if (pi.complete) pi.onload();
+  } else {
+    var pop = document.getElementById('jinu-thumb-pop');
+    if (pop) pop.remove();
+  }
+}
 /* ── 진우 알림 메모 ── */
 var _jinuMemoCatNames = {high:'🏫 하이-알림장', ealimi:'📱 e알리미', etc:'📋 기타'};
 function loadJinuMemos() { return loadObj('jinu_memos').list || []; }
@@ -4672,7 +4720,7 @@ function renderJinuMemos() {
       + (it.date ? '<span style="font-size:.72rem;color:#aaa">'+escHtml(it.date)+'</span>' : '')
       + '</div>'
       + '<div style="display:flex;align-items:flex-start;gap:8px">'
-      + (it.imgUrl ? '<a href="'+escHtml(it.imgUrl)+'" target="_blank" style="flex-shrink:0"><img src="'+escHtml(it.imgUrl)+'" style="width:62px;height:62px;border-radius:7px;border:1.5px solid #f7d0e0;object-fit:cover;cursor:zoom-in" loading="lazy"></a>' : '')
+      + (it.imgUrl ? '<div style="flex-shrink:0;position:relative" class="jinu-thumb-wrap"><img src="'+escHtml(it.imgUrl)+'" onclick="openImgModal(\''+escHtml(it.imgUrl)+'\')" style="width:62px;height:62px;border-radius:7px;border:1.5px solid #f7d0e0;object-fit:cover;cursor:zoom-in;display:block;transition:transform .18s" loading="lazy" onmouseover="jinuThumbHover(this,true)" onmouseout="jinuThumbHover(this,false)"></div>' : '')
       + (it.text ? '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.6;white-space:pre-wrap;flex:1">'+jinuLinkify(it.text)+'</span>' : '')
       + '</div>'
       + '</div>'
@@ -6572,5 +6620,10 @@ function initRender(pageId) {
   <img id="img-modal-img" src="" style="max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5);object-fit:contain" onclick="event.stopPropagation()">
   <button onclick="closeImgModal()" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,.18);border:none;color:white;font-size:1.6rem;width:40px;height:40px;border-radius:50%;cursor:pointer;line-height:1">✕</button>
 </div>
+  <!-- 이미지 모달 -->
+  <div id="img-modal" onclick="closeImgModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out">
+    <img id="img-modal-img" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.6);pointer-events:none">
+    <button onclick="closeImgModal()" style="position:fixed;top:16px;right:20px;background:rgba(255,255,255,.18);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:1.2rem;cursor:pointer;line-height:1;backdrop-filter:blur(4px)">✕</button>
+  </div>
 </body>
 </html>
