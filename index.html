@@ -7132,6 +7132,45 @@ function updateSalesSummary(year, month) {
     sr.cells[11].textContent = (tca+tns+tna).toLocaleString();
     sr.cells[12].textContent = (tc+tn)>0&&(tca+tns+tna)>0 ? ((tca+tns+tna)/(tc+tn)*100).toFixed(1)+'%' : '-';
   }
+
+  // 평균 행: 값이 0이 아닌 날만 카운트
+  const ar = document.getElementById('sales-avg-row');
+  if (ar) {
+    let cntG=0,cntS=0,cntCA=0,cntN=0,cntNS=0,cntNA=0;
+    for (let d=1; d<=days; d++) {
+      const r2 = data['d'+d] || {};
+      if (parseNum(r2.gross)  > 0) cntG++;
+      if (parseNum(r2.seller) > 0) cntS++;
+      if (parseNum(r2.coupangAd)   > 0) cntCA++;
+      if (parseNum(r2.naver)  > 0) cntN++;
+      if (parseNum(r2.naverSearch) > 0) cntNS++;
+      if (parseNum(r2.naverAi)     > 0) cntNA++;
+    }
+    const avgG  = cntG  ? Math.round(tg/cntG)   : 0;
+    const avgS  = cntS  ? Math.round(ts/cntS)   : 0;
+    const avgC  = (cntG||cntS) ? Math.round(tc/Math.max(cntG,cntS)) : 0;
+    const avgCA = cntCA ? Math.round(tca/cntCA) : 0;
+    const avgN  = cntN  ? Math.round(tn/cntN)   : 0;
+    const avgNS = cntNS ? Math.round(tns/cntNS) : 0;
+    const avgNA = cntNA ? Math.round(tna/cntNA) : 0;
+    const cntTotal = Math.max(cntG,cntS,cntN);
+    const avgTotal = cntTotal ? Math.round((tc+tn)/cntTotal) : 0;
+    const cntAd = Math.max(cntCA,cntNS,cntNA);
+    const avgAd = cntAd ? Math.round((tca+tns+tna)/cntAd) : 0;
+    const fmt = v => v > 0 ? v.toLocaleString() : '-';
+    ar.cells[1].textContent = fmt(avgG);
+    ar.cells[2].textContent = fmt(avgS);
+    ar.cells[3].textContent = fmt(avgC);
+    ar.cells[4].textContent = fmt(avgCA);
+    ar.cells[5].textContent = avgC>0&&avgCA>0 ? (avgCA/avgC*100).toFixed(1)+'%' : '-';
+    ar.cells[6].textContent = fmt(avgN);
+    ar.cells[7].textContent = fmt(avgNS);
+    ar.cells[8].textContent = fmt(avgNA);
+    ar.cells[9].textContent = avgN>0&&(avgNS+avgNA)>0 ? ((avgNS+avgNA)/avgN*100).toFixed(1)+'%' : '-';
+    ar.cells[10].textContent = fmt(avgTotal);
+    ar.cells[11].textContent = fmt(avgAd);
+    ar.cells[12].textContent = avgTotal>0&&avgAd>0 ? (avgAd/avgTotal*100).toFixed(1)+'%' : '-';
+  }
 }
 
 function clearSalesRow(year, month, day, tdEl) {
@@ -7223,21 +7262,37 @@ function renderSalesTable() {
     </tr>`;
   }
 
-  // 합계 행
+  // 합계 + 평균 행
+  const PD = 'padding:9px 8px;text-align:right;';
   rows += `<tr id="sales-sum-row" style="background:linear-gradient(135deg,#e0f8ee,#d0f4e0);font-weight:800">
-    <td colspan="2" style="padding:10px;text-align:center;color:#2a7a4a">합계</td>
-    <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
-    <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
-    <td style="padding:10px;text-align:right;color:#2a9a6a">-</td>
-    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
-    <td id="sum-cpct" style="padding:10px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
-    <td style="padding:10px;text-align:right;color:#2a7a4a">-</td>
-    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
-    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
-    <td id="sum-npct" style="padding:10px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
-    <td style="padding:10px;text-align:right;color:#8b60d0">-</td>
-    <td style="padding:10px;text-align:right;color:#e03c6e">-</td>
-    <td id="sum-tpct" style="padding:10px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+    <td colspan="2" style="padding:10px;text-align:center;color:#2a7a4a;font-weight:800">합계</td>
+    <td style="${PD}color:#2a7a4a">-</td>
+    <td style="${PD}color:#2a7a4a">-</td>
+    <td style="${PD}color:#2a9a6a">-</td>
+    <td style="${PD}color:#e03c6e">-</td>
+    <td id="sum-cpct" style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+    <td style="${PD}color:#2a7a4a">-</td>
+    <td style="${PD}color:#e03c6e">-</td>
+    <td style="${PD}color:#e03c6e">-</td>
+    <td id="sum-npct" style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+    <td style="${PD}color:#8b60d0">-</td>
+    <td style="${PD}color:#e03c6e">-</td>
+    <td id="sum-tpct" style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+  </tr>
+  <tr id="sales-avg-row" style="background:linear-gradient(135deg,#f0f0ff,#e8e0ff);font-weight:700">
+    <td colspan="2" style="padding:9px 10px;text-align:center;color:#6030b0;font-weight:800">평균<span style="font-size:.68rem;font-weight:500;color:#a080d0;display:block">입력된 날 기준</span></td>
+    <td style="${PD}color:#2a7a4a">-</td>
+    <td style="${PD}color:#2a7a4a">-</td>
+    <td style="${PD}color:#2a9a6a">-</td>
+    <td style="${PD}color:#c03060">-</td>
+    <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+    <td style="${PD}color:#2a7a4a">-</td>
+    <td style="${PD}color:#c03060">-</td>
+    <td style="${PD}color:#c03060">-</td>
+    <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+    <td style="${PD}color:#6030b0">-</td>
+    <td style="${PD}color:#c03060">-</td>
+    <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
   </tr>`;
 
   tbody.innerHTML = rows;
@@ -7315,8 +7370,11 @@ function renderHourlyTable() {
   let hdrHtml = '<tr>';
   hdrHtml += '<th style="' + TH + ';background:#c8e4f4">날짜</th>';
   hdrHtml += '<th style="' + TH + ';background:#c8e4f4">요일</th>';
-  HOURLY_SLOT_LABELS.forEach(function(l) {
-    hdrHtml += '<th style="' + TH + ';background:#daeef8">' + l + '<br><span style="font-size:.63rem;color:#aaa;font-weight:500">금액 / 분</span></th>';
+  const nowHour = (NOW.getFullYear()===year && (NOW.getMonth()+1)===month) ? NOW.getHours() : -1;
+  HOURLY_SLOT_LABELS.forEach(function(l, li) {
+    const h = HOURLY_SLOTS[li];
+    const isNowH = h === nowHour;
+    hdrHtml += '<th style="' + TH + ';background:' + (isNowH ? '#ffe080' : '#daeef8') + ';' + (isNowH ? 'color:#b06000;' : '') + '">' + (isNowH ? '⏰ ' : '') + l + '<br><span style="font-size:.63rem;color:#aaa;font-weight:500">금액 / 분</span></th>';
   });
   hdrHtml += '</tr>';
   thead.innerHTML = hdrHtml;
@@ -7341,9 +7399,14 @@ function renderHourlyTable() {
       const disp = raw ? Number(raw).toLocaleString() : '';
       const min = r['m'+h] || '';
       const minDisp = min ? '<span style="font-size:.65rem;color:#4da6e8;font-weight:700">' + min + '분</span>' : '<span style="font-size:.63rem;color:#ddd">-분</span>';
-      row += '<td style="padding:3px 4px;text-align:center">'
+      const isNowCell = isToday && (h === nowHour);
+      const tdBg = isNowCell ? 'background:#fffbe6;' : '';
+      const inpStyle = isNowCell
+        ? INP + ';border:2px solid #f0c000;background:#fffbe6;font-weight:800;color:#8a5a00'
+        : INP;
+      row += '<td style="padding:3px 4px;text-align:center;' + tdBg + '">'
         + '<div style="display:flex;align-items:center;gap:3px;justify-content:center">'
-        + '<input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + INP + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key==\'Enter\')this.blur()">'
+        + '<input type="text" inputmode="numeric" data-raw="' + raw + '" value="' + disp + '" style="' + inpStyle + '" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,' + year + ',' + month + ',' + d + ',' + h + ')" onkeydown="if(event.key===\'Enter\')this.blur()">'
         + '<span id="hmin-' + year + '-' + month + '-' + d + '-' + h + '">' + minDisp + '</span>'
         + '</div>'
         + '</td>';
@@ -7357,6 +7420,19 @@ function renderHourlyTable() {
   tbody.innerHTML = rows;
   updateHourlySums(year, month);
   renderHourlyDowSummary(year, month);
+
+  // 오늘 행이 있으면 뷰포트 안으로 스크롤
+  if (todayD > 0) {
+    setTimeout(function() {
+      const rows2 = tbody.querySelectorAll('tr');
+      const todayRow = rows2[todayD - 1];
+      if (todayRow) todayRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      // 현재 시간 input 으로도 가로스크롤 맞추기
+      const nowH2 = NOW.getHours();
+      const nowInp = document.querySelector('#hourly-table input[onblur*=",' + year + ',' + month + ',' + todayD + ',' + nowH2 + ')"]');
+      if (nowInp) nowInp.parentElement.closest('td').scrollIntoView({ inline: 'center', behavior: 'smooth' });
+    }, 80);
+  }
 }
 
 
