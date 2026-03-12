@@ -3340,7 +3340,7 @@ function editShortcuts2() {
           <div class="sc2-row" draggable="true" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <span style="cursor:grab;color:#ccc;font-size:1.1rem;padding:0 2px;user-select:none">⠿</span>
             <input value="${it.emoji}" style="width:42px;text-align:center;border:1px solid #eee;border-radius:8px;padding:6px;font-size:1.1rem">
-            <input value="${it.label}" placeholder="이름" style="flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem">
+            <input value="${it.label}" placeholder="파일위치" style="flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem">
             <input value="${it.href}" placeholder="URL" style="flex:2;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.75rem">
             <button onclick="this.closest('.sc2-row').remove()" style="background:#fee;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem">🗑️</button>
           </div>`).join('')}
@@ -3431,7 +3431,7 @@ function editShortcuts() {
           <div class="sc-row" draggable="true" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <span class="sc-drag" style="cursor:grab;color:#ccc;font-size:1.1rem;padding:0 2px;user-select:none" title="드래그해서 순서 변경">⠿</span>
             <input value="${it.emoji}" style="width:42px;text-align:center;border:1px solid #eee;border-radius:8px;padding:6px;font-size:1.1rem">
-            <input value="${it.label}" placeholder="이름" style="flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem">
+            <input value="${it.label}" placeholder="파일위치" style="flex:1;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.82rem">
             <input value="${it.href}" placeholder="URL" style="flex:2;border:1px solid #eee;border-radius:8px;padding:6px;font-size:.75rem">
             <button onclick="this.closest('.sc-row').remove()" style="background:#fee;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem">🗑️</button>
           </div>
@@ -4798,7 +4798,7 @@ function _pcMakeCard(p) {
         +'<button onclick="pcEditSave('+p.id+')" style="background:#7040c0;border:none;padding:5px 12px;color:white;font-size:.74rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">저장</button>'
         +'<button onclick="pcEditCancel('+p.id+')" style="background:#eee;border:none;padding:5px 9px;color:#888;font-size:.74rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">취소</button>'
       +'</div>'
-      +'<input id="pce-name-'+p.id+'" type="text" value="'+escHtml(p.name||'')+'" placeholder="이름" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
+      +'<input id="pce-name-'+p.id+'" type="text" value="'+escHtml(p.name||'')+'" placeholder="파일위치" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
       +'<input id="pce-title-'+p.id+'" type="text" value="'+escHtml(p.title||'')+'" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
       +'<div style="display:flex;gap:6px">'
         +'<input id="pce-code-'+p.id+'" type="text" value="'+escHtml(p.code||'')+'" placeholder="코드명" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
@@ -5116,7 +5116,7 @@ function designLinksEdit() {
   form.innerHTML = links.map(function(lk,i){
     return '<div style="display:flex;flex-direction:column;gap:3px;background:#faf8ff;border-radius:8px;padding:7px 8px;border:1px solid #ede8fa">'
       + '<span style="font-size:.68rem;color:#9070c0;font-weight:700">'+(i+1)+'</span>'
-      + '<input type="text" placeholder="이름" value="'+escHtml((lk&&lk.name)||'')+'" id="dclk-name-'+i+'" style="border:1px solid #ddd0f8;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="text" placeholder="파일위치" value="'+escHtml((lk&&lk.name)||'')+'" id="dclk-name-'+i+'" style="border:1px solid #ddd0f8;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
       + '<input type="text" placeholder="https://..." value="'+escHtml((lk&&lk.url)||'')+'" id="dclk-url-'+i+'" style="border:1px solid #ddd0f8;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
       + '</div>';
   }).join('');
