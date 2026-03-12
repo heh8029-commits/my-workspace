@@ -2291,7 +2291,13 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               </select>
               <input id="jinu-memo-date" type="date" style="flex:1;min-width:120px;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">
             </div>
-            <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}"></textarea>
+            <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗&#10;이미지는 Ctrl+V 또는 드래그로 첨부!" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}" onpaste="jinuHandlePaste(event)" ondragover="event.preventDefault()" ondrop="jinuHandleDrop(event)"></textarea>
+            <!-- 이미지 미리보기 -->
+            <div id="jinu-img-preview" style="display:none;margin-top:6px;position:relative;display:none">
+              <img id="jinu-img-preview-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1.5px solid #f7a8c0;object-fit:contain">
+              <button onclick="jinuClearImg()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:22px;height:22px;color:white;font-size:.75rem;cursor:pointer;line-height:1">✕</button>
+              <div id="jinu-img-status" style="font-size:.72rem;color:#e03c6e;margin-top:3px;text-align:center"></div>
+            </div>
             <button onclick="jinuMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">+ 추가</button>
           </div>
           <!-- 메모 리스트 (아래) -->
@@ -4573,6 +4579,68 @@ function jinuToggleEdit() {
   btn.textContent = open ? '✏️ 편집' : '✖ 닫기';
   if (!open) { renderJinuForm(); }
 }
+
+/* ── 진우 이미지 업로드 (Cloudinary) ── */
+var _jinuPendingImgUrl = null;
+var _CLOUD_NAME = 'dfc05tbbk';
+var _UPLOAD_PRESET = 'jinu_unsigned';
+
+function jinuShowImgPreview(file) {
+  var preview = document.getElementById('jinu-img-preview');
+  var img     = document.getElementById('jinu-img-preview-img');
+  var status  = document.getElementById('jinu-img-status');
+  if (!preview || !img) return;
+  preview.style.display = 'block';
+  img.src = URL.createObjectURL(file);
+  status.textContent = '⬆️ 업로드 중...';
+  // Cloudinary 업로드
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', _UPLOAD_PRESET);
+  fetch('https://api.cloudinary.com/v1_1/' + _CLOUD_NAME + '/image/upload', {method:'POST', body:fd})
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data.secure_url) {
+        _jinuPendingImgUrl = data.secure_url;
+        status.textContent = '✅ 업로드 완료!';
+        status.style.color = '#1a9a60';
+      } else {
+        status.textContent = '❌ 업로드 실패: ' + (data.error&&data.error.message||'오류');
+        status.style.color = '#e03c6e';
+      }
+    })
+    .catch(function(e){
+      status.textContent = '❌ 네트워크 오류';
+      status.style.color = '#e03c6e';
+    });
+}
+function jinuHandlePaste(e) {
+  var items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (var i=0; i<items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      e.preventDefault();
+      jinuShowImgPreview(items[i].getAsFile());
+      return;
+    }
+  }
+}
+function jinuHandleDrop(e) {
+  e.preventDefault();
+  var file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file && file.type.indexOf('image') !== -1) {
+    jinuShowImgPreview(file);
+  }
+}
+function jinuClearImg() {
+  _jinuPendingImgUrl = null;
+  var preview = document.getElementById('jinu-img-preview');
+  var img     = document.getElementById('jinu-img-preview-img');
+  var status  = document.getElementById('jinu-img-status');
+  if (preview) preview.style.display = 'none';
+  if (img) img.src = '';
+  if (status) status.textContent = '';
+}
 /* ── 진우 알림 메모 ── */
 var _jinuMemoCatNames = {high:'🏫 하이-알림장', ealimi:'📱 e알리미', etc:'📋 기타'};
 function loadJinuMemos() { return loadObj('jinu_memos').list || []; }
@@ -4603,7 +4671,8 @@ function renderJinuMemos() {
       + '<span class="jinu-memo-badge '+escHtml(it.cat||'etc')+'">'+(_jinuMemoCatNames[it.cat]||'📋 기타')+'</span>'
       + (it.date ? '<span style="font-size:.72rem;color:#aaa">'+escHtml(it.date)+'</span>' : '')
       + '</div>'
-      + '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.5;white-space:pre-wrap">'+jinuLinkify(it.text||'')+'</span>'
+      + (it.text ? '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.5;white-space:pre-wrap">'+jinuLinkify(it.text||'')+'</span>' : '')
+      + (it.imgUrl ? '<div style="margin-top:6px"><a href="'+escHtml(it.imgUrl)+'" target="_blank"><img src="'+escHtml(it.imgUrl)+'" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid #f7d0e0;object-fit:contain;cursor:zoom-in" loading="lazy"></a></div>' : '')
       + '</div>'
       + '<button data-id="'+it.id+'" onclick="jinuMemoEdit(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e0a800\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
       + '<button data-id="'+it.id+'" onclick="jinuMemoDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
