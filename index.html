@@ -1907,9 +1907,71 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="subpage" id="menu1-sub-3">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f8f4ff,#ddd0f8)">🎨</div>
-        <div><div class="subpage-title">디자인 / 상품관리</div><div class="subpage-desc">디자인 작업과 상품을 관리해요</div></div>
+        <div><div class="subpage-title">디자인 / 상품관리</div><div class="subpage-desc">타업체 바로가기 &amp; 디자인 카드 관리</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">디자인 현황, 상품 정보 등을 여기에 채워요</span></div>
+
+      <!-- 타업체 바로가기 -->
+      <div style="background:#fff;border-radius:14px;border:1.5px solid #e8e0f8;padding:16px 18px;margin-bottom:18px;box-shadow:0 2px 8px rgba(180,160,240,.08)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:.88rem;font-weight:700;color:#7040c0">🔗 타업체 바로가기</div>
+          <button onclick="designLinksEdit()" style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:8px;padding:5px 13px;font-size:.78rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif">✏️ 편집</button>
+        </div>
+        <div id="design-links-wrap" style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px"></div>
+      </div>
+
+      <!-- 디자인 카드 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:.88rem;font-weight:700;color:#7040c0">🖼️ 디자인할거</div>
+        <button onclick="designCardAdd()" style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:10px;padding:6px 16px;font-size:.82rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif">+ 카드 추가</button>
+      </div>
+      <div id="design-cards-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
+
+      <!-- 이미지 등록 팝업 -->
+      <div id="dc-img-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:white;border-radius:16px;padding:24px;width:340px;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+          <div style="font-size:.92rem;font-weight:700;color:#5020a0;margin-bottom:14px">📎 참고이미지 등록</div>
+          <div id="dc-img-paste-area" style="border:2px dashed #c8a8f8;border-radius:10px;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#faf8ff;margin-bottom:12px;position:relative;transition:border-color .2s"
+            onpaste="dcHandlePaste(event)" ondragover="event.preventDefault()" ondrop="dcHandleDrop(event)" tabindex="0"
+            onclick="this.focus()">
+            <div id="dc-img-paste-hint" style="text-align:center;color:#b090e8;font-size:.83rem;pointer-events:none">
+              <div style="font-size:2rem;margin-bottom:6px">📋</div>
+              여기 클릭 후 Ctrl+V<br>또는 이미지 드래그
+            </div>
+            <img id="dc-img-paste-preview" style="display:none;max-width:100%;max-height:200px;border-radius:8px;object-fit:contain">
+          </div>
+          <div id="dc-img-status" style="font-size:.78rem;text-align:center;margin-bottom:12px;min-height:18px"></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="dcImgCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
+            <button id="dc-img-confirm-btn" onclick="dcImgConfirm()" style="flex:1;background:linear-gradient(135deg,#b090e8,#7040c0);border:none;border-radius:9px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif" disabled>등록</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 편집 팝업 -->
+      <div id="dc-edit-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:white;border-radius:16px;padding:24px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+          <div style="font-size:.92rem;font-weight:700;color:#5020a0;margin-bottom:14px">✏️ 카드 편집</div>
+          <input id="dc-edit-title" type="text" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #ddd0f8;border-radius:9px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;margin-bottom:10px">
+          <textarea id="dc-edit-memo" rows="4" placeholder="메모 내용..." style="width:100%;box-sizing:border-box;border:1.5px solid #ddd0f8;border-radius:9px;padding:8px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical"></textarea>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button onclick="dcEditCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
+            <button onclick="dcEditSave()" style="flex:1;background:linear-gradient(135deg,#b090e8,#7040c0);border:none;border-radius:9px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif">저장</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 타업체 편집 팝업 -->
+      <div id="dc-links-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:white;border-radius:16px;padding:24px;width:min(700px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+          <div style="font-size:.92rem;font-weight:700;color:#5020a0;margin-bottom:14px">✏️ 타업체 바로가기 편집</div>
+          <div id="dc-links-form" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px"></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="dcLinksCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
+            <button onclick="dcLinksSave()" style="flex:1;background:linear-gradient(135deg,#b090e8,#7040c0);border:none;border-radius:9px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif">저장</button>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="subpage" id="menu1-sub-4">
       <div class="subpage-header">
@@ -2644,7 +2706,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo','design_links','design_cards'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4581,6 +4643,272 @@ function jinuToggleEdit() {
 }
 
 
+
+/* ══════════════════════════════════
+   디자인/상품관리 JS
+══════════════════════════════════ */
+var _dcImgTarget = null;   // {cardId, slotIdx}
+var _dcPendingUrl = null;
+var _dcEditTarget = null;  // cardId
+
+/* ── 데이터 로드/저장 ── */
+function loadDesignLinks() { return loadObj('design_links').list || Array(20).fill(null).map(function(){ return {name:'',url:''}; }); }
+function saveDesignLinks(d) { stor('design_links', {list:d}); }
+function loadDesignCards() { return loadObj('design_cards').list || []; }
+function saveDesignCards(d) { stor('design_cards', {list:d}); }
+
+/* ══ 타업체 바로가기 ══ */
+function renderDesignLinks() {
+  var el = document.getElementById('design-links-wrap');
+  if (!el) return;
+  var links = loadDesignLinks();
+  el.innerHTML = links.map(function(lk, i) {
+    var hasLink = !!(lk && lk.url);
+    var name = (lk && lk.name) ? lk.name : ('+'+(i+1));
+    var href = hasLink ? escHtml(lk.url) : '#';
+    var border = hasLink ? '#c8a8f8' : '#ede8fa';
+    var bg = hasLink ? '#faf8ff' : '#f8f6fe';
+    var color = hasLink ? '#5020a0' : '#ccc';
+    var weight = hasLink ? '700' : '400';
+    var target = hasLink ? 'target="_blank"' : '';
+    return '<a href="'+href+'" '+target+' style="display:block;text-align:center;padding:7px 4px;border-radius:9px;border:1.5px solid '+border+';background:'+bg+';text-decoration:none;color:'+color+';font-size:.72rem;font-weight:'+weight+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+escHtml(name)+'</a>';
+  }).join('');
+}
+function designLinksEdit() {
+  var links = loadDesignLinks();
+  var pop = document.getElementById('dc-links-popup');
+  var form = document.getElementById('dc-links-form');
+  if (!pop||!form) return;
+  form.innerHTML = links.map(function(lk,i){
+    return '<div style="display:flex;flex-direction:column;gap:3px;background:#faf8ff;border-radius:8px;padding:7px 8px;border:1px solid #ede8fa">'
+      + '<span style="font-size:.68rem;color:#9070c0;font-weight:700">'+(i+1)+'</span>'
+      + '<input type="text" placeholder="이름" value="'+escHtml((lk&&lk.name)||'')+'" id="dclk-name-'+i+'" style="border:1px solid #ddd0f8;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="text" placeholder="https://..." value="'+escHtml((lk&&lk.url)||'')+'" id="dclk-url-'+i+'" style="border:1px solid #ddd0f8;border-radius:6px;padding:4px 7px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '</div>';
+  }).join('');
+  pop.style.display = 'flex';
+}
+function dcLinksCancel() { document.getElementById('dc-links-popup').style.display='none'; }
+function dcLinksSave() {
+  var links = Array(20).fill(null).map(function(_,i){
+    return { name:(document.getElementById('dclk-name-'+i)||{}).value||'', url:(document.getElementById('dclk-url-'+i)||{}).value||'' };
+  });
+  saveDesignLinks(links);
+  dcLinksCancel();
+  renderDesignLinks();
+  toast('🔗 바로가기 저장됐어요!');
+}
+
+/* ══ 디자인 카드 ══ */
+function _dcMakeSlot(cid, url, si) {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;aspect-ratio:1;border-radius:7px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1.5px solid '+(url?'#c8a8f8':'#e8e2f8')+';background:'+(url?'#fff':'#f4f0fc');
+  if (url) {
+    var img = document.createElement('img');
+    img.src = url; img.loading = 'lazy';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block';
+    img.ondblclick = (function(u){ return function(){ openImgModal(u); }; })(url);
+    img.onmouseover = function(){ jinuThumbHover(this, true); };
+    img.onmouseout  = function(){ jinuThumbHover(this, false); };
+    wrap.appendChild(img);
+  } else {
+    var x = document.createElement('span');
+    x.textContent = '✕'; x.style.cssText = 'color:#ccc;font-size:1.1rem';
+    wrap.appendChild(x);
+  }
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'position:absolute;bottom:2px;left:0;right:0;display:flex;gap:2px;justify-content:center';
+  var regBtn = document.createElement('button');
+  regBtn.textContent = '등록';
+  regBtn.style.cssText = 'background:rgba(120,60,200,.75);border:none;border-radius:4px;padding:2px 5px;color:white;font-size:.6rem;cursor:pointer;font-family:Pretendard,sans-serif';
+  regBtn.onclick = (function(c,s){ return function(){ dcImgOpen(c,s); }; })(cid, si);
+  btnRow.appendChild(regBtn);
+  if (url) {
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '삭제';
+    delBtn.style.cssText = 'background:rgba(220,60,80,.75);border:none;border-radius:4px;padding:2px 5px;color:white;font-size:.6rem;cursor:pointer;font-family:Pretendard,sans-serif';
+    delBtn.onclick = (function(c,s){ return function(){ dcImgDel(c,s); }; })(cid, si);
+    btnRow.appendChild(delBtn);
+  }
+  wrap.appendChild(btnRow);
+  return wrap;
+}
+function renderDesignCards() {
+  var el = document.getElementById('design-cards-wrap');
+  if (!el) return;
+  el.innerHTML = '';
+  var cards = loadDesignCards();
+  if (!cards.length) {
+    el.innerHTML = '<div class="empty" style="grid-column:1/-1">+ 카드 추가 버튼으로 디자인 카드를 만들어요 🎨</div>';
+    return;
+  }
+  cards.forEach(function(card) {
+    var cardDiv = document.createElement('div');
+    cardDiv.style.cssText = 'background:#fff;border-radius:14px;border:1.5px solid #ddd0f8;box-shadow:0 2px 10px rgba(160,120,240,.1);padding:14px;display:flex;flex-direction:column;gap:10px';
+    // 헤더
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:6px';
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    var titleEl = document.createElement('div');
+    titleEl.textContent = card.title || '(제목 없음)';
+    titleEl.style.cssText = 'font-size:.92rem;font-weight:700;color:#5020a0;margin-bottom:4px;word-break:break-all';
+    info.appendChild(titleEl);
+    if (card.memo) {
+      var memoEl = document.createElement('div');
+      memoEl.textContent = card.memo;
+      memoEl.style.cssText = 'font-size:.78rem;color:#777;line-height:1.5;word-break:break-all;white-space:pre-wrap';
+      info.appendChild(memoEl);
+    }
+    header.appendChild(info);
+    var btnWrap = document.createElement('div');
+    btnWrap.style.cssText = 'display:flex;gap:4px;flex-shrink:0';
+    var editBtn = document.createElement('button');
+    editBtn.textContent = '✏️';
+    editBtn.style.cssText = 'background:linear-gradient(135deg,#f0ebff,#c8a8f8);border:none;border-radius:7px;padding:4px 9px;font-size:.72rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif';
+    editBtn.onclick = (function(id){ return function(){ dcEditOpen(id); }; })(card.id);
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️';
+    delBtn.style.cssText = 'background:linear-gradient(135deg,#ffe0e8,#f8a0b8);border:none;border-radius:7px;padding:4px 9px;font-size:.72rem;font-weight:700;color:#c02050;cursor:pointer;font-family:Pretendard,sans-serif';
+    delBtn.onclick = (function(id){ return function(){ dcCardDel(id); }; })(card.id);
+    btnWrap.appendChild(editBtn); btnWrap.appendChild(delBtn);
+    header.appendChild(btnWrap);
+    cardDiv.appendChild(header);
+    // 이미지 라벨
+    var imgLabel = document.createElement('div');
+    imgLabel.textContent = '📎 참고이미지';
+    imgLabel.style.cssText = 'font-size:.72rem;font-weight:700;color:#9070c0';
+    cardDiv.appendChild(imgLabel);
+    // 이미지 그리드
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:5px';
+    var imgs = card.imgs || ['','','','','',''];
+    imgs.forEach(function(url, si){
+      grid.appendChild(_dcMakeSlot(card.id, url, si));
+    });
+    cardDiv.appendChild(grid);
+    el.appendChild(cardDiv);
+  });
+}
+function designCardAdd() {
+  var cards = loadDesignCards();
+  cards.push({id: Date.now()+'', title:'새 디자인', memo:'', imgs:['','','','','','']});
+  saveDesignCards(cards);
+  renderDesignCards();
+  // 편집창 바로 열기
+  dcEditOpen(cards[cards.length-1].id);
+}
+function dcCardDel(id) {
+  if (!confirm('이 카드를 삭제할까요?')) return;
+  saveDesignCards(loadDesignCards().filter(function(c){ return c.id!==id; }));
+  renderDesignCards();
+}
+
+/* ── 카드 편집 ── */
+function dcEditOpen(id) {
+  _dcEditTarget = id;
+  var cards = loadDesignCards();
+  var card = cards.find(function(c){ return c.id===id; });
+  if (!card) return;
+  document.getElementById('dc-edit-title').value = card.title||'';
+  document.getElementById('dc-edit-memo').value  = card.memo||'';
+  document.getElementById('dc-edit-popup').style.display = 'flex';
+}
+function dcEditCancel() { document.getElementById('dc-edit-popup').style.display='none'; _dcEditTarget=null; }
+function dcEditSave() {
+  var cards = loadDesignCards();
+  var idx = cards.findIndex(function(c){ return c.id===_dcEditTarget; });
+  if (idx<0) return;
+  cards[idx].title = document.getElementById('dc-edit-title').value.trim()||'(제목 없음)';
+  cards[idx].memo  = document.getElementById('dc-edit-memo').value.trim();
+  saveDesignCards(cards);
+  dcEditCancel();
+  renderDesignCards();
+  toast('✅ 카드 저장됐어요!');
+}
+
+/* ── 이미지 슬롯 등록 ── */
+function dcImgOpen(cardId, slotIdx) {
+  _dcImgTarget = {cardId:cardId, slotIdx:slotIdx};
+  _dcPendingUrl = null;
+  var pop = document.getElementById('dc-img-popup');
+  var preview = document.getElementById('dc-img-paste-preview');
+  var hint    = document.getElementById('dc-img-paste-hint');
+  var status  = document.getElementById('dc-img-status');
+  var btn     = document.getElementById('dc-img-confirm-btn');
+  preview.style.display='none'; preview.src='';
+  hint.style.display='block';
+  status.textContent='';
+  btn.disabled=true;
+  pop.style.display='flex';
+  setTimeout(function(){ document.getElementById('dc-img-paste-area').focus(); },100);
+}
+function dcImgCancel() { document.getElementById('dc-img-popup').style.display='none'; _dcImgTarget=null; _dcPendingUrl=null; }
+function dcHandlePaste(e) {
+  var items = e.clipboardData&&e.clipboardData.items;
+  if (!items) return;
+  for (var i=0;i<items.length;i++) {
+    if (items[i].type.indexOf('image')!==-1) {
+      e.preventDefault();
+      dcUploadImg(items[i].getAsFile());
+      return;
+    }
+  }
+}
+function dcHandleDrop(e) {
+  e.preventDefault();
+  var file = e.dataTransfer.files&&e.dataTransfer.files[0];
+  if (file&&file.type.indexOf('image')!==-1) dcUploadImg(file);
+}
+function dcUploadImg(file) {
+  var preview = document.getElementById('dc-img-paste-preview');
+  var hint    = document.getElementById('dc-img-paste-hint');
+  var status  = document.getElementById('dc-img-status');
+  var btn     = document.getElementById('dc-img-confirm-btn');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display='block';
+  hint.style.display='none';
+  status.textContent='⬆️ 업로드 중...';
+  status.style.color='#9070c0';
+  btn.disabled=true;
+  var fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset','hwx2iwfz');
+  fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.secure_url){
+        _dcPendingUrl=data.secure_url;
+        status.textContent='✅ 업로드 완료!';
+        status.style.color='#1a9a60';
+        btn.disabled=false;
+      } else {
+        status.textContent='❌ 업로드 실패';
+        status.style.color='#e03c6e';
+      }
+    })
+    .catch(function(){ status.textContent='❌ 네트워크 오류'; status.style.color='#e03c6e'; });
+}
+function dcImgConfirm() {
+  if (!_dcPendingUrl||!_dcImgTarget) return;
+  var cards = loadDesignCards();
+  var card = cards.find(function(c){ return c.id===_dcImgTarget.cardId; });
+  if (!card) return;
+  if (!card.imgs) card.imgs = ['','','','','',''];
+  card.imgs[_dcImgTarget.slotIdx] = _dcPendingUrl;
+  saveDesignCards(cards);
+  dcImgCancel();
+  renderDesignCards();
+  toast('📎 이미지 등록됐어요!');
+}
+function dcImgDel(cardId, slotIdx) {
+  var cards = loadDesignCards();
+  var card = cards.find(function(c){ return c.id===cardId; });
+  if (!card||!card.imgs) return;
+  card.imgs[slotIdx]='';
+  saveDesignCards(cards);
+  renderDesignCards();
+}
 /* ── 이미지 모달 & 호버 줌 ── */
 function openImgModal(url) {
   var m = document.getElementById('img-modal');
@@ -5264,6 +5592,12 @@ function switchSub(pageId, num, el) {
       renderJinuForm && renderJinuForm();
       renderJinuTimetableView && renderJinuTimetableView();
       renderJinuMemos && renderJinuMemos();
+    }, 0);
+  }
+  if (pageId === 'menu1' && num === 3) {
+    setTimeout(function(){
+      renderDesignLinks && renderDesignLinks();
+      renderDesignCards && renderDesignCards();
     }, 0);
   }
 }
