@@ -4667,12 +4667,14 @@ function renderJinuMemos() {
     }
     return '<div class="jinu-memo-item">'
       + '<div style="flex:1;min-width:0">'
-      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
       + '<span class="jinu-memo-badge '+escHtml(it.cat||'etc')+'">'+(_jinuMemoCatNames[it.cat]||'📋 기타')+'</span>'
       + (it.date ? '<span style="font-size:.72rem;color:#aaa">'+escHtml(it.date)+'</span>' : '')
       + '</div>'
-      + (it.text ? '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.5;white-space:pre-wrap">'+jinuLinkify(it.text||'')+'</span>' : '')
-      + (it.imgUrl ? '<div style="margin-top:6px"><a href="'+escHtml(it.imgUrl)+'" target="_blank"><img src="'+escHtml(it.imgUrl)+'" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid #f7d0e0;object-fit:contain;cursor:zoom-in" loading="lazy"></a></div>' : '')
+      + '<div style="display:flex;align-items:flex-start;gap:8px">'
+      + (it.imgUrl ? '<a href="'+escHtml(it.imgUrl)+'" target="_blank" style="flex-shrink:0"><img src="'+escHtml(it.imgUrl)+'" style="width:62px;height:62px;border-radius:7px;border:1.5px solid #f7d0e0;object-fit:cover;cursor:zoom-in" loading="lazy"></a>' : '')
+      + (it.text ? '<span style="font-size:.84rem;color:#444;word-break:break-all;line-height:1.6;white-space:pre-wrap;flex:1">'+jinuLinkify(it.text)+'</span>' : '')
+      + '</div>'
       + '</div>'
       + '<button data-id="'+it.id+'" onclick="jinuMemoEdit(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e0a800\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
       + '<button data-id="'+it.id+'" onclick="jinuMemoDel(+this.dataset.id)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.78rem;flex-shrink:0;align-self:flex-start" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
