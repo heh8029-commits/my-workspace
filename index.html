@@ -836,10 +836,10 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 
 /* ── 상품관리 카드 반응형 ── */
 @media (max-width:900px) {
-  #pc-grid { grid-template-columns: repeat(2,1fr) !important; border:1.5px solid #d8c8f0; }
+  #pc-grid { grid-template-columns: repeat(2,1fr) !important; gap:10px; }
 }
 @media (max-width:540px) {
-  #pc-grid { grid-template-columns: 1fr !important; }
+  #pc-grid { grid-template-columns: 1fr !important; gap:8px; }
 }
 /* ── 레시피 ── */
 .recipe-search-wrap {
@@ -1882,21 +1882,21 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #e8f8ee">
         <table id="sales-table" style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:800px">
           <thead>
-            <tr style="background:linear-gradient(135deg,#e8f8ee,#d0f4e0);color:#2a7a4a">
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">날짜</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">요일</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡<br><span style="font-size:.72rem;font-weight:600;color:#3dbb8f">그로스</span></th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡<br><span style="font-size:.72rem;font-weight:600;color:#3dbb8f">판매자배송</span></th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;background:#e0f5e8">쿠팡매출<br><span style="font-size:.72rem;font-weight:500;color:#888">합계</span></th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">쿠팡광고비</th>
-              <th style="padding:10px 4px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;color:#e8648a;font-size:.72rem">쿠팡<br>광고%</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">네이버매출</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">검색광고</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">네이버<br><span style="font-size:.72rem;font-weight:600">AI광고</span></th>
-              <th style="padding:10px 4px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;color:#e8648a;font-size:.72rem">네이버<br>광고%</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총매출</th>
-              <th style="padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4">총광고비</th>
-              <th style="padding:10px 4px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2e8d4;color:#e8648a;font-size:.72rem">총<br>광고%</th>
+            <tr style="background:linear-gradient(135deg,#e8f8ee,#d0f4e0)">
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #b2e8d4;font-size:.82rem;color:#1a5a34">날짜</th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #b2e8d4;font-size:.82rem;color:#1a5a34">요일</th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #5cc890;background:#c8f0d8;font-size:.82rem;color:#1a7a40">쿠팡<br><span style="font-size:.74rem;color:#2aaa60">그로스</span></th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #5cc890;background:#c8f0d8;font-size:.82rem;color:#1a7a40">쿠팡<br><span style="font-size:.74rem;color:#2aaa60">판매자</span></th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #5cc890;background:#a8e8c0;font-size:.84rem;color:#0a6030">쿠팡<br><span style="font-size:.74rem;color:#1a9050">총매출</span></th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe0ec;font-size:.82rem;color:#c0204a">쿠팡<br><span style="font-size:.74rem;color:#e03c6e">광고비</span></th>
+              <th style="padding:11px 5px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe8f0;font-size:.74rem;color:#e8648a">쿠팡<br>광고%</th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #80d0a0;background:#d0f4e4;font-size:.82rem;color:#1a6040">네이버<br><span style="font-size:.74rem;color:#2a9060">매출</span></th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe0ec;font-size:.82rem;color:#c0204a">검색<br><span style="font-size:.74rem;color:#e03c6e">광고</span></th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe0ec;font-size:.82rem;color:#c0204a">AI<br><span style="font-size:.74rem;color:#e03c6e">광고</span></th>
+              <th style="padding:11px 5px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe8f0;font-size:.74rem;color:#e8648a">네이버<br>광고%</th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #b090e8;background:#e8deff;font-size:.88rem;color:#5020a0">총<br><span style="font-size:.78rem;color:#7040c0">매출</span></th>
+              <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe0ec;font-size:.82rem;color:#c0204a">총<br><span style="font-size:.74rem;color:#e03c6e">광고비</span></th>
+              <th style="padding:11px 5px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #f7a8c0;background:#ffe8f0;font-size:.74rem;color:#e8648a">총<br>광고%</th>
             </tr>
           </thead>
           <tbody id="sales-tbody"></tbody>
@@ -4715,7 +4715,7 @@ function renderProductMgmt() {
     + tabBar
     + '<button onclick="pcCardAdd()" style="margin-left:auto;background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:10px;padding:7px 18px;font-size:.82rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif">+ 카드 추가</button>'
     + '</div>'
-    + '<div id="pc-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1.5px solid #d8c8f0;border-left:1.5px solid #d8c8f0"></div>';
+    + '<div id="pc-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>';
 
   var filtered;
   if (_currentProductTab==='전체') filtered = all;
@@ -4741,7 +4741,7 @@ function _pcMakeCard(p) {
   var card = document.createElement('div');
   card.id  = 'pc-card-'+p.id;
   // 네모 테두리, 라운드 없음
-  card.style.cssText = 'background:white;border-right:1.5px solid #d8c8f0;border-bottom:1.5px solid #d8c8f0;padding:0;display:flex;flex-direction:column;font-family:Pretendard,sans-serif;overflow:hidden';
+  card.style.cssText = 'background:white;border:1.5px solid #d8c8f0;padding:0;display:flex;flex-direction:column;font-family:Pretendard,sans-serif;overflow:hidden;box-shadow:0 2px 8px rgba(120,80,200,.07)';
 
   /* ══ 편집 폼 ══ */
   if (p._editing) {
@@ -4820,15 +4820,15 @@ function _pcMakeCard(p) {
 
   // ── 왼쪽: 이미지 컬럼 (고정 너비) ──
   var imgCol = document.createElement('div');
-  imgCol.style.cssText = 'display:flex;flex-direction:column;flex-shrink:0;width:38%;border-right:1.5px solid #d8c8f0';
+  imgCol.style.cssText = 'display:flex;flex-direction:column;flex-shrink:0;width:42%;border-right:1.5px solid #d8c8f0';
 
   // 큰 메인이미지 (남은 높이 채움)
   var mainSlot = document.createElement('div');
-  mainSlot.style.cssText = 'flex:1;position:relative;overflow:hidden;background:#f5f0ff;cursor:pointer;min-height:110px';
+  mainSlot.style.cssText = 'position:relative;width:100%;padding-top:100%;overflow:hidden;background:#f5f0ff;cursor:pointer';
   if (mainImgUrl) {
     var mi = document.createElement('img');
     mi.src=mainImgUrl; mi.loading='lazy';
-    mi.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+    mi.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f5f0ff';
     mi.onmouseover=function(){jinuThumbHover(this,true);};
     mi.onmouseout=function(){jinuThumbHover(this,false);};
     mi.onclick=(function(u){return function(){openImgModal(u);};})(mainImgUrl);
@@ -7101,15 +7101,15 @@ function updateSalesSummary(year, month) {
   const summary = document.getElementById('sales-summary');
   if (!summary) return;
   const cards = [
-    { label:'쿠팡 그로스',     val: tg,       color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'쿠팡 판매자배송', val: ts,       color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'쿠팡 총매출',     val: tc,       color:'#2a9a6a', bg:'#e8fff4' },
-    { label:'쿠팡 광고비',     val: tca,      color:'#e03c6e', bg:'#fff0f5' },
-    { label:'네이버 총매출',   val: tn,       color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'검색광고',        val: tns,      color:'#e8648a', bg:'#fff0f5' },
-    { label:'AI광고',          val: tna,      color:'#e8648a', bg:'#fff0f5' },
+    { label:'쿠팡 그로스',     val: tg,          color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 판매자배송', val: ts,          color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 총매출',     val: tc,          color:'#2a9a6a', bg:'#e8fff4' },
+    { label:'쿠팡 광고비',     val: tca,         color:'#e03c6e', bg:'#fff0f5' },
+    { label:'네이버 총매출',   val: tn,          color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'검색광고',        val: tns,         color:'#e8648a', bg:'#fff0f5' },
+    { label:'AI광고',          val: tna,         color:'#e8648a', bg:'#fff0f5' },
     { label:'전체 총광고비',   val: tca+tns+tna, color:'#e03c6e', bg:'#fff0f5' },
-    { label:'전체 총매출',     val: tc+tn,    color:'#8b60d0', bg:'#f8f4ff' },
+    { label:'전체 총매출',     val: tc+tn,       color:'#8b60d0', bg:'#f8f4ff' },
   ];
   summary.style.gridTemplateColumns = 'repeat(3,1fr)';
   summary.innerHTML = cards.map(c => `
@@ -7133,16 +7133,16 @@ function updateSalesSummary(year, month) {
     sr.cells[12].textContent = (tc+tn)>0&&(tca+tns+tna)>0 ? ((tca+tns+tna)/(tc+tn)*100).toFixed(1)+'%' : '-';
   }
 
-  // 평균 행: 값이 0이 아닌 날만 카운트
+  // 평균 행 (입력된 날 기준)
   const ar = document.getElementById('sales-avg-row');
   if (ar) {
     let cntG=0,cntS=0,cntCA=0,cntN=0,cntNS=0,cntNA=0;
     for (let d=1; d<=days; d++) {
       const r2 = data['d'+d] || {};
-      if (parseNum(r2.gross)  > 0) cntG++;
-      if (parseNum(r2.seller) > 0) cntS++;
+      if (parseNum(r2.gross)       > 0) cntG++;
+      if (parseNum(r2.seller)      > 0) cntS++;
       if (parseNum(r2.coupangAd)   > 0) cntCA++;
-      if (parseNum(r2.naver)  > 0) cntN++;
+      if (parseNum(r2.naver)       > 0) cntN++;
       if (parseNum(r2.naverSearch) > 0) cntNS++;
       if (parseNum(r2.naverAi)     > 0) cntNA++;
     }
@@ -7265,7 +7265,7 @@ function renderSalesTable() {
   // 합계 + 평균 행
   const PD = 'padding:9px 8px;text-align:right;';
   rows += `<tr id="sales-sum-row" style="background:linear-gradient(135deg,#e0f8ee,#d0f4e0);font-weight:800">
-    <td colspan="2" style="padding:10px;text-align:center;color:#2a7a4a;font-weight:800">합계</td>
+    <td colspan="2" style="padding:10px;text-align:center;color:#2a7a4a;font-weight:800;font-size:.88rem">합계</td>
     <td style="${PD}color:#2a7a4a">-</td>
     <td style="${PD}color:#2a7a4a">-</td>
     <td style="${PD}color:#2a9a6a">-</td>
@@ -7275,12 +7275,12 @@ function renderSalesTable() {
     <td style="${PD}color:#e03c6e">-</td>
     <td style="${PD}color:#e03c6e">-</td>
     <td id="sum-npct" style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
-    <td style="${PD}color:#8b60d0">-</td>
+    <td style="${PD}color:#8b60d0;font-size:.9rem">-</td>
     <td style="${PD}color:#e03c6e">-</td>
     <td id="sum-tpct" style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
   </tr>
   <tr id="sales-avg-row" style="background:linear-gradient(135deg,#f0f0ff,#e8e0ff);font-weight:700">
-    <td colspan="2" style="padding:9px 10px;text-align:center;color:#6030b0;font-weight:800">평균<span style="font-size:.68rem;font-weight:500;color:#a080d0;display:block">입력된 날 기준</span></td>
+    <td colspan="2" style="padding:9px 10px;text-align:center;color:#6030b0;font-weight:800;font-size:.88rem">평균<span style="font-size:.66rem;font-weight:500;color:#a080d0;display:block">입력 날 기준</span></td>
     <td style="${PD}color:#2a7a4a">-</td>
     <td style="${PD}color:#2a7a4a">-</td>
     <td style="${PD}color:#2a9a6a">-</td>
@@ -7290,7 +7290,7 @@ function renderSalesTable() {
     <td style="${PD}color:#c03060">-</td>
     <td style="${PD}color:#c03060">-</td>
     <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
-    <td style="${PD}color:#6030b0">-</td>
+    <td style="${PD}color:#6030b0;font-size:.9rem">-</td>
     <td style="${PD}color:#c03060">-</td>
     <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
   </tr>`;
