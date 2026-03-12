@@ -4686,11 +4686,14 @@ function jinuMemoAdd() {
   var date = document.getElementById('jinu-memo-date').value;
   var inp  = document.getElementById('jinu-memo-inp');
   var text = inp.value.trim();
-  if (!text) return;
+  if (!text && !_jinuPendingImgUrl) return;
   var list = loadJinuMemos();
-  list.push({id:Date.now(), cat:cat, date:date, text:text});
+  list.push({id:Date.now(), cat:cat, date:date, text:text, imgUrl:_jinuPendingImgUrl||''});
   saveJinuMemos(list);
   inp.value = '';
+  jinuClearImg();
+  var dateEl = document.getElementById('jinu-memo-date');
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0,10);
   renderJinuMemos();
   toast('📢 알림 메모 추가됐어요!');
 }
