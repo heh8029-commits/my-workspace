@@ -2745,7 +2745,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo','design_links','design_cards'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7293,6 +7293,22 @@ function renderSalesTable() {
     <td style="${PD}color:#6030b0;font-size:.9rem">-</td>
     <td style="${PD}color:#c03060">-</td>
     <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
+  </tr>
+  <tr style="background:linear-gradient(135deg,#e8f8ee,#d0f4e0)">
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #b2e8d4;font-size:.78rem;color:#1a5a34">날짜</th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #b2e8d4;font-size:.78rem;color:#1a5a34">요일</th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #5cc890;background:#c8f0d8;font-size:.78rem;color:#1a7a40">쿠팡<br><span style="font-size:.7rem;color:#2aaa60">그로스</span></th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #5cc890;background:#c8f0d8;font-size:.78rem;color:#1a7a40">쿠팡<br><span style="font-size:.7rem;color:#2aaa60">판매자</span></th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #5cc890;background:#a8e8c0;font-size:.8rem;color:#0a6030">쿠팡<br><span style="font-size:.7rem;color:#1a9050">총매출</span></th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe0ec;font-size:.78rem;color:#c0204a">쿠팡<br><span style="font-size:.7rem;color:#e03c6e">광고비</span></th>
+    <th style="padding:8px 5px;text-align:center;font-weight:700;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe8f0;font-size:.7rem;color:#e8648a">쿠팡<br>광고%</th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #80d0a0;background:#d0f4e4;font-size:.78rem;color:#1a6040">네이버<br><span style="font-size:.7rem;color:#2a9060">매출</span></th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe0ec;font-size:.78rem;color:#c0204a">검색<br><span style="font-size:.7rem;color:#e03c6e">광고</span></th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe0ec;font-size:.78rem;color:#c0204a">AI<br><span style="font-size:.7rem;color:#e03c6e">광고</span></th>
+    <th style="padding:8px 5px;text-align:center;font-weight:700;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe8f0;font-size:.7rem;color:#e8648a">네이버<br>광고%</th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #b090e8;background:#e8deff;font-size:.84rem;color:#5020a0">총<br><span style="font-size:.74rem;color:#7040c0">매출</span></th>
+    <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe0ec;font-size:.78rem;color:#c0204a">총<br><span style="font-size:.7rem;color:#e03c6e">광고비</span></th>
+    <th style="padding:8px 5px;text-align:center;font-weight:700;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe8f0;font-size:.7rem;color:#e8648a">총<br>광고%</th>
   </tr>`;
 
   tbody.innerHTML = rows;
