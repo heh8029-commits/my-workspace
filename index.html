@@ -833,6 +833,14 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 .rc-imgs { display:flex; flex-wrap:wrap; gap:5px; margin:8px 0 6px; }
 .rc-imgs img { width:68px; height:68px; object-fit:cover; border-radius:8px; border:1.5px solid var(--pink); cursor:zoom-in; transition:transform .15s; }
 .rc-imgs img:hover { transform:scale(1.05); }
+
+/* ── 상품관리 카드 반응형 ── */
+@media (max-width:900px) {
+  #pc-grid { grid-template-columns: repeat(2,1fr) !important; }
+}
+@media (max-width:540px) {
+  #pc-grid { grid-template-columns: 1fr !important; }
+}
 /* ── 레시피 ── */
 .recipe-search-wrap {
   margin-bottom: 18px;
@@ -4660,159 +4668,298 @@ function jinuToggleEdit() {
 
 
 /* ══════════════════════════════════
-   상품관리 JS
+   상품관리 JS  (v2 - 카드형)
 ══════════════════════════════════ */
-var _productEditId = null;
-var _productPendingImgs = [];
-var _PRODUCT_CAT_COLORS = {'판매중':'#1a9a60','준비중':'#e0a800','단종':'#aaa','기타':'#7040c0'};
-var _currentProductCat = '전체';
+var _currentProductTab = '전체';   // 전체 / 그로스 / 일반
+var _pcEditId = null;              // 편집 중인 카드 id
+var _pcImgPopTarget = null;        // {cardId, slotIdx} 이미지 팝업 대상
+var _pcPendingImgUrl = null;
 
-function loadProducts() { return loadObj('product_mgmt').list || []; }
-function saveProducts(list) { stor('product_mgmt', {list}); }
+function loadProducts()      { return loadObj('product_mgmt').list || []; }
+function saveProducts(list)  { stor('product_mgmt', {list}); }
 
+/* ── 메인 렌더 ── */
 function renderProductMgmt() {
   var wrap = document.getElementById('product-mgmt-wrap');
   if (!wrap) return;
-  var products = loadProducts();
-  var filtered = _currentProductCat === '전체' ? products : products.filter(function(p){ return (p.status||'기타')===_currentProductCat; });
-  var cats = ['전체','판매중','준비중','단종','기타'];
-  var tabHtml = cats.map(function(cat){
-    var cnt = cat==='전체' ? products.length : products.filter(function(p){ return (p.status||'기타')===cat; }).length;
-    var active = _currentProductCat===cat ? 'background:var(--pink);color:white;border-color:var(--pink-dark)' : 'background:white;color:var(--pink-dark)';
-    return '<button onclick="setProductCat(\''+cat+'\')" style="border:1.5px solid var(--pink);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;'+active+';transition:.15s">'+cat+'('+cnt+')</button>';
+  var all = loadProducts();
+  var tabs = ['전체','그로스','일반'];
+  var tabBar = tabs.map(function(t){
+    var cnt = t==='전체' ? all.length : all.filter(function(p){ return (p.cat||'일반')===t; }).length;
+    var on  = _currentProductTab===t;
+    return '<button onclick="setPcTab(\''+t+'\')" style="border:1.5px solid var(--pink);border-radius:20px;padding:5px 16px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;transition:.15s;'
+      +(on?'background:var(--pink);color:white':'background:white;color:var(--pink-dark)')+'">'+t+' ('+cnt+')</button>';
   }).join('');
-  wrap.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px">'
-    + tabHtml
-    + '<button onclick="productAddOpen()" style="margin-left:auto;background:linear-gradient(135deg,#b2f0d0,#3dbb8f);border:none;border-radius:10px;padding:6px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">+ 상품 추가</button>'
-    + '</div><div id="product-list-inner"></div>';
-  _renderProductList(filtered);
+
+  wrap.innerHTML =
+    '<div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:16px">'
+    + tabBar
+    + '<button onclick="pcCardAdd()" style="margin-left:auto;background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:10px;padding:7px 18px;font-size:.82rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif">+ 카드 추가</button>'
+    + '</div>'
+    + '<div id="pc-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px"></div>';
+
+  var filtered = _currentProductTab==='전체' ? all : all.filter(function(p){ return (p.cat||'일반')===_currentProductTab; });
+  _renderPcGrid(filtered);
 }
-function _renderProductList(products) {
-  var el = document.getElementById('product-list-inner'); if(!el) return;
-  if (!products.length) { el.innerHTML='<div class="empty" style="padding:32px 0">등록된 상품이 없어요 🛒</div>'; return; }
-  el.innerHTML = '';
-  products.forEach(function(p){
-    var sc = _PRODUCT_CAT_COLORS[p.status||'기타']||'#888';
-    var imgHtml = (p.imgs&&p.imgs.length) ? '<div style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px">'+p.imgs.map(function(u){ return '<img src="'+u+'" loading="lazy" onclick="openImgModal(\'"'+u+'"\')" onmouseover="jinuThumbHover(this,true)" onmouseout="jinuThumbHover(this,false)" style="width:58px;height:58px;object-fit:cover;border-radius:8px;border:1.5px solid #b2f0d0;cursor:zoom-in">'; }).join('')+'</div>' : '';
-    var div=document.createElement('div');
-    div.style.cssText='background:white;border-radius:13px;border:1.5px solid #d0f0e0;padding:13px 15px;margin-bottom:10px;box-shadow:0 2px 8px rgba(61,187,143,.08)';
-    div.innerHTML='<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">'
-      +'<span style="font-size:.88rem;font-weight:700;color:#1a5a40;flex:1;line-height:1.4">'+escHtml(p.name||'')+'</span>'
-      +'<span style="font-size:.72rem;font-weight:700;color:'+sc+';border:1.5px solid '+sc+';border-radius:20px;padding:2px 9px;flex-shrink:0">'+escHtml(p.status||'기타')+'</span>'
-      +'</div>'
-      +(p.price?'<div style="font-size:.78rem;color:#2a8a5a;font-weight:700;margin-bottom:3px">💰 '+escHtml(p.price)+'</div>':'')
-      +(p.code?'<div style="font-size:.72rem;color:#888;margin-bottom:3px">📦 코드: '+escHtml(p.code)+'</div>':'')
-      +imgHtml
-      +(p.memo?'<div style="font-size:.78rem;color:#555;line-height:1.5;white-space:pre-wrap;margin-top:5px">'+escHtml(p.memo)+'</div>':'')
-      +'<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">'
-      +'<button onclick="productEditOpen('+p.id+')" style="background:none;border:1px solid #ccc;border-radius:7px;padding:3px 10px;font-size:.74rem;cursor:pointer;color:#666;font-family:Pretendard,sans-serif">✏️ 수정</button>'
-      +'<button onclick="productDel('+p.id+')" style="background:none;border:1px solid #ffb0b0;border-radius:7px;padding:3px 10px;font-size:.74rem;cursor:pointer;color:#e03c6e;font-family:Pretendard,sans-serif">🗑️ 삭제</button>'
-      +'</div>';
-    el.appendChild(div);
+
+function setPcTab(t) { _currentProductTab=t; renderProductMgmt(); }
+
+/* ── 그리드 렌더 ── */
+function _renderPcGrid(list) {
+  var grid = document.getElementById('pc-grid'); if(!grid) return;
+  if (!list.length) { grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:32px 0">상품을 추가해요 🛒</div>'; return; }
+  grid.innerHTML='';
+  list.forEach(function(p){
+    grid.appendChild(_pcMakeCard(p));
   });
 }
-function setProductCat(cat) { _currentProductCat=cat; renderProductMgmt(); }
-function productAddOpen() { _productEditId=null; _productPendingImgs=[]; _openProductPopup({name:'',price:'',code:'',status:'판매중',memo:'',imgs:[]}); }
-function productEditOpen(id) {
-  var p=loadProducts().find(function(x){return x.id===id;}); if(!p) return;
-  _productEditId=id; _productPendingImgs=(p.imgs||[]).slice(); _openProductPopup(p);
-}
-function _openProductPopup(p) {
-  var overlay=document.getElementById('product-popup-overlay');
-  if (!overlay) {
-    overlay=document.createElement('div'); overlay.id='product-popup-overlay';
-    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9990;display:flex;align-items:center;justify-content:center';
-    overlay.onclick=function(e){if(e.target===overlay)productPopupClose();};
-    var box=document.createElement('div'); box.id='product-popup-box';
-    box.style.cssText='background:white;border-radius:18px;padding:24px;width:360px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.22);font-family:Pretendard,sans-serif;box-sizing:border-box';
-    box.innerHTML='<div style="font-size:.95rem;font-weight:700;color:#1a5a40;margin-bottom:14px" id="product-popup-title">+ 상품 추가</div>'
-      +'<input id="pp-name" type="text" placeholder="상품명 *" style="width:100%;box-sizing:border-box;border:1.5px solid #b2f0d0;border-radius:8px;padding:7px 10px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none;margin-bottom:8px">'
-      +'<div style="display:flex;gap:7px;margin-bottom:8px">'
-        +'<input id="pp-price" type="text" placeholder="💰 가격" style="flex:1;border:1.5px solid #b2f0d0;border-radius:8px;padding:7px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
-        +'<input id="pp-code" type="text" placeholder="📦 상품코드" style="flex:1;border:1.5px solid #b2f0d0;border-radius:8px;padding:7px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
+
+/* ── 카드 DOM 생성 ── */
+function _pcMakeCard(p) {
+  var card = document.createElement('div');
+  card.id  = 'pc-card-'+p.id;
+  card.style.cssText = 'background:white;border-radius:14px;border:1.5px solid #e0d0f8;padding:10px;box-shadow:0 2px 10px rgba(120,80,200,.07);display:flex;flex-direction:column;gap:7px;font-family:Pretendard,sans-serif';
+
+  /* ── 편집 폼 ── */
+  if (p._editing) {
+    card.innerHTML =
+      '<div style="display:flex;gap:5px;margin-bottom:2px">'
+        +'<select id="pce-cat-'+p.id+'" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:4px 6px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
+          +'<option value="그로스"'+((p.cat||'일반')==='그로스'?' selected':'')+'>그로스</option>'
+          +'<option value="일반"'+((p.cat||'일반')==='일반'?' selected':'')+'>일반</option>'
+        +'</select>'
+        +'<button onclick="pcEditSave('+p.id+')" style="background:#7040c0;border:none;border-radius:7px;padding:4px 10px;color:white;font-size:.74rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">저장</button>'
+        +'<button onclick="pcEditCancel('+p.id+')" style="background:#eee;border:none;border-radius:7px;padding:4px 8px;color:#888;font-size:.74rem;cursor:pointer;font-family:Pretendard,sans-serif">취소</button>'
       +'</div>'
-      +'<select id="pp-status" style="width:100%;box-sizing:border-box;border:1.5px solid #b2f0d0;border-radius:8px;padding:7px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;margin-bottom:8px">'
-        +'<option value="판매중">판매중</option><option value="준비중">준비중</option><option value="단종">단종</option><option value="기타">기타</option>'
-      +'</select>'
-      +'<textarea id="pp-memo" rows="3" placeholder="메모 (재료, 특이사항 등)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2f0d0;border-radius:8px;padding:7px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;margin-bottom:8px" onpaste="ppHandlePaste(event)" ondragover="event.preventDefault()" ondrop="ppHandleDrop(event)"></textarea>'
-      +'<div style="font-size:.72rem;color:#2a8a5a;font-weight:700;margin-bottom:5px">📎 이미지 (Ctrl+V 또는 드래그)</div>'
-      +'<div id="pp-img-list" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px"></div>'
-      +'<div id="pp-img-status" style="font-size:.72rem;min-height:14px;margin-bottom:10px"></div>'
-      +'<div style="display:flex;gap:7px;justify-content:flex-end">'
-        +'<button onclick="productPopupClose()" style="background:#eee;border:none;border-radius:8px;padding:7px 16px;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif;color:#666">취소</button>'
-        +'<button onclick="productPopupSave()" style="background:linear-gradient(135deg,#b2f0d0,#3dbb8f);border:none;border-radius:8px;padding:7px 18px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:white">💾 저장</button>'
-      +'</div>';
-    overlay.appendChild(box); document.body.appendChild(overlay);
+      +'<input id="pce-title-'+p.id+'" type="text" value="'+escHtml(p.title||'')+'" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      +'<div style="display:flex;gap:5px">'
+        +'<input id="pce-code-'+p.id+'" type="text" value="'+escHtml(p.code||'')+'" placeholder="코드" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
+        +'<input id="pce-price-'+p.id+'" type="text" value="'+escHtml(p.price||'')+'" placeholder="가격" style="flex:1;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none">'
+      +'</div>'
+      +'<textarea id="pce-memo-'+p.id+'" rows="3" placeholder="내용..." style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:7px;padding:5px 8px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical">'+escHtml(p.memo||'')+'</textarea>';
+    return card;
   }
-  document.getElementById('product-popup-title').textContent=_productEditId?'✏️ 상품 수정':'+ 상품 추가';
-  document.getElementById('pp-name').value  =p.name  ||'';
-  document.getElementById('pp-price').value =p.price ||'';
-  document.getElementById('pp-code').value  =p.code  ||'';
-  document.getElementById('pp-status').value=p.status||'판매중';
-  document.getElementById('pp-memo').value  =p.memo  ||'';
-  _ppRenderImgs(); overlay.style.display='flex';
-  setTimeout(function(){document.getElementById('pp-name').focus();},80);
-}
-function _ppRenderImgs() {
-  var el=document.getElementById('pp-img-list'); if(!el)return; el.innerHTML='';
-  _productPendingImgs.forEach(function(url,i){
-    var w=document.createElement('div'); w.style.cssText='position:relative;flex-shrink:0';
-    var img=document.createElement('img'); img.src=url; img.loading='lazy';
-    img.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:8px;border:1.5px solid #b2f0d0;cursor:zoom-in';
-    img.ondblclick=(function(u){return function(){openImgModal(u);};})(url);
+
+  /* ── 뷰 모드 ── */
+  // 상단: 메인이미지(좌) + 메타(우)
+  var mainImgUrl = p.mainImg || '';
+  var mainImgHtml = mainImgUrl
+    ? '<img src="'+mainImgUrl+'" loading="lazy" onclick="openImgModal(\''+mainImgUrl+'\')" onmouseover="jinuThumbHover(this,true)" onmouseout="jinuThumbHover(this,false)" style="width:80px;height:80px;object-fit:cover;border-radius:9px;border:1.5px solid #d0b8f8;cursor:zoom-in;display:block;flex-shrink:0">'
+    : '<div onclick="pcMainImgOpen('+p.id+')" style="width:80px;height:80px;border-radius:9px;border:2px dashed #d0b8f8;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#c0a0e8;font-size:.7rem;text-align:center;flex-shrink:0">📷<br>메인</div>';
+
+  var catColor = (p.cat||'일반')==='그로스' ? '#7040c0' : '#3dbb8f';
+  var metaHtml =
+    '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">'
+      +'<div style="display:flex;align-items:center;gap:5px">'
+        +'<span style="font-size:.7rem;font-weight:700;color:'+catColor+';border:1.5px solid '+catColor+';border-radius:12px;padding:1px 8px">'+escHtml(p.cat||'일반')+'</span>'
+        +'<button onclick="pcEditOpen('+p.id+')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0" onmouseover="this.style.color=\'#7040c0\'" onmouseout="this.style.color=\'#bbb\'">✏️</button>'
+        +'<button onclick="pcCardDel('+p.id+')" style="background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#bbb\'">🗑️</button>'
+      +'</div>'
+      +'<div style="font-size:.84rem;font-weight:700;color:#3a1a6a;line-height:1.3;word-break:break-all">'+escHtml(p.title||'(제목없음)')+'</div>'
+      +(p.code||p.price ? '<div style="font-size:.72rem;color:#888">'+(p.code?'📦 '+escHtml(p.code):'')+(p.code&&p.price?' · ':'')+(p.price?'💰 '+escHtml(p.price):'')+'</div>' : '')
+    +'</div>';
+
+  var topDiv = document.createElement('div');
+  topDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start';
+  topDiv.innerHTML = mainImgHtml + metaHtml;
+  // 메인이미지 클릭으로 교체 가능
+  if (mainImgUrl) {
+    var mi = topDiv.querySelector('img');
+    if (mi) mi.ondblclick = (function(id){ return function(e){ e.stopPropagation(); pcMainImgOpen(id); }; })(p.id);
+  }
+  card.appendChild(topDiv);
+
+  // 참고이미지 슬롯 (3개 + 추가버튼)
+  var imgs = p.imgs || [];
+  var imgRow = document.createElement('div');
+  imgRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px';
+  // 기존 이미지들
+  imgs.forEach(function(url, i) {
+    var w = document.createElement('div'); w.style.cssText='position:relative;flex-shrink:0';
+    var im = document.createElement('img'); im.src=url; im.loading='lazy';
+    im.style.cssText='width:44px;height:44px;object-fit:cover;border-radius:7px;border:1.5px solid #e0d0f8;cursor:zoom-in';
+    im.ondblclick=(function(u){return function(){openImgModal(u);};})(url);
+    im.onmouseover=function(){jinuThumbHover(this,true);};
+    im.onmouseout=function(){jinuThumbHover(this,false);};
     var xb=document.createElement('button'); xb.textContent='✕';
-    xb.style.cssText='position:absolute;top:-5px;right:-5px;background:#e03c6e;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.6rem;cursor:pointer;line-height:1';
-    xb.onclick=(function(idx){return function(){_productPendingImgs.splice(idx,1);_ppRenderImgs();};})(i);
-    w.appendChild(img); w.appendChild(xb); el.appendChild(w);
+    xb.style.cssText='position:absolute;top:-4px;right:-4px;background:#e03c6e;border:none;border-radius:50%;width:15px;height:15px;color:white;font-size:.5rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center';
+    xb.onclick=(function(id,idx){return function(){pcImgDel(id,idx);};})(p.id,i);
+    w.appendChild(im); w.appendChild(xb); imgRow.appendChild(w);
   });
+  // 추가 버튼
+  var addBtn = document.createElement('div');
+  addBtn.style.cssText='width:44px;height:44px;border-radius:7px;border:1.5px dashed #d0b8f8;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#c0a0e8;font-size:.65rem;text-align:center;flex-shrink:0';
+  addBtn.innerHTML='📎<br>추가';
+  addBtn.onclick=(function(id){return function(){pcRefImgOpen(id);};})(p.id);
+  imgRow.appendChild(addBtn);
+  card.appendChild(imgRow);
+
+  // 내용
+  if (p.memo) {
+    var memo = document.createElement('div');
+    memo.style.cssText='font-size:.76rem;color:#555;line-height:1.5;white-space:pre-wrap;word-break:break-all;border-top:1px solid #f0e8ff;padding-top:6px';
+    memo.textContent = p.memo;
+    card.appendChild(memo);
+  }
+
+  return card;
 }
-function ppHandlePaste(e) {
+
+/* ── 카드 추가 (즉시) ── */
+function pcCardAdd() {
+  var list = loadProducts();
+  var newCard = {id:Date.now(), cat:'일반', title:'', code:'', price:'', memo:'', mainImg:'', imgs:[], _editing:true};
+  list.unshift(newCard);
+  saveProducts(list);
+  renderProductMgmt();
+  var inp = document.getElementById('pce-title-'+newCard.id);
+  if (inp) inp.focus();
+}
+
+/* ── 편집 열기/닫기/저장 ── */
+function pcEditOpen(id) {
+  var list = loadProducts();
+  list.forEach(function(x){ x._editing=(x.id===id); });
+  saveProducts(list); renderProductMgmt();
+  var inp = document.getElementById('pce-title-'+id);
+  if (inp) inp.focus();
+}
+function pcEditCancel(id) {
+  var list = loadProducts();
+  // 제목도 없고 새 카드면 삭제
+  var card = list.find(function(x){ return x.id===id; });
+  if (card && !card.title && !card.mainImg && !(card.imgs&&card.imgs.length)) {
+    list = list.filter(function(x){ return x.id!==id; });
+  } else {
+    list.forEach(function(x){ delete x._editing; });
+  }
+  saveProducts(list); renderProductMgmt();
+}
+function pcEditSave(id) {
+  var list = loadProducts();
+  var idx  = list.findIndex(function(x){ return x.id===id; });
+  if (idx===-1) return;
+  list[idx].cat   = document.getElementById('pce-cat-'+id).value;
+  list[idx].title = document.getElementById('pce-title-'+id).value.trim();
+  list[idx].code  = document.getElementById('pce-code-'+id).value.trim();
+  list[idx].price = document.getElementById('pce-price-'+id).value.trim();
+  list[idx].memo  = document.getElementById('pce-memo-'+id).value.trim();
+  delete list[idx]._editing;
+  saveProducts(list); renderProductMgmt(); toast('✅ 저장됐어요!');
+}
+function pcCardDel(id) {
+  if (!confirm('이 상품 카드를 삭제할까요?')) return;
+  saveProducts(loadProducts().filter(function(x){ return x.id!==id; }));
+  renderProductMgmt(); toast('🗑️ 삭제됐어요');
+}
+
+/* ── 메인 이미지 팝업 ── */
+var _pcMainImgTarget = null;
+var _pcMainImgPending = null;
+function pcMainImgOpen(id) {
+  _pcMainImgTarget = id; _pcMainImgPending = null;
+  _pcShowImgPopup('pc-main-img-popup', '🖼️ 메인 이미지 등록', 'pcMainHandlePaste', 'pcMainHandleDrop', 'pcMainImgConfirm', 'pcMainImgCancel');
+}
+function pcMainImgCancel() { _pcHideImgPopup('pc-main-img-popup'); _pcMainImgTarget=null; _pcMainImgPending=null; }
+function pcMainHandlePaste(e) { _pcHandleImgPaste(e, function(url){ _pcMainImgPending=url; _pcSetPopupPreview('pc-main-img-popup', url); }); }
+function pcMainHandleDrop(e)  { _pcHandleImgDrop(e, function(url){ _pcMainImgPending=url; _pcSetPopupPreview('pc-main-img-popup', url); }); }
+function pcMainImgConfirm() {
+  if (!_pcMainImgPending||!_pcMainImgTarget) return;
+  var list=loadProducts(); var c=list.find(function(x){return x.id===_pcMainImgTarget;});
+  if(c){ c.mainImg=_pcMainImgPending; saveProducts(list); renderProductMgmt(); }
+  pcMainImgCancel(); toast('📷 메인이미지 등록됐어요!');
+}
+
+/* ── 참고 이미지 팝업 ── */
+var _pcRefImgTarget = null;
+var _pcRefImgPending = null;
+function pcRefImgOpen(id) {
+  _pcRefImgTarget=id; _pcRefImgPending=null;
+  _pcShowImgPopup('pc-ref-img-popup','📎 참고이미지 추가','pcRefHandlePaste','pcRefHandleDrop','pcRefImgConfirm','pcRefImgCancel');
+}
+function pcRefImgCancel()  { _pcHideImgPopup('pc-ref-img-popup'); _pcRefImgTarget=null; _pcRefImgPending=null; }
+function pcRefHandlePaste(e){ _pcHandleImgPaste(e, function(url){ _pcRefImgPending=url; _pcSetPopupPreview('pc-ref-img-popup',url); }); }
+function pcRefHandleDrop(e) { _pcHandleImgDrop(e, function(url){ _pcRefImgPending=url; _pcSetPopupPreview('pc-ref-img-popup',url); }); }
+function pcRefImgConfirm() {
+  if(!_pcRefImgPending||!_pcRefImgTarget) return;
+  var list=loadProducts(); var c=list.find(function(x){return x.id===_pcRefImgTarget;});
+  if(c){ if(!c.imgs)c.imgs=[]; c.imgs.push(_pcRefImgPending); saveProducts(list); renderProductMgmt(); }
+  pcRefImgCancel(); toast('📎 참고이미지 추가됐어요!');
+}
+function pcImgDel(id, idx) {
+  var list=loadProducts(); var c=list.find(function(x){return x.id===id;});
+  if(c&&c.imgs){ c.imgs.splice(idx,1); saveProducts(list); renderProductMgmt(); }
+}
+
+/* ── 공통 이미지 팝업 헬퍼 ── */
+function _pcShowImgPopup(popId, title, pasteF, dropF, confirmF, cancelF) {
+  var pop=document.getElementById(popId);
+  if(!pop){
+    pop=document.createElement('div'); pop.id=popId;
+    pop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9995;display:flex;align-items:center;justify-content:center';
+    pop.onclick=function(e){if(e.target===pop) window[cancelF]();};
+    var box=document.createElement('div');
+    box.style.cssText='background:white;border-radius:16px;padding:22px;width:320px;max-width:92vw;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif';
+    box.innerHTML='<div style="font-size:.9rem;font-weight:700;color:#5020a0;margin-bottom:12px" id="'+popId+'-title">'+title+'</div>'
+      +'<div id="'+popId+'-area" tabindex="0" style="border:2px dashed #c8a8f8;border-radius:10px;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#faf8ff;margin-bottom:10px;position:relative;outline:none"'
+        +' onpaste="'+pasteF+'(event)" ondragover="event.preventDefault()" ondrop="'+dropF+'(event)" onclick="this.focus()">'
+        +'<span id="'+popId+'-hint" style="font-size:.78rem;color:#b090e8;text-align:center">📋 Ctrl+V 붙여넣기<br>또는 이미지 드래그</span>'
+        +'<img id="'+popId+'-preview" style="max-width:100%;max-height:180px;border-radius:8px;display:none;object-fit:contain">'
+      +'</div>'
+      +'<div id="'+popId+'-status" style="font-size:.72rem;min-height:14px;margin-bottom:10px;text-align:center"></div>'
+      +'<div style="display:flex;gap:8px;justify-content:flex-end">'
+        +'<button onclick="'+cancelF+'()" style="background:#eee;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;cursor:pointer;font-family:Pretendard,sans-serif;color:#666">취소</button>'
+        +'<button id="'+popId+'-confirm" onclick="'+confirmF+'()" disabled style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:8px;padding:6px 16px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:#5020a0">확인</button>'
+      +'</div>';
+    pop.appendChild(box); document.body.appendChild(pop);
+  }
+  // 리셋
+  var hint=document.getElementById(popId+'-hint'); var prev=document.getElementById(popId+'-preview');
+  var st=document.getElementById(popId+'-status'); var btn=document.getElementById(popId+'-confirm');
+  if(hint)hint.style.display='block'; if(prev){prev.style.display='none';prev.src='';}
+  if(st)st.textContent=''; if(btn)btn.disabled=true;
+  pop.style.display='flex';
+  setTimeout(function(){var a=document.getElementById(popId+'-area');if(a)a.focus();},80);
+}
+function _pcHideImgPopup(popId) { var p=document.getElementById(popId); if(p)p.style.display='none'; }
+function _pcSetPopupPreview(popId, url) {
+  var prev=document.getElementById(popId+'-preview'); var hint=document.getElementById(popId+'-hint');
+  var btn=document.getElementById(popId+'-confirm');
+  if(prev){prev.src=url;prev.style.display='block';}
+  if(hint)hint.style.display='none';
+  if(btn)btn.disabled=false;
+}
+function _pcHandleImgPaste(e, onDone) {
   var its=e.clipboardData&&e.clipboardData.items; if(!its)return;
   for(var i=0;i<its.length;i++){
     if(its[i].type.indexOf('image')!==-1){
       e.preventDefault();
-      var st=document.getElementById('pp-img-status');
-      if(st){st.textContent='⬆️ 업로드 중...';st.style.color='#9040c0';}
-      cloudinaryUpload(its[i].getAsFile(),
-        function(url){_productPendingImgs.push(url);_ppRenderImgs();if(st){st.textContent='✅ 완료 ('+_productPendingImgs.length+'장)';st.style.color='#1a9a60';}},
-        function(err){if(st){st.textContent='❌ '+err;st.style.color='#e03c6e';}}
+      var popId = e.currentTarget ? e.currentTarget.closest('[id$="-area"]') : null;
+      // status id 는 팝업 id 로 찾아야하므로 업로드 공통처리
+      var file=its[i].getAsFile();
+      // 어떤 팝업인지 status 찾기
+      var stEl=null;
+      ['pc-main-img-popup','pc-ref-img-popup'].forEach(function(pid){
+        var a=document.getElementById(pid+'-area');
+        if(a&&a.contains(e.target||document.activeElement)) stEl=document.getElementById(pid+'-status');
+      });
+      if(stEl){stEl.textContent='⬆️ 업로드 중...';stEl.style.color='#9040c0';}
+      cloudinaryUpload(file,
+        function(url){
+          onDone(url);
+          if(stEl){stEl.textContent='✅ 업로드 완료!';stEl.style.color='#1a9a60';}
+        },
+        function(err){if(stEl){stEl.textContent='❌ '+err;stEl.style.color='#e03c6e';}}
       );return;
     }
   }
 }
-function ppHandleDrop(e) {
+function _pcHandleImgDrop(e, onDone) {
   e.preventDefault();
   var file=e.dataTransfer.files&&e.dataTransfer.files[0];
-  if(file&&file.type.indexOf('image')!==-1){
-    var fakeE={clipboardData:{items:[{type:file.type,getAsFile:function(){return file;}}]}};
-    ppHandlePaste(fakeE);
-  }
-}
-function productPopupClose() { var o=document.getElementById('product-popup-overlay'); if(o)o.style.display='none'; }
-function productPopupSave() {
-  var name=(document.getElementById('pp-name').value||'').trim();
-  if(!name){toast('상품명을 입력해요 🛒');return;}
-  var list=loadProducts();
-  if(_productEditId){
-    var idx=list.findIndex(function(x){return x.id===_productEditId;});
-    if(idx!==-1){
-      list[idx].name=name; list[idx].price=document.getElementById('pp-price').value.trim();
-      list[idx].code=document.getElementById('pp-code').value.trim();
-      list[idx].status=document.getElementById('pp-status').value;
-      list[idx].memo=document.getElementById('pp-memo').value.trim();
-      list[idx].imgs=_productPendingImgs.slice();
-    }
-    toast('✏️ 수정됐어요!');
-  } else {
-    list.unshift({id:Date.now(),name:name,price:document.getElementById('pp-price').value.trim(),code:document.getElementById('pp-code').value.trim(),status:document.getElementById('pp-status').value,memo:document.getElementById('pp-memo').value.trim(),imgs:_productPendingImgs.slice()});
-    toast('🛒 상품 등록됐어요!');
-  }
-  saveProducts(list); productPopupClose(); renderProductMgmt();
-}
-function productDel(id) {
-  if(!confirm('이 상품을 삭제할까요?'))return;
-  saveProducts(loadProducts().filter(function(x){return x.id!==id;}));
-  renderProductMgmt(); toast('🗑️ 삭제됐어요');
+  if(!file||file.type.indexOf('image')===-1) return;
+  var fakeE={clipboardData:{items:[{type:file.type,getAsFile:function(){return file;}}]},target:e.target};
+  _pcHandleImgPaste(fakeE, onDone);
 }
 
 /* ══════════════════════════════════
