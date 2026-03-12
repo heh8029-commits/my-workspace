@@ -4814,9 +4814,17 @@ function _pcMakeCard(p) {
   var mainImgUrl = p.mainImg || '';
   var imgs = p.imgs || [];
 
-  // ── 상단: 메인이미지 (전체 너비, 4:3 비율) ──
-  var imgTop = document.createElement('div');
-  imgTop.style.cssText = 'width:100%;padding-top:75%;position:relative;border-bottom:1.5px solid #d8c8f0;overflow:hidden;background:#f5f0ff;cursor:pointer';
+  // 카드 전체: 가로 flex (왼쪽 이미지 | 오른쪽 내용)
+  var body = document.createElement('div');
+  body.style.cssText = 'display:flex;flex:1;min-height:160px';
+
+  // ── 왼쪽: 이미지 컬럼 (고정 너비) ──
+  var imgCol = document.createElement('div');
+  imgCol.style.cssText = 'display:flex;flex-direction:column;flex-shrink:0;width:38%;border-right:1.5px solid #d8c8f0';
+
+  // 큰 메인이미지 (남은 높이 채움)
+  var mainSlot = document.createElement('div');
+  mainSlot.style.cssText = 'flex:1;position:relative;overflow:hidden;background:#f5f0ff;cursor:pointer;min-height:110px';
   if (mainImgUrl) {
     var mi = document.createElement('img');
     mi.src=mainImgUrl; mi.loading='lazy';
@@ -4825,85 +4833,90 @@ function _pcMakeCard(p) {
     mi.onmouseout=function(){jinuThumbHover(this,false);};
     mi.onclick=(function(u){return function(){openImgModal(u);};})(mainImgUrl);
     mi.ondblclick=(function(id){return function(e){e.stopPropagation();pcMainImgOpen(id);};})(p.id);
-    imgTop.appendChild(mi);
+    mainSlot.appendChild(mi);
   } else {
-    imgTop.innerHTML='<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c0a0e8;font-size:.75rem;gap:4px">📷<span>메인이미지</span></div>';
-    imgTop.onclick=(function(id){return function(){pcMainImgOpen(id);};})(p.id);
+    mainSlot.innerHTML='<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c8b0e8;font-size:.72rem;gap:3px">📷<span>메인</span></div>';
+    mainSlot.onclick=(function(id){return function(){pcMainImgOpen(id);};})(p.id);
   }
-  card.appendChild(imgTop);
+  imgCol.appendChild(mainSlot);
 
-  // ── 참고이미지 3슬롯 (가로 분할) ──
-  var imgBot = document.createElement('div');
-  imgBot.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1.5px solid #d8c8f0';
+  // 작은 슬롯 3개 (가로 균등 분할, 고정 높이)
+  var smallRow = document.createElement('div');
+  smallRow.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);height:46px;border-top:1px solid #d8c8f0';
   for (var si=0; si<3; si++) {
-    var sslot = document.createElement('div');
-    sslot.style.cssText = 'position:relative;padding-top:100%;overflow:hidden;background:#f8f5ff;cursor:pointer'
-      + (si<2?';border-right:1px solid #d8c8f0':'');
+    var ss = document.createElement('div');
+    ss.style.cssText = 'position:relative;overflow:hidden;background:#f8f5ff;cursor:pointer'+(si<2?';border-right:1px solid #d8c8f0':'');
     if (imgs[si]) {
       var sm=document.createElement('img'); sm.src=imgs[si]; sm.loading='lazy';
-      sm.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+      sm.style.cssText='width:100%;height:100%;object-fit:cover;display:block';
       sm.onmouseover=function(){jinuThumbHover(this,true);}; sm.onmouseout=function(){jinuThumbHover(this,false);};
       sm.ondblclick=(function(u){return function(){openImgModal(u);};})(imgs[si]);
       var xb=document.createElement('button'); xb.textContent='✕';
-      xb.style.cssText='position:absolute;top:2px;right:2px;background:rgba(224,60,110,.85);border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center';
+      xb.style.cssText='position:absolute;top:1px;right:1px;background:rgba(224,60,110,.85);border:none;border-radius:50%;width:14px;height:14px;color:white;font-size:.45rem;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center';
       xb.onclick=(function(id,idx){return function(e){e.stopPropagation();pcImgDel(id,idx);};})(p.id,si);
-      sslot.appendChild(sm); sslot.appendChild(xb);
+      ss.appendChild(sm); ss.appendChild(xb);
     } else {
-      sslot.innerHTML='<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#d0b8f8;font-size:.8rem">+</div>';
-      sslot.onclick=(function(id){return function(){pcRefImgOpen(id);};})(p.id);
+      ss.innerHTML='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#d0b8f8;font-size:.85rem">+</div>';
+      ss.onclick=(function(id){return function(){pcRefImgOpen(id);};})(p.id);
     }
-    imgBot.appendChild(sslot);
+    smallRow.appendChild(ss);
   }
-  card.appendChild(imgBot);
+  imgCol.appendChild(smallRow);
+  body.appendChild(imgCol);
 
-  // ── 정보 영역 ──
-  var info = document.createElement('div');
-  info.style.cssText = 'padding:10px 12px;display:flex;flex-direction:column;gap:0';
+  // ── 오른쪽: 정보 컬럼 ──
+  var infoCol = document.createElement('div');
+  infoCol.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;padding:9px 10px;gap:0;overflow:hidden';
 
-  // 1행: 분류 + 상태 + 편집/삭제
-  var catColor   = p.cat==='그로스'?'#7040c0': p.cat==='일반'?'#1a9a60':'#aaa';
-  var statusColor= (p.status||'수정')==='완성'?'#1a9a60':'#e07030';
-  var row1=document.createElement('div');
-  row1.style.cssText='display:flex;align-items:center;gap:5px;padding-bottom:7px;border-bottom:1px solid #ede8f8';
-  row1.innerHTML=
-    '<span style="font-size:.7rem;font-weight:700;color:'+catColor+';border:1.5px solid '+catColor+';padding:1px 7px">'+escHtml(p.cat||'분류없음')+'</span>'
-    +'<span style="font-size:.7rem;font-weight:700;color:'+statusColor+';border:1.5px solid '+statusColor+';padding:1px 7px">'+escHtml(p.status||'수정')+'</span>'
-    +'<button onclick="pcEditOpen('+p.id+')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#ccc;font-size:.8rem;padding:0" onmouseover="this.style.color=\'#7040c0\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
-    +'<button onclick="pcCardDel('+p.id+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.8rem;padding:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">🗑️</button>';
-  info.appendChild(row1);
+  var catColor    = p.cat==='그로스'?'#7040c0': p.cat==='일반'?'#1a9a60':'#aaa';
+  var statusColor = (p.status||'수정')==='완성'?'#1a9a60':'#e07030';
 
-  // 2행: 이름 (있을때)
+  // 분류+상태 뱃지 + 편집/삭제 버튼
+  var row1 = document.createElement('div');
+  row1.style.cssText = 'display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #ede8f8;margin-bottom:5px';
+  row1.innerHTML =
+    '<span style="font-size:.68rem;font-weight:700;color:'+catColor+';border:1.5px solid '+catColor+';padding:1px 6px">'+escHtml(p.cat||'분류없음')+'</span>'
+    +'<span style="font-size:.68rem;font-weight:700;color:'+statusColor+';border:1.5px solid '+statusColor+';padding:1px 6px">'+escHtml(p.status||'수정')+'</span>'
+    +'<button onclick="pcEditOpen('+p.id+')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#7040c0\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
+    +'<button onclick="pcCardDel('+p.id+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">🗑️</button>';
+  infoCol.appendChild(row1);
+
+  // 이름
   if (p.name) {
     var rowName=document.createElement('div');
-    rowName.style.cssText='font-size:.72rem;color:#888;padding:5px 0 0;font-weight:600;border-bottom:1px solid #f4f0fc;padding-bottom:4px';
+    rowName.style.cssText='font-size:.72rem;color:#999;font-weight:600;margin-bottom:3px;word-break:break-all';
     rowName.textContent=p.name;
-    info.appendChild(rowName);
+    infoCol.appendChild(rowName);
   }
-
-  // 3행: 제목
+  // 제목
   var rowTitle=document.createElement('div');
-  rowTitle.style.cssText='font-size:.9rem;font-weight:700;color:#2a0a50;line-height:1.4;word-break:break-all;padding-top:5px';
+  rowTitle.style.cssText='font-size:.88rem;font-weight:700;color:#2a0a50;line-height:1.4;word-break:break-all;margin-bottom:5px';
   rowTitle.textContent=p.title||'(제목없음)';
-  info.appendChild(rowTitle);
+  infoCol.appendChild(rowTitle);
 
-  // 4행: 코드명·가격
-  if (p.code||p.price) {
-    var rowCP=document.createElement('div');
-    rowCP.style.cssText='display:flex;gap:8px;flex-wrap:wrap;padding-top:5px;border-top:1px solid #f0ecfc;margin-top:4px';
-    if(p.code){ var sc=document.createElement('span'); sc.style.cssText='font-size:.78rem;color:#555;font-weight:600'; sc.textContent='📦 '+p.code; rowCP.appendChild(sc); }
-    if(p.price){ var sp=document.createElement('span'); sp.style.cssText='font-size:.78rem;color:#1a7a4a;font-weight:700'; sp.textContent='💰 '+p.price; rowCP.appendChild(sp); }
-    info.appendChild(rowCP);
+  // 코드 / 가격 (각 행으로)
+  if (p.code) {
+    var rowCode=document.createElement('div');
+    rowCode.style.cssText='display:flex;gap:4px;align-items:baseline;margin-bottom:3px;border-top:1px solid #f0ecfc;padding-top:4px';
+    rowCode.innerHTML='<span style="font-size:.68rem;color:#aaa;font-weight:700;flex-shrink:0">코드</span><span style="font-size:.78rem;color:#444;font-weight:600;word-break:break-all">'+escHtml(p.code)+'</span>';
+    infoCol.appendChild(rowCode);
   }
-
-  // 5행: 메모
+  if (p.price) {
+    var rowPrice=document.createElement('div');
+    rowPrice.style.cssText='display:flex;gap:4px;align-items:baseline;margin-bottom:3px;border-top:1px solid #f0ecfc;padding-top:4px';
+    rowPrice.innerHTML='<span style="font-size:.68rem;color:#aaa;font-weight:700;flex-shrink:0">가격</span><span style="font-size:.82rem;color:#1a7a4a;font-weight:700">'+escHtml(p.price)+'</span>';
+    infoCol.appendChild(rowPrice);
+  }
+  // 메모
   if (p.memo) {
     var rowMemo=document.createElement('div');
-    rowMemo.style.cssText='font-size:.82rem;color:#333;line-height:1.6;white-space:pre-wrap;word-break:break-all;padding-top:6px;border-top:1px solid #ede8f8;margin-top:5px';
+    rowMemo.style.cssText='font-size:.8rem;color:#333;line-height:1.55;white-space:pre-wrap;word-break:break-all;padding-top:5px;border-top:1px solid #ede8f8;margin-top:2px';
     rowMemo.textContent=p.memo;
-    info.appendChild(rowMemo);
+    infoCol.appendChild(rowMemo);
   }
 
-  card.appendChild(info);
+  body.appendChild(infoCol);
+  card.appendChild(body);
   return card;
 }
 /* ── 카드 추가 (즉시) ── */
