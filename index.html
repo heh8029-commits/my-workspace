@@ -1716,26 +1716,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <input id="order-date" type="date" class="ra-inp" style="flex:1">
           </div>
           <div class="order-row">
-            <label class="order-label">📂 파일위치</label>
-            <input id="order-file" type="text" class="ra-inp" placeholder="파일 경로 또는 위치..." style="flex:1">
-          </div>
-          <div class="order-row">
             <label class="order-label">📝 메모</label>
             <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
-          </div>
-          <div class="order-row" style="align-items:flex-start">
-            <label class="order-label">🖼️ 이미지</label>
-            <div style="flex:1">
-              <div id="order-img-area" tabindex="0"
-                style="border:2px dashed #c0b0f0;border-radius:10px;padding:10px;min-height:54px;background:#faf8ff;cursor:pointer;outline:none;display:flex;align-items:center;gap:6px;flex-wrap:wrap"
-                onpaste="orderHandlePaste(event)"
-                ondragover="event.preventDefault()"
-                ondrop="orderHandleDrop(event)"
-                onclick="this.focus()">
-                <span id="order-img-hint" style="font-size:.76rem;color:#c0a0e8">📋 Ctrl+V 붙여넣기 또는 드래그</span>
-              </div>
-              <div id="order-img-status" style="font-size:.7rem;min-height:14px;margin-top:3px"></div>
-            </div>
           </div>
           <div style="text-align:right;margin-top:6px">
             <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
@@ -1897,11 +1879,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div id="sales-summary" class="sales-summary-grid" style="margin-bottom:16px"></div>
 
       <!-- 테이블 -->
-      <div style="overflow-x:auto;overflow-y:auto;max-height:70vh;border-radius:14px;border:1.5px solid #e8f8ee">
+      <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #e8f8ee">
         <table id="sales-table" style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:800px">
-<<<<<<< HEAD
-          <thead>`;
-=======
           <thead>
             <tr style="background:linear-gradient(135deg,#e8f8ee,#d0f4e0)">
               <th style="padding:11px 8px;text-align:center;font-weight:800;white-space:nowrap;border-bottom:2px solid #b2e8d4;font-size:.82rem;color:#1a5a34">날짜</th>
@@ -6850,7 +6829,6 @@ function renderExp() {
   const tbody = _tbody;
   if (!filtered.length) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--soft)">${currentBankFilter !== '전체' ? currentBankFilter+' 항목이 없어요' : '지출 항목을 등록해요 💳'}</td></tr>`;
->>>>>>> 0b608b63a75996582e70d2eceeb9781cc412dd0f
     document.getElementById('exp-total').textContent = currentBankFilter !== '전체' ? currentBankFilter+' 합계: 0원' : '합계: 0원';
     return;
   }
@@ -7315,8 +7293,6 @@ function renderSalesTable() {
     <td style="${PD}color:#6030b0;font-size:.9rem">-</td>
     <td style="${PD}color:#c03060">-</td>
     <td style="padding:9px 5px;text-align:center;color:#e8648a;font-size:.8rem">-</td>
-<<<<<<< HEAD
-=======
   </tr>
   <tr style="background:linear-gradient(135deg,#e8f8ee,#d0f4e0)">
     <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #b2e8d4;font-size:.78rem;color:#1a5a34">날짜</th>
@@ -7333,7 +7309,6 @@ function renderSalesTable() {
     <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #b090e8;background:#e8deff;font-size:.84rem;color:#5020a0">총<br><span style="font-size:.74rem;color:#7040c0">매출</span></th>
     <th style="padding:8px 8px;text-align:center;font-weight:800;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe0ec;font-size:.78rem;color:#c0204a">총<br><span style="font-size:.7rem;color:#e03c6e">광고비</span></th>
     <th style="padding:8px 5px;text-align:center;font-weight:700;white-space:nowrap;border-top:2px solid #f7a8c0;background:#ffe8f0;font-size:.7rem;color:#e8648a">총<br>광고%</th>
->>>>>>> 0b608b63a75996582e70d2eceeb9781cc412dd0f
   </tr>`;
 
   tbody.innerHTML = rows;
@@ -7571,216 +7546,6 @@ function renderHourly() {
   renderHourlyTable();
 }
 
-
-// ════════════════════════════════════════
-// 주문제작요청 JS
-// ════════════════════════════════════════
-var _orderPendingImgs = [];
-
-function loadOrders()      { return loadObj('order_list').list || []; }
-function saveOrders(list)  { stor('order_list', {list}); }
-
-function orderHandlePaste(e) {
-  var its = e.clipboardData && e.clipboardData.items; if (!its) return;
-  for (var i=0; i<its.length; i++) {
-    if (its[i].type.indexOf('image') !== -1) {
-      e.preventDefault();
-      var st = document.getElementById('order-img-status');
-      if (st) { st.textContent='⬆️ 업로드 중...'; st.style.color='#9040c0'; }
-      cloudinaryUpload(its[i].getAsFile(),
-        function(url) {
-          _orderPendingImgs.push(url);
-          _orderRenderImgs();
-          if (st) { st.textContent='✅ 완료 ('+_orderPendingImgs.length+'장)'; st.style.color='#1a9a60'; }
-        },
-        function(err) { if (st) { st.textContent='❌ '+err; st.style.color='#e03c6e'; } }
-      ); return;
-    }
-  }
-}
-function orderHandleDrop(e) {
-  e.preventDefault();
-  var file = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (file && file.type.indexOf('image') !== -1) {
-    orderHandlePaste({clipboardData:{items:[{type:file.type,getAsFile:function(){return file;}}]},preventDefault:function(){}});
-  }
-}
-function _orderRenderImgs() {
-  var area = document.getElementById('order-img-area'); if (!area) return;
-  var hint = document.getElementById('order-img-hint');
-  area.innerHTML = '';
-  if (hint && !_orderPendingImgs.length) { area.appendChild(hint); return; }
-  _orderPendingImgs.forEach(function(url, i) {
-    var w = document.createElement('div'); w.style.cssText='position:relative;flex-shrink:0';
-    var img = document.createElement('img'); img.src=url; img.loading='lazy';
-    img.style.cssText='width:64px;height:64px;object-fit:cover;border-radius:8px;border:1.5px solid #c0b0f0;cursor:zoom-in';
-    img.onclick = (function(u){ return function(){ openImgModal(u); }; })(url);
-    var xb = document.createElement('button'); xb.textContent='✕';
-    xb.style.cssText='position:absolute;top:-5px;right:-5px;background:#e03c6e;border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.55rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center';
-    xb.onclick = (function(idx){ return function(e){ e.stopPropagation(); _orderPendingImgs.splice(idx,1); _orderRenderImgs(); }; })(i);
-    w.appendChild(img); w.appendChild(xb); area.appendChild(w);
-  });
-  // + 추가 힌트
-  var hint2 = document.createElement('span');
-  hint2.textContent='📋 추가'; hint2.style.cssText='font-size:.72rem;color:#c0a0e8;cursor:pointer';
-  area.appendChild(hint2);
-}
-
-function addOrder() {
-  var date  = (document.getElementById('order-date').value||'').trim();
-  var file  = (document.getElementById('order-file').value||'').trim();
-  var memo  = (document.getElementById('order-memo').value||'').trim();
-  if (!memo && !_orderPendingImgs.length) { toast('내용이나 이미지를 입력해요 📦'); return; }
-  var list = loadOrders();
-  list.unshift({ id:Date.now(), date:date, file:file, memo:memo, imgs:_orderPendingImgs.slice(), done:false });
-  saveOrders(list);
-  document.getElementById('order-date').value = '';
-  document.getElementById('order-file').value = '';
-  document.getElementById('order-memo').value = '';
-  _orderPendingImgs = [];
-  _orderRenderImgs();
-  var st = document.getElementById('order-img-status'); if (st) st.textContent='';
-  renderOrder();
-  toast('📦 등록됐어요!');
-}
-
-function renderOrder() {
-  var el = document.getElementById('order-list'); if (!el) return;
-  var list = loadOrders();
-  if (!list.length) { el.innerHTML='<div class="empty">주문제작 요청을 등록해요 📦</div>'; _renderOrderFilterBar([]); return; }
-  _renderOrderFilterBar(list);
-  el.innerHTML = '';
-  list.forEach(function(it) {
-    var row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #ede8ff';
-    // 왼쪽: 이미지 썸네일 (있을 때)
-    if (it.imgs && it.imgs.length) {
-      var thumb = document.createElement('div');
-      thumb.style.cssText = 'flex-shrink:0;display:flex;flex-direction:column;gap:3px';
-      it.imgs.slice(0,3).forEach(function(url) {
-        var img = document.createElement('img');
-        img.src=url; img.loading='lazy';
-        img.style.cssText='width:52px;height:52px;object-fit:cover;border-radius:7px;border:1.5px solid #c0b0f0;cursor:zoom-in';
-        img.onmouseover=function(){ jinuThumbHover(this,true); };
-        img.onmouseout=function(){ jinuThumbHover(this,false); };
-        img.onclick=(function(u){ return function(){ openImgModal(u); }; })(url);
-        thumb.appendChild(img);
-      });
-      if (it.imgs.length > 3) {
-        var more = document.createElement('div');
-        more.style.cssText='font-size:.65rem;color:#a080d0;text-align:center';
-        more.textContent='+' + (it.imgs.length-3) + '장';
-        thumb.appendChild(more);
-      }
-      row.appendChild(thumb);
-    }
-    // 오른쪽: 내용
-    var info = document.createElement('div');
-    info.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px';
-    // 상단: 날짜 + 완료 체크 + 삭제
-    var topRow = document.createElement('div');
-    topRow.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap';
-    if (it.date) {
-      var dateSpan = document.createElement('span');
-      dateSpan.style.cssText='font-size:.72rem;color:#a080d0;font-weight:600';
-      dateSpan.textContent='📅 '+it.date;
-      topRow.appendChild(dateSpan);
-    }
-    var doneBtn = document.createElement('button');
-    doneBtn.textContent = it.done ? '✅ 완료' : '⬜ 진행중';
-    doneBtn.style.cssText='font-size:.7rem;border:1px solid '+(it.done?'#3dbb8f':'#c0b0f0')+';background:'+(it.done?'#e8fff4':'#f8f4ff')+';color:'+(it.done?'#1a9a60':'#8060e0')+';border-radius:10px;padding:1px 7px;cursor:pointer;font-family:Pretendard,sans-serif';
-    doneBtn.onclick=(function(id){ return function(){ orderToggleDone(id); }; })(it.id);
-    var delBtn = document.createElement('button');
-    delBtn.textContent='🗑️';
-    delBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.8rem;margin-left:auto;padding:0';
-    delBtn.onmouseover=function(){ this.style.color='#e03c6e'; };
-    delBtn.onmouseout=function(){ this.style.color='#ccc'; };
-    delBtn.onclick=(function(id){ return function(){ orderDel(id); }; })(it.id);
-    topRow.appendChild(doneBtn); topRow.appendChild(delBtn);
-    info.appendChild(topRow);
-    // 파일위치
-    if (it.file) {
-      var fileDiv = document.createElement('div');
-      fileDiv.style.cssText='font-size:.74rem;color:#8060c0;word-break:break-all';
-      fileDiv.textContent='📂 '+it.file;
-      info.appendChild(fileDiv);
-    }
-    // 메모
-    if (it.memo) {
-      var memoDiv = document.createElement('div');
-      memoDiv.style.cssText='font-size:.82rem;color:#333;line-height:1.5;white-space:pre-wrap;word-break:break-all'+(it.done?';text-decoration:line-through;color:#aaa':'');
-      memoDiv.textContent=it.memo;
-      info.appendChild(memoDiv);
-    }
-    row.appendChild(info);
-    el.appendChild(row);
-  });
-}
-
-function _renderOrderFilterBar(list) {
-  var bar = document.getElementById('order-filter-bar'); if (!bar) return;
-  var total = list.length, done = list.filter(function(x){return x.done;}).length;
-  bar.innerHTML = '<span style="font-size:.72rem;color:#8060e0;font-weight:600">총 '+total+'건</span>'
-    + (done ? '<span style="font-size:.72rem;color:#1a9a60;font-weight:600"> / 완료 '+done+'건</span>' : '');
-}
-function orderToggleDone(id) {
-  var list = loadOrders();
-  var it = list.find(function(x){return x.id===id;});
-  if (it) { it.done = !it.done; saveOrders(list); renderOrder(); }
-}
-function orderDel(id) {
-  if (!confirm('이 항목을 삭제할까요?')) return;
-  saveOrders(loadOrders().filter(function(x){return x.id!==id;}));
-  renderOrder(); toast('🗑️ 삭제됐어요');
-}
-
-// ════════════════════════════════════════
-// 메모 JS
-// ════════════════════════════════════════
-function loadMemos()      { return loadObj('memo').list || []; }
-function saveMemos(list)  { stor('memo', {list}); }
-
-function addMemo() {
-  var text = (document.getElementById('memo-inp').value||'').trim();
-  if (!text) return;
-  var list = loadMemos();
-  list.unshift({ id:Date.now(), text:text });
-  saveMemos(list);
-  document.getElementById('memo-inp').value = '';
-  renderMemo();
-}
-function renderMemo() {
-  var el = document.getElementById('memo-list'); if (!el) return;
-  var list = loadMemos();
-  if (!list.length) { el.innerHTML='<div class="empty">메모를 추가해요 📝</div>'; return; }
-  el.innerHTML = '';
-  list.forEach(function(it) {
-    var row = document.createElement('div');
-    row.className='item';
-    row.style.cssText='display:flex;align-items:flex-start;gap:6px;padding:6px 0;border-bottom:1px solid #fff8dc';
-    var txt = document.createElement('span');
-    txt.style.cssText='flex:1;font-size:.85rem;color:#555;line-height:1.5;word-break:break-all';
-    txt.textContent=it.text;
-    var delBtn = document.createElement('button');
-    delBtn.textContent='✕';
-    delBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.75rem;padding:0;flex-shrink:0';
-    delBtn.onmouseover=function(){this.style.color='#e03c6e';};
-    delBtn.onmouseout=function(){this.style.color='#ccc';};
-    delBtn.onclick=(function(id){ return function(){ memoDel(id); }; })(it.id);
-    row.appendChild(txt); row.appendChild(delBtn);
-    el.appendChild(row);
-  });
-}
-function memoDel(id) {
-  saveMemos(loadMemos().filter(function(x){return x.id!==id;}));
-  renderMemo();
-}
-
-// ════════════════════════════════════════
-// renderCfg (할일/은희/진우엄마/어플개선 등)
-// ════════════════════════════════════════
-var renderCfg = {};
-
 // ── 퀵 바로가기 FAB ──
 function renderFabIcons() {
   const sc1 = load('shortcuts');
@@ -7868,7 +7633,7 @@ function initRender(pageId) {
     renderWeek();
     Object.keys(renderCfg).forEach(rerender);
     renderOrder();
-    renderMemo && renderMemo();
+    renderExp && renderExp();
     renderFridgeMemo && renderFridgeMemo();
     (function(){ const sc=load('shortcuts'); if(sc&&sc.length) renderShortcuts(sc); })();
     (function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
