@@ -2267,37 +2267,50 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
       <!-- 추가 폼 -->
-      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:16px">
-        <div style="font-size:.92rem;font-weight:700;color:#c04070;margin-bottom:12px">📦 재고 추가</div>
-        <!-- 이미지 붙여넣기 영역 -->
-        <div id="inv-img-drop" style="width:100%;min-height:90px;border:2px dashed #f7a8c0;border-radius:12px;background:#fff8fb;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:12px;position:relative;overflow:hidden" onclick="document.getElementById('inv-img-file').click()" onpaste="invPasteImg(event)">
-          <div id="inv-img-preview" style="display:none;width:100%;height:100%;position:absolute;inset:0">
-            <img id="inv-img-preview-img" style="width:100%;height:100%;object-fit:contain">
-            <button onclick="event.stopPropagation();invClearImg()" style="position:absolute;top:6px;right:6px;background:#e03c6e;border:none;border-radius:50%;width:22px;height:22px;color:white;font-size:.75rem;cursor:pointer;line-height:1">✕</button>
+      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:14px;font-family:Pretendard,sans-serif">
+        <div style="font-size:.88rem;font-weight:700;color:#c04070;margin-bottom:10px">📦 재고 추가</div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <!-- 이미지 클립보드 전용 -->
+          <div id="inv-img-drop" tabindex="0" style="width:72px;height:72px;flex-shrink:0;border:2px dashed #f7a8c0;border-radius:9px;background:#fff8fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;outline:none" onpaste="invPasteImg(event)" onclick="this.focus();toast('이미지를 복사한 뒤 Ctrl+V 해주세요 📋')">
+            <div id="inv-img-preview" style="display:none;width:100%;height:100%;position:absolute;inset:0">
+              <img id="inv-img-preview-img" style="width:100%;height:100%;object-fit:cover">
+              <button onclick="event.stopPropagation();invClearImg()" style="position:absolute;top:2px;right:2px;background:#e03c6e;border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+            </div>
+            <div id="inv-img-placeholder" style="text-align:center;color:#f7a8c0;pointer-events:none">
+              <div style="font-size:1.3rem">📷</div>
+              <div style="font-size:.6rem;margin-top:2px;line-height:1.3">Ctrl+V</div>
+            </div>
           </div>
-          <div id="inv-img-placeholder" style="text-align:center;color:#f7a8c0">
-            <div style="font-size:1.8rem">📷</div>
-            <div style="font-size:.75rem;margin-top:4px">클릭 또는 Ctrl+V로 사진 추가</div>
+          <!-- 입력 필드들 -->
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;gap:5px">
+              <input id="inv-name" type="text" placeholder="상품명" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
+              <input id="inv-link" type="text" placeholder="결제링크 URL" style="flex:1.4;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
+            </div>
+            <div style="display:flex;gap:5px;align-items:center">
+              <input id="inv-price" type="number" placeholder="결제금액" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
+              <input id="inv-qty" type="number" placeholder="수량" style="flex:.7;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
+              <div style="flex:.8;background:#fff0f5;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.82rem;display:flex;align-items:center;gap:3px;white-space:nowrap">
+                <span style="font-size:.68rem;color:#bbb;flex-shrink:0">단가</span>
+                <span id="inv-unit-display" style="font-weight:700;color:#c04070;font-size:.82rem">-</span>
+              </div>
+              <button onclick="invAdd()" style="flex-shrink:0;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:6px 14px;color:white;font-weight:700;font-size:.84rem;cursor:pointer;font-family:Pretendard,sans-serif">+</button>
+            </div>
+            <textarea id="inv-memo" rows="2" placeholder="메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.5"></textarea>
           </div>
         </div>
-        <input id="inv-img-file" type="file" accept="image/*" style="display:none" onchange="invFileImg(this)">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <input id="inv-name" type="text" placeholder="상품명" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')invAdd()">
-          <input id="inv-link" type="text" placeholder="결제 링크 주소" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-          <input id="inv-price" type="number" placeholder="결제금액(원)" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
-          <input id="inv-qty" type="number" placeholder="수량" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
-          <div style="background:#fff0f5;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;display:flex;align-items:center;gap:4px">
-            <span style="font-size:.72rem;color:#aaa;flex-shrink:0">단가</span>
-            <span id="inv-unit-display" style="font-weight:700;color:#c04070">-</span>
-          </div>
-        </div>
-        <textarea id="inv-memo" rows="2" placeholder="메모 (선택)" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:none;margin-bottom:10px;line-height:1.5"></textarea>
-        <button onclick="invAdd()" style="width:100%;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif">+ 재고 추가</button>
       </div>
 
-      <!-- 재고 리스트 -->
+      <!-- 재고 리스트 헤더 -->
+      <div style="display:grid;grid-template-columns:60px 1fr 110px 80px 60px 70px 32px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
+        <div style="padding:6px 8px">사진</div>
+        <div style="padding:6px 8px">상품명 / 링크</div>
+        <div style="padding:6px 8px;text-align:right">결제금액</div>
+        <div style="padding:6px 8px;text-align:center">수량</div>
+        <div style="padding:6px 8px;text-align:right">단가</div>
+        <div style="padding:6px 8px">메모</div>
+        <div style="padding:6px 8px"></div>
+      </div>
       <div id="inv-list"></div>
     </div>
     <div class="subpage" id="menu1-sub-5">
@@ -4668,8 +4681,9 @@ function renderPnlNotes() {
       acts.appendChild(imgDelBtn2);
     }
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
-    card.insertBefore(imgDrop2, txt);
-    card.appendChild(txt); card.appendChild(acts);
+    card.appendChild(imgDrop2);  // 이미지 먼저
+    card.appendChild(txt);       // 텍스트
+    card.appendChild(acts);      // 버튼
     grid.appendChild(card);
   });
 }
@@ -5560,16 +5574,16 @@ function _pcMakeCard(p) {
     +'<button onclick="pcCardDel('+p.id+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">🗑️</button>';
   infoCol.appendChild(row1);
 
-  // 이름
+  // 이름 (파일위치)
   if (p.name) {
     var rowName=document.createElement('div');
-    rowName.style.cssText='font-size:.72rem;color:#999;font-weight:600;margin-bottom:3px;word-break:break-all';
-    rowName.textContent=p.name;
+    rowName.style.cssText='font-size:.8rem;color:#7040c0;font-weight:700;margin-bottom:4px;word-break:break-all;background:#f8f5ff;border-radius:5px;padding:3px 7px;display:flex;align-items:center;gap:4px';
+    rowName.innerHTML='<span style="flex-shrink:0">📁</span><span>'+escHtml(p.name)+'</span>';
     infoCol.appendChild(rowName);
   }
   // 제목
   var rowTitle=document.createElement('div');
-  rowTitle.style.cssText='font-size:.88rem;font-weight:700;color:#2a0a50;line-height:1.4;word-break:break-all;margin-bottom:5px';
+  rowTitle.style.cssText='font-size:.9rem;font-weight:700;color:#2a0a50;line-height:1.4;word-break:break-all;margin-bottom:5px';
   rowTitle.textContent=p.title||'(제목없음)';
   infoCol.appendChild(rowTitle);
 
@@ -5589,7 +5603,7 @@ function _pcMakeCard(p) {
   // 메모
   if (p.memo) {
     var rowMemo=document.createElement('div');
-    rowMemo.style.cssText='font-size:.8rem;color:#333;line-height:1.55;white-space:pre-wrap;word-break:break-all;padding-top:5px;border-top:1px solid #ede8f8;margin-top:2px';
+    rowMemo.style.cssText='font-size:.85rem;color:#333;line-height:1.6;white-space:pre-wrap;word-break:break-all;padding-top:5px;border-top:1px solid #ede8f8;margin-top:2px';
     rowMemo.textContent=p.memo;
     infoCol.appendChild(rowMemo);
   }
@@ -6871,7 +6885,7 @@ function saveInv(list) { stor('inv_list', {list}); }
 var _invImgPending = null;
 
 function invPasteImg(e) {
-  var items = (e.clipboardData||e.originalEvent&&e.originalEvent.clipboardData||{}).items||[];
+  var items = (e.clipboardData||{}).items||[];
   for (var i=0;i<items.length;i++) {
     if (items[i].type.indexOf('image')!==-1) {
       var blob = items[i].getAsFile();
@@ -6882,12 +6896,7 @@ function invPasteImg(e) {
       return;
     }
   }
-}
-function invFileImg(input) {
-  if (!input.files||!input.files[0]) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) { invSetImgPreview(ev.target.result); };
-  reader.readAsDataURL(input.files[0]);
+  toast('이미지를 먼저 복사한 뒤 Ctrl+V 해주세요 📋');
 }
 function invSetImgPreview(dataUrl) {
   _invImgPending = dataUrl;
@@ -6903,11 +6912,9 @@ function invClearImg() {
   var prev = document.getElementById('inv-img-preview');
   var ph   = document.getElementById('inv-img-placeholder');
   var img  = document.getElementById('inv-img-preview-img');
-  var fi   = document.getElementById('inv-img-file');
   if (prev) prev.style.display = 'none';
-  if (ph)   ph.style.display   = 'block';
+  if (ph)   ph.style.display   = 'flex';
   if (img)  img.src = '';
-  if (fi)   fi.value = '';
 }
 function invCalcUnit() {
   var price = parseInt(document.getElementById('inv-price').value)||0;
@@ -6949,33 +6956,38 @@ function renderInv() {
   if (!el) return;
   var list = loadInv();
   if (!list.length) {
-    el.innerHTML='<div class="empty">📦 재고를 추가해요</div>';
+    el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:20px 0;border:1px solid #f0d0e0;border-top:none">📦 재고를 추가해요</div>';
     return;
   }
-  el.innerHTML = list.map(function(it) {
+  var rows = list.map(function(it, idx) {
     var unit = (it.price && it.qty) ? Math.round(it.price/it.qty) : it.unit||0;
-    return '<div style="background:white;border:1.5px solid #f7c0d8;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;font-family:Pretendard,sans-serif">'
-      // 이미지
-      +'<div style="flex-shrink:0;width:90px;height:90px;border-radius:10px;overflow:hidden;border:1.5px solid #f7d0e0;background:#fff8fb;display:flex;align-items:center;justify-content:center">'
-      +(it.img
-        ? '<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" loading="lazy">'
-        : '<span style="font-size:1.6rem;opacity:.3">📦</span>')
+    var bg = idx%2===0 ? 'white' : '#fff8fb';
+    return '<div style="display:grid;grid-template-columns:60px 1fr 110px 80px 60px 70px 32px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
+      // 사진
+      +'<div style="padding:6px 8px">'
+        +'<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center">'
+        +(it.img ? '<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover">' : '<span style="font-size:.9rem;opacity:.3">📦</span>')
+        +'</div></div>'
+      // 상품명 + 링크
+      +'<div style="padding:6px 8px;min-width:0">'
+        +'<div style="font-size:.83rem;font-weight:700;color:#1a0a2e;word-break:break-all;line-height:1.4">'+escHtml(it.name||'-')+'</div>'
+        +(it.link ? '<a href="'+escHtml(it.link)+'" target="_blank" style="font-size:.7rem;color:#4a80d0;text-decoration:none">🔗 링크</a>' : '')
       +'</div>'
-      // 내용
-      +'<div style="flex:1;min-width:0">'
-        +'<div style="font-size:.95rem;font-weight:800;color:#2a1a3a;margin-bottom:6px">'+escHtml(it.name)+'</div>'
-        +(it.link ? '<a href="'+escHtml(it.link)+'" target="_blank" style="font-size:.75rem;color:#4a80d0;text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-bottom:6px;word-break:break-all">🔗 결제링크</a>' : '')
-        +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">'
-          +(it.price?'<span style="background:#fff0f5;border:1px solid #f7a8c0;border-radius:8px;padding:2px 9px;font-size:.78rem;font-weight:700;color:#c04070">💳 '+Number(it.price).toLocaleString()+'원</span>':'')
-          +(it.qty?'<span style="background:#f0fff8;border:1px solid #a0e0c0;border-radius:8px;padding:2px 9px;font-size:.78rem;font-weight:700;color:#1a7a50">📦 '+it.qty+'개</span>':'')
-          +(unit?'<span style="background:#f8f5ff;border:1px solid #d0b8f8;border-radius:8px;padding:2px 9px;font-size:.78rem;font-weight:700;color:#6040a0">단가 '+Number(unit).toLocaleString()+'원</span>':'')
-        +'</div>'
-        +(it.memo?'<div style="font-size:.8rem;color:#888;line-height:1.5;word-break:break-all">'+escHtml(it.memo)+'</div>':'')
+      // 결제금액
+      +'<div style="padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#c04070">'+(it.price?Number(it.price).toLocaleString()+'원':'–')+'</div>'
+      // 수량
+      +'<div style="padding:6px 8px;text-align:center;font-size:.82rem;color:#333">'+(it.qty?it.qty+'개':'–')+'</div>'
+      // 단가
+      +'<div style="padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#6040a0">'+(unit?Number(unit).toLocaleString()+'원':'–')+'</div>'
+      // 메모
+      +'<div style="padding:6px 8px;font-size:.75rem;color:#888;word-break:break-all;line-height:1.4">'+escHtml(it.memo||'')+'</div>'
+      // 삭제
+      +'<div style="padding:6px 4px;text-align:center">'
+        +'<button onclick="invDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
       +'</div>'
-      // 삭제버튼
-      +'<button onclick="invDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.85rem;cursor:pointer;flex-shrink:0;padding:2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">🗑️</button>'
       +'</div>';
   }).join('');
+  el.innerHTML = rows;
 }
 
 /* ══════════════════════════════════
