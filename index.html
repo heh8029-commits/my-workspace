@@ -2257,9 +2257,42 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="subpage" id="menu1-sub-4">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#fcd5e5)">📦</div>
-        <div><div class="subpage-title">재고관리 (단가)</div><div class="subpage-desc">재고 현황과 단가를 관리해요</div></div>
+        <div><div class="subpage-title">재고관리</div><div class="subpage-desc">재고 현황과 단가를 관리해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">재고 수량, 단가 등을 여기에 채워요</span></div>
+
+      <!-- 추가 폼 -->
+      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:16px">
+        <div style="font-size:.92rem;font-weight:700;color:#c04070;margin-bottom:12px">📦 재고 추가</div>
+        <!-- 이미지 붙여넣기 영역 -->
+        <div id="inv-img-drop" style="width:100%;min-height:90px;border:2px dashed #f7a8c0;border-radius:12px;background:#fff8fb;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:12px;position:relative;overflow:hidden" onclick="document.getElementById('inv-img-file').click()" onpaste="invPasteImg(event)">
+          <div id="inv-img-preview" style="display:none;width:100%;height:100%;position:absolute;inset:0">
+            <img id="inv-img-preview-img" style="width:100%;height:100%;object-fit:contain">
+            <button onclick="event.stopPropagation();invClearImg()" style="position:absolute;top:6px;right:6px;background:#e03c6e;border:none;border-radius:50%;width:22px;height:22px;color:white;font-size:.75rem;cursor:pointer;line-height:1">✕</button>
+          </div>
+          <div id="inv-img-placeholder" style="text-align:center;color:#f7a8c0">
+            <div style="font-size:1.8rem">📷</div>
+            <div style="font-size:.75rem;margin-top:4px">클릭 또는 Ctrl+V로 사진 추가</div>
+          </div>
+        </div>
+        <input id="inv-img-file" type="file" accept="image/*" style="display:none" onchange="invFileImg(this)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="inv-name" type="text" placeholder="상품명" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')invAdd()">
+          <input id="inv-link" type="text" placeholder="결제 링크 주소" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="inv-price" type="number" placeholder="결제금액(원)" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
+          <input id="inv-qty" type="number" placeholder="수량" style="border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
+          <div style="background:#fff0f5;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;display:flex;align-items:center;gap:4px">
+            <span style="font-size:.72rem;color:#aaa;flex-shrink:0">단가</span>
+            <span id="inv-unit-display" style="font-weight:700;color:#c04070">-</span>
+          </div>
+        </div>
+        <textarea id="inv-memo" rows="2" placeholder="메모 (선택)" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:none;margin-bottom:10px;line-height:1.5"></textarea>
+        <button onclick="invAdd()" style="width:100%;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif">+ 재고 추가</button>
+      </div>
+
+      <!-- 재고 리스트 -->
+      <div id="inv-list"></div>
     </div>
     <div class="subpage" id="menu1-sub-5">
       <div class="subpage-header">
@@ -2743,6 +2776,9 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               <div style="font-size:.95rem;font-weight:700;color:#1a6a9a">🧳 준비물 체크리스트</div>
               <button onclick="tripCheckReset()" style="background:#fff0f0;border:1.5px solid #f7a8c0;border-radius:8px;padding:3px 10px;font-size:.72rem;color:#e03c6e;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">🔄 초기화</button>
             </div>
+            <!-- 분류 탭 -->
+            <div id="trip-check-tabs" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"></div>
+            <!-- 입력폼 -->
             <div style="display:flex;gap:5px;margin-bottom:8px;align-items:center">
               <select id="trip-check-who" style="border:1.5px solid #a8e0f8;border-radius:7px;padding:5px 6px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
                 <option value="공통">🏠 공통</option>
@@ -3083,7 +3119,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -6226,20 +6262,56 @@ var _whoColors = {
 var _whoOrder = ['공통','은희','진우','민호'];
 
 /* ── 체크리스트 (4열 그리드) ── */
+var _tripCheckFilter = '전체';
+
+function renderTripCheckTabs() {
+  var bar = document.getElementById('trip-check-tabs');
+  if (!bar) return;
+  var tabs = ['전체','공통','은희','진우','민호'];
+  var tabColors = {
+    '전체': {border:'#a8e0f8',text:'#1a6a9a',on:'linear-gradient(135deg,#a8e0f8,#2090d0)'},
+    '공통': {border:'#c0b0f0',text:'#6040a0',on:'linear-gradient(135deg,#e0d8ff,#8060c0)'},
+    '은희': {border:'#f7a8c0',text:'#c04070',on:'linear-gradient(135deg,#ffd0e8,#e03c6e)'},
+    '진우': {border:'#a0c4f0',text:'#2060a0',on:'linear-gradient(135deg,#b8d8ff,#2060a0)'},
+    '민호': {border:'#a0d8b8',text:'#1a7a40',on:'linear-gradient(135deg,#b8f0d0,#1a8a50)'},
+  };
+  bar.innerHTML = '';
+  tabs.forEach(function(tab) {
+    var isActive = (_tripCheckFilter === tab);
+    var c = tabColors[tab];
+    var btn = document.createElement('button');
+    btn.textContent = tab;
+    btn.style.cssText = 'padding:4px 13px;border-radius:20px;border:1.5px solid '+c.border
+      +';background:'+(isActive?c.on:'white')+';color:'+(isActive?'white':c.text)
+      +';font-size:.78rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;transition:all .12s';
+    btn.onclick = (function(t){ return function(){
+      _tripCheckFilter = t;
+      renderTripCheckTabs();
+      renderTripChecks();
+    }; })(tab);
+    bar.appendChild(btn);
+  });
+}
+
 function renderTripChecks() {
   var el = document.getElementById('trip-check-list');
   if (!el) return;
+  renderTripCheckTabs();
   var raw = loadTripChecks();
-  var items = raw.slice().sort(function(a,b){
+  var filtered = _tripCheckFilter === '전체'
+    ? raw.slice()
+    : raw.filter(function(x){ return x.who === _tripCheckFilter; });
+  filtered.sort(function(a,b){
     var ai=_whoOrder.indexOf(a.who); var bi=_whoOrder.indexOf(b.who);
     if(ai===-1)ai=99; if(bi===-1)bi=99; return ai-bi;
   });
-  if (!items.length) {
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.78rem;padding:10px 0">준비물을 추가해요 🧳</div>';
+  if (!filtered.length) {
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.78rem;padding:14px 0">'
+      +(_tripCheckFilter==='전체'?'준비물을 추가해요 🧳':_tripCheckFilter+' 준비물이 없어요')+'</div>';
     return;
   }
   el.innerHTML = '';
-  items.forEach(function(item) {
+  filtered.forEach(function(item) {
     var card = document.createElement('div');
     card.className = 'trip-check-item' + (item.checked?' checked':'');
     card.dataset.id = item.id;
@@ -6249,24 +6321,18 @@ function renderTripChecks() {
       var idx=list.findIndex(function(x){return x.id===id;});
       if(idx!==-1){list[idx].checked=!list[idx].checked;saveTripChecks(list);renderTripChecks();}
     };})(item.id);
-
     var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
-
-    // compact: 체크박스 + 분류뱃지 + 텍스트 + 삭제 한 줄
     var chk = document.createElement('div');
     chk.className = 'trip-check-chk';
     chk.innerHTML = item.checked ? '<span style="color:white;font-size:.55rem;font-weight:700">✓</span>' : '';
-
     var who = document.createElement('span');
     who.className = 'trip-check-who';
     who.textContent = item.who||'';
     who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
-
     var label = document.createElement('span');
     label.className = 'trip-check-label';
     label.textContent = item.text;
-    label.title = item.text; // 말줄임 시 툴팁
-
+    label.title = item.text;
     var del = document.createElement('button');
     del.className = 'trip-check-del';
     del.textContent = '✕';
@@ -6275,7 +6341,6 @@ function renderTripChecks() {
       saveTripChecks(loadTripChecks().filter(function(x){return x.id!==id;}));
       renderTripChecks();
     };})(item.id);
-
     card.appendChild(chk); card.appendChild(who); card.appendChild(label); card.appendChild(del);
     el.appendChild(card);
   });
@@ -6718,6 +6783,122 @@ function tripComAdd() {
   document.getElementById('trip-com-item').value='';
   document.getElementById('trip-com-amt').value='';
   renderTripCom();
+}
+
+/* ══════════════════════════════════
+   재고관리 JS
+══════════════════════════════════ */
+function loadInv()     { return loadObj('inv_list').list || []; }
+function saveInv(list) { stor('inv_list', {list}); }
+
+var _invImgPending = null;
+
+function invPasteImg(e) {
+  var items = (e.clipboardData||e.originalEvent&&e.originalEvent.clipboardData||{}).items||[];
+  for (var i=0;i<items.length;i++) {
+    if (items[i].type.indexOf('image')!==-1) {
+      var blob = items[i].getAsFile();
+      var reader = new FileReader();
+      reader.onload = function(ev) { invSetImgPreview(ev.target.result); };
+      reader.readAsDataURL(blob);
+      e.preventDefault();
+      return;
+    }
+  }
+}
+function invFileImg(input) {
+  if (!input.files||!input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) { invSetImgPreview(ev.target.result); };
+  reader.readAsDataURL(input.files[0]);
+}
+function invSetImgPreview(dataUrl) {
+  _invImgPending = dataUrl;
+  var img = document.getElementById('inv-img-preview-img');
+  var prev = document.getElementById('inv-img-preview');
+  var ph = document.getElementById('inv-img-placeholder');
+  if (img) img.src = dataUrl;
+  if (prev) prev.style.display = 'block';
+  if (ph)   ph.style.display   = 'none';
+}
+function invClearImg() {
+  _invImgPending = null;
+  var prev = document.getElementById('inv-img-preview');
+  var ph   = document.getElementById('inv-img-placeholder');
+  var img  = document.getElementById('inv-img-preview-img');
+  var fi   = document.getElementById('inv-img-file');
+  if (prev) prev.style.display = 'none';
+  if (ph)   ph.style.display   = 'block';
+  if (img)  img.src = '';
+  if (fi)   fi.value = '';
+}
+function invCalcUnit() {
+  var price = parseInt(document.getElementById('inv-price').value)||0;
+  var qty   = parseInt(document.getElementById('inv-qty').value)||0;
+  var el    = document.getElementById('inv-unit-display');
+  if (!el) return;
+  if (price && qty) el.textContent = Math.round(price/qty).toLocaleString()+'원';
+  else el.textContent = '-';
+}
+function invAdd() {
+  var name  = (document.getElementById('inv-name').value||'').trim();
+  var link  = (document.getElementById('inv-link').value||'').trim();
+  var price = parseInt(document.getElementById('inv-price').value)||0;
+  var qty   = parseInt(document.getElementById('inv-qty').value)||0;
+  var memo  = (document.getElementById('inv-memo').value||'').trim();
+  if (!name) { toast('상품명을 입력해줘요 📦'); return; }
+  var unit = (price && qty) ? Math.round(price/qty) : 0;
+  var list = loadInv();
+  list.unshift({id:Date.now(), img:_invImgPending||null, name, link, price, qty, unit, memo});
+  saveInv(list);
+  // 입력 초기화
+  ['inv-name','inv-link','inv-price','inv-qty','inv-memo'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  invClearImg();
+  invCalcUnit();
+  renderInv();
+  toast('📦 재고가 추가됐어요!');
+}
+
+function invDel(id) {
+  if (!confirm('이 재고를 삭제할까요?')) return;
+  saveInv(loadInv().filter(function(x){return x.id!==id;}));
+  renderInv(); toast('🗑️ 삭제됐어요');
+}
+
+function renderInv() {
+  var el = document.getElementById('inv-list');
+  if (!el) return;
+  var list = loadInv();
+  if (!list.length) {
+    el.innerHTML='<div class="empty">📦 재고를 추가해요</div>';
+    return;
+  }
+  el.innerHTML = list.map(function(it) {
+    var unit = (it.price && it.qty) ? Math.round(it.price/it.qty) : it.unit||0;
+    return '<div style="background:white;border:1.5px solid #f7c0d8;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;font-family:Pretendard,sans-serif">'
+      // 이미지
+      +'<div style="flex-shrink:0;width:90px;height:90px;border-radius:10px;overflow:hidden;border:1.5px solid #f7d0e0;background:#fff8fb;display:flex;align-items:center;justify-content:center">'
+      +(it.img
+        ? '<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" loading="lazy">'
+        : '<span style="font-size:1.6rem;opacity:.3">📦</span>')
+      +'</div>'
+      // 내용
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:.95rem;font-weight:800;color:#2a1a3a;margin-bottom:6px">'+escHtml(it.name)+'</div>'
+        +(it.link ? '<a href="'+escHtml(it.link)+'" target="_blank" style="font-size:.75rem;color:#4a80d0;text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-bottom:6px;word-break:break-all">🔗 결제링크</a>' : '')
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">'
+          +(it.price?'<span style="background:#fff0f5;border:1px solid #f7a8c0;border-radius:8px;padding:2px 9px;font-size:.78rem;font-weight:700;color:#c04070">💳 '+Number(it.price).toLocaleString()+'원</span>':'')
+          +(it.qty?'<span style="background:#f0fff8;border:1px solid #a0e0c0;border-radius:8px;padding:2px 9px;font-size:.78rem;font-weight:700;color:#1a7a50">📦 '+it.qty+'개</span>':'')
+          +(unit?'<span style="background:#f8f5ff;border:1px solid #d0b8f8;border-radius:8px;padding:2px 9px;font-size:.78rem;font-weight:700;color:#6040a0">단가 '+Number(unit).toLocaleString()+'원</span>':'')
+        +'</div>'
+        +(it.memo?'<div style="font-size:.8rem;color:#888;line-height:1.5;word-break:break-all">'+escHtml(it.memo)+'</div>':'')
+      +'</div>'
+      // 삭제버튼
+      +'<button onclick="invDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.85rem;cursor:pointer;flex-shrink:0;padding:2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">🗑️</button>'
+      +'</div>';
+  }).join('');
 }
 
 /* ══════════════════════════════════
@@ -7731,6 +7912,9 @@ function switchSub(pageId, num, el) {
   }
   if (pageId === 'menu1' && num === 18) {
     setTimeout(function(){ renderProductMgmt && renderProductMgmt(); }, 0);
+  }
+  if (pageId === 'menu1' && num === 4) {
+    setTimeout(function(){ renderInv && renderInv(); }, 0);
   }
   if (pageId === 'menu1' && num === 19) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
@@ -9185,6 +9369,7 @@ function initRender(pageId) {
     renderHourly && renderHourly();
     renderStaff && renderStaff();
     renderPnlPage && renderPnlPage();
+    renderInv && renderInv();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
