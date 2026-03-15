@@ -857,7 +857,7 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 }
 /* ── 비밀번호 관리 테이블 ── */
 .pw-table-wrap { font-family:Pretendard,sans-serif; border:1.5px solid #e0e0e0; border-radius:12px; overflow:hidden; }
-.pw-header { display:grid; grid-template-columns:1.4fr 1.2fr 1.2fr 1.6fr 56px; background:#f5f5f5; border-bottom:2px solid #ddd; }
+.pw-header { display:grid; grid-template-columns:1.4fr 1.2fr 1.2fr 1.6fr 56px; background:#f5f5f5; border-bottom:2px solid #ddd; grid-column:1/-1; }
 .pw-col { padding:8px 10px; font-size:.75rem; font-weight:700; color:#555; }
 .pw-row { display:grid; grid-template-columns:1.4fr 1.2fr 1.2fr 1.6fr 56px; border-bottom:1px solid #eee; align-items:center; background:white; transition:background .1s; }
 .pw-row:last-child { border-bottom:none; }
@@ -3048,13 +3048,6 @@ function pwaInstall() {
         </div>
         <!-- 테이블 헤더 -->
         <div class="pw-table-wrap">
-          <div class="pw-header">
-            <div class="pw-col pw-site">사이트</div>
-            <div class="pw-col pw-id">아이디</div>
-            <div class="pw-col pw-pw">비밀번호</div>
-            <div class="pw-col pw-memo">메모</div>
-            <div class="pw-col pw-act"></div>
-          </div>
           <div id="pw-list"></div>
         </div>
       </div>
@@ -10429,13 +10422,24 @@ function renderPwList() {
   var el = document.getElementById('pw-list');
   if (!el) return;
   var list = loadPwList();
-  if (!list.length) {
-    el.style.display = 'block';
-    el.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;font-size:.82rem;grid-column:1/-1">+ 추가 버튼으로 등록해요 🔑</div>';
-    return;
-  }
+
   el.style.display = 'grid';
   el.innerHTML = '';
+
+  // 헤더 (전체 너비)
+  var header = document.createElement('div');
+  header.className = 'pw-header';
+  header.style.gridColumn = '1 / -1';
+  header.innerHTML = '<div class="pw-col">사이트</div><div class="pw-col">아이디</div><div class="pw-col">비밀번호</div><div class="pw-col">메모</div><div class="pw-col"></div>';
+  el.appendChild(header);
+
+  if (!list.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:20px;text-align:center;color:#bbb;font-size:.82rem;grid-column:1/-1';
+    empty.textContent = '+ 추가 버튼으로 등록해요 🔑';
+    el.appendChild(empty);
+    return;
+  }
   list.forEach(function(item) {
     var row = document.createElement('div');
     row.className = 'pw-row' + (item._editing ? ' pw-editing' : '');
