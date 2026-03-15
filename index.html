@@ -387,6 +387,7 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 ──────────────────────────────── */
 .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:16px; align-items:start; }
 .three-col > .card { display:flex; flex-direction:column; height:480px; overflow:hidden; }
+.three-col > .card.order-memo-col { height:auto; min-height:100px; overflow:visible; }
 .three-col > .card .ilist { flex:1; max-height:none !important; overflow-y:auto; }
 .three-col > .card .order-form { flex-shrink:0; }
 .three-col > .card .inp-row { flex-shrink:0; }
@@ -1693,8 +1694,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div class="week-row" id="week-row"></div>
     </div>
 
-    <!-- 할일 | 주문제작요청 | 메모 -->
-    <div class="sec">✅ 할일 &nbsp;|&nbsp; 📦 주문제작요청 &nbsp;|&nbsp; 📝 메모</div>
+    <!-- 할일 | 주문제작요청 -->
+    <div class="sec">✅ 할일 &nbsp;|&nbsp; 📦 주문제작요청</div>
     <div class="three-col">
 
       <!-- 할일 -->
@@ -1707,7 +1708,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div class="ilist" id="todo-list"><div class="empty">할 일을 추가해요 🌸</div></div>
       </div>
 
-      <!-- 주문제작요청 -->
+      <!-- 주문제작요청 입력 -->
       <div class="card" style="border-top:3px solid #b0a0f8">
         <div style="font-size:.95rem;color:#8060e0;margin-bottom:10px">📦 주문제작요청</div>
         <div class="order-form">
@@ -1723,10 +1724,9 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <label class="order-label">📝 메모</label>
             <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
           </div>
-          <!-- 이미지 붙여넣기 영역 -->
-          <div id="order-img-zone" onclick="document.getElementById('order-img-file').click()" onpaste="orderHandlePaste(event)" ondragover="event.preventDefault();this.style.borderColor='#8060e0'" ondragleave="this.style.borderColor='#c8b8f8'" ondrop="orderHandleDrop(event)" tabindex="0"
-            style="border:2px dashed #c8b8f8;border-radius:10px;padding:10px 12px;font-size:.78rem;color:#aaa;cursor:pointer;text-align:center;background:#f9f7ff;margin-top:2px;outline:none;transition:border-color .15s;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
-            <span id="order-img-hint">🖼️ 이미지 클릭/붙여넣기(Ctrl+V)/드래그</span>
+          <!-- 이미지 첨부 버튼 -->
+          <div style="margin-top:4px">
+            <button type="button" onclick="document.getElementById('order-img-file').click()" style="background:linear-gradient(135deg,#ede8ff,#c8b8f8);border:1.5px solid #b0a0f8;border-radius:9px;padding:5px 13px;font-size:.78rem;font-weight:700;color:#6040c0;cursor:pointer;font-family:Pretendard,sans-serif">🖼️ 이미지 첨부</button>
             <input id="order-img-file" type="file" accept="image/*" multiple style="display:none" onchange="orderHandleFile(event)">
           </div>
           <div id="order-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
@@ -1734,47 +1734,19 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
           </div>
         </div>
-        <div id="order-filter-bar" style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px"></div>
+      </div>
+
+      <!-- 주문제작 메모 목록 -->
+      <div class="card order-memo-col" style="border-top:3px solid #b0a0f8">
+        <div style="font-size:.95rem;color:#8060e0;margin-bottom:8px">📋 주문제작 목록</div>
+        <div id="order-filter-bar" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px"></div>
         <div class="ilist order-list" id="order-list"><div class="empty">주문제작 요청을 등록해요 📦</div></div>
       </div>
 
-      <!-- 메모 -->
-      <div class="card cy">
-        <div style="font-size:.95rem;color:#a07800;margin-bottom:10px">📝 메모</div>
-        <div class="inp-row">
-          <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addMemo()}" onpaste="memoHandlePaste(event)"></textarea>
-          <button class="abtn ylw-btn" onclick="addMemo()">+</button>
-        </div>
-        <!-- 메모 이미지 미리보기 -->
-        <div id="memo-img-preview" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px"></div>
-        <div class="ilist" id="memo-list"><div class="empty">메모를 추가해요 📝</div></div>
-      </div>
-
     </div>
 
-    <div id="sb-basic-flow"></div>
-    <!-- 기본 할일 플로우 -->
-    <div class="sec">⏰ 기본 할일</div>
-    <div class="card cm">
-      <div class="flow-wrap" id="basic-flow"></div>
-    </div>
-
-
-    <div id="sb-sched"></div>
-    <!-- 일정 -->
-    <div class="sec">🗓️ 일정</div>
-    <div class="card cm">
-      <div style="font-size:.95rem;color:var(--mint-dark);margin-bottom:10px">🗓️ 일정</div>
-      <div class="inp-row">
-        <input id="sched-date" type="date" style="max-width:150px">
-        <textarea id="sched-inp" rows="2" placeholder="일정 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addSched()}" style="flex:1"></textarea>
-        <button class="abtn mint-btn" onclick="addSched()">+</button>
-      </div>
-      <div class="ilist" id="sched-list"><div class="empty">일정을 추가해요 🗓️</div></div>
-    </div>
-
-    <!-- 은희 | 진우엄마 | 어플개선메모 -->
-    <div class="sec">🌸 은희 할일 &nbsp;|&nbsp; 🐣 진우엄마 할일 &nbsp;|&nbsp; 💡 어플개선메모</div>
+    <!-- 은희 할일 | 메모 | 어플개선메모 -->
+    <div class="sec">🌸 은희 할일 &nbsp;|&nbsp; 📝 메모 &nbsp;|&nbsp; 💡 어플개선메모</div>
     <div class="three-col">
 
       <!-- 은희 -->
@@ -1787,14 +1759,16 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div class="ilist" id="eun-list"><div class="empty">할 일을 추가해요 🌸</div></div>
       </div>
 
-      <!-- 진우엄마 -->
-      <div class="card cpe">
-        <div style="font-size:.95rem;color:var(--peach-dark);margin-bottom:10px">🐣 진우엄마 할일</div>
+      <!-- 메모 -->
+      <div class="card cy">
+        <div style="font-size:.95rem;color:#a07800;margin-bottom:10px">📝 메모</div>
         <div class="inp-row">
-          <textarea id="jin-inp" rows="2" placeholder="진우엄마 할 일..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addJin()}"></textarea>
-          <button class="abtn pch-btn" onclick="addJin()">+</button>
+          <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addMemo()}" onpaste="memoHandlePaste(event)"></textarea>
+          <button class="abtn ylw-btn" onclick="addMemo()">+</button>
         </div>
-        <div class="ilist" id="jin-list"><div class="empty">할 일을 추가해요 🐣</div></div>
+        <!-- 메모 이미지 미리보기 -->
+        <div id="memo-img-preview" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px"></div>
+        <div class="ilist" id="memo-list"><div class="empty">메모를 추가해요 📝</div></div>
       </div>
 
       <!-- 어플개선메모 -->
@@ -3130,7 +3104,7 @@ function sbScrollTo(id) {
 
 // 스크롤 시 사이드바 활성 메뉴 자동 변경
 (function() {
-  const anchors = ['sb-shortcuts','sb-boss-flow','sb-design-flow','sb-week','sb-todo','sb-order','sb-memo','sb-basic-flow','sb-sched','sb-eun','sb-jin','sb-app'];
+  const anchors = ['sb-shortcuts','sb-boss-flow','sb-design-flow','sb-week','sb-todo','sb-order','sb-memo','sb-eun','sb-app'];
   window.addEventListener('scroll', () => {
     if (document.getElementById('home') && !document.getElementById('home').classList.contains('active')) return;
     let current = anchors[0];
@@ -3289,8 +3263,8 @@ const renderCfg = {
 
 function rerender(key) {
   const [elId, cls, msg] = renderCfg[key];
+  if (!document.getElementById(elId)) return;
   renderList(key, elId, cls, msg);
-
 }
 
 // ── 추가 함수 ──
@@ -7790,7 +7764,7 @@ function initPage(pageId) { /* 단일파일 - goTab이 처리 */ }
 
 function initRender(pageId) {
   if (pageId === 'home') {
-    ['boss','basic','design'].forEach(renderFlow);
+    ['boss','design'].forEach(renderFlow);
     renderWeek();
     Object.keys(renderCfg).forEach(rerender);
     renderOrder();
