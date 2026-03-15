@@ -1757,12 +1757,12 @@ function pwaInstall() {
 </div>
 
 <div class="mobile-subnav" id="msubnav-menu5">
-  <button class="msub-btn" onclick="switchSub('menu5',0,null);setMobileSubActive(this)">📈 보유종목</button>
-  <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💹 수익현황</button>
-  <button class="msub-btn" onclick="switchSub('menu5',2,null);setMobileSubActive(this)">📓 매매일지</button>
-  <button class="msub-btn" onclick="switchSub('menu5',3,null);setMobileSubActive(this)">⭐ 관심종목</button>
-  <button class="msub-btn" onclick="switchSub('menu5',4,null);setMobileSubActive(this)">📰 뉴스/정보</button>
-  <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">🎯 목표관리</button>
+  <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
+  <button class="msub-btn" onclick="switchSub('menu5',2,null);setMobileSubActive(this)">🔄 자동이체리스트</button>
+  <button class="msub-btn" onclick="switchSub('menu5',3,null);setMobileSubActive(this)">📈 투자&연금</button>
+  <button class="msub-btn" onclick="switchSub('menu5',4,null);setMobileSubActive(this)">🏦 대출</button>
+  <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">💊 건강,청결</button>
+  <button class="msub-btn" onclick="switchSub('menu5',6,null);setMobileSubActive(this)">📚 지식자산</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu4">
   <button class="msub-btn" onclick="setMobileSubActive(this)">🔒 정보</button>
@@ -1812,11 +1812,12 @@ function pwaInstall() {
     <span class="gnav-main-icon">📈</span> 자산관리
   </div>
   <div class="gnav-subs" id="gnav-subs-menu5">
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',1,null)">📊 보유 종목</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null)">💰 수익 현황</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',3,null)">📋 매매 일지</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',4,null)">🔍 관심 종목</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',5,null)">📰 뉴스/정보</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',1,null)">💰 현재자산정보</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null)">🔄 자동이체리스트</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',3,null)">📈 투자&연금</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',4,null)">🏦 대출</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',5,null)">💊 건강,청결</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',6,null)">📚 지식자산</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',6,null)">🎯 목표 관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',7,null)">💳 배당 기록</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',8,null)">📉 손실 기록</div>
@@ -2905,78 +2906,50 @@ function pwaInstall() {
   </div>
 
 
-  <!-- ══════════════ 투자 ══════════════ -->
+  <!-- ══════════════ 자산관리 ══════════════ -->
   <div class="page" id="menu5">
-            <div class="subpage active" id="menu5-sub-1">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📊</div>
-      <div><div class="subpage-title">보유 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    <div class="subpage active" id="menu5-sub-1">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💰</div>
+        <div><div class="subpage-title">현재자산정보</div><div class="subpage-desc">현재 보유 자산을 한눈에 정리해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 현재자산정보 내용을 채워요</span></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 보유 종목 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-2">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💰</div>
-      <div><div class="subpage-title">수익 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    <div class="subpage" id="menu5-sub-2">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🔄</div>
+        <div><div class="subpage-title">자동이체리스트</div><div class="subpage-desc">정기 자동이체 내역을 관리해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 자동이체리스트 내용을 채워요</span></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 수익 현황 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-3">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📋</div>
-      <div><div class="subpage-title">매매 일지</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    <div class="subpage" id="menu5-sub-3">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📈</div>
+        <div><div class="subpage-title">투자&연금</div><div class="subpage-desc">투자 현황과 연금 정보를 정리해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 투자&연금 내용을 채워요</span></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 매매 일지 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-4">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🔍</div>
-      <div><div class="subpage-title">관심 종목</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    <div class="subpage" id="menu5-sub-4">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🏦</div>
+        <div><div class="subpage-title">대출</div><div class="subpage-desc">대출 현황과 상환 계획을 관리해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 대출 내용을 채워요</span></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 관심 종목 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-5">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📰</div>
-      <div><div class="subpage-title">뉴스/정보</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    <div class="subpage" id="menu5-sub-5">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💊</div>
+        <div><div class="subpage-title">건강,청결</div><div class="subpage-desc">건강 관리와 청결 습관을 기록해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 건강,청결 내용을 채워요</span></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 뉴스/정보 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-6">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🎯</div>
-      <div><div class="subpage-title">목표 관리</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
+    <div class="subpage" id="menu5-sub-6">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📚</div>
+        <div><div class="subpage-title">지식자산</div><div class="subpage-desc">배움과 지식 자산을 정리해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 지식자산 내용을 채워요</span></div>
     </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 목표 관리 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-7">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💳</div>
-      <div><div class="subpage-title">배당 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 배당 기록 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-8">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📉</div>
-      <div><div class="subpage-title">손실 기록</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 손실 기록 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-9">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🏦</div>
-      <div><div class="subpage-title">계좌 현황</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 계좌 현황 내용을 채워요</span></div>
-  </div>
-<div class="subpage" id="menu5-sub-10">
-    <div class="subpage-header">
-      <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📌</div>
-      <div><div class="subpage-title">투자 메모</div><div class="subpage-desc">투자 정보를 정리해요 📈</div></div>
-    </div>
-    <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 투자 메모 내용을 채워요</span></div>
-  </div>
   </div>
 
   <!-- ══════════════ 정보 (비밀번호 잠금) ══════════════ -->
