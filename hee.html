@@ -4554,12 +4554,13 @@ function renderPnlExpenseCard() {
   } else {
     items.forEach(function(it, i) {
       const amt = parseFloat((it.amount||'0').toString().replace(/,/g,''))||0;
-      const pct = totalInc > 0 ? Math.round(amt / totalInc * 100) : 0;
+      const pct = totalInc > 0 ? Math.round(amt / totalInc * 1000) / 10 : 0;
+      const pctStr = pct >= 0.1 ? (Number.isInteger(pct) ? pct+'%' : pct.toFixed(1)+'%') : '';
       html += '<div draggable="true" ondragstart="pnlExpDragStart(event,'+i+')" ondragover="pnlExpDragOver(event)" ondragleave="pnlExpDragLeave(event)" ondrop="pnlExpDrop(event,'+i+')" style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
       html += '<span style="cursor:grab;color:#ccc;font-size:.82rem;flex-shrink:0;user-select:none">&#10887;</span>';
       html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목" onblur="pnlSaveExpense(this,'+i+',\'label\')" style="flex:1;min-width:0;'+inpBase+'">';
       html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveExpense(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpBase+'">';
-      html += (pct > 0 ? '<span style="font-size:.72rem;color:#e05050;font-weight:700;flex-shrink:0;min-width:34px;text-align:right">'+pct+'%</span>' : '<span style="min-width:34px;flex-shrink:0"></span>');
+      html += (pctStr ? '<span style="font-size:.72rem;color:#e05050;font-weight:700;flex-shrink:0;min-width:38px;text-align:right">'+pctStr+'</span>' : '<span style="min-width:38px;flex-shrink:0"></span>');
       html += '<button data-idx="'+i+'" onclick="pnlDelExpense(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.85rem;flex-shrink:0;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">&#10005;</button>';
       html += '</div>';
     });
@@ -9192,11 +9193,11 @@ function updateSalesSummary(year, month) {
     { label:'쿠팡 판매자배송',   val: ts,       pct: grandTotal>0?Math.round(ts/grandTotal*100):0,  pctLabel:'전체매출', color:'#3dbb8f', bg:'#f0fff8' },
     { label:'쿠팡 총매출',       val: tc,       pct: grandTotal>0?Math.round(tc/grandTotal*100):0,  pctLabel:'전체매출', color:'#2a9a6a', bg:'#e8fff4' },
     { label:'쿠팡 광고비',       val: tca,      pct: totalAd>0?Math.round(tca/totalAd*100):0,       pctLabel:'총광고비', color:'#e03c6e', bg:'#fff0f5' },
-    { label:'네이버 총매출',     val: tn,       pct: 0, pctLabel:'', color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'네이버 검색광고',   val: tns,      pct: totalAd>0?Math.round(tns/totalAd*100):0,       pctLabel:'총광고비', color:'#e8648a', bg:'#fff0f5' },
-    { label:'네이버 AI광고',     val: tna,      pct: totalAd>0?Math.round(tna/totalAd*100):0,       pctLabel:'총광고비', color:'#e8648a', bg:'#fff0f5' },
-    { label:'전체 총광고비',     val: totalAd,  pct: 0, pctLabel:'', color:'#e03c6e', bg:'#fff0f5' },
-    { label:'전체 총매출',       val: grandTotal,pct:0, pctLabel:'', color:'#8b60d0', bg:'#f8f4ff' },
+    { label:'네이버 총매출',     val: tn,       pct: grandTotal>0?Math.round(tn/grandTotal*100):0,    pctLabel:'전체매출', color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'네이버 검색광고',   val: tns,      pct: totalAd>0?Math.round(tns/totalAd*100):0,         pctLabel:'총광고비', color:'#e8648a', bg:'#fff0f5' },
+    { label:'네이버 AI광고',     val: tna,      pct: totalAd>0?Math.round(tna/totalAd*100):0,         pctLabel:'총광고비', color:'#e8648a', bg:'#fff0f5' },
+    { label:'전체 총광고비',     val: totalAd,  pct: grandTotal>0?Math.round(totalAd/grandTotal*100):0, pctLabel:'총매출', color:'#e03c6e', bg:'#fff0f5' },
+    { label:'전체 총매출',       val: grandTotal, pct:0, pctLabel:'', color:'#8b60d0', bg:'#f8f4ff' },
   ];
   summary.style.gridTemplateColumns = 'repeat(3,1fr)';
   summary.innerHTML = cards.map(c => `
