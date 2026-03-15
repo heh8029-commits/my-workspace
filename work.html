@@ -4985,15 +4985,17 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML =
     '<div style="background:white;border-radius:18px;padding:24px;width:100%;max-width:340px;font-family:Pretendard,sans-serif;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.25)">'
-    +'<div style="font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:6px">📷 이미지 붙여넣기</div>'
-    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:14px">이미지를 복사한 뒤 아래 영역에 Ctrl+V</div>'
+    +'<div style="font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:6px">📷 이미지 추가</div>'
+    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:12px">클립보드 붙여넣기 또는 파일 첨부</div>'
     +'<div id="nimg-area" tabindex="0" style="width:100%;height:130px;border:2px dashed #d0b8f8;border-radius:12px;background:#f8f5ff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;color:#b090d8;position:relative;overflow:hidden;outline:none">'
       +'<div id="nimg-ph">📋 여기 클릭 후 Ctrl+V</div>'
       +'<div id="nimg-prev" style="display:none;position:absolute;inset:0"><img id="nimg-prev-img" style="width:100%;height:100%;object-fit:contain"></div>'
     +'</div>'
-    +'<div style="display:flex;gap:8px;margin-top:14px">'
+    +'<input id="nimg-file-inp" type="file" accept="image/*" style="display:none">'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
       +'<button id="nimg-cancel" style="flex:1;padding:8px;background:#f0f0f0;border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:#888;cursor:pointer">취소</button>'
-      +'<button id="nimg-ok" style="flex:2;padding:8px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
+      +'<button id="nimg-file-btn" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">📁 첨부파일</button>'
+      +'<button id="nimg-ok" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
     +'</div>'
     +'</div>';
   document.body.appendChild(modal);
@@ -5001,7 +5003,16 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
   var prev = document.getElementById('nimg-prev');
   var prevImg = document.getElementById('nimg-prev-img');
   var ph = document.getElementById('nimg-ph');
+  var fileInp = document.getElementById('nimg-file-inp');
   var _pending = null;
+
+  function setPreview(dataUrl) {
+    _pending = dataUrl;
+    prevImg.src = dataUrl;
+    prev.style.display = 'block';
+    ph.style.display = 'none';
+  }
+
   area.focus();
   area.onclick = function(){ area.focus(); };
   area.onpaste = function(e) {
@@ -5009,19 +5020,22 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
     for (var i=0;i<its.length;i++) {
       if (its[i].type.indexOf('image')!==-1) {
         var reader = new FileReader();
-        (function(blob){ reader.onload = function(ev){
-          _pending = ev.target.result;
-          prevImg.src = _pending;
-          prev.style.display='block'; ph.style.display='none';
-        }; reader.readAsDataURL(blob); })(its[i].getAsFile());
+        (function(blob){ reader.onload = function(ev){ setPreview(ev.target.result); }; reader.readAsDataURL(blob); })(its[i].getAsFile());
         e.preventDefault(); return;
       }
     }
     toast('이미지를 먼저 복사해주세요 📋');
   };
+  document.getElementById('nimg-file-btn').onclick = function(){ fileInp.click(); };
+  fileInp.onchange = function() {
+    if (!fileInp.files||!fileInp.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){ setPreview(ev.target.result); };
+    reader.readAsDataURL(fileInp.files[0]);
+  };
   document.getElementById('nimg-cancel').onclick = function(){ modal.remove(); };
   document.getElementById('nimg-ok').onclick = function(){
-    if (!_pending) { toast('이미지를 먼저 붙여넣어 주세요 📷'); return; }
+    if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
     var list = loadFn();
     var idx = list.findIndex(function(x){return x.id===item.id;});
     if (idx!==-1) { list[idx].img = _pending; saveFn(list); renderFn(); }
@@ -5029,7 +5043,6 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
     toast('📷 이미지 등록됐어요!');
   };
   modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
-}
 
 function renderJinuNotes() {
   var grid = document.getElementById('jinu-note-grid');
@@ -6015,6 +6028,7 @@ function addPhrase() {
   if (!text) { toast('문구를 입력해줘요 ✍️'); return; }
   var list = loadPhrases();
   list.unshift({ id: Date.now(), text: text, img: null });
+  savePhrases(list);
   inp.value = '';
   renderPhrases();
   toast('✍️ 문구 추가됐어요!');
