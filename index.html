@@ -886,15 +886,61 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 }
 
 /* ── 여행갈때 체크리스트 ── */
-.trip-check-item {
-  display:flex; align-items:center; gap:8px;
-  padding:7px 10px; border:1px solid #ddeeff; border-radius:9px;
-  background:#f8fbff; margin-bottom:5px; cursor:grab;
+#trip-check-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
 }
-.trip-check-item.checked { background:#f0fff4; border-color:#b2e8d4; opacity:.7; }
+.trip-check-item {
+  display:flex; flex-direction:column; gap:5px;
+  padding:9px 10px; border:1.5px solid #ddeeff; border-radius:10px;
+  background:#f8fbff; cursor:pointer;
+  transition: all .15s;
+}
+.trip-check-item:hover { border-color:#a8e0f8; background:#eef7ff; }
+.trip-check-item.checked { background:#f0fff4; border-color:#b2e8d4; opacity:.75; }
 .trip-check-item.checked .trip-check-label { text-decoration:line-through; color:#aaa; }
-.trip-check-who { font-size:.68rem; font-weight:700; padding:2px 7px; border-radius:10px; flex-shrink:0; }
-.trip-check-label { flex:1; font-size:.84rem; color:#2a3a50; word-break:break-all; }
+.trip-check-item-top { display:flex; align-items:center; gap:5px; }
+.trip-check-chk {
+  width:16px; height:16px; border-radius:4px; border:2px solid #a8e0f8;
+  background:white; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:background .15s;
+}
+.trip-check-item.checked .trip-check-chk { background:#2090d0; border-color:#2090d0; }
+.trip-check-who { font-size:.62rem; font-weight:700; padding:1px 6px; border-radius:8px; flex-shrink:0; }
+.trip-check-label { font-size:.8rem; color:#2a3a50; word-break:break-all; line-height:1.4; }
+.trip-check-del { background:none; border:none; color:#ddd; font-size:.65rem; cursor:pointer; padding:0; align-self:flex-end; margin-top:2px; }
+.trip-check-del:hover { color:#e03c6e; }
+@media (max-width:900px) { #trip-check-list { grid-template-columns: repeat(3,1fr); } }
+@media (max-width:540px) { #trip-check-list { grid-template-columns: repeat(2,1fr); gap:5px; } }
+
+/* ── 여행 경비 탭 ── */
+.trip-tab-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
+.trip-tab-btn {
+  padding:5px 14px; border-radius:20px; border:1.5px solid #ffe880;
+  background:white; font-size:.78rem; font-weight:700; color:#a07800;
+  cursor:pointer; font-family:Pretendard,sans-serif; transition:all .15s;
+  white-space:nowrap;
+}
+.trip-tab-btn.active { background:linear-gradient(135deg,#ffe880,#f0c800); border-color:#f0c800; color:#5a3800; }
+.trip-tab-btn:hover:not(.active) { background:#fffbea; }
+.trip-tab-del { background:none; border:none; color:#ddd; font-size:.72rem; cursor:pointer; padding:0 2px; }
+.trip-tab-del:hover { color:#e03c6e; }
+
+/* ── 여행 준비 메모 (imp 스타일) ── */
+.trip-memo-item {
+  display:flex; align-items:center; gap:6px;
+  padding:7px 10px; border:1.5px solid #f7a8c0; border-radius:10px;
+  background:#fff8fb; margin-bottom:5px;
+}
+.trip-memo-item.done .trip-memo-txt { text-decoration:line-through; opacity:.5; }
+.trip-memo-chk {
+  width:17px; height:17px; border-radius:5px; border:2px solid #f7a8c0;
+  background:white; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0; transition:background .15s;
+}
+.trip-memo-item.done .trip-memo-chk { background:#e03c6e; border-color:#e03c6e; }
+.trip-memo-txt { flex:1; font-size:.83rem; color:#3a1a2e; word-break:break-all; line-height:1.5; }
 .trip-exp-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-bottom:1px dashed #f0e8c0; font-size:.83rem; }
 .trip-exp-row:last-child { border-bottom:none; }
 .trip-com-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-bottom:1px dashed #d0e8f8; font-size:.83rem; }
@@ -2641,7 +2687,6 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               <div style="font-size:.95rem;font-weight:700;color:#1a6a9a">🧳 준비물 체크리스트</div>
               <button onclick="tripCheckReset()" style="background:#fff0f0;border:1.5px solid #f7a8c0;border-radius:8px;padding:4px 12px;font-size:.75rem;color:#e03c6e;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">🔄 체크 초기화</button>
             </div>
-            <!-- 입력폼 -->
             <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end">
               <select id="trip-check-who" style="border:1.5px solid #a8e0f8;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
                 <option value="공통">🏠 공통</option>
@@ -2656,52 +2701,32 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           </div>
         </div>
 
-        <!-- 오른쪽: 여행 경비 -->
-        <div>
+        <!-- 오른쪽: 여행 경비 + 준비메모 -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+
+          <!-- 여행 경비 (날짜 탭) -->
           <div class="card" style="border-top:3px solid #ffe880;font-family:Pretendard,sans-serif">
-            <div style="font-size:.95rem;font-weight:700;color:#a07800;margin-bottom:12px">💰 여행 경비</div>
-
-            <!-- A가 쓴 것 (이름 수정 가능) -->
-            <div style="background:#fffef0;border:1.5px solid #ffe880;border-radius:12px;padding:12px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                <span id="trip-exp-name-view" style="font-size:.82rem;font-weight:700;color:#a07800;cursor:pointer" ondblclick="tripExpNameEdit()" title="더블클릭으로 이름 수정">👩 내가 쓴 것</span>
-                <input id="trip-exp-name-inp" type="text" value="내가 쓴 것" style="display:none;border:1.5px solid #ffe880;border-radius:6px;padding:3px 8px;font-size:.82rem;font-weight:700;color:#a07800;font-family:Pretendard,sans-serif;outline:none;width:120px" onkeydown="if(event.key==='Enter'||event.key==='Escape')tripExpNameSave()" onblur="tripExpNameSave()">
-                <button onclick="tripExpNameEdit()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color='#f0c800'" onmouseout="this.style.color='#ccc'" title="이름 수정">✏️</button>
-              </div>
-              <div style="display:flex;gap:6px;margin-bottom:8px">
-                <input id="trip-exp-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #ffe880;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripExpAdd()">
-                <input id="trip-exp-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #ffe880;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripExpAdd()">
-                <button onclick="tripExpAdd()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:7px;padding:6px 12px;font-weight:700;font-size:.82rem;color:#7a5800;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
-              </div>
-              <div id="trip-exp-list"></div>
-              <div id="trip-exp-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#a07800;padding-top:6px;border-top:1px dashed #ffe880;margin-top:4px"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:.95rem;font-weight:700;color:#a07800">💰 여행 경비</div>
+              <button onclick="tripAddTrip()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#5a3800;cursor:pointer;font-family:Pretendard,sans-serif">+ 여행 추가</button>
             </div>
-
-            <!-- B가 쓴 것 (이름 수정 가능) -->
-            <div style="background:#f0f8ff;border:1.5px solid #b2d8f8;border-radius:12px;padding:12px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                <span id="trip-com-name-view" style="font-size:.82rem;font-weight:700;color:#1a6a9a;cursor:pointer" ondblclick="tripComNameEdit()" title="더블클릭으로 이름 수정">👥 일행이 쓴 것</span>
-                <input id="trip-com-name-inp" type="text" value="일행이 쓴 것" style="display:none;border:1.5px solid #b2d8f8;border-radius:6px;padding:3px 8px;font-size:.82rem;font-weight:700;color:#1a6a9a;font-family:Pretendard,sans-serif;outline:none;width:120px" onkeydown="if(event.key==='Enter'||event.key==='Escape')tripComNameSave()" onblur="tripComNameSave()">
-                <button onclick="tripComNameEdit()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color='#4a90d0'" onmouseout="this.style.color='#ccc'" title="이름 수정">✏️</button>
-              </div>
-              <div style="display:flex;gap:6px;margin-bottom:8px">
-                <input id="trip-com-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #b2d8f8;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripComAdd()">
-                <input id="trip-com-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #b2d8f8;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripComAdd()">
-                <button onclick="tripComAdd()" style="background:linear-gradient(135deg,#b2d8f8,#2090d0);border:none;border-radius:7px;padding:6px 12px;font-weight:700;font-size:.82rem;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
-              </div>
-              <div id="trip-com-list"></div>
-              <div id="trip-com-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#1a6a9a;padding-top:6px;border-top:1px dashed #b2d8f8;margin-top:4px"></div>
-            </div>
-
-            <!-- 최종 정산 -->
-            <div id="trip-settle-box" style="background:linear-gradient(135deg,#f0fff8,#d8f8e8);border:2px solid #3dbb8f;border-radius:12px;padding:14px;display:none">
-              <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">🧮 정산 결과</div>
-              <div id="trip-settle-result"></div>
-            </div>
-            <button onclick="tripSettle()" style="width:100%;margin-top:10px;background:linear-gradient(135deg,#3dbb8f,#1a9a60);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif">🧮 정산 계산하기</button>
+            <!-- 날짜 탭 -->
+            <div class="trip-tab-bar" id="trip-tab-bar"></div>
+            <!-- 현재 탭 내용 -->
+            <div id="trip-tab-content"></div>
           </div>
-        </div>
 
+          <!-- 준비 메모 -->
+          <div class="card" style="border-top:3px solid #f7a8c0;font-family:Pretendard,sans-serif">
+            <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:10px">📝 준비 메모</div>
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+              <input id="trip-memo-inp" type="text" placeholder="메모 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripMemoAdd()">
+              <button onclick="tripMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
+            </div>
+            <div id="trip-memo-list"></div>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -3003,7 +3028,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_exp','trip_com','trip_names'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -6001,14 +6026,347 @@ function jinuNoteAdd() {
 /* ══════════════════════════════════
    여행갈때 JS
 ══════════════════════════════════ */
-function loadTripChecks()     { return loadObj('trip_checks').list || []; }
-function saveTripChecks(list) { stor('trip_checks', {list}); }
-function loadTripExp()        { return loadObj('trip_exp').list || []; }
-function saveTripExp(list)    { stor('trip_exp', {list}); }
-function loadTripCom()        { return loadObj('trip_com').list || []; }
-function saveTripCom(list)    { stor('trip_com', {list}); }
-function loadTripNames()      { return loadObj('trip_names'); }
-function saveTripNames(d)     { stor('trip_names', d); }
+function loadTripChecks()      { return loadObj('trip_checks').list || []; }
+function saveTripChecks(list)  { stor('trip_checks', {list}); }
+function loadTripTrips()       { return loadObj('trip_trips').list || []; }
+function saveTripTrips(list)   { stor('trip_trips', {list}); }
+function loadTripMemos()       { return loadObj('trip_memos').list || []; }
+function saveTripMemos(list)   { stor('trip_memos', {list}); }
+
+// 하위호환 - 구버전 trip_exp/trip_com/trip_names 는 무시
+var _curTripId = null;
+
+var _whoColors = {
+  '은희': {bg:'#fff0f8',color:'#c04070'},
+  '진우': {bg:'#e8f4ff',color:'#2060a0'},
+  '민호': {bg:'#f0fff4',color:'#1a7a40'},
+  '공통': {bg:'#f8f5ff',color:'#6040a0'}
+};
+var _whoOrder = ['공통','은희','진우','민호'];
+
+/* ── 체크리스트 (4열 그리드) ── */
+function renderTripChecks() {
+  var el = document.getElementById('trip-check-list');
+  if (!el) return;
+  var raw = loadTripChecks();
+  var items = raw.slice().sort(function(a,b){
+    var ai=_whoOrder.indexOf(a.who); var bi=_whoOrder.indexOf(b.who);
+    if(ai===-1)ai=99; if(bi===-1)bi=99; return ai-bi;
+  });
+  if (!items.length) {
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:16px 0">준비물을 추가해요 🧳</div>';
+    return;
+  }
+  el.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'trip-check-item' + (item.checked?' checked':'');
+    card.dataset.id = item.id;
+    card.onclick = (function(id){ return function(e){
+      if(e.target.classList.contains('trip-check-del')) return;
+      var list=loadTripChecks();
+      var idx=list.findIndex(function(x){return x.id===id;});
+      if(idx!==-1){list[idx].checked=!list[idx].checked;saveTripChecks(list);renderTripChecks();}
+    };})(item.id);
+
+    var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
+    var top = document.createElement('div');
+    top.className = 'trip-check-item-top';
+
+    var chk = document.createElement('div');
+    chk.className = 'trip-check-chk';
+    chk.innerHTML = item.checked ? '<span style="color:white;font-size:.6rem;font-weight:700">✓</span>' : '';
+
+    var who = document.createElement('span');
+    who.className = 'trip-check-who';
+    who.textContent = item.who||'';
+    who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
+
+    top.appendChild(chk); top.appendChild(who);
+
+    var label = document.createElement('div');
+    label.className = 'trip-check-label';
+    label.textContent = item.text;
+
+    var del = document.createElement('button');
+    del.className = 'trip-check-del';
+    del.textContent = '✕';
+    del.onclick = (function(id){ return function(e){
+      e.stopPropagation();
+      saveTripChecks(loadTripChecks().filter(function(x){return x.id!==id;}));
+      renderTripChecks();
+    };})(item.id);
+
+    card.appendChild(top); card.appendChild(label); card.appendChild(del);
+    el.appendChild(card);
+  });
+}
+
+function tripCheckAdd() {
+  var who  = document.getElementById('trip-check-who').value;
+  var text = document.getElementById('trip-check-inp').value.trim();
+  if (!text) { toast('준비물을 입력해줘요 🧳'); return; }
+  var list = loadTripChecks();
+  list.push({id:Date.now(), who:who, text:text, checked:false});
+  saveTripChecks(list);
+  document.getElementById('trip-check-inp').value='';
+  renderTripChecks();
+}
+function tripCheckReset() {
+  var list=loadTripChecks().map(function(x){return Object.assign({},x,{checked:false});});
+  saveTripChecks(list); renderTripChecks(); toast('🔄 체크가 모두 초기화됐어요!');
+}
+
+/* ── 여행 탭 관리 ── */
+function tripAddTrip() {
+  var name = prompt('여행 이름을 입력해요 ✈️\n(예: 제주도 2박3일, 부산 여름여행)');
+  if (!name || !name.trim()) return;
+  var list = loadTripTrips();
+  var newTrip = {id:Date.now(), name:name.trim(), expName:'내가 쓴 것', comName:'일행이 쓴 것', exp:[], com:[]};
+  list.push(newTrip);
+  saveTripTrips(list);
+  _curTripId = newTrip.id;
+  renderTripTabs();
+  renderTripTabContent();
+  toast('✈️ '+name.trim()+' 추가됐어요!');
+}
+
+function renderTripTabs() {
+  var bar = document.getElementById('trip-tab-bar');
+  if (!bar) return;
+  var list = loadTripTrips();
+  if (!list.length) {
+    bar.innerHTML = '<div style="font-size:.8rem;color:#bbb;padding:4px 0">+ 여행 추가 버튼으로 여행을 만들어요 ✈️</div>';
+    return;
+  }
+  if (!_curTripId || !list.find(function(x){return x.id===_curTripId;})) {
+    _curTripId = list[list.length-1].id;
+  }
+  bar.innerHTML = '';
+  list.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'trip-tab-btn' + (t.id===_curTripId?' active':'');
+    btn.textContent = '✈️ '+t.name;
+    btn.onclick = (function(id){ return function(){ _curTripId=id; renderTripTabs(); renderTripTabContent(); }; })(t.id);
+    bar.appendChild(btn);
+
+    var del = document.createElement('button');
+    del.className = 'trip-tab-del'; del.textContent = '✕'; del.title = '이 여행 삭제';
+    del.onclick = (function(id,name){ return function(e){
+      e.stopPropagation();
+      if(!confirm('['+name+'] 여행 경비를 삭제할까요?')) return;
+      var l=loadTripTrips().filter(function(x){return x.id!==id;});
+      saveTripTrips(l);
+      if(_curTripId===id) _curTripId=l.length?l[l.length-1].id:null;
+      renderTripTabs(); renderTripTabContent();
+    }; })(t.id, t.name);
+    bar.appendChild(del);
+  });
+}
+
+function renderTripTabContent() {
+  var wrap = document.getElementById('trip-tab-content');
+  if (!wrap) return;
+  var list = loadTripTrips();
+  if (!list.length || !_curTripId) {
+    wrap.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:20px 0">여행을 추가해요 ✈️</div>';
+    return;
+  }
+  var t = list.find(function(x){return x.id===_curTripId;});
+  if (!t) { wrap.innerHTML=''; return; }
+
+  var expName = t.expName || '내가 쓴 것';
+  var comName = t.comName || '일행이 쓴 것';
+
+  wrap.innerHTML =
+    // A
+    '<div style="background:#fffef0;border:1.5px solid #ffe880;border-radius:12px;padding:12px;margin-bottom:10px">'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+    +'<span style="font-size:.82rem;font-weight:700;color:#a07800" id="tec-exp-lbl">👩 '+escHtml(expName)+'</span>'
+    +'<button onclick="tripRenameExp()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color=\'#f0c800\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
+    +'</div>'
+    +'<div style="display:flex;gap:5px;margin-bottom:7px">'
+    +'<input id="tec-exp-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #ffe880;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurExpAdd()">'
+    +'<input id="tec-exp-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #ffe880;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurExpAdd()">'
+    +'<button onclick="tripCurExpAdd()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:7px;padding:5px 10px;font-weight:700;font-size:.82rem;color:#7a5800;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>'
+    +'</div>'
+    +'<div id="tec-exp-list"></div>'
+    +'<div id="tec-exp-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#a07800;padding-top:5px;border-top:1px dashed #ffe880;margin-top:3px"></div>'
+    +'</div>'
+    // B
+    +'<div style="background:#f0f8ff;border:1.5px solid #b2d8f8;border-radius:12px;padding:12px;margin-bottom:10px">'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+    +'<span style="font-size:.82rem;font-weight:700;color:#1a6a9a" id="tec-com-lbl">👥 '+escHtml(comName)+'</span>'
+    +'<button onclick="tripRenameCom()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color=\'#4a90d0\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
+    +'</div>'
+    +'<div style="display:flex;gap:5px;margin-bottom:7px">'
+    +'<input id="tec-com-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #b2d8f8;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurComAdd()">'
+    +'<input id="tec-com-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #b2d8f8;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurComAdd()">'
+    +'<button onclick="tripCurComAdd()" style="background:linear-gradient(135deg,#b2d8f8,#2090d0);border:none;border-radius:7px;padding:5px 10px;font-weight:700;font-size:.82rem;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>'
+    +'</div>'
+    +'<div id="tec-com-list"></div>'
+    +'<div id="tec-com-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#1a6a9a;padding-top:5px;border-top:1px dashed #b2d8f8;margin-top:3px"></div>'
+    +'</div>'
+    // 정산
+    +'<div id="tec-settle-box" style="display:none;background:linear-gradient(135deg,#f0fff8,#d8f8e8);border:2px solid #3dbb8f;border-radius:12px;padding:14px;margin-bottom:8px">'
+    +'<div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">🧮 정산 결과</div>'
+    +'<div id="tec-settle-result"></div>'
+    +'</div>'
+    +'<button onclick="tripSettle()" style="width:100%;background:linear-gradient(135deg,#3dbb8f,#1a9a60);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif">🧮 정산 계산하기</button>';
+
+  // 목록 렌더
+  _renderTecList('exp', t.exp||[], '#a07800');
+  _renderTecList('com', t.com||[], '#1a6a9a');
+}
+
+function _renderTecList(type, items, color) {
+  var el  = document.getElementById('tec-'+type+'-list');
+  var tel = document.getElementById('tec-'+type+'-total');
+  if (!el) return;
+  if (!items.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.8rem;padding:6px 0">항목을 추가해요</div>'; if(tel) tel.textContent=''; return; }
+  var total=0;
+  el.innerHTML = items.map(function(it){
+    total+=(parseInt(it.amt)||0);
+    return '<div class="trip-'+(type==='exp'?'exp':'com')+'-row">'
+      +'<span style="flex:1;color:#333">'+escHtml(it.item)+'</span>'
+      +'<span style="font-weight:700;color:'+color+';flex-shrink:0">'+Number(it.amt||0).toLocaleString()+'원</span>'
+      +'<button onclick="_tripTecDel(\''+type+'\','+it.id+')" style="background:none;border:none;color:#ddd;font-size:.72rem;cursor:pointer;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
+      +'</div>';
+  }).join('');
+  if(tel) tel.innerHTML='합계: <span style="font-size:1rem">'+total.toLocaleString()+'</span>원';
+}
+
+function _tripTecDel(type, id) {
+  var list=loadTripTrips();
+  var t=list.find(function(x){return x.id===_curTripId;});
+  if(!t) return;
+  t[type]=(t[type]||[]).filter(function(x){return x.id!==id;});
+  saveTripTrips(list); _renderTecList(type, t[type]||[], type==='exp'?'#a07800':'#1a6a9a');
+}
+
+function tripCurExpAdd() {
+  var item=document.getElementById('tec-exp-item').value.trim();
+  var amt=document.getElementById('tec-exp-amt').value;
+  if(!item||!amt){toast('항목과 금액을 입력해줘요 💰');return;}
+  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
+  if(!t) return;
+  if(!t.exp) t.exp=[];
+  t.exp.push({id:Date.now(),item:item,amt:parseInt(amt)||0});
+  saveTripTrips(list);
+  document.getElementById('tec-exp-item').value='';
+  document.getElementById('tec-exp-amt').value='';
+  _renderTecList('exp',t.exp,'#a07800');
+}
+function tripCurComAdd() {
+  var item=document.getElementById('tec-com-item').value.trim();
+  var amt=document.getElementById('tec-com-amt').value;
+  if(!item||!amt){toast('항목과 금액을 입력해줘요 💰');return;}
+  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
+  if(!t) return;
+  if(!t.com) t.com=[];
+  t.com.push({id:Date.now(),item:item,amt:parseInt(amt)||0});
+  saveTripTrips(list);
+  document.getElementById('tec-com-item').value='';
+  document.getElementById('tec-com-amt').value='';
+  _renderTecList('com',t.com,'#1a6a9a');
+}
+
+function tripRenameExp() {
+  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
+  if(!t) return;
+  var name=prompt('A 이름 수정', t.expName||'내가 쓴 것');
+  if(name===null) return;
+  t.expName=name.trim()||'내가 쓴 것';
+  saveTripTrips(list);
+  var lbl=document.getElementById('tec-exp-lbl');
+  if(lbl) lbl.textContent='👩 '+t.expName;
+}
+function tripRenameCom() {
+  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
+  if(!t) return;
+  var name=prompt('B 이름 수정', t.comName||'일행이 쓴 것');
+  if(name===null) return;
+  t.comName=name.trim()||'일행이 쓴 것';
+  saveTripTrips(list);
+  var lbl=document.getElementById('tec-com-lbl');
+  if(lbl) lbl.textContent='👥 '+t.comName;
+}
+
+function tripSettle() {
+  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
+  if(!t) return;
+  var expName=t.expName||'내가 쓴 것';
+  var comName=t.comName||'일행이 쓴 것';
+  var myTotal=(t.exp||[]).reduce(function(s,x){return s+(parseInt(x.amt)||0);},0);
+  var comTotal=(t.com||[]).reduce(function(s,x){return s+(parseInt(x.amt)||0);},0);
+  var grand=myTotal+comTotal; var half=grand/2; var diff=myTotal-half;
+  var box=document.getElementById('tec-settle-box');
+  var res=document.getElementById('tec-settle-result');
+  if(!box||!res) return;
+  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(expName)+'</div><div style="font-size:1rem;font-weight:700;color:#a07800">'+myTotal.toLocaleString()+'원</div></div>'
+    +'<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(comName)+'</div><div style="font-size:1rem;font-weight:700;color:#1a6a9a">'+comTotal.toLocaleString()+'원</div></div>'
+    +'</div>'
+    +'<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center;margin-bottom:10px">'
+    +'<div style="font-size:.72rem;color:#888;margin-bottom:2px">총 지출</div>'
+    +'<div style="font-size:1.1rem;font-weight:800;color:#1a7a50">'+grand.toLocaleString()+'원</div>'
+    +'<div style="font-size:.75rem;color:#888;margin-top:2px">1인당 '+Math.round(half).toLocaleString()+'원</div>'
+    +'</div>';
+  if(Math.abs(diff)<1) {
+    html+='<div style="background:#e8fff4;border-radius:8px;padding:10px;text-align:center;font-weight:700;color:#1a7a50">🎉 정확히 반반이에요!</div>';
+  } else if(diff>0) {
+    html+='<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
+      +'<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
+      +'<div style="font-weight:700;color:#c05020;font-size:1rem"><b>'+escHtml(comName)+'</b> → <b>'+escHtml(expName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
+      +'</div>';
+  } else {
+    html+='<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
+      +'<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
+      +'<div style="font-weight:700;color:#1a6a9a;font-size:1rem"><b>'+escHtml(expName)+'</b> → <b>'+escHtml(comName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(-diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
+      +'</div>';
+  }
+  res.innerHTML=html; box.style.display='block';
+}
+
+function renderTripMemos() {
+  var el = document.getElementById('trip-memo-list');
+  if (!el) return;
+  var items = loadTripMemos();
+  if (!items.length) { el.innerHTML='<div class="empty">메모를 추가해요 📝</div>'; return; }
+  el.innerHTML = items.map(function(it){
+    return '<div class="trip-memo-item'+(it.done?' done':'')+'" id="tmemo-'+it.id+'">'
+      +'<div class="trip-memo-chk" onclick="tripMemoToggle('+it.id+')">'+(it.done?'<span style="color:white;font-size:.6rem;font-weight:700">✓</span>':'')+'</div>'
+      +'<span class="trip-memo-txt" style="flex:1;min-width:0;word-break:break-all">'+escHtml(it.text)+'</span>'
+      +'<button onclick="tripMemoDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.75rem;cursor:pointer;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
+      +'</div>';
+  }).join('');
+}
+function tripMemoAdd() {
+  var inp = document.getElementById('trip-memo-inp');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) { toast('메모를 입력해줘요 📝'); return; }
+  var list = loadTripMemos();
+  list.push({id:Date.now(), text:text, done:false});
+  saveTripMemos(list);
+  inp.value = '';
+  renderTripMemos();
+}
+function tripMemoToggle(id) {
+  var list=loadTripMemos();
+  var idx=list.findIndex(function(x){return x.id===id;});
+  if(idx!==-1){list[idx].done=!list[idx].done;saveTripMemos(list);renderTripMemos();}
+}
+function tripMemoDel(id) {
+  saveTripMemos(loadTripMemos().filter(function(x){return x.id!==id;}));
+  renderTripMemos();
+}
+
+function renderTripPage() {
+  renderTripChecks();
+  renderTripTabs();
+  renderTripTabContent();
+  renderTripMemos();
+}
 
 var _whoColors = {
   '은희': {bg:'#fff0f8',color:'#c04070'},
