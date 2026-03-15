@@ -761,6 +761,8 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 }
 
 .ilist { display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:3px; }
+.tax-ilist { max-height:180px !important; }
+.tax-ilist .it { padding:5px 8px !important; font-size:.8rem !important; line-height:1.35 !important; }
 
 .ilist::-webkit-scrollbar { width:3px; }
 .ilist::-webkit-scrollbar-thumb { background:var(--pink); border-radius:10px; }
@@ -842,7 +844,7 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 @media (max-width:540px) {
   #pc-grid { grid-template-columns: 1fr !important; gap:8px; }
 }
-@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } #inv-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
+@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } #inv-note-grid { grid-template-columns: repeat(4,1fr) !important; } #cm-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
 @media (max-width:700px)  { #pnl-note-grid { grid-template-columns: repeat(3,1fr) !important; } }
 @media (max-width:540px)  { #pnl-note-grid { grid-template-columns: repeat(2,1fr) !important; } }
 
@@ -1721,7 +1723,6 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu1',18,null);setMobileSubActive(this)">🛒 상품관리</button>
   <button class="msub-btn" onclick="switchSub('menu1',4,null);setMobileSubActive(this)">📦 재고관리(단가)</button>
   <button class="msub-btn" onclick="switchSub('menu1',5,null);setMobileSubActive(this)">👥 직원관리</button>
-  <button class="msub-btn" onclick="switchSub('menu1',6,null);setMobileSubActive(this)">🌸 시즌관리</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu2">
   <button class="msub-btn" onclick="switchSub('menu2',14,null);setMobileSubActive(this)">📅 달력/일정</button>
@@ -1768,7 +1769,6 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',18,null)">🛒 상품관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null)">📦 재고관리(단가)</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',6,null)">🌸 시즌관리</div>
   </div>
   <div class="gnav-main" id="gnav-menu2" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');gnavActivate('menu2')">
     <span class="gnav-main-icon">🏠</span> 우리집
@@ -2801,6 +2801,16 @@ function pwaInstall() {
         <div><div class="subpage-title">카드관리</div><div class="subpage-desc">카드 정보와 이미지를 관리해요</div></div>
       </div>
       <div id="card-mgmt-wrap"></div>
+
+      <!-- 카드관리 포스트잇 -->
+      <div style="margin-top:18px">
+        <div style="font-size:.85rem;font-weight:700;color:#1a5f8a;margin-bottom:10px">📌 메모</div>
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <textarea id="cm-note-inp" rows="2" placeholder="메모 내용..." style="flex:1;border:1.5px solid #b2d8f8;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f5f9ff;line-height:1.6"></textarea>
+          <button onclick="cmNoteAdd()" style="background:linear-gradient(135deg,#b2d8f8,#4a80d0);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
+        </div>
+        <div id="cm-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
+      </div>
     </div>
 
     <!-- ══ 여행갈때 ══ -->
@@ -7425,6 +7435,69 @@ function addPhrase() {
   toast('✍️ 문구 추가됐어요!');
 }
 
+/* ── 카드관리 포스트잇 ── */
+function loadCmNotes()     { return loadObj('cm_notes').list || []; }
+function saveCmNotes(list) { stor('cm_notes', {list}); }
+
+function renderCmNotes() {
+  var grid = document.getElementById('cm-note-grid');
+  if (!grid) return;
+  var items = loadCmNotes();
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:14px 0">메모를 추가해요 📌</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'jinu-note-card';
+    var txt = document.createElement('div');
+    txt.className = 'jinu-note-text';
+    txt.contentEditable = 'false';
+    txt.textContent = item.text;
+    txt.ondblclick = function() { txt.contentEditable='true'; txt.focus(); };
+    txt.onblur = function() {
+      var v = txt.innerText.trim();
+      if (v) { var list=loadCmNotes(); var idx=list.findIndex(function(x){return x.id===item.id;}); if(idx!==-1){list[idx].text=v;saveCmNotes(list);} }
+      txt.contentEditable='false';
+    };
+    txt.onkeydown = function(e){ if(e.key==='Escape') txt.blur(); };
+    var acts = document.createElement('div');
+    acts.className = 'jinu-note-acts';
+    var copyBtn=document.createElement('button'); copyBtn.textContent='📋';
+    copyBtn.onclick=function(){ navigator.clipboard.writeText(item.text).then(function(){ toast('📋 복사됐어요!'); }); };
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️';
+    editBtn.onclick=function(){ txt.contentEditable='true'; txt.focus(); };
+    var delBtn=document.createElement('button'); delBtn.textContent='🗑️';
+    delBtn.onclick=function(){
+      saveCmNotes(loadCmNotes().filter(function(x){return x.id!==item.id;}));
+      renderCmNotes(); toast('🗑️ 삭제됐어요');
+    };
+    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    var imgDrop = _noteImgDrop(card, item, saveCmNotes, loadCmNotes, renderCmNotes);
+    card.appendChild(txt); card.appendChild(acts); card.appendChild(imgDrop);
+    if (item.img) {
+      var imgDel = document.createElement('button');
+      imgDel.textContent='🗑️사진'; imgDel.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0;margin-top:2px';
+      imgDel.onclick=function(e){e.stopPropagation();var l=loadCmNotes();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;saveCmNotes(l);renderCmNotes();}};
+      card.appendChild(imgDel);
+    }
+    grid.appendChild(card);
+  });
+}
+
+function cmNoteAdd() {
+  var inp = document.getElementById('cm-note-inp');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
+  var list = loadCmNotes();
+  list.unshift({id:Date.now(), text:text, img:null});
+  saveCmNotes(list);
+  inp.value = '';
+  renderCmNotes();
+  toast('📌 메모 추가됐어요!');
+}
+
 function renderCardMgmt() {
   var wrap = document.getElementById('card-mgmt-wrap');
   if (!wrap) return;
@@ -8409,7 +8482,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
   }
   if (pageId === 'menu2' && num === 18) {
-    setTimeout(function(){ renderCardMgmt && renderCardMgmt(); }, 0);
+    setTimeout(function(){ renderCardMgmt && renderCardMgmt(); renderCmNotes && renderCmNotes(); }, 0);
   }
   if (pageId === 'menu2' && num === 20) {
     setTimeout(function(){ renderTripPage && renderTripPage(); }, 0);
@@ -8811,6 +8884,7 @@ function editTaxMemoContent(id, field, val) {
 function renderTaxMemoList() {
   const el = document.getElementById('tax-memo-list');
   if (!el) return;
+  el.classList.add('tax-ilist');
   const data = loadTaxList('tax-memo');
   if (!data.length) { el.innerHTML = '<div class="empty">메모를 추가해요 📝</div>'; return; }
   el.innerHTML = data.map(item => `
@@ -8951,6 +9025,7 @@ function editTaxItem(key, id, v) {
 function renderTaxList(key) {
   const el = document.getElementById(key+'-list');
   if (!el) return;
+  el.classList.add('tax-ilist'); // 세로 높이 제한
   const data = loadTaxList(key);
   if (!data.length) { el.innerHTML = '<div class="empty">내용을 추가해요 🌸</div>'; return; }
   const clsMap = { 'tax-2026-vat':'ylw-it', 'tax-2025-vat':'ylw-it', 'tax-2026-income':'lav-it', 'tax-2025-income':'lav-it' };
@@ -9878,6 +9953,7 @@ function initRender(pageId) {
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
     renderCardMgmt && renderCardMgmt();
+    renderCmNotes && renderCmNotes();
     renderTripPage && renderTripPage();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu3') {
