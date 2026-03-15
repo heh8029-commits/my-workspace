@@ -2324,7 +2324,7 @@ function pwaInstall() {
       </div>
 
       <!-- 재고 리스트 헤더 -->
-      <div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 32px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
+      <div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 60px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
         <div style="padding:6px 8px">사진</div>
         <div style="padding:6px 8px">상품명 / 링크</div>
         <div style="padding:6px 8px;text-align:right">결제금액</div>
@@ -4646,11 +4646,11 @@ function pnlSaveExpense(el, idx, field) {
   if (!data.expenses[idx]) data.expenses[idx] = {};
   data.expenses[idx][field] = field === 'amount' ? (raw ? Number(raw) : 0) : raw;
   savePnl(pnlCurrentPeriod, data);
-  // 항목명 변경 시 템플릿도 업데이트
   if (field === 'label') {
     savePnlExpenseTemplate(data.expenses.map(function(e) { return { label: e.label }; }));
   }
   renderPnlSummary();
+  renderPnlExpenseCard(); // 퍼센트 즉시 업데이트
 }
 function pnlDelExpense(idx) {
   const data = loadPnl(pnlCurrentPeriod);
@@ -7109,6 +7109,35 @@ function invDel(id) {
   saveInv(loadInv().filter(function(x){return x.id!==id;}));
   renderInv(); toast('🗑️ 삭제됐어요');
 }
+function invEdit(id) {
+  var list = loadInv();
+  var it = list.find(function(x){return x.id===id;});
+  if (!it) return;
+  // 폼에 값 채우기
+  var fn = function(elId, val){ var el=document.getElementById(elId); if(el) el.value=val||''; };
+  fn('inv-name', it.name); fn('inv-link', it.link);
+  fn('inv-price', it.price||''); fn('inv-qty', it.qty||'');
+  fn('inv-memo', it.memo);
+  invCalcUnit();
+  // 이미지도 복원
+  if (it.img) {
+    _invImgPending = it.img;
+    var prev=document.getElementById('inv-img-preview');
+    var ph=document.getElementById('inv-img-placeholder');
+    var img=document.getElementById('inv-img-preview-img');
+    if(img) img.src=it.img;
+    if(prev) prev.style.display='block';
+    if(ph) ph.style.display='none';
+  }
+  // 기존 항목 삭제 후 추가 버튼 누르면 새로 저장되게
+  saveInv(list.filter(function(x){return x.id!==id;}));
+  // 폼 상단 스크롤
+  var sub = document.getElementById('menu1-sub-4');
+  if (sub) sub.scrollTop = 0;
+  document.getElementById('menu1-sub-4').querySelector('#inv-name').focus();
+  toast('✏️ 수정 모드예요! 변경 후 + 버튼 눌러주세요');
+  renderInv();
+}
 
 /* ── 재고관리 포스트잇 ── */
 function loadInvNotes()     { return loadObj('inv_notes').list || []; }
@@ -7184,7 +7213,7 @@ function renderInv() {
   var rows = list.map(function(it, idx) {
     var unit = (it.price && it.qty) ? Math.round(it.price/it.qty) : it.unit||0;
     var bg = idx%2===0 ? 'white' : '#fff8fb';
-    return '<div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 32px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
+    return '<div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 60px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
       // 사진
       +'<div style="padding:6px 8px">'
         +(it.img
@@ -7207,8 +7236,9 @@ function renderInv() {
       +'<div style="padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#6040a0">'+(unit?Number(unit).toLocaleString()+'원':'–')+'</div>'
       // 메모
       +'<div style="padding:6px 8px;font-size:.75rem;color:#888;word-break:break-all;line-height:1.4">'+escHtml(it.memo||'')+'</div>'
-      // 삭제
-      +'<div style="padding:6px 4px;text-align:center">'
+      // 편집/삭제
+      +'<div style="padding:6px 4px;text-align:center;display:flex;gap:2px;justify-content:center">'
+        +'<button onclick="invEdit('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:2px" onmouseover="this.style.color=\'#4a80d0\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
         +'<button onclick="invDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
       +'</div>'
       +'</div>';
@@ -9155,22 +9185,25 @@ function updateSalesSummary(year, month) {
   const tc = tg + ts;
   const summary = document.getElementById('sales-summary');
   if (!summary) return;
+  const grandTotal = tc + tn;
+  const totalAd = tca + tns + tna;
   const cards = [
-    { label:'쿠팡 그로스',     val: tg,          color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'쿠팡 판매자배송', val: ts,          color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'쿠팡 총매출',     val: tc,          color:'#2a9a6a', bg:'#e8fff4' },
-    { label:'쿠팡 광고비',     val: tca,         color:'#e03c6e', bg:'#fff0f5' },
-    { label:'네이버 총매출',   val: tn,          color:'#3dbb8f', bg:'#f0fff8' },
-    { label:'검색광고',        val: tns,         color:'#e8648a', bg:'#fff0f5' },
-    { label:'AI광고',          val: tna,         color:'#e8648a', bg:'#fff0f5' },
-    { label:'전체 총광고비',   val: tca+tns+tna, color:'#e03c6e', bg:'#fff0f5' },
-    { label:'전체 총매출',     val: tc+tn,       color:'#8b60d0', bg:'#f8f4ff' },
+    { label:'쿠팡 그로스',       val: tg,       pct: grandTotal>0?Math.round(tg/grandTotal*100):0,  pctLabel:'전체매출', color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 판매자배송',   val: ts,       pct: grandTotal>0?Math.round(ts/grandTotal*100):0,  pctLabel:'전체매출', color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'쿠팡 총매출',       val: tc,       pct: grandTotal>0?Math.round(tc/grandTotal*100):0,  pctLabel:'전체매출', color:'#2a9a6a', bg:'#e8fff4' },
+    { label:'쿠팡 광고비',       val: tca,      pct: totalAd>0?Math.round(tca/totalAd*100):0,       pctLabel:'총광고비', color:'#e03c6e', bg:'#fff0f5' },
+    { label:'네이버 총매출',     val: tn,       pct: 0, pctLabel:'', color:'#3dbb8f', bg:'#f0fff8' },
+    { label:'네이버 검색광고',   val: tns,      pct: totalAd>0?Math.round(tns/totalAd*100):0,       pctLabel:'총광고비', color:'#e8648a', bg:'#fff0f5' },
+    { label:'네이버 AI광고',     val: tna,      pct: totalAd>0?Math.round(tna/totalAd*100):0,       pctLabel:'총광고비', color:'#e8648a', bg:'#fff0f5' },
+    { label:'전체 총광고비',     val: totalAd,  pct: 0, pctLabel:'', color:'#e03c6e', bg:'#fff0f5' },
+    { label:'전체 총매출',       val: grandTotal,pct:0, pctLabel:'', color:'#8b60d0', bg:'#f8f4ff' },
   ];
   summary.style.gridTemplateColumns = 'repeat(3,1fr)';
   summary.innerHTML = cards.map(c => `
-    <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:12px;padding:12px 14px">
-      <div style="font-size:.75rem;color:#888;margin-bottom:4px">${c.label}</div>
+    <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:12px;padding:10px 14px">
+      <div style="font-size:.73rem;color:#888;margin-bottom:3px">${c.label}</div>
       <div style="font-size:1rem;font-weight:800;color:${c.color}">${c.val.toLocaleString()}원</div>
+      ${c.pct>0 ? `<div style="font-size:.68rem;color:${c.color};font-weight:700;margin-top:2px">${c.pct}% <span style="font-weight:400;color:#bbb">(${c.pctLabel})</span></div>` : '<div style="font-size:.68rem;min-height:14px"></div>'}
     </div>`).join('');
   const sr = document.getElementById('sales-sum-row');
   if (sr) {
