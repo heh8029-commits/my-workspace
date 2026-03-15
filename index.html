@@ -2644,10 +2644,10 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <!-- 입력폼 -->
             <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end">
               <select id="trip-check-who" style="border:1.5px solid #a8e0f8;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
+                <option value="공통">🏠 공통</option>
                 <option value="은희">👩 은희</option>
                 <option value="진우">🧒 진우</option>
                 <option value="민호">👨 민호</option>
-                <option value="공통">🏠 공통</option>
               </select>
               <input id="trip-check-inp" type="text" placeholder="준비물 입력..." style="flex:1;min-width:100px;border:1.5px solid #a8e0f8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripCheckAdd()">
               <button onclick="tripCheckAdd()" style="background:linear-gradient(135deg,#a8e0f8,#2090d0);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
@@ -2661,9 +2661,13 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           <div class="card" style="border-top:3px solid #ffe880;font-family:Pretendard,sans-serif">
             <div style="font-size:.95rem;font-weight:700;color:#a07800;margin-bottom:12px">💰 여행 경비</div>
 
-            <!-- 내가 쓴 것 -->
+            <!-- A가 쓴 것 (이름 수정 가능) -->
             <div style="background:#fffef0;border:1.5px solid #ffe880;border-radius:12px;padding:12px;margin-bottom:10px">
-              <div style="font-size:.82rem;font-weight:700;color:#a07800;margin-bottom:8px">👩 내가 쓴 것</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                <span id="trip-exp-name-view" style="font-size:.82rem;font-weight:700;color:#a07800;cursor:pointer" ondblclick="tripExpNameEdit()" title="더블클릭으로 이름 수정">👩 내가 쓴 것</span>
+                <input id="trip-exp-name-inp" type="text" value="내가 쓴 것" style="display:none;border:1.5px solid #ffe880;border-radius:6px;padding:3px 8px;font-size:.82rem;font-weight:700;color:#a07800;font-family:Pretendard,sans-serif;outline:none;width:120px" onkeydown="if(event.key==='Enter'||event.key==='Escape')tripExpNameSave()" onblur="tripExpNameSave()">
+                <button onclick="tripExpNameEdit()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color='#f0c800'" onmouseout="this.style.color='#ccc'" title="이름 수정">✏️</button>
+              </div>
               <div style="display:flex;gap:6px;margin-bottom:8px">
                 <input id="trip-exp-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #ffe880;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripExpAdd()">
                 <input id="trip-exp-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #ffe880;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripExpAdd()">
@@ -2673,9 +2677,13 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               <div id="trip-exp-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#a07800;padding-top:6px;border-top:1px dashed #ffe880;margin-top:4px"></div>
             </div>
 
-            <!-- 일행이 쓴 것 -->
+            <!-- B가 쓴 것 (이름 수정 가능) -->
             <div style="background:#f0f8ff;border:1.5px solid #b2d8f8;border-radius:12px;padding:12px;margin-bottom:10px">
-              <div style="font-size:.82rem;font-weight:700;color:#1a6a9a;margin-bottom:8px">👥 일행이 쓴 것</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                <span id="trip-com-name-view" style="font-size:.82rem;font-weight:700;color:#1a6a9a;cursor:pointer" ondblclick="tripComNameEdit()" title="더블클릭으로 이름 수정">👥 일행이 쓴 것</span>
+                <input id="trip-com-name-inp" type="text" value="일행이 쓴 것" style="display:none;border:1.5px solid #b2d8f8;border-radius:6px;padding:3px 8px;font-size:.82rem;font-weight:700;color:#1a6a9a;font-family:Pretendard,sans-serif;outline:none;width:120px" onkeydown="if(event.key==='Enter'||event.key==='Escape')tripComNameSave()" onblur="tripComNameSave()">
+                <button onclick="tripComNameEdit()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color='#4a90d0'" onmouseout="this.style.color='#ccc'" title="이름 수정">✏️</button>
+              </div>
               <div style="display:flex;gap:6px;margin-bottom:8px">
                 <input id="trip-com-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #b2d8f8;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripComAdd()">
                 <input id="trip-com-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #b2d8f8;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripComAdd()">
@@ -2995,7 +3003,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_exp','trip_com'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_exp','trip_com','trip_names'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5999,6 +6007,8 @@ function loadTripExp()        { return loadObj('trip_exp').list || []; }
 function saveTripExp(list)    { stor('trip_exp', {list}); }
 function loadTripCom()        { return loadObj('trip_com').list || []; }
 function saveTripCom(list)    { stor('trip_com', {list}); }
+function loadTripNames()      { return loadObj('trip_names'); }
+function saveTripNames(d)     { stor('trip_names', d); }
 
 var _whoColors = {
   '은희': {bg:'#fff0f8',color:'#c04070'},
@@ -6006,12 +6016,68 @@ var _whoColors = {
   '민호': {bg:'#f0fff4',color:'#1a7a40'},
   '공통': {bg:'#f8f5ff',color:'#6040a0'}
 };
+// 정렬 순서
+var _whoOrder = ['공통','은희','진우','민호'];
+
+/* ── 이름 편집 ── */
+function tripExpNameEdit() {
+  var view = document.getElementById('trip-exp-name-view');
+  var inp  = document.getElementById('trip-exp-name-inp');
+  if (!view||!inp) return;
+  // 현재 이름(이모지 제외) 가져오기
+  inp.value = (loadTripNames().expName || '내가 쓴 것');
+  view.style.display = 'none';
+  inp.style.display  = 'inline-block';
+  inp.focus(); inp.select();
+}
+function tripExpNameSave() {
+  var view = document.getElementById('trip-exp-name-view');
+  var inp  = document.getElementById('trip-exp-name-inp');
+  if (!view||!inp) return;
+  var name = inp.value.trim() || '내가 쓴 것';
+  var d = loadTripNames(); d.expName = name; saveTripNames(d);
+  view.textContent = '👩 ' + name;
+  inp.style.display  = 'none';
+  view.style.display = 'inline';
+}
+function tripComNameEdit() {
+  var view = document.getElementById('trip-com-name-view');
+  var inp  = document.getElementById('trip-com-name-inp');
+  if (!view||!inp) return;
+  inp.value = (loadTripNames().comName || '일행이 쓴 것');
+  view.style.display = 'none';
+  inp.style.display  = 'inline-block';
+  inp.focus(); inp.select();
+}
+function tripComNameSave() {
+  var view = document.getElementById('trip-com-name-view');
+  var inp  = document.getElementById('trip-com-name-inp');
+  if (!view||!inp) return;
+  var name = inp.value.trim() || '일행이 쓴 것';
+  var d = loadTripNames(); d.comName = name; saveTripNames(d);
+  view.textContent = '👥 ' + name;
+  inp.style.display  = 'none';
+  view.style.display = 'inline';
+}
+function _applyTripNames() {
+  var d = loadTripNames();
+  var ev = document.getElementById('trip-exp-name-view');
+  var cv = document.getElementById('trip-com-name-view');
+  if (ev && d.expName) ev.textContent = '👩 ' + d.expName;
+  if (cv && d.comName) cv.textContent = '👥 ' + d.comName;
+}
 
 /* ── 체크리스트 ── */
 function renderTripChecks() {
   var el = document.getElementById('trip-check-list');
   if (!el) return;
-  var items = loadTripChecks();
+  var raw = loadTripChecks();
+  // 공통→은희→진우→민호 순으로 정렬, 같은 분류 내에서는 추가 순서 유지
+  var items = raw.slice().sort(function(a,b){
+    var ai = _whoOrder.indexOf(a.who); var bi = _whoOrder.indexOf(b.who);
+    if (ai===-1) ai=99; if (bi===-1) bi=99;
+    return ai - bi;
+  });
   if (!items.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:12px 0">준비물을 추가해요 🧳</div>'; return; }
   el.innerHTML = '';
   items.forEach(function(item) {
@@ -6019,10 +6085,8 @@ function renderTripChecks() {
     row.className = 'trip-check-item' + (item.checked?' checked':'');
     row.draggable = true;
     row.dataset.id = item.id;
-    // 드래그 핸들
     var handle = document.createElement('span');
     handle.textContent = '⠿'; handle.style.cssText = 'color:#ccc;cursor:grab;font-size:1rem;flex-shrink:0';
-    // 체크박스
     var chk = document.createElement('div');
     chk.style.cssText = 'width:18px;height:18px;border-radius:5px;border:2px solid #a8e0f8;background:'+(item.checked?'#2090d0':'white')+';display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s';
     chk.innerHTML = item.checked ? '<span style="color:white;font-size:.7rem">✓</span>' : '';
@@ -6031,17 +6095,14 @@ function renderTripChecks() {
       var idx = list.findIndex(function(x){ return x.id===id; });
       if (idx!==-1) { list[idx].checked = !list[idx].checked; saveTripChecks(list); renderTripChecks(); }
     }; })(item.id);
-    // 분류 뱃지
     var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
     var who = document.createElement('span');
     who.className = 'trip-check-who';
     who.textContent = item.who || '';
     who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
-    // 텍스트
     var label = document.createElement('span');
     label.className = 'trip-check-label';
     label.textContent = item.text;
-    // 삭제
     var del = document.createElement('button');
     del.textContent = '✕'; del.style.cssText = 'background:none;border:none;color:#ddd;font-size:.75rem;cursor:pointer;flex-shrink:0;padding:0';
     del.onmouseover = function(){ del.style.color='#e03c6e'; }; del.onmouseout = function(){ del.style.color='#ddd'; };
@@ -6090,7 +6151,7 @@ function tripCheckReset() {
 }
 
 /* ── 경비 공통 렌더 ── */
-function _renderExpList(elId, totalElId, items, borderColor, textColor) {
+function _renderExpList(elId, totalElId, items, textColor) {
   var el = document.getElementById(elId);
   var tel = document.getElementById(totalElId);
   if (!el) return;
@@ -6112,12 +6173,8 @@ function _tripExpDel(elId, id) {
   else { saveTripCom(loadTripCom().filter(function(x){ return x.id!==id; })); renderTripCom(); }
 }
 
-function renderTripExp() {
-  _renderExpList('trip-exp-list','trip-exp-total', loadTripExp(), '#ffe880','#a07800');
-}
-function renderTripCom() {
-  _renderExpList('trip-com-list','trip-com-total', loadTripCom(), '#b2d8f8','#1a6a9a');
-}
+function renderTripExp() { _renderExpList('trip-exp-list','trip-exp-total', loadTripExp(),'#a07800'); }
+function renderTripCom() { _renderExpList('trip-com-list','trip-com-total', loadTripCom(),'#1a6a9a'); }
 
 function tripExpAdd() {
   var item = document.getElementById('trip-exp-item').value.trim();
@@ -6141,18 +6198,21 @@ function tripComAdd() {
 }
 
 function tripSettle() {
+  var names = loadTripNames();
+  var expName = names.expName || '내가 쓴 것';
+  var comName = names.comName || '일행이 쓴 것';
   var myTotal  = loadTripExp().reduce(function(s,x){ return s+(parseInt(x.amt)||0); },0);
   var comTotal = loadTripCom().reduce(function(s,x){ return s+(parseInt(x.amt)||0); },0);
-  var grand    = myTotal + comTotal;
-  var half     = grand / 2;
-  var diff     = myTotal - half; // 양수면 내가 더 냄 → 일행이 나한테 줘야
-  var box  = document.getElementById('trip-settle-box');
-  var res  = document.getElementById('trip-settle-result');
+  var grand = myTotal + comTotal;
+  var half  = grand / 2;
+  var diff  = myTotal - half;
+  var box = document.getElementById('trip-settle-box');
+  var res = document.getElementById('trip-settle-result');
   if (!box||!res) return;
   var html =
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">내가 쓴 금액</div><div style="font-size:1rem;font-weight:700;color:#a07800">'+myTotal.toLocaleString()+'원</div></div>'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">일행이 쓴 금액</div><div style="font-size:1rem;font-weight:700;color:#1a6a9a">'+comTotal.toLocaleString()+'원</div></div>'
+    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(expName)+'</div><div style="font-size:1rem;font-weight:700;color:#a07800">'+myTotal.toLocaleString()+'원</div></div>'
+    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(comName)+'</div><div style="font-size:1rem;font-weight:700;color:#1a6a9a">'+comTotal.toLocaleString()+'원</div></div>'
     + '</div>'
     + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center;margin-bottom:10px">'
     + '<div style="font-size:.72rem;color:#888;margin-bottom:2px">총 지출</div>'
@@ -6164,12 +6224,12 @@ function tripSettle() {
   } else if (diff > 0) {
     html += '<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
       + '<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      + '<div style="font-weight:700;color:#c05020;font-size:1rem">일행 → 나에게 <span style="font-size:1.15rem">'+Math.round(diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
+      + '<div style="font-weight:700;color:#c05020;font-size:1rem"><b>'+escHtml(comName)+'</b> → <b>'+escHtml(expName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
       + '</div>';
   } else {
     html += '<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
       + '<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      + '<div style="font-weight:700;color:#1a6a9a;font-size:1rem">내가 일행에게 <span style="font-size:1.15rem">'+Math.round(-diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
+      + '<div style="font-weight:700;color:#1a6a9a;font-size:1rem"><b>'+escHtml(expName)+'</b> → <b>'+escHtml(comName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(-diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
       + '</div>';
   }
   res.innerHTML = html;
@@ -6177,6 +6237,7 @@ function tripSettle() {
 }
 
 function renderTripPage() {
+  _applyTripNames();
   renderTripChecks();
   renderTripExp();
   renderTripCom();
