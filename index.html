@@ -910,8 +910,8 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
   flex-shrink:0; transition:background .12s;
 }
 .trip-check-item.checked .trip-check-chk { background:#2090d0; border-color:#2090d0; }
-.trip-check-who { font-size:.58rem; font-weight:700; padding:1px 4px; border-radius:6px; flex-shrink:0; white-space:nowrap; }
-.trip-check-label { font-size:.75rem; color:#2a3a50; word-break:break-all; line-height:1.2; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.trip-check-who { font-size:.65rem; font-weight:700; padding:1px 5px; border-radius:6px; flex-shrink:0; white-space:nowrap; }
+.trip-check-label { font-size:.85rem; font-weight:700; color:#1a2a40; word-break:break-all; line-height:1.3; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .trip-check-del { background:none; border:none; color:#ddd; font-size:.6rem; cursor:pointer; padding:0; flex-shrink:0; }
 .trip-check-del:hover { color:#e03c6e; }
 @media (max-width:900px) { #trip-check-list { grid-template-columns: repeat(3,1fr); } }
@@ -6367,7 +6367,7 @@ function tripConfirmAdd() {
 
   var list = loadTripTrips();
   var newTrip = {id:Date.now(), name:name, dest:dest, start:start, end:end, nights:diff, expName:'내가 쓴 것', comName:'일행이 쓴 것', exp:[], com:[]};
-  list.push(newTrip);
+  list.unshift(newTrip);
   saveTripTrips(list);
   _curTripId = newTrip.id;
   // 팝업 닫기
@@ -6387,7 +6387,7 @@ function renderTripTabs() {
     return;
   }
   if (!_curTripId || !list.find(function(x){return x.id===_curTripId;})) {
-    _curTripId = list[list.length-1].id;
+    _curTripId = list[0].id;
   }
   bar.innerHTML = '';
   list.forEach(function(t) {
@@ -6445,7 +6445,7 @@ function renderTripTabContent() {
       daysHtml +=
         '<div style="border:1.5px solid #ffe0a0;border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fffef8">'
         +'<div style="font-size:.85rem;font-weight:700;color:'+dowColor+';margin-bottom:6px">📅 '+label+'</div>'
-        +'<textarea data-daykey="'+key+'" rows="2" placeholder="이날 뭐했는지 메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f0e0a0;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:white;line-height:1.5" onblur="tripSaveDayMemo(this)">'
+        +'<textarea data-daykey="'+key+'" rows="5" placeholder="이날 뭐했는지 메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f0e0a0;border-radius:7px;padding:7px 10px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;background:white;line-height:1.65;min-height:100px" onblur="tripSaveDayMemo(this)">'
         +escHtml(memo)+'</textarea>'
         +'</div>';
       dayIdx++;
