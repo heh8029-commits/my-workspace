@@ -842,6 +842,9 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 @media (max-width:540px) {
   #pc-grid { grid-template-columns: 1fr !important; gap:8px; }
 }
+@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
+@media (max-width:700px)  { #pnl-note-grid { grid-template-columns: repeat(3,1fr) !important; } }
+@media (max-width:540px)  { #pnl-note-grid { grid-template-columns: repeat(2,1fr) !important; } }
 
 /* ── 진우 포스트잇 ── */
 #jinu-note-grid {
@@ -2277,6 +2280,15 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div id="pnl-income-card" style="margin-bottom:12px"></div>
         <div id="pnl-expense-card"></div>
       </div>
+      <!-- 손익 포스트잇 메모 -->
+      <div style="margin-top:20px">
+        <div class="sec">📌 메모 포스트잇</div>
+        <div style="display:flex;gap:7px;margin-bottom:12px">
+          <textarea id="pnl-note-inp" rows="2" placeholder="메모 내용..." style="flex:1;border:1.5px solid #ffe880;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#fffef5;line-height:1.6"></textarea>
+          <button onclick="pnlNoteAdd()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:#7a5800;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
+        </div>
+        <div id="pnl-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
+      </div>
     </div>
         <div class="subpage" id="menu1-sub-6">
       <div class="subpage-header">
@@ -2741,10 +2753,10 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <div id="trip-memo-list"></div>
           </div>
 
-          <!-- 여행 경비 (하단, 날짜 탭) -->
+          <!-- 여행 일정 (하단, 날짜 탭) -->
           <div class="card" style="border-top:3px solid #ffe880;font-family:Pretendard,sans-serif">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <div style="font-size:.95rem;font-weight:700;color:#a07800">💰 여행 경비</div>
+              <div style="font-size:.95rem;font-weight:700;color:#a07800">✈️ 여행 일정</div>
               <button onclick="tripAddTrip()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:8px;padding:5px 12px;font-size:.78rem;font-weight:700;color:#5a3800;cursor:pointer;font-family:Pretendard,sans-serif">+ 여행 추가</button>
             </div>
             <div class="trip-tab-bar" id="trip-tab-bar"></div>
@@ -3054,7 +3066,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4531,6 +4543,63 @@ function pnlDelExpense(idx) {
 function renderPnlPage() {
   renderPnlMonthTabs();
   renderPnl();
+  renderPnlNotes && renderPnlNotes();
+}
+
+/* ── 월별손익 포스트잇 ── */
+function loadPnlNotes()     { return loadObj('pnl_notes').list || []; }
+function savePnlNotes(list) { stor('pnl_notes', {list}); }
+
+function renderPnlNotes() {
+  var grid = document.getElementById('pnl-note-grid');
+  if (!grid) return;
+  var items = loadPnlNotes();
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:16px 0">메모를 추가해요 📌</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'jinu-note-card';
+    var txt = document.createElement('div');
+    txt.className = 'jinu-note-text';
+    txt.contentEditable = 'false';
+    txt.textContent = item.text;
+    txt.ondblclick = function() { txt.contentEditable='true'; txt.focus(); };
+    txt.onblur = function() {
+      var v = txt.innerText.trim();
+      if (v) { var list=loadPnlNotes(); var idx=list.findIndex(function(x){return x.id===item.id;}); if(idx!==-1){list[idx].text=v;savePnlNotes(list);} }
+      txt.contentEditable='false';
+    };
+    txt.onkeydown = function(e){ if(e.key==='Escape') txt.blur(); };
+    var acts = document.createElement('div');
+    acts.className = 'jinu-note-acts';
+    var copyBtn=document.createElement('button'); copyBtn.textContent='📋';
+    copyBtn.onclick=function(){ navigator.clipboard.writeText(item.text).then(function(){ toast('📋 복사됐어요!'); }); };
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️';
+    editBtn.onclick=function(){ txt.contentEditable='true'; txt.focus(); };
+    var delBtn=document.createElement('button'); delBtn.textContent='🗑️';
+    delBtn.onclick=function(){
+      savePnlNotes(loadPnlNotes().filter(function(x){return x.id!==item.id;}));
+      renderPnlNotes(); toast('🗑️ 삭제됐어요');
+    };
+    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    card.appendChild(txt); card.appendChild(acts);
+    grid.appendChild(card);
+  });
+}
+
+function pnlNoteAdd() {
+  var inp = document.getElementById('pnl-note-inp');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
+  var list = loadPnlNotes();
+  list.unshift({id:Date.now(), text:text});
+  savePnlNotes(list);
+  inp.value = '';
+  renderPnlNotes();
+  toast('📌 메모 추가됐어요!');
 }
 
 // ══════════════════════════════════════════
@@ -6339,9 +6408,48 @@ function renderTripTabContent() {
   var expName = t.expName || '내가 쓴 것';
   var comName = t.comName || '일행이 쓴 것';
 
+  // ── 날짜별 일정 메모 생성 ──
+  var dowKo = ['일','월','화','수','목','금','토'];
+  var dowColors = ['#e03c6e','#2060a0','#2060a0','#2060a0','#2060a0','#2060a0','#8060d0'];
+  var dayMemos = t.dayMemos || {};
+  var daysHtml = '';
+
+  if (t.start && t.end) {
+    var sd = new Date(t.start);
+    var ed = new Date(t.end);
+    var cur = new Date(sd);
+    var dayIdx = 0;
+    while (cur <= ed) {
+      var key = cur.toISOString().slice(0,10);
+      var dow = cur.getDay();
+      var label = (cur.getMonth()+1)+'월 '+cur.getDate()+'일 ('+dowKo[dow]+')';
+      var memo = (dayMemos[key]||'');
+      var dowColor = dowColors[dow];
+      daysHtml +=
+        '<div style="border:1.5px solid #ffe0a0;border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fffef8">'
+        +'<div style="font-size:.85rem;font-weight:700;color:'+dowColor+';margin-bottom:6px">📅 '+label+'</div>'
+        +'<textarea data-daykey="'+key+'" rows="2" placeholder="이날 뭐했는지 메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f0e0a0;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:white;line-height:1.5" onblur="tripSaveDayMemo(this)">'
+        +escHtml(memo)+'</textarea>'
+        +'</div>';
+      dayIdx++;
+      cur.setDate(cur.getDate()+1);
+    }
+  } else {
+    daysHtml = '<div style="text-align:center;color:#bbb;font-size:.8rem;padding:8px 0">날짜 정보가 없어요</div>';
+  }
+
   wrap.innerHTML =
+    // 날짜별 일정
+    '<div style="margin-bottom:14px">'
+    +'<div style="font-size:.85rem;font-weight:700;color:#a07800;margin-bottom:8px">🗓️ 날짜별 일정</div>'
+    +daysHtml
+    +'</div>'
+    // 여행 경비 구분선
+    +'<div style="border-top:2px dashed #ffe880;margin:14px 0 14px;text-align:center">'
+    +'<span style="background:white;padding:0 10px;font-size:.82rem;font-weight:700;color:#a07800">💰 여행 경비</span>'
+    +'</div>'
     // A
-    '<div style="background:#fffef0;border:1.5px solid #ffe880;border-radius:12px;padding:12px;margin-bottom:10px">'
+    +'<div style="background:#fffef0;border:1.5px solid #ffe880;border-radius:12px;padding:12px;margin-bottom:10px">'
     +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
     +'<span style="font-size:.82rem;font-weight:700;color:#a07800" id="tec-exp-lbl">👩 '+escHtml(expName)+'</span>'
     +'<button onclick="tripRenameExp()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color=\'#f0c800\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
@@ -6375,9 +6483,19 @@ function renderTripTabContent() {
     +'</div>'
     +'<button onclick="tripSettle()" style="width:100%;background:linear-gradient(135deg,#3dbb8f,#1a9a60);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif">🧮 정산 계산하기</button>';
 
-  // 목록 렌더
   _renderTecList('exp', t.exp||[], '#a07800');
   _renderTecList('com', t.com||[], '#1a6a9a');
+}
+
+function tripSaveDayMemo(ta) {
+  var key = ta.getAttribute('data-daykey');
+  var val = ta.value;
+  var list = loadTripTrips();
+  var t = list.find(function(x){return x.id===_curTripId;});
+  if (!t) return;
+  if (!t.dayMemos) t.dayMemos = {};
+  t.dayMemos[key] = val;
+  saveTripTrips(list);
 }
 
 function _renderTecList(type, items, color) {
