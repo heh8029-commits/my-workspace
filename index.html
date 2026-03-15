@@ -888,6 +888,12 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
   .jinu-note-acts { opacity:1; }
 }
 
+/* ── 포스트잇 이미지 ── */
+.note-card-img { width:100%; border-radius:6px; margin-bottom:5px; display:block; cursor:pointer; max-height:120px; object-fit:cover; }
+.note-img-drop { width:100%; min-height:38px; border:1.5px dashed #d0c8f0; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.68rem; color:#b0a0d8; margin-bottom:4px; background:#f8f5ff; transition:background .12s; }
+.note-img-drop:hover { background:#ede8ff; }
+
+
 /* ── 여행갈때 체크리스트 ── */
 #trip-check-list {
   display: grid;
@@ -3714,7 +3720,16 @@ function generateAiReply(target) {
   const query = inp ? inp.value.trim() : '';
   if (!query) { toast('고객 문의글을 입력해줘요 📝'); return; }
 
-  const prompt = '다음 고객 문의에 대해 친절하고 전문적인 쇼핑몰 CS 답변을 한국어로 작성해줘:\n\n' + query;
+  const prompt = `아래 고객 문의에 대한 CS 답변을 작성해줘.
+
+조건:
+- 친절하고 따뜻하지만 전문적인 톤
+- AI 같은 딱딱한 표현 없이 사람이 쓴 것처럼 자연스럽게
+- 너무 길지 않게, 핵심만 간결하게
+- 고객 입장에서 공감하며 시작하기
+
+[고객 문의]
+${query}`;
 
   navigator.clipboard.writeText(prompt).then(() => {
     const url = target === 'claude' ? 'https://claude.ai/new' : 'https://chatgpt.com/';
@@ -4417,6 +4432,8 @@ function renderPnlSummary() {
   const totalIncome = incomes.reduce(function(s, r) { return s + parseFloat(r.amount || 0); }, 0);
   const totalExpense = expenses.reduce(function(s, r) { return s + parseFloat(r.amount || 0); }, 0);
   const net = totalIncome - totalExpense;
+  const netRate = totalIncome > 0 ? Math.round(net / totalIncome * 100) : 0;
+  const expRate = totalIncome > 0 ? Math.round(totalExpense / totalIncome * 100) : 0;
   const netColor = net >= 0 ? '#0a6040' : '#c03030';
   const netBg = net >= 0 ? 'linear-gradient(135deg,#d4f5e8,#a0e8c8)' : 'linear-gradient(135deg,#ffe0e0,#ffc0c0)';
   const netBorder = net >= 0 ? '#3dbb8f' : '#e08080';
@@ -4431,10 +4448,12 @@ function renderPnlSummary() {
     + '<div style="background:rgba(255,255,255,.7);border-radius:10px;padding:10px;text-align:center">'
     +   '<div style="font-size:.68rem;color:#888;margin-bottom:4px">💸 나간 돈</div>'
     +   '<div style="font-size:.9rem;font-weight:800;color:#c03030">' + totalExpense.toLocaleString() + '<span style="font-size:.62rem">원</span></div>'
+    +   '<div style="font-size:.68rem;color:#e05050;font-weight:700;margin-top:2px">' + (totalIncome>0 ? expRate+'% 비중' : '') + '</div>'
     + '</div>'
     + '<div style="background:rgba(255,255,255,.85);border-radius:10px;padding:10px;text-align:center;border:1.5px solid ' + netBorder + '">'
     +   '<div style="font-size:.68rem;color:#888;margin-bottom:4px">🎯 순이익</div>'
     +   '<div style="font-size:.95rem;font-weight:900;color:' + netColor + '">' + net.toLocaleString() + '<span style="font-size:.62rem">원</span></div>'
+    +   '<div style="font-size:.72rem;color:' + netColor + ';font-weight:700;margin-top:2px">' + (totalIncome>0 ? '수익률 '+netRate+'%' : '') + '</div>'
     + '</div>'
     + '</div>'
     + '<div style="font-size:.72rem;color:' + netColor + ';text-align:center;font-weight:600">'
@@ -4477,6 +4496,7 @@ function renderPnlExpenseCard() {
   if (!el) return;
   const data = loadPnl(pnlCurrentPeriod);
   const items = data.expenses || [];
+  const totalInc = (data.incomes||[]).reduce(function(s,r){return s+parseFloat(r.amount||0);},0);
   const bc = '#f7c8b0', bg = '#fff8f5';
   const inpBase = 'border:1.5px solid '+bc+';border-radius:8px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;box-sizing:border-box;outline:none';
   let html = '<div style="background:'+bg+';border:1.5px solid '+bc+';border-radius:14px;padding:14px">';
@@ -4488,10 +4508,13 @@ function renderPnlExpenseCard() {
     html += '<div class="empty" style="font-size:.8rem">지출 항목을 추가해요</div>';
   } else {
     items.forEach(function(it, i) {
+      const amt = parseFloat((it.amount||'0').toString().replace(/,/g,''))||0;
+      const pct = totalInc > 0 ? Math.round(amt / totalInc * 100) : 0;
       html += '<div draggable="true" ondragstart="pnlExpDragStart(event,'+i+')" ondragover="pnlExpDragOver(event)" ondragleave="pnlExpDragLeave(event)" ondrop="pnlExpDrop(event,'+i+')" style="display:flex;gap:6px;align-items:center;margin-bottom:7px">';
       html += '<span style="cursor:grab;color:#ccc;font-size:.82rem;flex-shrink:0;user-select:none">&#10887;</span>';
       html += '<input type="text" value="' + escHtml(it.label||'') + '" placeholder="항목" onblur="pnlSaveExpense(this,'+i+',\'label\')" style="flex:1;min-width:0;'+inpBase+'">';
       html += '<input type="text" value="' + (it.amount?Number(it.amount).toLocaleString():'') + '" placeholder="0" oninput="pnlFmtNum(this)" onblur="pnlSaveExpense(this,'+i+',\'amount\')" style="flex:1;min-width:0;text-align:right;'+inpBase+'">';
+      html += (pct > 0 ? '<span style="font-size:.72rem;color:#e05050;font-weight:700;flex-shrink:0;min-width:34px;text-align:right">'+pct+'%</span>' : '<span style="min-width:34px;flex-shrink:0"></span>');
       html += '<button data-idx="'+i+'" onclick="pnlDelExpense(+this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:.85rem;flex-shrink:0;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">&#10005;</button>';
       html += '</div>';
     });
@@ -4637,7 +4660,15 @@ function renderPnlNotes() {
       savePnlNotes(loadPnlNotes().filter(function(x){return x.id!==item.id;}));
       renderPnlNotes(); toast('🗑️ 삭제됐어요');
     };
+    var imgDrop2 = _noteImgDrop(card, item, savePnlNotes, loadPnlNotes, renderPnlNotes);
+    if (item.img) {
+      var imgDelBtn2 = document.createElement('button');
+      imgDelBtn2.textContent='🗑️사진'; imgDelBtn2.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0';
+      imgDelBtn2.onclick=function(e){e.stopPropagation();var l=loadPnlNotes();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;savePnlNotes(l);renderPnlNotes();}};
+      acts.appendChild(imgDelBtn2);
+    }
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    card.insertBefore(imgDrop2, txt);
     card.appendChild(txt); card.appendChild(acts);
     grid.appendChild(card);
   });
@@ -4648,7 +4679,7 @@ function pnlNoteAdd() {
   var text = inp ? inp.value.trim() : '';
   if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
   var list = loadPnlNotes();
-  list.unshift({id:Date.now(), text:text});
+  list.unshift({id:Date.now(), text:text, img:null});
   savePnlNotes(list);
   inp.value = '';
   renderPnlNotes();
@@ -6178,6 +6209,52 @@ function jinuClearImg() {
 ══════════════════════════════════ */
 function loadJinuNotes()     { return loadObj('jinu_notes').list || []; }
 function saveJinuNotes(list) { stor('jinu_notes', {list}); }
+
+/* ── 포스트잇 공통 이미지 함수 ── */
+function _noteImgDrop(card, item, saveFn, loadFn, renderFn) {
+  var drop = document.createElement('div');
+  drop.className = 'note-img-drop';
+  drop.title = '클릭 또는 Ctrl+V로 이미지 추가';
+  drop.innerHTML = item.img ? '' : '📷 이미지 추가';
+  if (item.img) {
+    var img = document.createElement('img');
+    img.src = item.img; img.className = 'note-card-img';
+    img.onclick = function(e){ e.stopPropagation(); };
+    drop.innerHTML = '';
+    drop.appendChild(img);
+  }
+  drop.onclick = function(e) {
+    e.stopPropagation();
+    var fi = document.createElement('input');
+    fi.type='file'; fi.accept='image/*';
+    fi.onchange = function() {
+      if (!fi.files||!fi.files[0]) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var list = loadFn();
+        var idx = list.findIndex(function(x){return x.id===item.id;});
+        if (idx!==-1) { list[idx].img = ev.target.result; saveFn(list); renderFn(); }
+      };
+      reader.readAsDataURL(fi.files[0]);
+    };
+    fi.click();
+  };
+  drop.onpaste = function(e) {
+    var items = (e.clipboardData||{}).items||[];
+    for (var i=0;i<items.length;i++) {
+      if (items[i].type.indexOf('image')!==-1) {
+        var reader = new FileReader();
+        (function(blob){ reader.onload = function(ev) {
+          var list = loadFn();
+          var idx = list.findIndex(function(x){return x.id===item.id;});
+          if (idx!==-1) { list[idx].img = ev.target.result; saveFn(list); renderFn(); }
+        }; reader.readAsDataURL(blob); })(items[i].getAsFile());
+        e.preventDefault(); return;
+      }
+    }
+  };
+  return drop;
+}
 
 function renderJinuNotes() {
   var grid = document.getElementById('jinu-note-grid');
