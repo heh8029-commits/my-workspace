@@ -6309,15 +6309,17 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML =
     '<div style="background:white;border-radius:18px;padding:24px;width:100%;max-width:340px;font-family:Pretendard,sans-serif;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.25)">'
-    +'<div style="font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:6px">📷 이미지 붙여넣기</div>'
-    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:14px">이미지를 복사한 뒤 아래 영역에 Ctrl+V</div>'
+    +'<div style="font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:6px">📷 이미지 추가</div>'
+    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:12px">클립보드 붙여넣기 또는 파일 첨부</div>'
     +'<div id="nimg-area" tabindex="0" style="width:100%;height:130px;border:2px dashed #d0b8f8;border-radius:12px;background:#f8f5ff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;color:#b090d8;position:relative;overflow:hidden;outline:none">'
       +'<div id="nimg-ph">📋 여기 클릭 후 Ctrl+V</div>'
       +'<div id="nimg-prev" style="display:none;position:absolute;inset:0"><img id="nimg-prev-img" style="width:100%;height:100%;object-fit:contain"></div>'
     +'</div>'
-    +'<div style="display:flex;gap:8px;margin-top:14px">'
+    +'<input id="nimg-file-inp" type="file" accept="image/*" style="display:none">'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
       +'<button id="nimg-cancel" style="flex:1;padding:8px;background:#f0f0f0;border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:#888;cursor:pointer">취소</button>'
-      +'<button id="nimg-ok" style="flex:2;padding:8px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
+      +'<button id="nimg-file-btn" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">📁 첨부파일</button>'
+      +'<button id="nimg-ok" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
     +'</div>'
     +'</div>';
   document.body.appendChild(modal);
@@ -6325,7 +6327,16 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
   var prev = document.getElementById('nimg-prev');
   var prevImg = document.getElementById('nimg-prev-img');
   var ph = document.getElementById('nimg-ph');
+  var fileInp = document.getElementById('nimg-file-inp');
   var _pending = null;
+
+  function setPreview(dataUrl) {
+    _pending = dataUrl;
+    prevImg.src = dataUrl;
+    prev.style.display = 'block';
+    ph.style.display = 'none';
+  }
+
   area.focus();
   area.onclick = function(){ area.focus(); };
   area.onpaste = function(e) {
@@ -6333,19 +6344,25 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
     for (var i=0;i<its.length;i++) {
       if (its[i].type.indexOf('image')!==-1) {
         var reader = new FileReader();
-        (function(blob){ reader.onload = function(ev){
-          _pending = ev.target.result;
-          prevImg.src = _pending;
-          prev.style.display='block'; ph.style.display='none';
-        }; reader.readAsDataURL(blob); })(its[i].getAsFile());
+        (function(blob){ reader.onload = function(ev){ setPreview(ev.target.result); }; reader.readAsDataURL(blob); })(its[i].getAsFile());
         e.preventDefault(); return;
       }
     }
     toast('이미지를 먼저 복사해주세요 📋');
   };
+
+  // 첨부파일 버튼
+  document.getElementById('nimg-file-btn').onclick = function(){ fileInp.click(); };
+  fileInp.onchange = function() {
+    if (!fileInp.files||!fileInp.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){ setPreview(ev.target.result); };
+    reader.readAsDataURL(fileInp.files[0]);
+  };
+
   document.getElementById('nimg-cancel').onclick = function(){ modal.remove(); };
   document.getElementById('nimg-ok').onclick = function(){
-    if (!_pending) { toast('이미지를 먼저 붙여넣어 주세요 📷'); return; }
+    if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
     var list = loadFn();
     var idx = list.findIndex(function(x){return x.id===item.id;});
     if (idx!==-1) { list[idx].img = _pending; saveFn(list); renderFn(); }
@@ -7578,28 +7595,83 @@ function cmCardDel(id) {
 
 /* 메인 이미지 */
 var _cmImgPopTarget=null;
-function cmMainImgOpen(id) {
-  _cmImgPopTarget={cardId:id,type:'main'};
-  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
-  inp.onchange=function(e){
-    var f=e.target.files[0]; if(!f)return;
-    var r=new FileReader(); r.onload=function(ev){
-      var list=loadCards(); var c=list.find(function(x){return x.id===id;});
-      if(c){c.mainImg=ev.target.result; saveCards(list); renderCardMgmt();}
-    }; r.readAsDataURL(f);
+function _cmImgModal(title, onSave) {
+  var old = document.getElementById('cm-img-modal');
+  if (old) old.remove();
+  var modal = document.createElement('div');
+  modal.id = 'cm-img-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML =
+    '<div style="background:white;border-radius:18px;padding:24px;width:100%;max-width:340px;font-family:Pretendard,sans-serif;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.25)">'
+    +'<div style="font-size:.95rem;font-weight:700;color:#1a5f8a;margin-bottom:6px">📷 '+title+'</div>'
+    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:12px">클립보드 붙여넣기 또는 파일 첨부</div>'
+    +'<div id="cm-nimg-area" tabindex="0" style="width:100%;height:130px;border:2px dashed #b2d8f8;border-radius:12px;background:#f0f8ff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;color:#4a80d0;position:relative;overflow:hidden;outline:none">'
+      +'<div id="cm-nimg-ph">📋 여기 클릭 후 Ctrl+V</div>'
+      +'<div id="cm-nimg-prev" style="display:none;position:absolute;inset:0"><img id="cm-nimg-prev-img" style="width:100%;height:100%;object-fit:contain"></div>'
+    +'</div>'
+    +'<input id="cm-nimg-file-inp" type="file" accept="image/*" style="display:none">'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
+      +'<button id="cm-nimg-cancel" style="flex:1;padding:8px;background:#f0f0f0;border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:#888;cursor:pointer">취소</button>'
+      +'<button id="cm-nimg-file-btn" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">📁 첨부파일</button>'
+      +'<button id="cm-nimg-ok" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#b2d8f8,#1a5f8a);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(modal);
+  var area = document.getElementById('cm-nimg-area');
+  var prev = document.getElementById('cm-nimg-prev');
+  var prevImg = document.getElementById('cm-nimg-prev-img');
+  var ph = document.getElementById('cm-nimg-ph');
+  var fileInp = document.getElementById('cm-nimg-file-inp');
+  var _pending = null;
+
+  function setPreview(dataUrl) {
+    _pending = dataUrl;
+    prevImg.src = dataUrl;
+    prev.style.display = 'block';
+    ph.style.display = 'none';
+  }
+
+  area.focus();
+  area.onclick = function(){ area.focus(); };
+  area.onpaste = function(e) {
+    var its = (e.clipboardData||{}).items||[];
+    for (var i=0;i<its.length;i++) {
+      if (its[i].type.indexOf('image')!==-1) {
+        var reader = new FileReader();
+        (function(blob){ reader.onload = function(ev){ setPreview(ev.target.result); }; reader.readAsDataURL(blob); })(its[i].getAsFile());
+        e.preventDefault(); return;
+      }
+    }
+    toast('이미지를 먼저 복사해주세요 📋');
   };
-  inp.click();
+  document.getElementById('cm-nimg-file-btn').onclick = function(){ fileInp.click(); };
+  fileInp.onchange = function() {
+    if (!fileInp.files||!fileInp.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){ setPreview(ev.target.result); };
+    reader.readAsDataURL(fileInp.files[0]);
+  };
+  document.getElementById('cm-nimg-cancel').onclick = function(){ modal.remove(); };
+  document.getElementById('cm-nimg-ok').onclick = function(){
+    if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
+    onSave(_pending);
+    modal.remove();
+    toast('📷 이미지 등록됐어요!');
+  };
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+}
+
+function cmMainImgOpen(id) {
+  _cmImgModal('메인 이미지', function(dataUrl) {
+    var list=loadCards(); var c=list.find(function(x){return x.id===id;});
+    if(c){c.mainImg=dataUrl; saveCards(list); renderCardMgmt();}
+  });
 }
 function cmRefImgOpen(id) {
-  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
-  inp.onchange=function(e){
-    var f=e.target.files[0]; if(!f)return;
-    var r=new FileReader(); r.onload=function(ev){
-      var list=loadCards(); var c=list.find(function(x){return x.id===id;});
-      if(c){if(!c.imgs)c.imgs=[];c.imgs.push(ev.target.result);saveCards(list);renderCardMgmt();}
-    }; r.readAsDataURL(f);
-  };
-  inp.click();
+  _cmImgModal('참고 이미지', function(dataUrl) {
+    var list=loadCards(); var c=list.find(function(x){return x.id===id;});
+    if(c){if(!c.imgs)c.imgs=[];c.imgs.push(dataUrl);saveCards(list);renderCardMgmt();}
+  });
 }
 function cmImgDel(id,idx) {
   var list=loadCards(); var c=list.find(function(x){return x.id===id;});
