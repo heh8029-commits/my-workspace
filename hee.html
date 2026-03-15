@@ -2828,6 +2828,7 @@ function pwaInstall() {
                 <option value="은희">👩 은희</option>
                 <option value="진우">🧒 진우</option>
                 <option value="민호">👨 민호</option>
+                <option value="먹거리">🍱 먹거리</option>
               </select>
               <input id="trip-check-inp" type="text" placeholder="준비물..." style="flex:1;border:1.5px solid #a8e0f8;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripCheckAdd()">
               <button onclick="tripCheckAdd()" style="background:linear-gradient(135deg,#a8e0f8,#2090d0);border:none;border-radius:7px;padding:5px 12px;color:white;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
@@ -5772,8 +5773,10 @@ function _pcShowImgPopup(popId, title, pasteF, dropF, confirmF, cancelF) {
         +'<img id="'+popId+'-preview" style="max-width:100%;max-height:180px;border-radius:8px;display:none;object-fit:contain">'
       +'</div>'
       +'<div id="'+popId+'-status" style="font-size:.72rem;min-height:14px;margin-bottom:10px;text-align:center"></div>'
+      +'<input id="'+popId+'-file-inp" type="file" accept="image/*" style="display:none">'
       +'<div style="display:flex;gap:8px;justify-content:flex-end">'
         +'<button onclick="'+cancelF+'()" style="background:#eee;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;cursor:pointer;font-family:Pretendard,sans-serif;color:#666">취소</button>'
+        +'<button onclick="document.getElementById(''+popId+'-file-inp').click()" style="background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:white">📁 첨부파일</button>'
         +'<button id="'+popId+'-confirm" onclick="'+confirmF+'()" disabled style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:8px;padding:6px 16px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:#5020a0">확인</button>'
       +'</div>';
     pop.appendChild(box); document.body.appendChild(pop);
@@ -5783,6 +5786,22 @@ function _pcShowImgPopup(popId, title, pasteF, dropF, confirmF, cancelF) {
   var st=document.getElementById(popId+'-status'); var btn=document.getElementById(popId+'-confirm');
   if(hint)hint.style.display='block'; if(prev){prev.style.display='none';prev.src='';}
   if(st)st.textContent=''; if(btn)btn.disabled=true;
+  // 파일 input onchange 등록
+  var fileInp = document.getElementById(popId+'-file-inp');
+  if (fileInp) {
+    fileInp.value = '';
+    fileInp.onchange = function(e) {
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        // 현재 팝업에 맞는 핸들러 호출
+        if (popId === 'pc-main-img-popup') { _pcMainImgPending = ev.target.result; _pcSetPopupPreview(popId, ev.target.result); }
+        else if (popId === 'pc-ref-img-popup') { _pcRefImgPending = ev.target.result; _pcSetPopupPreview(popId, ev.target.result); }
+      };
+      reader.readAsDataURL(f);
+    };
+  }
   pop.style.display='flex';
   setTimeout(function(){var a=document.getElementById(popId+'-area');if(a)a.focus();},80);
 }
@@ -6458,9 +6477,10 @@ var _whoColors = {
   '은희': {bg:'#fff0f8',color:'#c04070'},
   '진우': {bg:'#e8f4ff',color:'#2060a0'},
   '민호': {bg:'#f0fff4',color:'#1a7a40'},
-  '공통': {bg:'#f8f5ff',color:'#6040a0'}
+  '공통': {bg:'#f8f5ff',color:'#6040a0'},
+  '먹거리': {bg:'#fff8e8',color:'#b06000'}
 };
-var _whoOrder = ['공통','은희','진우','민호'];
+var _whoOrder = ['공통','은희','진우','민호','먹거리'];
 
 /* ── 체크리스트 (4열 그리드) ── */
 var _tripCheckFilter = '전체';
@@ -6468,13 +6488,14 @@ var _tripCheckFilter = '전체';
 function renderTripCheckTabs() {
   var bar = document.getElementById('trip-check-tabs');
   if (!bar) return;
-  var tabs = ['전체','공통','은희','진우','민호'];
+  var tabs = ['전체','공통','은희','진우','민호','먹거리'];
   var tabColors = {
     '전체': {border:'#a8e0f8',text:'#1a6a9a',on:'linear-gradient(135deg,#a8e0f8,#2090d0)'},
     '공통': {border:'#c0b0f0',text:'#6040a0',on:'linear-gradient(135deg,#e0d8ff,#8060c0)'},
     '은희': {border:'#f7a8c0',text:'#c04070',on:'linear-gradient(135deg,#ffd0e8,#e03c6e)'},
     '진우': {border:'#a0c4f0',text:'#2060a0',on:'linear-gradient(135deg,#b8d8ff,#2060a0)'},
     '민호': {border:'#a0d8b8',text:'#1a7a40',on:'linear-gradient(135deg,#b8f0d0,#1a8a50)'},
+    '먹거리': {border:'#f0d090',text:'#b06000',on:'linear-gradient(135deg,#ffe8a0,#c07000)'},
   };
   bar.innerHTML = '';
   tabs.forEach(function(tab) {
@@ -6946,10 +6967,11 @@ var _whoColors = {
   '은희': {bg:'#fff0f8',color:'#c04070'},
   '진우': {bg:'#e8f4ff',color:'#2060a0'},
   '민호': {bg:'#f0fff4',color:'#1a7a40'},
-  '공통': {bg:'#f8f5ff',color:'#6040a0'}
+  '공통': {bg:'#f8f5ff',color:'#6040a0'},
+  '먹거리': {bg:'#fff8e8',color:'#b06000'}
 };
 // 정렬 순서
-var _whoOrder = ['공통','은희','진우','민호'];
+var _whoOrder = ['공통','은희','진우','민호','먹거리'];
 
 /* ── 경비 공통 렌더 ── */
 function _renderExpList(elId, totalElId, items, textColor) {
