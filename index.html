@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>🎀 우리 작업공간</title>
-  <link rel="manifest" href="./manifest.json">
+  <title>우리집 💙</title>
+  <link rel="manifest" href="./manifest-husband.json">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
@@ -843,109 +843,6 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
   #pc-grid { grid-template-columns: 1fr !important; gap:8px; }
 }
 
-/* ── 진우 포스트잇 ── */
-#jinu-note-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-.jinu-note-card {
-  background: linear-gradient(160deg,#fffde0,#fff9c0);
-  border: 1.5px solid #f0e060;
-  border-radius: 4px;
-  padding: 12px 10px 8px;
-  box-shadow: 2px 3px 8px rgba(180,140,0,.13);
-  position: relative;
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  transition: transform .15s;
-}
-.jinu-note-card:hover { transform: translateY(-2px) rotate(-0.4deg); }
-.jinu-note-card::before {
-  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:22px; height:8px; background:rgba(220,180,0,.35); border-radius:0 0 4px 4px;
-}
-.jinu-note-text {
-  font-size:.88rem; font-weight:700; color:#3a2a00;
-  line-height:1.65; white-space:pre-wrap; word-break:break-all;
-  flex:1; outline:none; background:transparent; border:none; resize:none;
-  cursor:default; font-family:'Pretendard',sans-serif;
-}
-.jinu-note-text[contenteditable="true"] { background:rgba(255,255,255,.6); border-radius:4px; padding:1px 3px; cursor:text; }
-.jinu-note-acts { display:flex; justify-content:flex-end; gap:3px; opacity:0; transition:opacity .15s; }
-.jinu-note-card:hover .jinu-note-acts { opacity:1; }
-.jinu-note-acts button { background:rgba(180,140,0,.15); border:none; border-radius:5px; padding:2px 7px; font-size:.68rem; color:#7a5800; cursor:pointer; font-weight:700; }
-.jinu-note-acts button:hover { background:rgba(180,140,0,.3); }
-@media (max-width:900px) { #jinu-note-grid { grid-template-columns:repeat(3,1fr); } }
-@media (max-width:540px) {
-  #jinu-note-grid { grid-template-columns:repeat(2,1fr); gap:7px; }
-  .jinu-note-card { padding:10px 8px 6px; }
-  .jinu-note-acts { opacity:1; }
-}
-
-/* ── 여행갈때 체크리스트 ── */
-#trip-check-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
-}
-.trip-check-item {
-  display:flex; flex-direction:column; gap:5px;
-  padding:9px 10px; border:1.5px solid #ddeeff; border-radius:10px;
-  background:#f8fbff; cursor:pointer;
-  transition: all .15s;
-}
-.trip-check-item:hover { border-color:#a8e0f8; background:#eef7ff; }
-.trip-check-item.checked { background:#f0fff4; border-color:#b2e8d4; opacity:.75; }
-.trip-check-item.checked .trip-check-label { text-decoration:line-through; color:#aaa; }
-.trip-check-item-top { display:flex; align-items:center; gap:5px; }
-.trip-check-chk {
-  width:16px; height:16px; border-radius:4px; border:2px solid #a8e0f8;
-  background:white; display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; transition:background .15s;
-}
-.trip-check-item.checked .trip-check-chk { background:#2090d0; border-color:#2090d0; }
-.trip-check-who { font-size:.62rem; font-weight:700; padding:1px 6px; border-radius:8px; flex-shrink:0; }
-.trip-check-label { font-size:.8rem; color:#2a3a50; word-break:break-all; line-height:1.4; }
-.trip-check-del { background:none; border:none; color:#ddd; font-size:.65rem; cursor:pointer; padding:0; align-self:flex-end; margin-top:2px; }
-.trip-check-del:hover { color:#e03c6e; }
-@media (max-width:900px) { #trip-check-list { grid-template-columns: repeat(3,1fr); } }
-@media (max-width:540px) { #trip-check-list { grid-template-columns: repeat(2,1fr); gap:5px; } }
-
-/* ── 여행 경비 탭 ── */
-.trip-tab-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
-.trip-tab-btn {
-  padding:5px 14px; border-radius:20px; border:1.5px solid #ffe880;
-  background:white; font-size:.78rem; font-weight:700; color:#a07800;
-  cursor:pointer; font-family:Pretendard,sans-serif; transition:all .15s;
-  white-space:nowrap;
-}
-.trip-tab-btn.active { background:linear-gradient(135deg,#ffe880,#f0c800); border-color:#f0c800; color:#5a3800; }
-.trip-tab-btn:hover:not(.active) { background:#fffbea; }
-.trip-tab-del { background:none; border:none; color:#ddd; font-size:.72rem; cursor:pointer; padding:0 2px; }
-.trip-tab-del:hover { color:#e03c6e; }
-
-/* ── 여행 준비 메모 (imp 스타일) ── */
-.trip-memo-item {
-  display:flex; align-items:center; gap:6px;
-  padding:7px 10px; border:1.5px solid #f7a8c0; border-radius:10px;
-  background:#fff8fb; margin-bottom:5px;
-}
-.trip-memo-item.done .trip-memo-txt { text-decoration:line-through; opacity:.5; }
-.trip-memo-chk {
-  width:17px; height:17px; border-radius:5px; border:2px solid #f7a8c0;
-  background:white; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; flex-shrink:0; transition:background .15s;
-}
-.trip-memo-item.done .trip-memo-chk { background:#e03c6e; border-color:#e03c6e; }
-.trip-memo-txt { flex:1; font-size:.83rem; color:#3a1a2e; word-break:break-all; line-height:1.5; }
-.trip-exp-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-bottom:1px dashed #f0e8c0; font-size:.83rem; }
-.trip-exp-row:last-child { border-bottom:none; }
-.trip-com-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-bottom:1px dashed #d0e8f8; font-size:.83rem; }
-.trip-com-row:last-child { border-bottom:none; }
-
 /* ── 문구추천리스트 포스트잇 ── */
 #phrase-grid {
   display: grid;
@@ -1650,11 +1547,11 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 <div class="topbar">
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
-    <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
-    <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
-    <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
-    <div class="tab" onclick="goTab(this,'menu5')">📈 자산관리</div>
-    <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
+    <div class="tab" onclick="goTab(this,'home')" style="display:none">🎀 홈</div>
+    <div class="tab" onclick="goTab(this,'menu1')" style="display:none">🛍️ 미리제작소</div>
+    <div class="tab active" onclick="goTab(this,'menu2')">🏠 우리집</div>
+    <div class="tab" onclick="goTab(this,'menu5')" style="display:none">📈 자산관리</div>
+    <div class="tab" onclick="goTab(this,'menu3')" style="display:none">🍳 요리레시피</div>
   </div>
   <div class="divider"></div>
   <div class="tb-right">
@@ -1671,6 +1568,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <span>✨</span>
   <span class="salary-alarm" id="salary-alarm"></span>
   <div class="dpill" id="dpill" style="max-width:55vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
+  <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;margin-left:6px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.55);border-radius:20px;padding:3px 13px;font-size:.78rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif;white-space:nowrap">📲 앱 설치</button>
 </div>
 
 <div class="mobile-subnav" id="msubnav-menu1">
@@ -1691,7 +1589,6 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
   <button class="msub-btn" onclick="switchSub('menu2',16,null);setMobileSubActive(this)">🎒 초딩진우일정</button>
   <button class="msub-btn" onclick="switchSub('menu2',18,null);setMobileSubActive(this)">💳 카드관리</button>
-  <button class="msub-btn" onclick="switchSub('menu2',20,null);setMobileSubActive(this)">✈️ 여행갈때</button>
   <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사기록</button>
 </div>
 
@@ -1713,14 +1610,14 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <span>🎀 My Space</span>
     <button onclick="toggleGnav()" title="메뉴 접기" style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--rose);padding:2px 4px;border-radius:6px;line-height:1" id="gnav-toggle-btn">◀</button>
   </div>
-  <div class="gnav-main active" id="gnav-home" onclick="goTab(document.querySelector('.tab[onclick*=home]'),'home');gnavActivate('home')">
+  <div class="gnav-main active" id="gnav-home" style="display:none" onclick="goTab(document.querySelector('.tab[onclick*=home]'),'home');gnavActivate('home')">
     <span class="gnav-main-icon">🏠</span> 홈
   </div>
   <div class="gnav-divider"></div>
-  <div class="gnav-main" id="gnav-menu1" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');gnavActivate('menu1')">
+  <div class="gnav-main" id="gnav-menu1" style="display:none" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');gnavActivate('menu1')">
     <span class="gnav-main-icon">🛍️</span> 미리제작소
   </div>
-  <div class="gnav-subs" id="gnav-subs-menu1">
+  <div class="gnav-subs" id="gnav-subs-menu1" style="display:none">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',8,null)">📉 월별손익</div>
         <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',1,null)">💰 부가세/종소세/세금</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',2,null)">📊 매출정리/광고비</div>
@@ -1732,7 +1629,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',6,null)">🌸 시즌관리</div>
   </div>
-  <div class="gnav-main" id="gnav-menu2" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');gnavActivate('menu2')">
+  <div class="gnav-main active" id="gnav-menu2" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');gnavActivate('menu2')">
     <span class="gnav-main-icon">🏠</span> 우리집
   </div>
   <div class="gnav-subs" id="gnav-subs-menu2">
@@ -1741,14 +1638,13 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',16,null)">🎒 초딩진우 일정</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',18,null)">💳 카드관리</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',20,null)">✈️ 여행갈때</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null)">🎊 경조사 기록</div>
   </div>
 
-  <div class="gnav-main" id="gnav-menu5" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');gnavActivate('menu5')">
+  <div class="gnav-main" id="gnav-menu5" style="display:none" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');gnavActivate('menu5')">
     <span class="gnav-main-icon">📈</span> 자산관리
   </div>
-  <div class="gnav-subs" id="gnav-subs-menu5">
+  <div class="gnav-subs" id="gnav-subs-menu5" style="display:none">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',1,null)">📊 보유 종목</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null)">💰 수익 현황</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',3,null)">📋 매매 일지</div>
@@ -1760,7 +1656,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',9,null)">🏦 계좌 현황</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',10,null)">📌 투자 메모</div>
   </div>
-  <div class="gnav-main" id="gnav-menu3" onclick="goTab(document.querySelector('.tab[onclick*=menu3]'),'menu3');gnavActivate('menu3')">
+  <div class="gnav-main" id="gnav-menu3" style="display:none" onclick="goTab(document.querySelector('.tab[onclick*=menu3]'),'menu3');gnavActivate('menu3')">
     <span class="gnav-main-icon">🍳</span> 요리레시피
   </div>
 </nav>
@@ -1769,7 +1665,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
   <!-- ══════════════ 홈 ══════════════ -->
   <!-- ══════════════ 홈 ══════════════ -->
-  <div class="page active" id="home">
+  <div class="page" id="home">
 
     <div id="sb-shortcuts"></div>
     <!-- 앱 아이콘 바로가기 -->
@@ -1913,7 +1809,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           </div>
           <div class="order-row">
             <label class="order-label">📝 메모</label>
-            <textarea id="order-memo" rows="8" class="ra-inp" placeholder="요청 내용..." style="min-height:160px;resize:vertical" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
+            <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
           </div>
           <!-- 이미지 첨부 버튼 -->
           <div style="margin-top:4px">
@@ -2261,7 +2157,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   </div>
 
   <!-- ══════════════ 우리집 ══════════════ -->
-  <div class="page" id="menu2">
+  <div class="page active" id="menu2">
     <div class="subpage" id="menu2-sub-15">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">✅</div>
@@ -2572,17 +2468,6 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               <div style="display:flex;gap:8px;margin-top:10px"><button onclick="jinuTimetableSave()" style="flex:1;background:linear-gradient(135deg,#b2d8f8,#4a90d0);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer">💾 저장</button><button onclick="jinuTimetableReset()" style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:10px;padding:9px 14px;color:#e03c6e;font-weight:700;font-size:.85rem;cursor:pointer;flex-shrink:0">🗑️ 초기화</button></div>
             </div>
           </div>
-          <!-- 포스트잇 메모 -->
-          <div class="card" style="border-top:3px solid #ffe880;margin-top:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <div style="font-size:.88rem;font-weight:700;color:#a07800">📌 메모 포스트잇</div>
-            </div>
-            <div style="display:flex;gap:7px;margin-bottom:10px">
-              <textarea id="jinu-note-inp" rows="3" placeholder="메모 내용..." style="flex:1;border:1.5px solid #ffe880;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#fffef5;line-height:1.6"></textarea>
-              <button onclick="jinuNoteAdd()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:#7a5800;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
-            </div>
-            <div id="jinu-note-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
-          </div>
         </div>
 
         <!-- 오른쪽: 알림 메모 -->
@@ -2669,65 +2554,6 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div><div class="subpage-title">카드관리</div><div class="subpage-desc">카드 정보와 이미지를 관리해요</div></div>
       </div>
       <div id="card-mgmt-wrap"></div>
-    </div>
-
-    <!-- ══ 여행갈때 ══ -->
-    <div class="subpage" id="menu2-sub-20">
-      <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f8ff,#a8e0f8)">✈️</div>
-        <div><div class="subpage-title">여행갈때</div><div class="subpage-desc">준비물 체크리스트 & 여행 경비 정산</div></div>
-      </div>
-
-      <div class="two-col">
-
-        <!-- 왼쪽: 준비물 체크리스트 -->
-        <div>
-          <div class="card" style="border-top:3px solid #a8e0f8;font-family:Pretendard,sans-serif">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-              <div style="font-size:.95rem;font-weight:700;color:#1a6a9a">🧳 준비물 체크리스트</div>
-              <button onclick="tripCheckReset()" style="background:#fff0f0;border:1.5px solid #f7a8c0;border-radius:8px;padding:4px 12px;font-size:.75rem;color:#e03c6e;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">🔄 체크 초기화</button>
-            </div>
-            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end">
-              <select id="trip-check-who" style="border:1.5px solid #a8e0f8;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
-                <option value="공통">🏠 공통</option>
-                <option value="은희">👩 은희</option>
-                <option value="진우">🧒 진우</option>
-                <option value="민호">👨 민호</option>
-              </select>
-              <input id="trip-check-inp" type="text" placeholder="준비물 입력..." style="flex:1;min-width:100px;border:1.5px solid #a8e0f8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripCheckAdd()">
-              <button onclick="tripCheckAdd()" style="background:linear-gradient(135deg,#a8e0f8,#2090d0);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
-            </div>
-            <div id="trip-check-list"></div>
-          </div>
-        </div>
-
-        <!-- 오른쪽: 여행 경비 + 준비메모 -->
-        <div style="display:flex;flex-direction:column;gap:14px">
-
-          <!-- 여행 경비 (날짜 탭) -->
-          <div class="card" style="border-top:3px solid #ffe880;font-family:Pretendard,sans-serif">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <div style="font-size:.95rem;font-weight:700;color:#a07800">💰 여행 경비</div>
-              <button onclick="tripAddTrip()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#5a3800;cursor:pointer;font-family:Pretendard,sans-serif">+ 여행 추가</button>
-            </div>
-            <!-- 날짜 탭 -->
-            <div class="trip-tab-bar" id="trip-tab-bar"></div>
-            <!-- 현재 탭 내용 -->
-            <div id="trip-tab-content"></div>
-          </div>
-
-          <!-- 준비 메모 -->
-          <div class="card" style="border-top:3px solid #f7a8c0;font-family:Pretendard,sans-serif">
-            <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:10px">📝 준비 메모</div>
-            <div style="display:flex;gap:6px;margin-bottom:8px">
-              <input id="trip-memo-inp" type="text" placeholder="메모 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripMemoAdd()">
-              <button onclick="tripMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
-            </div>
-            <div id="trip-memo-list"></div>
-          </div>
-
-        </div>
-      </div>
     </div>
 
   </div>
@@ -2980,7 +2806,7 @@ function reloadCurrentPage() {
 }
 
 // ── 탭 복원 ──
-const savedTab = localStorage.getItem('ws5_curtab') || 'home';
+const savedTab = 'menu2'; // husband: 우리집 고정
 const savedTabEl = document.querySelector(`.tab[onclick*="${savedTab}"]`);
 if (savedTab !== 'home' && savedTabEl) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -3028,7 +2854,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5957,651 +5783,6 @@ function jinuClearImg() {
 }
 
 /* ══════════════════════════════════
-   진우 포스트잇 메모 JS
-══════════════════════════════════ */
-function loadJinuNotes()     { return loadObj('jinu_notes').list || []; }
-function saveJinuNotes(list) { stor('jinu_notes', {list}); }
-
-function renderJinuNotes() {
-  var grid = document.getElementById('jinu-note-grid');
-  if (!grid) return;
-  var items = loadJinuNotes();
-  if (!items.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:16px 0">메모를 추가해요 📌</div>';
-    return;
-  }
-  grid.innerHTML = '';
-  items.forEach(function(item) {
-    var card = document.createElement('div');
-    card.className = 'jinu-note-card';
-    var txt = document.createElement('div');
-    txt.className = 'jinu-note-text';
-    txt.contentEditable = 'false';
-    txt.textContent = item.text;
-    txt.ondblclick = function() {
-      txt.contentEditable = 'true'; txt.focus();
-    };
-    txt.onblur = function() {
-      var v = txt.innerText.trim();
-      if (v) {
-        var list = loadJinuNotes();
-        var idx = list.findIndex(function(x){ return x.id===item.id; });
-        if (idx !== -1) { list[idx].text = v; saveJinuNotes(list); }
-      }
-      txt.contentEditable = 'false';
-    };
-    txt.onkeydown = function(e) { if (e.key==='Escape') txt.blur(); };
-    var acts = document.createElement('div');
-    acts.className = 'jinu-note-acts';
-    var copyBtn = document.createElement('button');
-    copyBtn.textContent = '📋'; copyBtn.title = '복사';
-    copyBtn.onclick = function() { navigator.clipboard.writeText(item.text).then(function(){ toast('📋 복사됐어요!'); }); };
-    var editBtn = document.createElement('button');
-    editBtn.textContent = '✏️'; editBtn.title = '편집';
-    editBtn.onclick = function() { txt.contentEditable='true'; txt.focus(); };
-    var delBtn = document.createElement('button');
-    delBtn.textContent = '🗑️'; delBtn.title = '삭제';
-    delBtn.onclick = function() {
-      saveJinuNotes(loadJinuNotes().filter(function(x){ return x.id!==item.id; }));
-      renderJinuNotes(); toast('🗑️ 삭제됐어요');
-    };
-    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
-    card.appendChild(txt); card.appendChild(acts);
-    grid.appendChild(card);
-  });
-}
-
-function jinuNoteAdd() {
-  var inp = document.getElementById('jinu-note-inp');
-  var text = inp ? inp.value.trim() : '';
-  if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
-  var list = loadJinuNotes();
-  list.unshift({ id: Date.now(), text: text });
-  saveJinuNotes(list);
-  inp.value = '';
-  renderJinuNotes();
-  toast('📌 메모 추가됐어요!');
-}
-
-/* ══════════════════════════════════
-   여행갈때 JS
-══════════════════════════════════ */
-function loadTripChecks()      { return loadObj('trip_checks').list || []; }
-function saveTripChecks(list)  { stor('trip_checks', {list}); }
-function loadTripTrips()       { return loadObj('trip_trips').list || []; }
-function saveTripTrips(list)   { stor('trip_trips', {list}); }
-function loadTripMemos()       { return loadObj('trip_memos').list || []; }
-function saveTripMemos(list)   { stor('trip_memos', {list}); }
-
-// 하위호환 - 구버전 trip_exp/trip_com/trip_names 는 무시
-var _curTripId = null;
-
-var _whoColors = {
-  '은희': {bg:'#fff0f8',color:'#c04070'},
-  '진우': {bg:'#e8f4ff',color:'#2060a0'},
-  '민호': {bg:'#f0fff4',color:'#1a7a40'},
-  '공통': {bg:'#f8f5ff',color:'#6040a0'}
-};
-var _whoOrder = ['공통','은희','진우','민호'];
-
-/* ── 체크리스트 (4열 그리드) ── */
-function renderTripChecks() {
-  var el = document.getElementById('trip-check-list');
-  if (!el) return;
-  var raw = loadTripChecks();
-  var items = raw.slice().sort(function(a,b){
-    var ai=_whoOrder.indexOf(a.who); var bi=_whoOrder.indexOf(b.who);
-    if(ai===-1)ai=99; if(bi===-1)bi=99; return ai-bi;
-  });
-  if (!items.length) {
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:16px 0">준비물을 추가해요 🧳</div>';
-    return;
-  }
-  el.innerHTML = '';
-  items.forEach(function(item) {
-    var card = document.createElement('div');
-    card.className = 'trip-check-item' + (item.checked?' checked':'');
-    card.dataset.id = item.id;
-    card.onclick = (function(id){ return function(e){
-      if(e.target.classList.contains('trip-check-del')) return;
-      var list=loadTripChecks();
-      var idx=list.findIndex(function(x){return x.id===id;});
-      if(idx!==-1){list[idx].checked=!list[idx].checked;saveTripChecks(list);renderTripChecks();}
-    };})(item.id);
-
-    var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
-    var top = document.createElement('div');
-    top.className = 'trip-check-item-top';
-
-    var chk = document.createElement('div');
-    chk.className = 'trip-check-chk';
-    chk.innerHTML = item.checked ? '<span style="color:white;font-size:.6rem;font-weight:700">✓</span>' : '';
-
-    var who = document.createElement('span');
-    who.className = 'trip-check-who';
-    who.textContent = item.who||'';
-    who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
-
-    top.appendChild(chk); top.appendChild(who);
-
-    var label = document.createElement('div');
-    label.className = 'trip-check-label';
-    label.textContent = item.text;
-
-    var del = document.createElement('button');
-    del.className = 'trip-check-del';
-    del.textContent = '✕';
-    del.onclick = (function(id){ return function(e){
-      e.stopPropagation();
-      saveTripChecks(loadTripChecks().filter(function(x){return x.id!==id;}));
-      renderTripChecks();
-    };})(item.id);
-
-    card.appendChild(top); card.appendChild(label); card.appendChild(del);
-    el.appendChild(card);
-  });
-}
-
-function tripCheckAdd() {
-  var who  = document.getElementById('trip-check-who').value;
-  var text = document.getElementById('trip-check-inp').value.trim();
-  if (!text) { toast('준비물을 입력해줘요 🧳'); return; }
-  var list = loadTripChecks();
-  list.push({id:Date.now(), who:who, text:text, checked:false});
-  saveTripChecks(list);
-  document.getElementById('trip-check-inp').value='';
-  renderTripChecks();
-}
-function tripCheckReset() {
-  var list=loadTripChecks().map(function(x){return Object.assign({},x,{checked:false});});
-  saveTripChecks(list); renderTripChecks(); toast('🔄 체크가 모두 초기화됐어요!');
-}
-
-/* ── 여행 탭 관리 ── */
-function tripAddTrip() {
-  var name = prompt('여행 이름을 입력해요 ✈️\n(예: 제주도 2박3일, 부산 여름여행)');
-  if (!name || !name.trim()) return;
-  var list = loadTripTrips();
-  var newTrip = {id:Date.now(), name:name.trim(), expName:'내가 쓴 것', comName:'일행이 쓴 것', exp:[], com:[]};
-  list.push(newTrip);
-  saveTripTrips(list);
-  _curTripId = newTrip.id;
-  renderTripTabs();
-  renderTripTabContent();
-  toast('✈️ '+name.trim()+' 추가됐어요!');
-}
-
-function renderTripTabs() {
-  var bar = document.getElementById('trip-tab-bar');
-  if (!bar) return;
-  var list = loadTripTrips();
-  if (!list.length) {
-    bar.innerHTML = '<div style="font-size:.8rem;color:#bbb;padding:4px 0">+ 여행 추가 버튼으로 여행을 만들어요 ✈️</div>';
-    return;
-  }
-  if (!_curTripId || !list.find(function(x){return x.id===_curTripId;})) {
-    _curTripId = list[list.length-1].id;
-  }
-  bar.innerHTML = '';
-  list.forEach(function(t) {
-    var btn = document.createElement('button');
-    btn.className = 'trip-tab-btn' + (t.id===_curTripId?' active':'');
-    btn.textContent = '✈️ '+t.name;
-    btn.onclick = (function(id){ return function(){ _curTripId=id; renderTripTabs(); renderTripTabContent(); }; })(t.id);
-    bar.appendChild(btn);
-
-    var del = document.createElement('button');
-    del.className = 'trip-tab-del'; del.textContent = '✕'; del.title = '이 여행 삭제';
-    del.onclick = (function(id,name){ return function(e){
-      e.stopPropagation();
-      if(!confirm('['+name+'] 여행 경비를 삭제할까요?')) return;
-      var l=loadTripTrips().filter(function(x){return x.id!==id;});
-      saveTripTrips(l);
-      if(_curTripId===id) _curTripId=l.length?l[l.length-1].id:null;
-      renderTripTabs(); renderTripTabContent();
-    }; })(t.id, t.name);
-    bar.appendChild(del);
-  });
-}
-
-function renderTripTabContent() {
-  var wrap = document.getElementById('trip-tab-content');
-  if (!wrap) return;
-  var list = loadTripTrips();
-  if (!list.length || !_curTripId) {
-    wrap.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:20px 0">여행을 추가해요 ✈️</div>';
-    return;
-  }
-  var t = list.find(function(x){return x.id===_curTripId;});
-  if (!t) { wrap.innerHTML=''; return; }
-
-  var expName = t.expName || '내가 쓴 것';
-  var comName = t.comName || '일행이 쓴 것';
-
-  wrap.innerHTML =
-    // A
-    '<div style="background:#fffef0;border:1.5px solid #ffe880;border-radius:12px;padding:12px;margin-bottom:10px">'
-    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
-    +'<span style="font-size:.82rem;font-weight:700;color:#a07800" id="tec-exp-lbl">👩 '+escHtml(expName)+'</span>'
-    +'<button onclick="tripRenameExp()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color=\'#f0c800\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
-    +'</div>'
-    +'<div style="display:flex;gap:5px;margin-bottom:7px">'
-    +'<input id="tec-exp-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #ffe880;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurExpAdd()">'
-    +'<input id="tec-exp-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #ffe880;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurExpAdd()">'
-    +'<button onclick="tripCurExpAdd()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:7px;padding:5px 10px;font-weight:700;font-size:.82rem;color:#7a5800;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>'
-    +'</div>'
-    +'<div id="tec-exp-list"></div>'
-    +'<div id="tec-exp-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#a07800;padding-top:5px;border-top:1px dashed #ffe880;margin-top:3px"></div>'
-    +'</div>'
-    // B
-    +'<div style="background:#f0f8ff;border:1.5px solid #b2d8f8;border-radius:12px;padding:12px;margin-bottom:10px">'
-    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
-    +'<span style="font-size:.82rem;font-weight:700;color:#1a6a9a" id="tec-com-lbl">👥 '+escHtml(comName)+'</span>'
-    +'<button onclick="tripRenameCom()" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.72rem;padding:0" onmouseover="this.style.color=\'#4a90d0\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
-    +'</div>'
-    +'<div style="display:flex;gap:5px;margin-bottom:7px">'
-    +'<input id="tec-com-item" type="text" placeholder="항목..." style="flex:2;border:1.5px solid #b2d8f8;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurComAdd()">'
-    +'<input id="tec-com-amt" type="number" placeholder="금액" style="flex:1;border:1.5px solid #b2d8f8;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key===\'Enter\')tripCurComAdd()">'
-    +'<button onclick="tripCurComAdd()" style="background:linear-gradient(135deg,#b2d8f8,#2090d0);border:none;border-radius:7px;padding:5px 10px;font-weight:700;font-size:.82rem;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>'
-    +'</div>'
-    +'<div id="tec-com-list"></div>'
-    +'<div id="tec-com-total" style="text-align:right;font-size:.88rem;font-weight:700;color:#1a6a9a;padding-top:5px;border-top:1px dashed #b2d8f8;margin-top:3px"></div>'
-    +'</div>'
-    // 정산
-    +'<div id="tec-settle-box" style="display:none;background:linear-gradient(135deg,#f0fff8,#d8f8e8);border:2px solid #3dbb8f;border-radius:12px;padding:14px;margin-bottom:8px">'
-    +'<div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">🧮 정산 결과</div>'
-    +'<div id="tec-settle-result"></div>'
-    +'</div>'
-    +'<button onclick="tripSettle()" style="width:100%;background:linear-gradient(135deg,#3dbb8f,#1a9a60);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif">🧮 정산 계산하기</button>';
-
-  // 목록 렌더
-  _renderTecList('exp', t.exp||[], '#a07800');
-  _renderTecList('com', t.com||[], '#1a6a9a');
-}
-
-function _renderTecList(type, items, color) {
-  var el  = document.getElementById('tec-'+type+'-list');
-  var tel = document.getElementById('tec-'+type+'-total');
-  if (!el) return;
-  if (!items.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.8rem;padding:6px 0">항목을 추가해요</div>'; if(tel) tel.textContent=''; return; }
-  var total=0;
-  el.innerHTML = items.map(function(it){
-    total+=(parseInt(it.amt)||0);
-    return '<div class="trip-'+(type==='exp'?'exp':'com')+'-row">'
-      +'<span style="flex:1;color:#333">'+escHtml(it.item)+'</span>'
-      +'<span style="font-weight:700;color:'+color+';flex-shrink:0">'+Number(it.amt||0).toLocaleString()+'원</span>'
-      +'<button onclick="_tripTecDel(\''+type+'\','+it.id+')" style="background:none;border:none;color:#ddd;font-size:.72rem;cursor:pointer;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
-      +'</div>';
-  }).join('');
-  if(tel) tel.innerHTML='합계: <span style="font-size:1rem">'+total.toLocaleString()+'</span>원';
-}
-
-function _tripTecDel(type, id) {
-  var list=loadTripTrips();
-  var t=list.find(function(x){return x.id===_curTripId;});
-  if(!t) return;
-  t[type]=(t[type]||[]).filter(function(x){return x.id!==id;});
-  saveTripTrips(list); _renderTecList(type, t[type]||[], type==='exp'?'#a07800':'#1a6a9a');
-}
-
-function tripCurExpAdd() {
-  var item=document.getElementById('tec-exp-item').value.trim();
-  var amt=document.getElementById('tec-exp-amt').value;
-  if(!item||!amt){toast('항목과 금액을 입력해줘요 💰');return;}
-  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
-  if(!t) return;
-  if(!t.exp) t.exp=[];
-  t.exp.push({id:Date.now(),item:item,amt:parseInt(amt)||0});
-  saveTripTrips(list);
-  document.getElementById('tec-exp-item').value='';
-  document.getElementById('tec-exp-amt').value='';
-  _renderTecList('exp',t.exp,'#a07800');
-}
-function tripCurComAdd() {
-  var item=document.getElementById('tec-com-item').value.trim();
-  var amt=document.getElementById('tec-com-amt').value;
-  if(!item||!amt){toast('항목과 금액을 입력해줘요 💰');return;}
-  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
-  if(!t) return;
-  if(!t.com) t.com=[];
-  t.com.push({id:Date.now(),item:item,amt:parseInt(amt)||0});
-  saveTripTrips(list);
-  document.getElementById('tec-com-item').value='';
-  document.getElementById('tec-com-amt').value='';
-  _renderTecList('com',t.com,'#1a6a9a');
-}
-
-function tripRenameExp() {
-  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
-  if(!t) return;
-  var name=prompt('A 이름 수정', t.expName||'내가 쓴 것');
-  if(name===null) return;
-  t.expName=name.trim()||'내가 쓴 것';
-  saveTripTrips(list);
-  var lbl=document.getElementById('tec-exp-lbl');
-  if(lbl) lbl.textContent='👩 '+t.expName;
-}
-function tripRenameCom() {
-  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
-  if(!t) return;
-  var name=prompt('B 이름 수정', t.comName||'일행이 쓴 것');
-  if(name===null) return;
-  t.comName=name.trim()||'일행이 쓴 것';
-  saveTripTrips(list);
-  var lbl=document.getElementById('tec-com-lbl');
-  if(lbl) lbl.textContent='👥 '+t.comName;
-}
-
-function tripSettle() {
-  var list=loadTripTrips(); var t=list.find(function(x){return x.id===_curTripId;});
-  if(!t) return;
-  var expName=t.expName||'내가 쓴 것';
-  var comName=t.comName||'일행이 쓴 것';
-  var myTotal=(t.exp||[]).reduce(function(s,x){return s+(parseInt(x.amt)||0);},0);
-  var comTotal=(t.com||[]).reduce(function(s,x){return s+(parseInt(x.amt)||0);},0);
-  var grand=myTotal+comTotal; var half=grand/2; var diff=myTotal-half;
-  var box=document.getElementById('tec-settle-box');
-  var res=document.getElementById('tec-settle-result');
-  if(!box||!res) return;
-  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-    +'<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(expName)+'</div><div style="font-size:1rem;font-weight:700;color:#a07800">'+myTotal.toLocaleString()+'원</div></div>'
-    +'<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(comName)+'</div><div style="font-size:1rem;font-weight:700;color:#1a6a9a">'+comTotal.toLocaleString()+'원</div></div>'
-    +'</div>'
-    +'<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center;margin-bottom:10px">'
-    +'<div style="font-size:.72rem;color:#888;margin-bottom:2px">총 지출</div>'
-    +'<div style="font-size:1.1rem;font-weight:800;color:#1a7a50">'+grand.toLocaleString()+'원</div>'
-    +'<div style="font-size:.75rem;color:#888;margin-top:2px">1인당 '+Math.round(half).toLocaleString()+'원</div>'
-    +'</div>';
-  if(Math.abs(diff)<1) {
-    html+='<div style="background:#e8fff4;border-radius:8px;padding:10px;text-align:center;font-weight:700;color:#1a7a50">🎉 정확히 반반이에요!</div>';
-  } else if(diff>0) {
-    html+='<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
-      +'<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      +'<div style="font-weight:700;color:#c05020;font-size:1rem"><b>'+escHtml(comName)+'</b> → <b>'+escHtml(expName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
-      +'</div>';
-  } else {
-    html+='<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
-      +'<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      +'<div style="font-weight:700;color:#1a6a9a;font-size:1rem"><b>'+escHtml(expName)+'</b> → <b>'+escHtml(comName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(-diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
-      +'</div>';
-  }
-  res.innerHTML=html; box.style.display='block';
-}
-
-function renderTripMemos() {
-  var el = document.getElementById('trip-memo-list');
-  if (!el) return;
-  var items = loadTripMemos();
-  if (!items.length) { el.innerHTML='<div class="empty">메모를 추가해요 📝</div>'; return; }
-  el.innerHTML = items.map(function(it){
-    return '<div class="trip-memo-item'+(it.done?' done':'')+'" id="tmemo-'+it.id+'">'
-      +'<div class="trip-memo-chk" onclick="tripMemoToggle('+it.id+')">'+(it.done?'<span style="color:white;font-size:.6rem;font-weight:700">✓</span>':'')+'</div>'
-      +'<span class="trip-memo-txt" style="flex:1;min-width:0;word-break:break-all">'+escHtml(it.text)+'</span>'
-      +'<button onclick="tripMemoDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.75rem;cursor:pointer;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
-      +'</div>';
-  }).join('');
-}
-function tripMemoAdd() {
-  var inp = document.getElementById('trip-memo-inp');
-  var text = inp ? inp.value.trim() : '';
-  if (!text) { toast('메모를 입력해줘요 📝'); return; }
-  var list = loadTripMemos();
-  list.push({id:Date.now(), text:text, done:false});
-  saveTripMemos(list);
-  inp.value = '';
-  renderTripMemos();
-}
-function tripMemoToggle(id) {
-  var list=loadTripMemos();
-  var idx=list.findIndex(function(x){return x.id===id;});
-  if(idx!==-1){list[idx].done=!list[idx].done;saveTripMemos(list);renderTripMemos();}
-}
-function tripMemoDel(id) {
-  saveTripMemos(loadTripMemos().filter(function(x){return x.id!==id;}));
-  renderTripMemos();
-}
-
-function renderTripPage() {
-  renderTripChecks();
-  renderTripTabs();
-  renderTripTabContent();
-  renderTripMemos();
-}
-
-var _whoColors = {
-  '은희': {bg:'#fff0f8',color:'#c04070'},
-  '진우': {bg:'#e8f4ff',color:'#2060a0'},
-  '민호': {bg:'#f0fff4',color:'#1a7a40'},
-  '공통': {bg:'#f8f5ff',color:'#6040a0'}
-};
-// 정렬 순서
-var _whoOrder = ['공통','은희','진우','민호'];
-
-/* ── 이름 편집 ── */
-function tripExpNameEdit() {
-  var view = document.getElementById('trip-exp-name-view');
-  var inp  = document.getElementById('trip-exp-name-inp');
-  if (!view||!inp) return;
-  // 현재 이름(이모지 제외) 가져오기
-  inp.value = (loadTripNames().expName || '내가 쓴 것');
-  view.style.display = 'none';
-  inp.style.display  = 'inline-block';
-  inp.focus(); inp.select();
-}
-function tripExpNameSave() {
-  var view = document.getElementById('trip-exp-name-view');
-  var inp  = document.getElementById('trip-exp-name-inp');
-  if (!view||!inp) return;
-  var name = inp.value.trim() || '내가 쓴 것';
-  var d = loadTripNames(); d.expName = name; saveTripNames(d);
-  view.textContent = '👩 ' + name;
-  inp.style.display  = 'none';
-  view.style.display = 'inline';
-}
-function tripComNameEdit() {
-  var view = document.getElementById('trip-com-name-view');
-  var inp  = document.getElementById('trip-com-name-inp');
-  if (!view||!inp) return;
-  inp.value = (loadTripNames().comName || '일행이 쓴 것');
-  view.style.display = 'none';
-  inp.style.display  = 'inline-block';
-  inp.focus(); inp.select();
-}
-function tripComNameSave() {
-  var view = document.getElementById('trip-com-name-view');
-  var inp  = document.getElementById('trip-com-name-inp');
-  if (!view||!inp) return;
-  var name = inp.value.trim() || '일행이 쓴 것';
-  var d = loadTripNames(); d.comName = name; saveTripNames(d);
-  view.textContent = '👥 ' + name;
-  inp.style.display  = 'none';
-  view.style.display = 'inline';
-}
-function _applyTripNames() {
-  var d = loadTripNames();
-  var ev = document.getElementById('trip-exp-name-view');
-  var cv = document.getElementById('trip-com-name-view');
-  if (ev && d.expName) ev.textContent = '👩 ' + d.expName;
-  if (cv && d.comName) cv.textContent = '👥 ' + d.comName;
-}
-
-/* ── 체크리스트 ── */
-function renderTripChecks() {
-  var el = document.getElementById('trip-check-list');
-  if (!el) return;
-  var raw = loadTripChecks();
-  // 공통→은희→진우→민호 순으로 정렬, 같은 분류 내에서는 추가 순서 유지
-  var items = raw.slice().sort(function(a,b){
-    var ai = _whoOrder.indexOf(a.who); var bi = _whoOrder.indexOf(b.who);
-    if (ai===-1) ai=99; if (bi===-1) bi=99;
-    return ai - bi;
-  });
-  if (!items.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:12px 0">준비물을 추가해요 🧳</div>'; return; }
-  el.innerHTML = '';
-  items.forEach(function(item) {
-    var row = document.createElement('div');
-    row.className = 'trip-check-item' + (item.checked?' checked':'');
-    row.draggable = true;
-    row.dataset.id = item.id;
-    var handle = document.createElement('span');
-    handle.textContent = '⠿'; handle.style.cssText = 'color:#ccc;cursor:grab;font-size:1rem;flex-shrink:0';
-    var chk = document.createElement('div');
-    chk.style.cssText = 'width:18px;height:18px;border-radius:5px;border:2px solid #a8e0f8;background:'+(item.checked?'#2090d0':'white')+';display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s';
-    chk.innerHTML = item.checked ? '<span style="color:white;font-size:.7rem">✓</span>' : '';
-    chk.onclick = (function(id){ return function() {
-      var list = loadTripChecks();
-      var idx = list.findIndex(function(x){ return x.id===id; });
-      if (idx!==-1) { list[idx].checked = !list[idx].checked; saveTripChecks(list); renderTripChecks(); }
-    }; })(item.id);
-    var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
-    var who = document.createElement('span');
-    who.className = 'trip-check-who';
-    who.textContent = item.who || '';
-    who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
-    var label = document.createElement('span');
-    label.className = 'trip-check-label';
-    label.textContent = item.text;
-    var del = document.createElement('button');
-    del.textContent = '✕'; del.style.cssText = 'background:none;border:none;color:#ddd;font-size:.75rem;cursor:pointer;flex-shrink:0;padding:0';
-    del.onmouseover = function(){ del.style.color='#e03c6e'; }; del.onmouseout = function(){ del.style.color='#ddd'; };
-    del.onclick = (function(id){ return function() {
-      saveTripChecks(loadTripChecks().filter(function(x){ return x.id!==id; }));
-      renderTripChecks();
-    }; })(item.id);
-    row.appendChild(handle); row.appendChild(chk); row.appendChild(who); row.appendChild(label); row.appendChild(del);
-    el.appendChild(row);
-  });
-  initTripCheckDrag(el);
-}
-
-function initTripCheckDrag(container) {
-  var dragEl = null;
-  container.querySelectorAll('.trip-check-item').forEach(function(row) {
-    row.addEventListener('dragstart', function(){ dragEl=row; setTimeout(function(){ row.style.opacity='.4'; },0); });
-    row.addEventListener('dragend', function(){ row.style.opacity=''; container.querySelectorAll('.trip-check-item').forEach(function(r){ r.style.background=''; }); });
-    row.addEventListener('dragover', function(e){ e.preventDefault(); if(row!==dragEl) row.style.background='#e8f4ff'; });
-    row.addEventListener('dragleave', function(){ row.style.background=''; });
-    row.addEventListener('drop', function(e){
-      e.preventDefault(); row.style.background='';
-      if (!dragEl || dragEl===row) return;
-      var list = loadTripChecks();
-      var si = list.findIndex(function(x){ return x.id===parseInt(dragEl.dataset.id); });
-      var ti = list.findIndex(function(x){ return x.id===parseInt(row.dataset.id); });
-      if (si!==-1 && ti!==-1) { var moved=list.splice(si,1)[0]; list.splice(ti,0,moved); saveTripChecks(list); renderTripChecks(); }
-    });
-  });
-}
-
-function tripCheckAdd() {
-  var who = document.getElementById('trip-check-who').value;
-  var text = document.getElementById('trip-check-inp').value.trim();
-  if (!text) { toast('준비물을 입력해줘요 🧳'); return; }
-  var list = loadTripChecks();
-  list.push({ id: Date.now(), who: who, text: text, checked: false });
-  saveTripChecks(list);
-  document.getElementById('trip-check-inp').value = '';
-  renderTripChecks();
-}
-
-function tripCheckReset() {
-  var list = loadTripChecks().map(function(x){ return Object.assign({},x,{checked:false}); });
-  saveTripChecks(list); renderTripChecks(); toast('🔄 체크가 모두 초기화됐어요!');
-}
-
-/* ── 경비 공통 렌더 ── */
-function _renderExpList(elId, totalElId, items, textColor) {
-  var el = document.getElementById(elId);
-  var tel = document.getElementById(totalElId);
-  if (!el) return;
-  if (!items.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.8rem;padding:8px 0">항목을 추가해요</div>'; if(tel) tel.textContent=''; return; }
-  var total = 0;
-  el.innerHTML = items.map(function(it){
-    total += (parseInt(it.amt)||0);
-    return '<div class="' + (elId==='trip-exp-list'?'trip-exp-row':'trip-com-row') + '">'
-      + '<span style="flex:1;color:#333">'+escHtml(it.item)+'</span>'
-      + '<span style="font-weight:700;color:'+textColor+';flex-shrink:0">'+Number(it.amt||0).toLocaleString()+'원</span>'
-      + '<button onclick="_tripExpDel(\''+elId+'\','+it.id+')" style="background:none;border:none;color:#ddd;font-size:.72rem;cursor:pointer;padding:0 2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
-      + '</div>';
-  }).join('');
-  if (tel) tel.innerHTML = '합계: <span style="font-size:1rem">' + total.toLocaleString() + '</span>원';
-}
-
-function _tripExpDel(elId, id) {
-  if (elId==='trip-exp-list') { saveTripExp(loadTripExp().filter(function(x){ return x.id!==id; })); renderTripExp(); }
-  else { saveTripCom(loadTripCom().filter(function(x){ return x.id!==id; })); renderTripCom(); }
-}
-
-function renderTripExp() { _renderExpList('trip-exp-list','trip-exp-total', loadTripExp(),'#a07800'); }
-function renderTripCom() { _renderExpList('trip-com-list','trip-com-total', loadTripCom(),'#1a6a9a'); }
-
-function tripExpAdd() {
-  var item = document.getElementById('trip-exp-item').value.trim();
-  var amt  = document.getElementById('trip-exp-amt').value;
-  if (!item||!amt) { toast('항목과 금액을 입력해줘요 💰'); return; }
-  var list = loadTripExp(); list.push({id:Date.now(), item:item, amt:parseInt(amt)||0});
-  saveTripExp(list);
-  document.getElementById('trip-exp-item').value='';
-  document.getElementById('trip-exp-amt').value='';
-  renderTripExp();
-}
-function tripComAdd() {
-  var item = document.getElementById('trip-com-item').value.trim();
-  var amt  = document.getElementById('trip-com-amt').value;
-  if (!item||!amt) { toast('항목과 금액을 입력해줘요 💰'); return; }
-  var list = loadTripCom(); list.push({id:Date.now(), item:item, amt:parseInt(amt)||0});
-  saveTripCom(list);
-  document.getElementById('trip-com-item').value='';
-  document.getElementById('trip-com-amt').value='';
-  renderTripCom();
-}
-
-function tripSettle() {
-  var names = loadTripNames();
-  var expName = names.expName || '내가 쓴 것';
-  var comName = names.comName || '일행이 쓴 것';
-  var myTotal  = loadTripExp().reduce(function(s,x){ return s+(parseInt(x.amt)||0); },0);
-  var comTotal = loadTripCom().reduce(function(s,x){ return s+(parseInt(x.amt)||0); },0);
-  var grand = myTotal + comTotal;
-  var half  = grand / 2;
-  var diff  = myTotal - half;
-  var box = document.getElementById('trip-settle-box');
-  var res = document.getElementById('trip-settle-result');
-  if (!box||!res) return;
-  var html =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(expName)+'</div><div style="font-size:1rem;font-weight:700;color:#a07800">'+myTotal.toLocaleString()+'원</div></div>'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(comName)+'</div><div style="font-size:1rem;font-weight:700;color:#1a6a9a">'+comTotal.toLocaleString()+'원</div></div>'
-    + '</div>'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center;margin-bottom:10px">'
-    + '<div style="font-size:.72rem;color:#888;margin-bottom:2px">총 지출</div>'
-    + '<div style="font-size:1.1rem;font-weight:800;color:#1a7a50">'+grand.toLocaleString()+'원</div>'
-    + '<div style="font-size:.75rem;color:#888;margin-top:2px">1인당 '+Math.round(half).toLocaleString()+'원</div>'
-    + '</div>';
-  if (Math.abs(diff) < 1) {
-    html += '<div style="background:#e8fff4;border-radius:8px;padding:10px;text-align:center;font-weight:700;color:#1a7a50">🎉 정확히 반반이에요!</div>';
-  } else if (diff > 0) {
-    html += '<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
-      + '<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      + '<div style="font-weight:700;color:#c05020;font-size:1rem"><b>'+escHtml(comName)+'</b> → <b>'+escHtml(expName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
-      + '</div>';
-  } else {
-    html += '<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
-      + '<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      + '<div style="font-weight:700;color:#1a6a9a;font-size:1rem"><b>'+escHtml(expName)+'</b> → <b>'+escHtml(comName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(-diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
-      + '</div>';
-  }
-  res.innerHTML = html;
-  box.style.display = 'block';
-}
-
-function renderTripPage() {
-  _applyTripNames();
-  renderTripChecks();
-  renderTripExp();
-  renderTripCom();
-}
-
-/* ══════════════════════════════════
    카드관리 JS  (상품관리 구조 참고)
 ══════════════════════════════════ */
 var _cmEditId = null;
@@ -7104,7 +6285,7 @@ function jinuMemoEditSave(id, imgs) {
 /* 하위호환 */
 function loadJinuScheds() { return []; }
 function saveJinuScheds() {}
-function renderJinuScheds() { renderJinuForm(); renderJinuTimetableView(); renderJinuMemos(); renderJinuNotes && renderJinuNotes(); }
+function renderJinuScheds() { renderJinuForm(); renderJinuTimetableView(); renderJinuMemos(); }
 
 
 function loadEventMemos() { return loadObj('event_memos').list || []; }
@@ -7613,9 +6794,6 @@ function switchSub(pageId, num, el) {
   }
   if (pageId === 'menu2' && num === 18) {
     setTimeout(function(){ renderCardMgmt && renderCardMgmt(); }, 0);
-  }
-  if (pageId === 'menu2' && num === 20) {
-    setTimeout(function(){ renderTripPage && renderTripPage(); }, 0);
   }
 }
 
@@ -9029,6 +8207,28 @@ function closeFabMenu() {
 
 // ── 초기 렌더는 initPage()가 담당 ──
 
+// ── PWA 설치 ──
+var _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault(); _pwaPrompt = e;
+  var b = document.getElementById('pwa-install-btn'); if (b) b.style.display = 'inline-block';
+});
+window.addEventListener('appinstalled', function() {
+  _pwaPrompt = null;
+  var b = document.getElementById('pwa-install-btn'); if (b) b.style.display = 'none';
+  toast && toast('🎉 앱이 설치됐어요!');
+});
+function pwaInstall() {
+  if (_pwaPrompt) {
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then(function(r) {
+      if (r.outcome==='accepted') { var b=document.getElementById('pwa-install-btn'); if(b) b.style.display='none'; }
+      _pwaPrompt = null;
+    });
+  } else { toast && toast('📲 Safari → 공유버튼 → 홈 화면에 추가!'); }
+}
+(function(){ if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){ var b=document.getElementById('pwa-install-btn'); if(b) b.style.display='none'; } })();
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(() => {
     console.log('✅ SW 등록됨');
@@ -9068,14 +8268,12 @@ function initRender(pageId) {
     renderImpCheck && renderImpCheck();
     renderAllImpLists && renderAllImpLists();
     renderJinuScheds && renderJinuScheds();
-    renderJinuNotes && renderJinuNotes();
     renderEventRec && renderEventRec();
     renderEventMemos && renderEventMemos();
     renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
     renderCardMgmt && renderCardMgmt();
-    renderTripPage && renderTripPage();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu3') {
     renderRecipe && renderRecipe();
@@ -9087,7 +8285,7 @@ function initRender(pageId) {
 
 // ── 단일파일 시작 초기화 ──
 (function() {
-  const savedTab = localStorage.getItem('ws5_curtab') || 'home';
+  const savedTab = 'menu2'; // husband: 우리집 고정
   window._currentPage = savedTab;
   // 뷰모드
   const vm = localStorage.getItem('ws5_viewmode') || 'pc';
