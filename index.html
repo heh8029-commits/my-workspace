@@ -7054,11 +7054,13 @@ function renderInv() {
     return '<div style="display:grid;grid-template-columns:60px 1fr 110px 80px 60px 70px 32px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
       // 사진
       +'<div style="padding:6px 8px">'
-        +'<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center"+(it.img?";cursor:zoom-in":"")+'">'
         +(it.img
-          ? '<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)" data-src="'+it.img+'">'
-          : '<span style="font-size:.9rem;opacity:.3">📦</span>')
-        +'</div></div>'
+          ? '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;cursor:zoom-in">'
+            +'<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)">'
+            +'</div>'
+          : '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center"><span style="font-size:.9rem;opacity:.3">📦</span></div>'
+        )
+        +'</div>'
       // 상품명 + 링크
       +'<div style="padding:6px 8px;min-width:0">'
         +'<div style="font-size:.83rem;font-weight:700;color:#1a0a2e;word-break:break-all;line-height:1.4">'+escHtml(it.name||'-')+'</div>'
