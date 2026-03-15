@@ -857,20 +857,21 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 }
 /* ── 비밀번호 관리 테이블 ── */
 .pw-table-wrap { font-family:Pretendard,sans-serif; border:1.5px solid #e0e0e0; border-radius:12px; overflow:hidden; }
-.pw-header { display:grid; grid-template-columns:1.4fr 1.2fr 1.2fr 1.6fr 56px; background:#f5f5f5; border-bottom:2px solid #ddd; grid-column:1/-1; }
+.pw-header-fixed { display:grid; grid-template-columns:1.4fr 1.2fr 1.2fr 1.6fr 56px; background:#f5f5f5; border-bottom:2px solid #ddd; }
 .pw-col { padding:8px 10px; font-size:.75rem; font-weight:700; color:#555; }
 .pw-row { display:grid; grid-template-columns:1.4fr 1.2fr 1.2fr 1.6fr 56px; border-bottom:1px solid #eee; align-items:center; background:white; transition:background .1s; }
 .pw-row:last-child { border-bottom:none; }
-.pw-row:hover { background:#fafafa; }
+.pw-row:nth-child(even) { background:#fafafa; }
+.pw-row:hover { background:#f0f0f0; }
 .pw-row.pw-editing { background:#fffdf5 !important; }
-.pw-cell { padding:6px 10px; font-size:.82rem; color:#333; word-break:break-all; min-width:0; }
-.pw-cell input { width:100%; box-sizing:border-box; border:1.5px solid #ddd; border-radius:6px; padding:5px 7px; font-size:.82rem; font-family:Pretendard,sans-serif; outline:none; background:#fffdf5; }
-.pw-cell input:focus { border-color:#aaa; }
+.pw-cell { padding:6px 10px; font-size:.82rem; color:#333; word-break:break-all; min-width:0; overflow:hidden; }
+.pw-cell input { width:100%; box-sizing:border-box; border:1.5px solid #ddd; border-radius:6px; padding:5px 7px; font-size:.82rem; font-family:Pretendard,sans-serif; outline:none; background:white; }
+.pw-cell input:focus { border-color:#555; background:#fffdf5; }
 .pw-pw-val { cursor:pointer; color:#bbb; font-size:.8rem; user-select:none; }
-.pw-pw-val.show { color:#333; }
-.pw-acts { display:flex; gap:2px; padding:0 5px; justify-content:center; flex-shrink:0; }
-.pw-acts button { background:none; border:none; cursor:pointer; color:#ccc; font-size:.8rem; padding:3px 4px; border-radius:4px; transition:all .1s; }
-.pw-acts button:hover { color:#333; background:#eee; }
+.pw-pw-val.show { color:#333; letter-spacing:normal; }
+.pw-acts { display:flex; gap:2px; padding:0 5px; justify-content:center; flex-shrink:0; align-items:center; }
+.pw-acts button { background:none; border:none; cursor:pointer; color:#ccc; font-size:.8rem; padding:3px 4px; border-radius:4px; }
+.pw-acts button:hover { color:#333; }
 #pw-list { display:grid; grid-template-columns:1fr 1fr; }
 body.mobile-view #pw-list { grid-template-columns:1fr !important; }
 @media (max-width:700px) { #pw-list { grid-template-columns:1fr !important; } }
@@ -3054,6 +3055,15 @@ function pwaInstall() {
             style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.82rem;padding:0">✕</button>
         </div>
         <div class="pw-table-wrap">
+          <!-- 고정 헤더 (2열 그리드 밖) -->
+          <div class="pw-header-fixed">
+            <div class="pw-col">사이트</div>
+            <div class="pw-col">아이디</div>
+            <div class="pw-col">비밀번호</div>
+            <div class="pw-col">메모</div>
+            <div class="pw-col" style="width:56px"></div>
+          </div>
+          <!-- 2열 그리드 목록 -->
           <div id="pw-list"></div>
         </div>
       </div>
@@ -10424,6 +10434,18 @@ function pwTogglePw(id) {
   }
 }
 
+function pwAutoSave(id) {
+  var list = loadPwList();
+  var idx = list.findIndex(function(x){ return x.id===id; });
+  if (idx===-1) return;
+  var get = function(f){ var e=document.getElementById('pw-'+f+'-'+id); return e?e.value.trim():''; };
+  list[idx].site = get('site');
+  list[idx].uid  = get('uid');
+  list[idx].pw   = get('pw');
+  list[idx].memo = get('memo');
+  savePwList(list);
+}
+
 function renderPwList() {
   var el = document.getElementById('pw-list');
   if (!el) return;
@@ -10435,88 +10457,58 @@ function renderPwList() {
         || (it.memo||'').toLowerCase().includes(kw);
   }) : list;
 
-  el.style.display = 'grid';
+  el.style.display = filtered.length || !list.length ? 'grid' : 'grid';
   el.innerHTML = '';
 
-  // 헤더 (전체 너비)
-  var header = document.createElement('div');
-  header.className = 'pw-header';
-  header.style.gridColumn = '1 / -1';
-  header.innerHTML = '<div class="pw-col">사이트</div><div class="pw-col">아이디</div><div class="pw-col">비밀번호</div><div class="pw-col">메모</div><div class="pw-col"></div>';
-  el.appendChild(header);
-
   if (!list.length) {
-    var empty = document.createElement('div');
-    empty.style.cssText = 'padding:20px;text-align:center;color:#bbb;font-size:.82rem;grid-column:1/-1';
-    empty.textContent = '+ 추가 버튼으로 등록해요 🔑';
-    el.appendChild(empty);
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;font-size:.82rem">+ 추가 버튼으로 등록해요 🔑</div>';
     return;
   }
   if (kw && !filtered.length) {
-    var noResult = document.createElement('div');
-    noResult.style.cssText = 'padding:16px;text-align:center;color:#bbb;font-size:.82rem;grid-column:1/-1';
-    noResult.textContent = '검색 결과가 없어요 🔍';
-    el.appendChild(noResult);
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:#bbb;font-size:.82rem">검색 결과가 없어요 🔍</div>';
     return;
   }
+
   filtered.forEach(function(item) {
     var row = document.createElement('div');
-    row.className = 'pw-row' + (item._editing ? ' pw-editing' : '');
+    row.className = 'pw-row pw-editing';
 
-    if (item._editing) {
-      // 편집 모드
-      ['site','uid','pw','memo'].forEach(function(field) {
-        var cell = document.createElement('div');
-        cell.className = 'pw-cell';
-        var inp = document.createElement('input');
-        inp.id = 'pw-'+field+'-'+item.id;
-        inp.type = field==='pw' ? 'text' : 'text';
-        inp.value = item[field] || '';
-        inp.placeholder = {site:'사이트명', uid:'아이디', pw:'비밀번호', memo:'메모'}[field];
-        inp.onkeydown = (function(id){ return function(e){ if(e.key==='Enter') pwSave(id); if(e.key==='Escape') { var l=loadPwList(); l.forEach(function(x){delete x._editing;}); savePwList(l); renderPwList(); } }; })(item.id);
-        cell.appendChild(inp);
-        row.appendChild(cell);
-      });
-      var acts = document.createElement('div');
-      acts.className = 'pw-acts';
-      var saveB = document.createElement('button');
-      saveB.innerHTML = '✅';
-      saveB.title = '저장';
-      saveB.onclick = (function(id){ return function(){ pwSave(id); }; })(item.id);
-      acts.appendChild(saveB);
-      row.appendChild(acts);
-    } else {
-      // 뷰 모드
-      var siteCell = document.createElement('div'); siteCell.className='pw-cell'; siteCell.style.fontWeight='700'; siteCell.textContent=item.site||'-'; row.appendChild(siteCell);
-      var uidCell  = document.createElement('div'); uidCell.className='pw-cell'; uidCell.textContent=item.uid||'-'; row.appendChild(uidCell);
-      // 비번 - 클릭해서 보기
-      var pwCell = document.createElement('div'); pwCell.className='pw-cell';
-      var pwVal = document.createElement('span');
-      pwVal.id = 'pw-val-'+item.id;
-      pwVal.className = 'pw-pw-val';
-      pwVal.textContent = item.pw ? '••••••' : '-';
-      pwVal.title = '클릭해서 보기';
-      pwVal.onclick = (function(id){ return function(){ pwTogglePw(id); }; })(item.id);
-      pwCell.appendChild(pwVal);
-      // 복사 버튼
-      if (item.pw) {
-        var cpB = document.createElement('button');
-        cpB.textContent='📋'; cpB.title='복사';
-        cpB.style.cssText='background:none;border:none;cursor:pointer;font-size:.72rem;color:#bbb;padding:0 0 0 4px';
-        cpB.onclick=(function(pw){ return function(e){ e.stopPropagation(); navigator.clipboard.writeText(pw).then(function(){ toast('📋 복사됐어요!'); }); }; })(item.pw);
-        pwCell.appendChild(cpB);
+    // 항상 입력 모드 - onblur 자동저장
+    var fields = [{f:'site',ph:'사이트명'},{f:'uid',ph:'아이디'},{f:'pw',ph:'비밀번호'},{f:'memo',ph:'메모'}];
+    fields.forEach(function(fd) {
+      var cell = document.createElement('div');
+      cell.className = 'pw-cell';
+      var inp = document.createElement('input');
+      inp.id = 'pw-'+fd.f+'-'+item.id;
+      inp.value = item[fd.f] || '';
+      inp.placeholder = fd.ph;
+      if (fd.f==='pw') inp.type = 'password';
+      // 포커스 시 비번 보이기
+      if (fd.f==='pw') {
+        inp.onfocus = function(){ this.type='text'; };
+        inp.onblur  = (function(id){ return function(){ this.type='password'; pwAutoSave(id); }; })(item.id);
+      } else {
+        inp.onblur = (function(id){ return function(){ pwAutoSave(id); }; })(item.id);
       }
-      row.appendChild(pwCell);
-      var memoCell = document.createElement('div'); memoCell.className='pw-cell'; memoCell.style.cssText='color:#888;font-size:.78rem'; memoCell.textContent=item.memo||''; row.appendChild(memoCell);
-      var acts = document.createElement('div'); acts.className='pw-acts';
-      var editB=document.createElement('button'); editB.textContent='✏️'; editB.title='편집';
-      editB.onclick=(function(id){ return function(){ pwEdit(id); }; })(item.id);
-      var delB=document.createElement('button'); delB.textContent='✕'; delB.title='삭제';
-      delB.onmouseover=function(){this.style.color='#e03c6e';}; delB.onmouseout=function(){this.style.color='#ccc';};
-      delB.onclick=(function(id){ return function(){ pwDel(id); }; })(item.id);
-      acts.appendChild(editB); acts.appendChild(delB);
-      row.appendChild(acts);
-    }
+      inp.onkeydown = (function(id){ return function(e){
+        if (e.key==='Enter') { e.target.blur(); toast('✅ 저장됐어요!'); }
+      };})(item.id);
+      cell.appendChild(inp);
+      row.appendChild(cell);
+    });
+
+    // 버튼
+    var acts = document.createElement('div'); acts.className='pw-acts';
+    var cpB=document.createElement('button'); cpB.innerHTML='📋'; cpB.title='비번 복사';
+    cpB.onclick=(function(id){ return function(){
+      var e=document.getElementById('pw-pw-'+id); if(e) navigator.clipboard.writeText(e.value).then(function(){ toast('📋 비번 복사됐어요!'); });
+    };})(item.id);
+    var delB=document.createElement('button'); delB.textContent='✕'; delB.title='삭제';
+    delB.style.color='#ccc';
+    delB.onmouseover=function(){this.style.color='#e03c6e';}; delB.onmouseout=function(){this.style.color='#ccc';};
+    delB.onclick=(function(id){ return function(){ pwDel(id); }; })(item.id);
+    acts.appendChild(cpB); acts.appendChild(delB);
+    row.appendChild(acts);
     el.appendChild(row);
   });
 }
