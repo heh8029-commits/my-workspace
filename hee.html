@@ -845,8 +845,8 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 @media (max-width:540px) {
   #pc-grid { grid-template-columns: 1fr !important; gap:8px; }
 }
-@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } #inv-note-grid { grid-template-columns: repeat(4,1fr) !important; } #cm-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
-@media (max-width:700px)  { #pnl-note-grid { grid-template-columns: repeat(3,1fr) !important; } }
+@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } #info-note-grid { grid-template-columns: repeat(3,1fr) !important; } #inv-note-grid { grid-template-columns: repeat(4,1fr) !important; } #cm-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
+@media (max-width:700px)  { #pnl-note-grid { grid-template-columns: repeat(3,1fr) !important; } #info-note-grid { grid-template-columns: repeat(2,1fr) !important; } }
 @media (max-width:540px)  { #pnl-note-grid { grid-template-columns: repeat(2,1fr) !important; } }
 
 /* ── 진우 포스트잇 ── */
@@ -1695,6 +1695,7 @@ function pwaInstall() {
     <div class="tab" onclick="goTab(this,'menu2');switchSub('menu2',0,null)">🏠 우리집</div>
     <div class="tab" onclick="goTab(this,'menu5')">📈 자산관리</div>
     <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
+    <div class="tab" onclick="goTab(this,'menu4')">🔒 정보</div>
   </div>
   <div class="divider"></div>
   <div class="tb-right">
@@ -1741,6 +1742,9 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu5',3,null);setMobileSubActive(this)">⭐ 관심종목</button>
   <button class="msub-btn" onclick="switchSub('menu5',4,null);setMobileSubActive(this)">📰 뉴스/정보</button>
   <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">🎯 목표관리</button>
+</div>
+<div class="mobile-subnav" id="msubnav-menu4">
+  <button class="msub-btn" onclick="setMobileSubActive(this)">🔒 정보</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu3">
   <button class="msub-btn" onclick="switchSub('menu3',0,null);setMobileSubActive(this)">🍳 레시피</button>
@@ -1797,6 +1801,9 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',8,null)">📉 손실 기록</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',9,null)">🏦 계좌 현황</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',10,null)">📌 투자 메모</div>
+  </div>
+  <div class="gnav-main" id="gnav-menu4" onclick="goTab(document.querySelector('.tab[onclick*=menu4]'),'menu4');gnavActivate('menu4')">
+    <span class="gnav-main-icon">🔒</span> 정보
   </div>
   <div class="gnav-main" id="gnav-menu3" onclick="goTab(document.querySelector('.tab[onclick*=menu3]'),'menu3');gnavActivate('menu3')">
     <span class="gnav-main-icon">🍳</span> 요리레시피
@@ -2949,6 +2956,69 @@ function pwaInstall() {
     </div>
     <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">앞으로 여기에 투자 메모 내용을 채워요</span></div>
   </div>
+  </div>
+
+  <!-- ══════════════ 정보 (비밀번호 잠금) ══════════════ -->
+  <div class="page" id="menu4">
+    <!-- 잠금 화면 -->
+    <div id="info-lock-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:16px">
+      <div style="font-size:2rem">🔒</div>
+      <div style="font-size:1rem;font-weight:700;color:#333">비밀번호를 입력해주세요</div>
+      <input id="info-pw-inp" type="password" placeholder="비밀번호"
+        style="border:1.5px solid #ddd;border-radius:10px;padding:9px 16px;font-size:1rem;font-family:Pretendard,sans-serif;outline:none;text-align:center;width:180px"
+        onkeydown="if(event.key==='Enter')infoUnlock()">
+      <div id="info-pw-err" style="font-size:.8rem;color:#e03c6e;min-height:18px"></div>
+      <button onclick="infoUnlock()" style="background:linear-gradient(135deg,#555,#222);border:none;border-radius:10px;padding:9px 28px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;font-family:Pretendard,sans-serif">확인</button>
+    </div>
+
+    <!-- 잠금 해제 후 콘텐츠 -->
+    <div id="info-content" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div class="sec" style="margin:0">🔒 정보</div>
+        <button onclick="infoLock()" style="margin-left:auto;background:none;border:1px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;color:#aaa;cursor:pointer">🔒 잠금</button>
+      </div>
+
+      <!-- 분류 관리 -->
+      <div class="card" style="margin-bottom:14px;border-top:3px solid #555">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.88rem;font-weight:700;color:#333">📂 분류 관리</div>
+          <div style="flex:1;display:flex;gap:6px;margin-left:8px">
+            <input id="info-cat-inp" type="text" placeholder="새 분류 입력..."
+              style="flex:1;border:1.5px solid #ddd;border-radius:7px;padding:5px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none"
+              onkeydown="if(event.key==='Enter')infoAddCat()">
+            <button onclick="infoAddCat()" style="background:#333;border:none;border-radius:7px;padding:5px 12px;color:white;font-size:.82rem;font-weight:700;cursor:pointer">+</button>
+          </div>
+        </div>
+        <div id="info-cat-tags" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+
+      <!-- 퀵검색 -->
+      <div style="position:relative;margin-bottom:12px">
+        <input id="info-search" type="text" placeholder="🔍 빠른 검색..."
+          oninput="renderInfoNotes()"
+          style="width:100%;box-sizing:border-box;border:1.5px solid #ddd;border-radius:9px;padding:8px 32px 8px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fafafa">
+        <button onclick="document.getElementById('info-search').value='';renderInfoNotes()"
+          style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.82rem;padding:0">✕</button>
+      </div>
+
+      <!-- 분류 탭 -->
+      <div id="info-cat-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+
+      <!-- 메모 추가 -->
+      <div style="display:flex;gap:7px;margin-bottom:12px;align-items:flex-end">
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <select id="info-note-cat" style="border:1.5px solid #ddd;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <option value="">분류 선택...</option>
+          </select>
+          <textarea id="info-note-inp" rows="2" placeholder="메모 내용..."
+            style="border:1.5px solid #ddd;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.6"></textarea>
+        </div>
+        <button onclick="infoNoteAdd()" style="background:#333;border:none;border-radius:9px;padding:10px 16px;font-size:.88rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
+      </div>
+
+      <!-- 포스트잇 그리드 -->
+      <div id="info-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
+    </div>
   </div>
 
   <!-- ══════════════ 요리레시피 ══════════════ -->
@@ -9958,12 +10028,194 @@ function initRender(pageId) {
     renderCmNotes && renderCmNotes();
     renderTripPage && renderTripPage();
     renderFabIcons && renderFabIcons();
+  } else if (pageId === 'menu4') {
+    renderInfoCats && renderInfoCats();
+    renderInfoNotes && renderInfoNotes();
   } else if (pageId === 'menu3') {
     renderRecipe && renderRecipe();
     renderFabIcons && renderFabIcons();
   } else {
     renderFabIcons && renderFabIcons();
   }
+}
+
+
+// ══════════════════════════════════════
+// 🔒 정보 페이지
+// ══════════════════════════════════════
+const INFO_PW = '3636';
+var _infoCatFilter = '전체';
+
+function loadInfoCats()      { return loadObj('info_cats').list || []; }
+function saveInfoCats(list)  { stor('info_cats', {list}); }
+function loadInfoNotes()     { return loadObj('info_notes').list || []; }
+function saveInfoNotes(list) { stor('info_notes', {list}); }
+
+function infoUnlock() {
+  var val = document.getElementById('info-pw-inp').value;
+  if (val === INFO_PW) {
+    document.getElementById('info-lock-screen').style.display = 'none';
+    document.getElementById('info-content').style.display = 'block';
+    document.getElementById('info-pw-inp').value = '';
+    renderInfoCats();
+    renderInfoNotes();
+  } else {
+    var err = document.getElementById('info-pw-err');
+    err.textContent = '비밀번호가 틀렸어요 🔒';
+    document.getElementById('info-pw-inp').value = '';
+    document.getElementById('info-pw-inp').focus();
+    setTimeout(function(){ err.textContent = ''; }, 2000);
+  }
+}
+function infoLock() {
+  document.getElementById('info-lock-screen').style.display = 'flex';
+  document.getElementById('info-content').style.display = 'none';
+}
+
+function infoAddCat() {
+  var inp = document.getElementById('info-cat-inp');
+  var text = inp.value.trim();
+  if (!text) return;
+  var list = loadInfoCats();
+  if (list.includes(text)) { toast('이미 있는 분류예요!'); return; }
+  list.push(text);
+  saveInfoCats(list);
+  inp.value = '';
+  renderInfoCats();
+  renderInfoNotes();
+  toast('📂 분류 추가됐어요!');
+}
+function infoDelCat(cat) {
+  if (!confirm('"' + cat + '" 분류를 삭제할까요? (해당 분류의 메모는 남아있어요)')) return;
+  saveInfoCats(loadInfoCats().filter(function(c){ return c !== cat; }));
+  if (_infoCatFilter === cat) _infoCatFilter = '전체';
+  renderInfoCats();
+  renderInfoNotes();
+}
+
+function renderInfoCats() {
+  // 분류 태그 목록
+  var tags = document.getElementById('info-cat-tags');
+  var cats = loadInfoCats();
+  if (tags) {
+    tags.innerHTML = '';
+    cats.forEach(function(cat) {
+      var tag = document.createElement('div');
+      tag.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:#f5f5f5;border:1px solid #ddd;border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:#333;font-family:Pretendard,sans-serif';
+      var catTxt = document.createTextNode(cat);
+      var delB = document.createElement('button');
+      delB.textContent = '✕';
+      delB.style.cssText = 'background:none;border:none;cursor:pointer;color:#bbb;font-size:.7rem;padding:0;line-height:1';
+      delB.onmouseover = function(){ this.style.color='#e03c6e'; };
+      delB.onmouseout  = function(){ this.style.color='#bbb'; };
+      delB.onclick = (function(c){ return function(){ infoDelCat(c); }; })(cat);
+      tag.appendChild(catTxt); tag.appendChild(delB);
+      tags.appendChild(tag);
+    });
+  }
+  // 분류 select
+  var sel = document.getElementById('info-note-cat');
+  if (sel) {
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">분류 선택...</option>';
+    cats.forEach(function(cat) {
+      var opt = document.createElement('option');
+      opt.value = cat; opt.textContent = cat;
+      if (cat === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+  // 분류 탭
+  var tabWrap = document.getElementById('info-cat-tabs');
+  if (tabWrap) {
+    tabWrap.innerHTML = '';
+    var allTab = document.createElement('button');
+    allTab.textContent = '전체';
+    allTab.style.cssText = 'padding:5px 14px;border-radius:20px;border:1.5px solid ' + (_infoCatFilter==='전체'?'#333':'#ddd') + ';background:' + (_infoCatFilter==='전체'?'#333':'white') + ';color:' + (_infoCatFilter==='전체'?'white':'#555') + ';font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+    allTab.onclick = function(){ _infoCatFilter='전체'; renderInfoCats(); renderInfoNotes(); };
+    tabWrap.appendChild(allTab);
+    cats.forEach(function(cat) {
+      var btn = document.createElement('button');
+      btn.textContent = cat;
+      var active = _infoCatFilter === cat;
+      btn.style.cssText = 'padding:5px 14px;border-radius:20px;border:1.5px solid ' + (active?'#333':'#ddd') + ';background:' + (active?'#333':'white') + ';color:' + (active?'white':'#555') + ';font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+      btn.onclick = (function(c){ return function(){ _infoCatFilter=c; renderInfoCats(); renderInfoNotes(); }; })(cat);
+      tabWrap.appendChild(btn);
+    });
+  }
+}
+
+function infoNoteAdd() {
+  var cat  = document.getElementById('info-note-cat').value;
+  var inp  = document.getElementById('info-note-inp');
+  var text = inp.value.trim();
+  if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
+  var list = loadInfoNotes();
+  list.unshift({id:Date.now(), cat:cat||'', text:text, img:null});
+  saveInfoNotes(list);
+  inp.value = '';
+  renderInfoNotes();
+  toast('📌 메모 추가됐어요!');
+}
+
+function renderInfoNotes() {
+  var grid = document.getElementById('info-note-grid');
+  if (!grid) return;
+  var kw = (document.getElementById('info-search')||{value:''}).value.trim().toLowerCase();
+  var all = loadInfoNotes();
+  var items = all.filter(function(it) {
+    if (_infoCatFilter !== '전체' && it.cat !== _infoCatFilter) return false;
+    if (kw && !(it.text||'').toLowerCase().includes(kw)) return false;
+    return true;
+  });
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:20px 0">' + (kw ? '검색 결과가 없어요 🔍' : '메모를 추가해요 📌') + '</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'jinu-note-card';
+    // 분류 뱃지
+    if (item.cat) {
+      var badge = document.createElement('div');
+      badge.style.cssText = 'font-size:.62rem;font-weight:700;color:#888;background:#f0f0f0;border-radius:10px;padding:1px 7px;margin-bottom:4px;align-self:flex-start';
+      badge.textContent = item.cat;
+      card.appendChild(badge);
+    }
+    var txt = document.createElement('div');
+    txt.className = 'jinu-note-text';
+    txt.contentEditable = 'false';
+    txt.textContent = item.text;
+    txt.ondblclick = function(){ txt.contentEditable='true'; txt.focus(); };
+    txt.onblur = function(){
+      var v = txt.innerText.trim();
+      if (v) { var l=loadInfoNotes(); var i=l.findIndex(function(x){return x.id===item.id;}); if(i!==-1){l[i].text=v;saveInfoNotes(l);} }
+      txt.contentEditable='false';
+    };
+    txt.onkeydown = function(e){ if(e.key==='Escape') txt.blur(); };
+    var acts = document.createElement('div');
+    acts.className = 'jinu-note-acts';
+    var copyBtn=document.createElement('button'); copyBtn.textContent='📋';
+    copyBtn.onclick=function(){ navigator.clipboard.writeText(item.text).then(function(){ toast('📋 복사됐어요!'); }); };
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️';
+    editBtn.onclick=function(){ txt.contentEditable='true'; txt.focus(); };
+    var delBtn=document.createElement('button'); delBtn.textContent='🗑️';
+    delBtn.onclick=function(){
+      saveInfoNotes(loadInfoNotes().filter(function(x){return x.id!==item.id;}));
+      renderInfoNotes(); toast('🗑️ 삭제됐어요');
+    };
+    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    var imgDrop = _noteImgDrop(card, item, saveInfoNotes, loadInfoNotes, renderInfoNotes);
+    card.appendChild(txt); card.appendChild(acts); card.appendChild(imgDrop);
+    if (item.img) {
+      var imgDel=document.createElement('button');
+      imgDel.textContent='🗑️사진'; imgDel.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0;margin-top:2px';
+      imgDel.onclick=function(e){e.stopPropagation();var l=loadInfoNotes();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;saveInfoNotes(l);renderInfoNotes();}};
+      card.appendChild(imgDel);
+    }
+    grid.appendChild(card);
+  });
 }
 
 // ── 단일파일 시작 초기화 ──
