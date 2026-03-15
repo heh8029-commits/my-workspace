@@ -2965,6 +2965,15 @@ function goTab(el, id) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+id);
   if (mn) mn.classList.add('active');
+  // 마지막 선택 subpage 복원
+  const lastSub = localStorage.getItem('ws_sub_'+id);
+  if (lastSub !== null) {
+    switchSub(id, parseInt(lastSub), null);
+  } else if (id === 'menu2') {
+    switchSub('menu2', 0, null); // 기본값: 월별지출
+  } else if (id === 'menu1') {
+    switchSub('menu1', 8, null); // 기본값: 월별손익
+  }
   initRender(id);
 }
 
@@ -7582,9 +7591,14 @@ setView(savedView);
 
 // ── 사이드 메뉴 전환 ──
 function switchSub(pageId, num, el) {
-  document.querySelectorAll(`#${pageId} .subpage`).forEach(p => p.classList.remove('active'));
+  const pageEl = document.getElementById(pageId);
+  if (pageEl) {
+    pageEl.querySelectorAll('.subpage').forEach(p => p.classList.remove('active'));
+  }
   const target = document.getElementById(`${pageId}-sub-${num}`);
   if (target) target.classList.add('active');
+  // 마지막 선택 sub 저장
+  try { localStorage.setItem('ws_sub_'+pageId, num); } catch(e){}
   // gnav-sub 활성화
   document.querySelectorAll('.gnav-sub').forEach(m => m.classList.remove('active'));
   // shop-sub-btn 활성화
@@ -9112,6 +9126,15 @@ function initRender(pageId) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
+  // 저장된 subpage 복원
+  const lastSub = localStorage.getItem('ws_sub_'+savedTab);
+  if (lastSub !== null) {
+    switchSub(savedTab, parseInt(lastSub), null);
+  } else if (savedTab === 'menu2') {
+    switchSub('menu2', 0, null);
+  } else if (savedTab === 'menu1') {
+    switchSub('menu1', 8, null);
+  }
   updateTodaySchedBar();
   // Firebase sync (sync 내부에서 initRender + 배너 업데이트)
   syncFromSheet().catch(function() {
