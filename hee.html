@@ -2035,8 +2035,7 @@ function pwaInstall() {
         <div style="font-size:.95rem;color:#7040c0;margin-bottom:10px">🤖 AI 문의 답변 생성</div>
         <textarea id="ai-query-inp" rows="4" placeholder="고객 문의글을 여기에 붙여넣으세요...&#10;버튼 누르면 AI가 열리면서 자동으로 답변해줘요!" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;margin-bottom:8px"></textarea>
         <div style="display:flex;gap:7px;margin-bottom:6px">
-          <button onclick="generateAiReply('chatgpt')" style="flex:1;background:linear-gradient(135deg,#74aa9c,#10a37f);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif">🟢 ChatGPT로 답변</button>
-          <button onclick="generateAiReply('claude')" style="flex:1;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif">🟣 Claude로 답변</button>
+          <button onclick="generateAiReply()" style="width:100%;background:linear-gradient(135deg,#74aa9c,#10a37f);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif">🟢 ChatGPT로 답변 생성</button>
         </div>
         <div style="font-size:.72rem;color:#aaa;text-align:center">문의글이 클립보드에 복사되고 AI 사이트가 열려요 → Ctrl+V 붙여넣기!</div>
       </div>
@@ -3786,7 +3785,7 @@ function csDel(id) {
 }
 
 // ── AI 문의 답변 생성 (웹 연동) ──
-function generateAiReply(target) {
+function generateAiReply() {
   const inp = document.getElementById('ai-query-inp');
   const query = inp ? inp.value.trim() : '';
   if (!query) { toast('고객 문의글을 입력해줘요 📝'); return; }
@@ -3794,21 +3793,16 @@ function generateAiReply(target) {
   const prompt = `아래 고객 문의에 대한 CS 답변을 작성해줘.
 
 조건:
-- 친절하고 따뜻하지만 전문적인 톤
-- AI 같은 딱딱한 표현 없이 사람이 쓴 것처럼 자연스럽게
-- 너무 길지 않게, 핵심만 간결하게
-- 고객 입장에서 공감하며 시작하기
+너무 길지 않게 핵심만 간결, 친절하게, AI 같은 딱딱한 표현 없이 사람이 쓴 것처럼 자연스럽게
 
 [고객 문의]
 ${query}`;
 
   navigator.clipboard.writeText(prompt).then(() => {
-    const url = target === 'claude' ? 'https://claude.ai/new' : 'https://chatgpt.com/';
-    window.open(url, '_blank');
-    toast('📋 복사됐어요! 열린 창에 Ctrl+V 하세요 😊');
+    window.open('https://chatgpt.com/', '_blank');
+    toast('📋 복사됐어요! ChatGPT에 Ctrl+V 하세요 😊');
   }).catch(() => {
-    const url = target === 'claude' ? 'https://claude.ai/new' : 'https://chatgpt.com/';
-    window.open(url, '_blank');
+    window.open('https://chatgpt.com/', '_blank');
     toast('새 창에서 문의글을 직접 붙여넣어 주세요!');
   });
 }
