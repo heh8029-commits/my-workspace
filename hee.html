@@ -842,7 +842,7 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 @media (max-width:540px) {
   #pc-grid { grid-template-columns: 1fr !important; gap:8px; }
 }
-@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
+@media (max-width:1100px) { #pnl-note-grid { grid-template-columns: repeat(4,1fr) !important; } #inv-note-grid { grid-template-columns: repeat(4,1fr) !important; } }
 @media (max-width:700px)  { #pnl-note-grid { grid-template-columns: repeat(3,1fr) !important; } }
 @media (max-width:540px)  { #pnl-note-grid { grid-template-columns: repeat(2,1fr) !important; } }
 
@@ -1662,6 +1662,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 .jinu-view-slot { font-size:.72rem; color:#4a90d0; font-weight:700; width:68px; flex-shrink:0; }
 .jinu-view-val { font-size:.82rem; color:#333; }
 .jinu-memo-item { display:flex; align-items:flex-start; gap:8px; padding:9px 11px; border:1px solid #f7d0e0; border-radius:9px; background:#fff8fb; margin-bottom:7px; }
+.jinu-memo-done { opacity:.55; background:#f5f5f5 !important; border-color:#ddd !important; }
+.jinu-memo-done .jinu-memo-badge { filter:grayscale(.7); }
 .jinu-memo-badge { font-size:.72rem; font-weight:700; border-radius:5px; padding:2px 7px; flex-shrink:0; }
 .jinu-memo-badge.high { background:#e8f4ff; color:#2060a0; }
 .jinu-memo-badge.ealimi { background:#f0fff4; color:#1a7a40; }
@@ -2301,8 +2303,17 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         </div>
       </div>
 
+      <!-- 재고 포스트잇 메모 -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <textarea id="inv-note-inp" rows="2" placeholder="메모 내용..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#fff8fb;line-height:1.6"></textarea>
+          <button onclick="invNoteAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
+        </div>
+        <div id="inv-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
+      </div>
+
       <!-- 재고 리스트 헤더 -->
-      <div style="display:grid;grid-template-columns:60px 1fr 110px 80px 60px 70px 32px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
+      <div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 32px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
         <div style="padding:6px 8px">사진</div>
         <div style="padding:6px 8px">상품명 / 링크</div>
         <div style="padding:6px 8px;text-align:right">결제금액</div>
@@ -3138,7 +3149,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3709,18 +3720,28 @@ function renderCsList() {
   if (!el) return;
   const items = loadCsList();
   if (!items.length) { el.innerHTML='<div class="empty">CS 내용을 추가해요 📋</div>'; return; }
-  el.innerHTML = items.map(it => `
-    <div class="it ${it.done?'done':''}" style="cursor:default">
-      <div class="drag-handle" style="opacity:.3">⠿</div>
-      <div class="itxt-wrap" style="flex:1">
-        <div class="itxt" style="white-space:pre-wrap;word-break:break-all">${linkify(it.text)}</div>
-      </div>
-      <div class="iacts">
-        <button onclick="navigator.clipboard.writeText(${JSON.stringify(it.text)}).then(()=>toast('📋 복사됐어요!'))" title="복사">📋</button>
-        <button onclick="csDel(${it.id})">🗑️</button>
-      </div>
-      ${it.createdAt ? `<div class="cat-badge">${formatCreatedAt(it.createdAt)}</div>` : ''}
-    </div>`).join('');
+  el.innerHTML = items.map(it => {
+    const txt = escHtml(it.text||'');
+    const jsonTxt = JSON.stringify(it.text||'');
+    return '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif">'
+      +'<div style="flex:1;font-size:.82rem;color:#333;word-break:break-all;line-height:1.4">'+txt+'</div>'
+      +'<div style="display:flex;gap:2px;flex-shrink:0">'
+        +'<button onclick="navigator.clipboard.writeText('+jsonTxt+').then(()=>toast('📋 복사됐어요!'))" style="background:none;border:none;cursor:pointer;color:#4a80d0;font-size:.8rem;padding:3px 5px;border-radius:5px" title="복사">&#128203;</button>'
+        +'<button onclick="csEdit('+it.id+')" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px" title="편집">&#9998;</button>'
+        +'<button onclick="csDel('+it.id+')" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px" title="삭제">&#128465;</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+function csEdit(id) {
+  const items = loadCsList();
+  const it = items.find(x => x.id===id);
+  if (!it) return;
+  const newText = prompt('수정', it.text||'');
+  if (newText===null) return;
+  it.text = newText.trim();
+  saveCsList(items.filter(x=>x.text));
+  renderCsList();
 }
 function csDel(id) {
   saveCsList(loadCsList().filter(x => x.id !== id));
@@ -6231,7 +6252,6 @@ function saveJinuNotes(list) { stor('jinu_notes', {list}); }
 function _noteImgDrop(card, item, saveFn, loadFn, renderFn) {
   var drop = document.createElement('div');
   drop.className = 'note-img-drop';
-  drop.tabIndex = 0;
   if (item.img) {
     var img = document.createElement('img');
     img.src = item.img;
@@ -6240,28 +6260,67 @@ function _noteImgDrop(card, item, saveFn, loadFn, renderFn) {
     drop.innerHTML = '';
     drop.appendChild(img);
   } else {
-    drop.innerHTML = '<span style="pointer-events:none">📷 Ctrl+V로 이미지 추가</span>';
+    drop.innerHTML = '<span style="pointer-events:none">📷 클릭해서 이미지 추가</span>';
   }
   drop.onclick = function(e) {
     e.stopPropagation();
-    drop.focus();
+    _noteImgModal(item, saveFn, loadFn, renderFn);
   };
-  drop.onpaste = function(e) {
-    var items = (e.clipboardData||{}).items||[];
-    for (var i=0;i<items.length;i++) {
-      if (items[i].type.indexOf('image')!==-1) {
+  return drop;
+}
+
+function _noteImgModal(item, saveFn, loadFn, renderFn) {
+  var old = document.getElementById('note-img-modal');
+  if (old) old.remove();
+  var modal = document.createElement('div');
+  modal.id = 'note-img-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML =
+    '<div style="background:white;border-radius:18px;padding:24px;width:100%;max-width:340px;font-family:Pretendard,sans-serif;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.25)">'
+    +'<div style="font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:6px">📷 이미지 붙여넣기</div>'
+    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:14px">이미지를 복사한 뒤 아래 영역에 Ctrl+V</div>'
+    +'<div id="nimg-area" tabindex="0" style="width:100%;height:130px;border:2px dashed #d0b8f8;border-radius:12px;background:#f8f5ff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;color:#b090d8;position:relative;overflow:hidden;outline:none">'
+      +'<div id="nimg-ph">📋 여기 클릭 후 Ctrl+V</div>'
+      +'<div id="nimg-prev" style="display:none;position:absolute;inset:0"><img id="nimg-prev-img" style="width:100%;height:100%;object-fit:contain"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px">'
+      +'<button id="nimg-cancel" style="flex:1;padding:8px;background:#f0f0f0;border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:#888;cursor:pointer">취소</button>'
+      +'<button id="nimg-ok" style="flex:2;padding:8px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(modal);
+  var area = document.getElementById('nimg-area');
+  var prev = document.getElementById('nimg-prev');
+  var prevImg = document.getElementById('nimg-prev-img');
+  var ph = document.getElementById('nimg-ph');
+  var _pending = null;
+  area.focus();
+  area.onclick = function(){ area.focus(); };
+  area.onpaste = function(e) {
+    var its = (e.clipboardData||{}).items||[];
+    for (var i=0;i<its.length;i++) {
+      if (its[i].type.indexOf('image')!==-1) {
         var reader = new FileReader();
-        (function(blob){ reader.onload = function(ev) {
-          var list = loadFn();
-          var idx = list.findIndex(function(x){return x.id===item.id;});
-          if (idx!==-1) { list[idx].img = ev.target.result; saveFn(list); renderFn(); }
-        }; reader.readAsDataURL(blob); })(items[i].getAsFile());
+        (function(blob){ reader.onload = function(ev){
+          _pending = ev.target.result;
+          prevImg.src = _pending;
+          prev.style.display='block'; ph.style.display='none';
+        }; reader.readAsDataURL(blob); })(its[i].getAsFile());
         e.preventDefault(); return;
       }
     }
-    toast('이미지를 먼저 복사한 뒤 Ctrl+V 해주세요 📋');
+    toast('이미지를 먼저 복사해주세요 📋');
   };
-  return drop;
+  document.getElementById('nimg-cancel').onclick = function(){ modal.remove(); };
+  document.getElementById('nimg-ok').onclick = function(){
+    if (!_pending) { toast('이미지를 먼저 붙여넣어 주세요 📷'); return; }
+    var list = loadFn();
+    var idx = list.findIndex(function(x){return x.id===item.id;});
+    if (idx!==-1) { list[idx].img = _pending; saveFn(list); renderFn(); }
+    modal.remove();
+    toast('📷 이미지 등록됐어요!');
+  };
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
 }
 
 function renderJinuNotes() {
@@ -7040,6 +7099,69 @@ function invDel(id) {
   renderInv(); toast('🗑️ 삭제됐어요');
 }
 
+/* ── 재고관리 포스트잇 ── */
+function loadInvNotes()     { return loadObj('inv_notes').list || []; }
+function saveInvNotes(list) { stor('inv_notes', {list}); }
+
+function renderInvNotes() {
+  var grid = document.getElementById('inv-note-grid');
+  if (!grid) return;
+  var items = loadInvNotes();
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:14px 0">메모를 추가해요 📌</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'jinu-note-card';
+    var txt = document.createElement('div');
+    txt.className = 'jinu-note-text';
+    txt.contentEditable = 'false';
+    txt.textContent = item.text;
+    txt.ondblclick = function() { txt.contentEditable='true'; txt.focus(); };
+    txt.onblur = function() {
+      var v = txt.innerText.trim();
+      if (v) { var list=loadInvNotes(); var idx=list.findIndex(function(x){return x.id===item.id;}); if(idx!==-1){list[idx].text=v;saveInvNotes(list);} }
+      txt.contentEditable='false';
+    };
+    txt.onkeydown = function(e){ if(e.key==='Escape') txt.blur(); };
+    var acts = document.createElement('div');
+    acts.className = 'jinu-note-acts';
+    var copyBtn=document.createElement('button'); copyBtn.textContent='📋';
+    copyBtn.onclick=function(){ navigator.clipboard.writeText(item.text).then(function(){ toast('📋 복사됐어요!'); }); };
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️';
+    editBtn.onclick=function(){ txt.contentEditable='true'; txt.focus(); };
+    var delBtn=document.createElement('button'); delBtn.textContent='🗑️';
+    delBtn.onclick=function(){
+      saveInvNotes(loadInvNotes().filter(function(x){return x.id!==item.id;}));
+      renderInvNotes(); toast('🗑️ 삭제됐어요');
+    };
+    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    var imgDropI = _noteImgDrop(card, item, saveInvNotes, loadInvNotes, renderInvNotes);
+    card.appendChild(txt); card.appendChild(acts); card.appendChild(imgDropI);
+    if (item.img) {
+      var imgDelI = document.createElement('button');
+      imgDelI.textContent='🗑️사진'; imgDelI.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0;margin-top:2px';
+      imgDelI.onclick=function(e){e.stopPropagation();var l=loadInvNotes();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;saveInvNotes(l);renderInvNotes();}};
+      card.appendChild(imgDelI);
+    }
+    grid.appendChild(card);
+  });
+}
+
+function invNoteAdd() {
+  var inp = document.getElementById('inv-note-inp');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
+  var list = loadInvNotes();
+  list.unshift({id:Date.now(), text:text, img:null});
+  saveInvNotes(list);
+  inp.value = '';
+  renderInvNotes();
+  toast('📌 메모 추가됐어요!');
+}
+
 function renderInv() {
   var el = document.getElementById('inv-list');
   if (!el) return;
@@ -7051,7 +7173,7 @@ function renderInv() {
   var rows = list.map(function(it, idx) {
     var unit = (it.price && it.qty) ? Math.round(it.price/it.qty) : it.unit||0;
     var bg = idx%2===0 ? 'white' : '#fff8fb';
-    return '<div style="display:grid;grid-template-columns:60px 1fr 110px 80px 60px 70px 32px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
+    return '<div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 32px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
       // 사진
       +'<div style="padding:6px 8px">'
         +(it.img
@@ -7518,12 +7640,22 @@ function renderJinuMemos() {
       btns.appendChild(cancelB); btns.appendChild(saveB); div.appendChild(btns);
       el.appendChild(div); return;
     }
-    div.className='jinu-memo-item';
+    div.className='jinu-memo-item'+(it.done?' jinu-memo-done':'');
     var inner=document.createElement('div'); inner.style.cssText='flex:1;min-width:0';
     var meta=document.createElement('div'); meta.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px';
     var badge=document.createElement('span'); badge.className='jinu-memo-badge '+(it.cat||'etc'); badge.textContent=_jinuMemoCatNames[it.cat]||'📋 기타';
     meta.appendChild(badge);
     if(it.date){var ds=document.createElement('span');ds.style.cssText='font-size:.72rem;color:#aaa';ds.textContent=it.date;meta.appendChild(ds);}
+    // 완료 체크버튼
+    var doneBtn=document.createElement('button');
+    doneBtn.style.cssText='background:none;border:1.5px solid '+(it.done?'#3dbb8f':'#ccc')+';border-radius:20px;padding:1px 8px;font-size:.68rem;font-weight:700;cursor:pointer;color:'+(it.done?'#1a8a50':'#aaa')+';font-family:Pretendard,sans-serif;flex-shrink:0;transition:all .12s';
+    doneBtn.textContent = it.done ? '✅ 완료' : '확인 안함';
+    doneBtn.onclick=(function(id){return function(){
+      var list=loadJinuMemos();
+      var idx=list.findIndex(function(x){return x.id===id;});
+      if(idx!==-1){list[idx].done=!list[idx].done;saveJinuMemos(list);renderJinuMemos();}
+    };})(it.id);
+    meta.appendChild(doneBtn);
     inner.appendChild(meta);
     var body=document.createElement('div'); body.style.cssText='display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap';
     var allImgs=it.imgs&&it.imgs.length?it.imgs:(it.imgUrl?[it.imgUrl]:[]);
@@ -8103,7 +8235,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderProductMgmt && renderProductMgmt(); }, 0);
   }
   if (pageId === 'menu1' && num === 4) {
-    setTimeout(function(){ renderInv && renderInv(); }, 0);
+    setTimeout(function(){ renderInv && renderInv(); renderInvNotes && renderInvNotes(); }, 0);
   }
   if (pageId === 'menu1' && num === 19) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
@@ -9559,6 +9691,7 @@ function initRender(pageId) {
     renderStaff && renderStaff();
     renderPnlPage && renderPnlPage();
     renderInv && renderInv();
+    renderInvNotes && renderInvNotes();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
