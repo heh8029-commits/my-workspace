@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>우리집 💙</title>
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest-husband.json">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
@@ -1472,6 +1472,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <span>✨</span>
   <span class="salary-alarm" id="salary-alarm"></span>
   <div class="dpill" id="dpill" style="max-width:55vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
+  <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;margin-left:6px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.55);border-radius:20px;padding:3px 13px;font-size:.78rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif;white-space:nowrap;backdrop-filter:blur(4px)">📲 앱 설치</button>
 </div>
 
 <div class="mobile-subnav" id="msubnav-menu1" style="display:none">
@@ -1489,6 +1490,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <button class="msub-btn" onclick="switchSub('menu2',15,null);setMobileSubActive(this)">✅ 중요체크리스트</button>
   <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
   <button class="msub-btn" onclick="switchSub('menu2',16,null);setMobileSubActive(this)">🎒 초딩진우일정</button>
+  <button class="msub-btn" onclick="switchSub('menu2',18,null);setMobileSubActive(this)">💳 카드관리</button>
   <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사기록</button>
 </div>
 
@@ -1532,6 +1534,12 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   </div>
   <div class="gnav-subs" id="gnav-subs-menu2">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',14,null)">📅 달력/일정</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',15,null)">✅ 중요체크리스트</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',16,null)">🎒 초딩진우 일정</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',18,null)">💳 카드관리</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null)">🎊 경조사 기록</div>
+  </div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',15,null)">✅ 중요체크리스트</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',16,null)">🎒 초딩진우 일정</div>
@@ -1965,7 +1973,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   </div>
 
   <!-- ══════════════ 우리집 ══════════════ -->
-  <div class="page active" id="menu2">
+  <div class="page" id="menu2">
     <div class="subpage" id="menu2-sub-15">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">✅</div>
@@ -2291,7 +2299,14 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               </select>
               <input id="jinu-memo-date" type="date" style="flex:1;min-width:120px;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">
             </div>
-            <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}"></textarea>
+            <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}" onpaste="jinuHandlePaste(event)" ondragover="event.preventDefault()" ondrop="jinuHandleDrop(event)"></textarea>
+            <!-- 이미지 첨부 버튼 -->
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <button type="button" onclick="document.getElementById('jinu-img-file-btn').click()" style="background:linear-gradient(135deg,#ffe0ee,#f7a8c0);border:1.5px solid #f7a8c0;border-radius:9px;padding:5px 13px;font-size:.78rem;font-weight:700;color:#c04070;cursor:pointer;font-family:Pretendard,sans-serif">🖼️ 이미지 첨부</button>
+              <input id="jinu-img-file-btn" type="file" accept="image/*" multiple style="display:none" onchange="jinuHandleFileBtn(event)">
+              <span id="jinu-img-status" style="font-size:.72rem;color:#e03c6e"></span>
+            </div>
+            <div id="jinu-img-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
             <button onclick="jinuMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">+ 추가</button>
           </div>
           <!-- 메모 리스트 (아래) -->
@@ -2347,10 +2362,23 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
       </div>
     </div>
+
+    <!-- ══ 카드관리 ══ -->
+    <div class="subpage" id="menu2-sub-18">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">💳</div>
+        <div><div class="subpage-title">카드관리</div><div class="subpage-desc">카드 정보와 이미지를 관리해요</div></div>
+      </div>
+      <div id="card-mgmt-wrap"></div>
+    </div>
+
   </div>
 
 
   <!-- ══════════════ 투자 ══════════════ -->
+
+
+    <!-- ══════════════ 투자 ══════════════ -->
   <div class="page" id="menu5">
             <div class="subpage active" id="menu5-sub-1">
     <div class="subpage-header">
@@ -6387,6 +6415,43 @@ function closeFabMenu() {
 }
 
 // ── 초기 렌더는 initPage()가 담당 ──
+
+// ── PWA 설치 프롬프트 ──
+var _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _pwaPrompt = e;
+  var btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'inline-block';
+});
+window.addEventListener('appinstalled', function() {
+  _pwaPrompt = null;
+  var btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+  toast && toast('🎉 앱이 설치됐어요!');
+});
+function pwaInstall() {
+  if (_pwaPrompt) {
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then(function(r) {
+      if (r.outcome === 'accepted') {
+        var b = document.getElementById('pwa-install-btn');
+        if (b) b.style.display = 'none';
+      }
+      _pwaPrompt = null;
+    });
+  } else {
+    // iOS Safari 안내
+    toast && toast('📲 Safari → 공유 버튼 → 홈 화면에 추가!');
+  }
+}
+// 이미 설치된 경우 버튼 숨김
+(function() {
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    var b = document.getElementById('pwa-install-btn');
+    if (b) b.style.display = 'none';
+  }
+})();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(() => {
