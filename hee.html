@@ -2906,48 +2906,154 @@ function pwaInstall() {
 
   <!-- ══════════════ 자산관리 ══════════════ -->
   <div class="page" id="menu5">
+
+    <!-- ══ 1. 현재자산정보 ══ -->
     <div class="subpage active" id="menu5-sub-1">
       <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💰</div>
-        <div><div class="subpage-title">현재자산정보</div><div class="subpage-desc">현재 보유 자산을 한눈에 정리해요</div></div>
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">💰</div>
+        <div><div class="subpage-title">현재자산정보</div><div class="subpage-desc">보유 자산을 한눈에 정리해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 현재자산정보 내용을 채워요</span></div>
+      <!-- 합산 카드 -->
+      <div id="asset-summary" style="margin-bottom:14px"></div>
+      <!-- 자산 입력 -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">💰 자산 목록</div>
+          <button onclick="assetAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+        </div>
+        <div id="asset-list"></div>
+      </div>
+      <!-- 포스트잇 메모 -->
+      <div style="display:flex;gap:7px;margin-bottom:10px">
+        <textarea id="asset-note-inp" rows="2" placeholder="메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
+        <button onclick="assetNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
+      </div>
+      <div id="asset-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
     </div>
+
+    <!-- ══ 2. 자동이체리스트 ══ -->
     <div class="subpage" id="menu5-sub-2">
       <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🔄</div>
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">🔄</div>
         <div><div class="subpage-title">자동이체리스트</div><div class="subpage-desc">정기 자동이체 내역을 관리해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 자동이체리스트 내용을 채워요</span></div>
+      <!-- 합산 -->
+      <div id="autotx-summary" style="margin-bottom:14px"></div>
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">🔄 자동이체 목록</div>
+          <button onclick="autotxAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+        </div>
+        <!-- 테이블 헤더 -->
+        <div style="display:grid;grid-template-columns:1fr 1.2fr 1fr 1.2fr 56px;background:#e8fff4;border-radius:8px;padding:6px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:6px">
+          <div>날짜</div><div>항목명</div><div style="text-align:right">금액</div><div>통장</div><div></div>
+        </div>
+        <div id="autotx-list"></div>
+      </div>
     </div>
+
+    <!-- ══ 3. 투자&연금 ══ -->
     <div class="subpage" id="menu5-sub-3">
       <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📈</div>
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">📈</div>
         <div><div class="subpage-title">투자&연금</div><div class="subpage-desc">투자 현황과 연금 정보를 정리해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 투자&연금 내용을 채워요</span></div>
+      <!-- 합산 카드 -->
+      <div id="invest-summary" style="margin-bottom:14px"></div>
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">📈 투자/연금 목록</div>
+          <button onclick="investAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 56px;background:#e8fff4;border-radius:8px;padding:6px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:6px">
+          <div>종목/상품명</div><div style="text-align:right">투자금액</div><div style="text-align:right">현재가치</div><div style="text-align:right">수익률</div><div></div>
+        </div>
+        <div id="invest-list"></div>
+      </div>
+      <div style="display:flex;gap:7px;margin-bottom:10px">
+        <textarea id="invest-note-inp" rows="2" placeholder="투자 메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
+        <button onclick="investNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
+      </div>
+      <div id="invest-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
     </div>
+
+    <!-- ══ 4. 대출 ══ -->
     <div class="subpage" id="menu5-sub-4">
       <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">🏦</div>
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">🏦</div>
         <div><div class="subpage-title">대출</div><div class="subpage-desc">대출 현황과 상환 계획을 관리해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 대출 내용을 채워요</span></div>
+      <!-- 합산 -->
+      <div id="loan-summary" style="margin-bottom:14px"></div>
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">🏦 대출 목록</div>
+          <button onclick="loanAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 1fr 0.8fr 1fr 56px;background:#e8fff4;border-radius:8px;padding:6px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:6px">
+          <div>대출명</div><div style="text-align:right">잔액</div><div style="text-align:right">이자율</div><div>만기일</div><div></div>
+        </div>
+        <div id="loan-list"></div>
+      </div>
+      <div style="display:flex;gap:7px;margin-bottom:10px">
+        <textarea id="loan-note-inp" rows="2" placeholder="대출 메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
+        <button onclick="loanNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
+      </div>
+      <div id="loan-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
     </div>
+
+    <!-- ══ 5. 건강,청결 ══ -->
     <div class="subpage" id="menu5-sub-5">
       <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">💊</div>
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">💊</div>
         <div><div class="subpage-title">건강,청결</div><div class="subpage-desc">건강 관리와 청결 습관을 기록해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 건강,청결 내용을 채워요</span></div>
+      <!-- 체크리스트 -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="font-size:.9rem;font-weight:800;color:#3dbb8f;margin-bottom:10px">✅ 건강 체크리스트</div>
+        <div class="inp-row">
+          <input id="health-check-inp" type="text" placeholder="항목 추가..." onkeydown="if(event.key==='Enter')healthCheckAdd()">
+          <button class="abtn" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f)" onclick="healthCheckAdd()">+</button>
+        </div>
+        <div class="ilist" id="health-check-list" style="margin-top:8px"></div>
+      </div>
+      <!-- 포스트잇 메모 -->
+      <div class="card" style="border-top:3px solid #b2e8d4">
+        <div style="font-size:.9rem;font-weight:800;color:#3dbb8f;margin-bottom:10px">📌 건강 메모</div>
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <textarea id="health-note-inp" rows="2" placeholder="건강/청결 메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
+          <button onclick="healthNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
+        </div>
+        <div id="health-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
+      </div>
     </div>
+
+    <!-- ══ 6. 지식자산 ══ -->
     <div class="subpage" id="menu5-sub-6">
       <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2f0c8)">📚</div>
-        <div><div class="subpage-title">지식자산</div><div class="subpage-desc">배움과 지식 자산을 정리해요</div></div>
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">📚</div>
+        <div><div class="subpage-title">지식자산</div><div class="subpage-desc">배움과 지식 자산을 기록해요</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">여기에 지식자산 내용을 채워요</span></div>
+      <!-- 링크/자료 리스트 -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="font-size:.9rem;font-weight:800;color:#3dbb8f;margin-bottom:10px">🔗 자료 링크</div>
+        <div class="inp-row">
+          <input id="know-link-inp" type="text" placeholder="제목 또는 URL 추가..." onkeydown="if(event.key==='Enter')knowLinkAdd()">
+          <button class="abtn" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f)" onclick="knowLinkAdd()">+</button>
+        </div>
+        <div class="ilist" id="know-link-list" style="margin-top:8px"></div>
+      </div>
+      <!-- 포스트잇 메모 -->
+      <div class="card" style="border-top:3px solid #b2e8d4">
+        <div style="font-size:.9rem;font-weight:800;color:#3dbb8f;margin-bottom:10px">📌 지식 메모</div>
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <textarea id="know-note-inp" rows="2" placeholder="배운 내용, 아이디어 메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
+          <button onclick="knowNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
+        </div>
+        <div id="know-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
+      </div>
     </div>
+
   </div>
 
   <!-- ══════════════ 정보 (비밀번호 잠금) ══════════════ -->
@@ -3263,7 +3369,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','m5_assets','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -10062,6 +10168,8 @@ function initRender(pageId) {
     renderCmNotes && renderCmNotes();
     renderTripPage && renderTripPage();
     renderFabIcons && renderFabIcons();
+  } else if (pageId === 'menu5') {
+    renderMenu5 && renderMenu5();
   } else if (pageId === 'menu4') {
     renderInfoCats && renderInfoCats();
     renderInfoNotes && renderInfoNotes();
@@ -10480,6 +10588,314 @@ function renderPwList() {
     el.appendChild(row);
   });
 }
+
+// ══════════════════════════════════════
+// 💰 자산관리 (menu5) JS
+// ══════════════════════════════════════
+const M5_MINT = '#3dbb8f';
+const M5_LIGHT = '#b2e8d4';
+
+// ── 공통 포스트잇 헬퍼 ──
+function _m5NoteLoad(key)       { return loadObj(key).list || []; }
+function _m5NoteSave(key, list) { stor(key, {list}); }
+function _m5NoteAdd(key, inpId, gridId) {
+  var inp = document.getElementById(inpId);
+  var text = inp ? inp.value.trim() : '';
+  if (!text) { toast('메모를 입력해줘요 📌'); return; }
+  var list = _m5NoteLoad(key);
+  list.unshift({id:Date.now(), text:text, img:null});
+  _m5NoteSave(key, list);
+  inp.value = '';
+  _m5NoteRender(key, gridId);
+  toast('📌 메모 추가됐어요!');
+}
+function _m5NoteRender(key, gridId) {
+  var grid = document.getElementById(gridId);
+  if (!grid) return;
+  var items = _m5NoteLoad(key);
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:14px 0">메모를 추가해요 📌</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'jinu-note-card';
+    var txt = document.createElement('div'); txt.className='jinu-note-text';
+    txt.contentEditable='false'; txt.textContent=item.text;
+    txt.ondblclick=function(){txt.contentEditable='true';txt.focus();};
+    txt.onblur=function(){var v=txt.innerText.trim();if(v){var l=_m5NoteLoad(key);var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].text=v;_m5NoteSave(key,l);}}txt.contentEditable='false';};
+    txt.onkeydown=function(e){if(e.key==='Escape')txt.blur();};
+    var acts=document.createElement('div');acts.className='jinu-note-acts';
+    var cp=document.createElement('button');cp.textContent='📋';cp.onclick=function(){navigator.clipboard.writeText(item.text).then(function(){toast('📋 복사됐어요!');});};
+    var ed=document.createElement('button');ed.textContent='✏️';ed.onclick=function(){txt.contentEditable='true';txt.focus();};
+    var dl=document.createElement('button');dl.textContent='🗑️';
+    dl.onclick=function(){_m5NoteSave(key,_m5NoteLoad(key).filter(function(x){return x.id!==item.id;}));_m5NoteRender(key,gridId);toast('🗑️ 삭제됐어요');};
+    acts.appendChild(cp);acts.appendChild(ed);acts.appendChild(dl);
+    var imgDrop=_noteImgDrop(card,item,function(l){_m5NoteSave(key,l);},function(){return _m5NoteLoad(key);},function(){_m5NoteRender(key,gridId);});
+    card.appendChild(txt);card.appendChild(acts);card.appendChild(imgDrop);
+    grid.appendChild(card);
+  });
+}
+
+// ── 공통 테이블 행 헬퍼 ──
+function _m5TableRow(it, fields, onSave, onDel, color) {
+  var cols = fields.length;
+  var row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:'+fields.map(function(f){return f.w||'1fr';}).join(' ')+' 56px;border-bottom:1px solid #eee;align-items:center;background:white;transition:background .1s';
+  row.onmouseover=function(){this.style.background='#f8fffe';}; row.onmouseout=function(){this.style.background='white';};
+  fields.forEach(function(f) {
+    var cell = document.createElement('div');
+    cell.style.cssText = 'padding:6px 8px;min-width:0';
+    var inp = document.createElement('input');
+    inp.value = it[f.key]||'';
+    inp.placeholder = f.label;
+    inp.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;text-align:'+(f.right?'right':'left');
+    inp.onfocus=function(){this.style.borderColor=color;};
+    inp.onblur=function(){this.style.borderColor='#e0f0e8'; onSave(it.id, f.key, this.value.trim()); };
+    inp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+    cell.appendChild(inp);
+    row.appendChild(cell);
+  });
+  var acts = document.createElement('div');
+  acts.style.cssText='display:flex;gap:2px;justify-content:center;padding:0 4px';
+  var del=document.createElement('button');del.textContent='✕';del.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.82rem;padding:3px 5px;border-radius:4px';
+  del.onmouseover=function(){this.style.color='#e03c6e';}; del.onmouseout=function(){this.style.color='#ccc';};
+  del.onclick=function(){onDel(it.id);};
+  acts.appendChild(del); row.appendChild(acts);
+  return row;
+}
+
+// ────────────────────────
+// 1. 현재자산정보
+// ────────────────────────
+function loadAssets()     { return loadObj('m5_assets').list || []; }
+function saveAssets(list) { stor('m5_assets', {list}); }
+
+function assetAdd() {
+  var list = loadAssets();
+  list.push({id:Date.now(), name:'', amount:'', type:'', memo:''});
+  saveAssets(list); renderAssets();
+}
+function assetSave(id, field, val) {
+  var list=loadAssets(); var it=list.find(function(x){return x.id===id;});
+  if(it){it[field]=val; saveAssets(list); renderAssetSummary();}
+}
+function assetDel(id) {
+  saveAssets(loadAssets().filter(function(x){return x.id!==id;}));
+  renderAssets(); toast('🗑️ 삭제됐어요');
+}
+function renderAssetSummary() {
+  var el = document.getElementById('asset-summary'); if(!el) return;
+  var total = loadAssets().reduce(function(s,it){ return s+parseFloat((it.amount||'0').replace(/,/g,''))||0; },0);
+  el.innerHTML = '<div style="background:linear-gradient(135deg,#e8fff4,#b2e8d4);border:2px solid #3dbb8f;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px">'
+    +'<div style="font-size:.8rem;font-weight:700;color:#1a7a50">💰 총 자산</div>'
+    +'<div style="font-size:1.3rem;font-weight:900;color:#1a7a50;margin-left:auto">'+total.toLocaleString()+'<span style="font-size:.75rem;font-weight:600">원</span></div>'
+    +'</div>';
+}
+function renderAssets() {
+  var el=document.getElementById('asset-list'); if(!el) return;
+  var list=loadAssets();
+  renderAssetSummary();
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 자산을 등록해요</div>';return;}
+  el.innerHTML='';
+  list.forEach(function(it){
+    el.appendChild(_m5TableRow(it,[
+      {key:'name',label:'자산명',w:'1.2fr'},{key:'type',label:'종류(현금/부동산 등)',w:'1fr'},
+      {key:'amount',label:'금액(원)',w:'1fr',right:true},{key:'memo',label:'메모',w:'1.2fr'}
+    ],assetSave,assetDel,M5_MINT));
+  });
+}
+function assetNoteAdd() { _m5NoteAdd('m5_asset_notes','asset-note-inp','asset-note-grid'); }
+function renderAssetNotes() { _m5NoteRender('m5_asset_notes','asset-note-grid'); }
+
+// ────────────────────────
+// 2. 자동이체리스트
+// ────────────────────────
+function loadAutotx()     { return loadObj('m5_autotx').list || []; }
+function saveAutotx(list) { stor('m5_autotx', {list}); }
+
+function autotxAdd() {
+  var list=loadAutotx();
+  list.push({id:Date.now(),date:'',name:'',amount:'',bank:''});
+  saveAutotx(list); renderAutotx();
+}
+function autotxSave(id,field,val){
+  var list=loadAutotx(); var it=list.find(function(x){return x.id===id;});
+  if(it){it[field]=val;saveAutotx(list);renderAutotxSummary();}
+}
+function autotxDel(id){ saveAutotx(loadAutotx().filter(function(x){return x.id!==id;})); renderAutotx(); toast('🗑️ 삭제됐어요'); }
+function renderAutotxSummary(){
+  var el=document.getElementById('autotx-summary'); if(!el) return;
+  var total=loadAutotx().reduce(function(s,it){return s+parseFloat((it.amount||'0').replace(/,/g,''))||0;},0);
+  el.innerHTML='<div style="background:linear-gradient(135deg,#e8fff4,#b2e8d4);border:2px solid #3dbb8f;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px">'
+    +'<div style="font-size:.8rem;font-weight:700;color:#1a7a50">🔄 월 자동이체 합계</div>'
+    +'<div style="font-size:1.3rem;font-weight:900;color:#1a7a50;margin-left:auto">'+total.toLocaleString()+'<span style="font-size:.75rem;font-weight:600">원</span></div>'
+    +'</div>';
+}
+function renderAutotx(){
+  var el=document.getElementById('autotx-list'); if(!el) return;
+  var list=loadAutotx(); renderAutotxSummary();
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 자동이체를 등록해요</div>';return;}
+  el.innerHTML='';
+  list.forEach(function(it){
+    el.appendChild(_m5TableRow(it,[
+      {key:'date',label:'날짜(예:매월5일)',w:'1fr'},{key:'name',label:'항목명',w:'1.2fr'},
+      {key:'amount',label:'금액',w:'1fr',right:true},{key:'bank',label:'통장',w:'1.2fr'}
+    ],autotxSave,autotxDel,M5_MINT));
+  });
+}
+
+// ────────────────────────
+// 3. 투자&연금
+// ────────────────────────
+function loadInvest()     { return loadObj('m5_invest').list || []; }
+function saveInvest(list) { stor('m5_invest', {list}); }
+
+function investAdd(){
+  var list=loadInvest(); list.push({id:Date.now(),name:'',amount:'',current:'',memo:''});
+  saveInvest(list); renderInvest();
+}
+function investSave(id,field,val){
+  var list=loadInvest(); var it=list.find(function(x){return x.id===id;});
+  if(it){it[field]=val;saveInvest(list);renderInvestSummary();}
+}
+function investDel(id){ saveInvest(loadInvest().filter(function(x){return x.id!==id;})); renderInvest(); toast('🗑️ 삭제됐어요'); }
+function renderInvestSummary(){
+  var el=document.getElementById('invest-summary'); if(!el) return;
+  var list=loadInvest();
+  var totalIn=list.reduce(function(s,it){return s+parseFloat((it.amount||'0').replace(/,/g,''))||0;},0);
+  var totalNow=list.reduce(function(s,it){return s+parseFloat((it.current||'0').replace(/,/g,''))||0;},0);
+  var pnl=totalNow-totalIn;
+  var pnlColor=pnl>=0?'#1a7a50':'#e03c6e';
+  el.innerHTML='<div style="background:linear-gradient(135deg,#e8fff4,#b2e8d4);border:2px solid #3dbb8f;border-radius:16px;padding:14px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
+    +'<div style="text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:3px">💰 총 투자금액</div><div style="font-size:1rem;font-weight:800;color:#1a7a50">'+totalIn.toLocaleString()+'원</div></div>'
+    +'<div style="text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:3px">📈 현재 가치</div><div style="font-size:1rem;font-weight:800;color:#1a7a50">'+totalNow.toLocaleString()+'원</div></div>'
+    +'<div style="text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:3px">🎯 수익/손실</div><div style="font-size:1rem;font-weight:800;color:'+pnlColor+'">'+(pnl>=0?'+':'')+pnl.toLocaleString()+'원</div></div>'
+    +'</div>';
+}
+function renderInvest(){
+  var el=document.getElementById('invest-list'); if(!el) return;
+  var list=loadInvest(); renderInvestSummary();
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 투자/연금을 등록해요</div>';return;}
+  el.innerHTML='';
+  list.forEach(function(it){
+    var inv=parseFloat((it.amount||'0').replace(/,/g,''))||0;
+    var cur=parseFloat((it.current||'0').replace(/,/g,''))||0;
+    var row=_m5TableRow(it,[
+      {key:'name',label:'종목/상품명',w:'1.2fr'},{key:'amount',label:'투자금액',w:'1fr',right:true},
+      {key:'current',label:'현재가치',w:'1fr',right:true},{key:'memo',label:'메모',w:'1fr'}
+    ],investSave,investDel,M5_MINT);
+    // 수익률 뱃지
+    if(inv>0){
+      var pct=Math.round((cur-inv)/inv*100);
+      var badge=document.createElement('div');
+      badge.style.cssText='padding:4px 8px;font-size:.72rem;font-weight:700;color:'+(pct>=0?'#1a7a50':'#e03c6e')+';text-align:right;min-width:50px;flex-shrink:0';
+      badge.textContent=(pct>=0?'+':'')+pct+'%';
+      // row 마지막 acts 앞에 삽입
+      row.insertBefore(badge, row.lastChild);
+    }
+    el.appendChild(row);
+  });
+}
+function investNoteAdd() { _m5NoteAdd('m5_invest_notes','invest-note-inp','invest-note-grid'); }
+function renderInvestNotes() { _m5NoteRender('m5_invest_notes','invest-note-grid'); }
+
+// ────────────────────────
+// 4. 대출
+// ────────────────────────
+function loadLoans()     { return loadObj('m5_loans').list || []; }
+function saveLoans(list) { stor('m5_loans', {list}); }
+
+function loanAdd(){
+  var list=loadLoans(); list.push({id:Date.now(),name:'',balance:'',rate:'',due:''});
+  saveLoans(list); renderLoans();
+}
+function loanSave(id,field,val){
+  var list=loadLoans(); var it=list.find(function(x){return x.id===id;});
+  if(it){it[field]=val;saveLoans(list);renderLoanSummary();}
+}
+function loanDel(id){ saveLoans(loadLoans().filter(function(x){return x.id!==id;})); renderLoans(); toast('🗑️ 삭제됐어요'); }
+function renderLoanSummary(){
+  var el=document.getElementById('loan-summary'); if(!el) return;
+  var total=loadLoans().reduce(function(s,it){return s+parseFloat((it.balance||'0').replace(/,/g,''))||0;},0);
+  el.innerHTML='<div style="background:linear-gradient(135deg,#fff0f0,#ffd0d0);border:2px solid #e08080;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px">'
+    +'<div style="font-size:.8rem;font-weight:700;color:#a03030">🏦 총 대출 잔액</div>'
+    +'<div style="font-size:1.3rem;font-weight:900;color:#a03030;margin-left:auto">'+total.toLocaleString()+'<span style="font-size:.75rem;font-weight:600">원</span></div>'
+    +'</div>';
+}
+function renderLoans(){
+  var el=document.getElementById('loan-list'); if(!el) return;
+  var list=loadLoans(); renderLoanSummary();
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 대출을 등록해요</div>';return;}
+  el.innerHTML='';
+  list.forEach(function(it){
+    el.appendChild(_m5TableRow(it,[
+      {key:'name',label:'대출명',w:'1.2fr'},{key:'balance',label:'잔액(원)',w:'1fr',right:true},
+      {key:'rate',label:'이자율(%)',w:'0.8fr',right:true},{key:'due',label:'만기일',w:'1fr'}
+    ],loanSave,loanDel,'#e08080'));
+  });
+}
+function loanNoteAdd() { _m5NoteAdd('m5_loan_notes','loan-note-inp','loan-note-grid'); }
+function renderLoanNotes() { _m5NoteRender('m5_loan_notes','loan-note-grid'); }
+
+// ────────────────────────
+// 5. 건강,청결
+// ────────────────────────
+function renderHealthCheck(){renderSimpleList('m5_health_check','health-check-list','건강 항목을 추가해요 💊',M5_MINT,true);}
+function healthCheckAdd(){
+  var inp=document.getElementById('health-check-inp'); if(!inp||!inp.value.trim()) return;
+  var list=loadObj('m5_health_check').list||[];
+  list.push({id:Date.now(),text:inp.value.trim(),done:false,createdAt:Date.now()});
+  stor('m5_health_check',{list}); inp.value=''; renderHealthCheck(); toast('✅ 추가됐어요!');
+}
+function healthNoteAdd() { _m5NoteAdd('m5_health_notes','health-note-inp','health-note-grid'); }
+function renderHealthNotes() { _m5NoteRender('m5_health_notes','health-note-grid'); }
+
+// ────────────────────────
+// 6. 지식자산
+// ────────────────────────
+function loadKnowLinks()     { return loadObj('m5_know_links').list || []; }
+function saveKnowLinks(list) { stor('m5_know_links', {list}); }
+function renderKnowLinks(){
+  var el=document.getElementById('know-link-list'); if(!el) return;
+  var list=loadKnowLinks();
+  if(!list.length){el.innerHTML='<div class="empty" style="font-size:.82rem">자료 링크를 추가해요 🔗</div>';return;}
+  el.innerHTML='';
+  list.forEach(function(it){
+    var row=document.createElement('div');
+    row.className='it';
+    row.style.cssText='background:#f0fff8;border-color:#b2e8d4';
+    var txt=document.createElement('div');txt.className='itxt';txt.style.cssText='flex:1;word-break:break-all';
+    txt.innerHTML=linkify(it.text||'');
+    var del=document.createElement('button');del.textContent='✕';del.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.8rem;padding:2px 4px';
+    del.onmouseover=function(){this.style.color='#e03c6e';}; del.onmouseout=function(){this.style.color='#ccc';};
+    del.onclick=(function(id){return function(){saveKnowLinks(loadKnowLinks().filter(function(x){return x.id!==id;}));renderKnowLinks();};})(it.id);
+    var cp=document.createElement('button');cp.textContent='📋';cp.style.cssText='background:none;border:none;cursor:pointer;font-size:.78rem;color:#bbb;padding:2px 4px';
+    cp.onclick=(function(text){return function(){navigator.clipboard.writeText(text).then(function(){toast('📋 복사됐어요!');});}})(it.text||'');
+    row.appendChild(txt);row.appendChild(cp);row.appendChild(del);
+    el.appendChild(row);
+  });
+}
+function knowLinkAdd(){
+  var inp=document.getElementById('know-link-inp'); if(!inp||!inp.value.trim()) return;
+  var list=loadKnowLinks(); list.unshift({id:Date.now(),text:inp.value.trim()});
+  saveKnowLinks(list); inp.value=''; renderKnowLinks(); toast('🔗 추가됐어요!');
+}
+function knowNoteAdd() { _m5NoteAdd('m5_know_notes','know-note-inp','know-note-grid'); }
+function renderKnowNotes() { _m5NoteRender('m5_know_notes','know-note-grid'); }
+
+// ── initRender menu5 ──
+function renderMenu5(sub) {
+  sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
+  if(sub===1){ renderAssets(); renderAssetNotes(); }
+  if(sub===2){ renderAutotx(); }
+  if(sub===3){ renderInvest(); renderInvestNotes(); }
+  if(sub===4){ renderLoans(); renderLoanNotes(); }
+  if(sub===5){ renderHealthCheck(); renderHealthNotes(); }
+  if(sub===6){ renderKnowLinks(); renderKnowNotes(); }
+}
+
 // ── 단일파일 시작 초기화 ──
 (function() {
   const savedTab = localStorage.getItem('ws5_curtab') || 'home';
