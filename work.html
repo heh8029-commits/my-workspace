@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎀 미리페이퍼 작업공간</title>
+  <title>🎀 미리제작소 작업공간</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1689,8 +1689,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 <div class="work-wrap">
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-    <div style="font-size:1.3rem;font-weight:800;color:#7040c0">🎀 미리페이퍼</div>
-    <div style="font-size:.8rem;color:#aaa">디자인 · 상품 · 문구 작업공간</div>
+    <div style="font-size:1.3rem;font-weight:800;color:#7040c0">🎀 미리제작소</div>
+    <div style="font-size:.8rem;color:#aaa">디자인관리 · 상품관리 · 문구추천리스트</div>
     <div style="margin-left:auto;display:flex;gap:6px">
       <button onclick="workSync()" style="background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:10px;padding:7px 16px;color:white;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif">🔄 동기화</button>
     </div>
@@ -8509,6 +8509,9 @@ async function workSync() {
 
 // 초기 렌더
 (function() {
+  // 첫 탭 active 확실히
+  document.querySelectorAll('.work-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3').forEach((s,i) => s.classList.toggle('active', i===0));
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
   renderDesignComments && renderDesignComments();
