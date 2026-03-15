@@ -3737,7 +3737,7 @@ function renderCsList() {
     return '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif">'
       +'<div style="flex:1;font-size:.82rem;color:#333;word-break:break-all;line-height:1.4">'+txt+'</div>'
       +'<div style="display:flex;gap:2px;flex-shrink:0">'
-        +'<button onclick="navigator.clipboard.writeText('+jsonTxt+').then(()=>toast('📋 복사됐어요!'))" style="background:none;border:none;cursor:pointer;color:#4a80d0;font-size:.8rem;padding:3px 5px;border-radius:5px" title="복사">&#128203;</button>'
+        +'<button onclick="navigator.clipboard.writeText('+jsonTxt+').then(()=>toast(\"📋 복사됐어요!\"))" style="background:none;border:none;cursor:pointer;color:#4a80d0;font-size:.8rem;padding:3px 5px;border-radius:5px" title="복사">&#128203;</button>'
         +'<button onclick="csEdit('+it.id+')" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px" title="편집">&#9998;</button>'
         +'<button onclick="csDel('+it.id+')" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px" title="삭제">&#128465;</button>'
       +'</div>'
