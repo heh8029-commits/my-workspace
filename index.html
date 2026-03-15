@@ -1504,6 +1504,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <button class="msub-btn" onclick="switchSub('menu2',15,null);setMobileSubActive(this)">✅ 중요체크리스트</button>
   <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
   <button class="msub-btn" onclick="switchSub('menu2',16,null);setMobileSubActive(this)">🎒 초딩진우일정</button>
+  <button class="msub-btn" onclick="switchSub('menu2',18,null);setMobileSubActive(this)">💳 카드관리</button>
   <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사기록</button>
 </div>
 
@@ -1551,6 +1552,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',15,null)">✅ 중요체크리스트</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',0,null)">💳 월별지출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',16,null)">🎒 초딩진우 일정</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',18,null)">💳 카드관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null)">🎊 경조사 기록</div>
   </div>
 
@@ -2379,10 +2381,14 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
               </select>
               <input id="jinu-memo-date" type="date" style="flex:1;min-width:120px;border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">
             </div>
-            <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗&#10;이미지는 Ctrl+V 또는 드래그로 첨부!" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}" onpaste="jinuHandlePaste(event)" ondragover="event.preventDefault()" ondrop="jinuHandleDrop(event)"></textarea>
-            <!-- 이미지 미리보기 (복수) -->
+            <textarea id="jinu-memo-inp" rows="5" placeholder="알림 내용을 입력해요...&#10;사이트 주소는 자동 링크돼요 🔗" style="width:100%;box-sizing:border-box;border:1.5px solid #f7a8c0;border-radius:8px;padding:8px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:110px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();jinuMemoAdd()}" onpaste="jinuHandlePaste(event)" ondragover="event.preventDefault()" ondrop="jinuHandleDrop(event)"></textarea>
+            <!-- 이미지 첨부 버튼 -->
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <button type="button" onclick="document.getElementById('jinu-img-file-btn').click()" style="background:linear-gradient(135deg,#ffe0ee,#f7a8c0);border:1.5px solid #f7a8c0;border-radius:9px;padding:5px 13px;font-size:.78rem;font-weight:700;color:#c04070;cursor:pointer;font-family:Pretendard,sans-serif">🖼️ 이미지 첨부</button>
+              <input id="jinu-img-file-btn" type="file" accept="image/*" multiple style="display:none" onchange="jinuHandleFileBtn(event)">
+              <span id="jinu-img-status" style="font-size:.72rem;color:#e03c6e"></span>
+            </div>
             <div id="jinu-img-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
-            <div id="jinu-img-status" style="font-size:.72rem;color:#e03c6e;margin-top:2px;text-align:center"></div>
             <button onclick="jinuMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;width:100%">+ 추가</button>
           </div>
           <!-- 메모 리스트 (아래) -->
@@ -2438,6 +2444,16 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
       </div>
     </div>
+
+    <!-- ══ 카드관리 ══ -->
+    <div class="subpage" id="menu2-sub-18">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">💳</div>
+        <div><div class="subpage-title">카드관리</div><div class="subpage-desc">카드 정보와 이미지를 관리해요</div></div>
+      </div>
+      <div id="card-mgmt-wrap"></div>
+    </div>
+
   </div>
 
 
@@ -2732,7 +2748,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3046,8 +3062,8 @@ function renderList(key, elId, clsName, emptyMsg) {
         return `<div class="itxt-wrap">
           <div class="itxt" id="itxt_${uid}" contenteditable="false"
             ondblclick="this.contentEditable='true';this.focus()"
-            onblur="${key}Edit(${item.id},this.textContent);this.contentEditable='false'"
-            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+            onblur="${key}Edit(${item.id},this.innerText);this.contentEditable='false'"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();const nl=document.createTextNode('\\n');const sel=window.getSelection();if(sel.rangeCount){const r=sel.getRangeAt(0);r.deleteContents();r.insertNode(nl);r.setStartAfter(nl);r.collapse(true);sel.removeAllRanges();sel.addRange(r);}}else if(event.key==='Escape'){${key}Edit(${item.id},this.innerText);this.contentEditable='false';this.blur();}"
             data-full="${encodeURIComponent(txt)}"
             data-short="${encodeURIComponent(shortText)}"
             data-expanded="false"
@@ -4652,17 +4668,17 @@ function renderAllImpLists() {
 var _jinuDay = 'mon';
 var _jinuDayNames = {mon:'월요일',tue:'화요일',wed:'수요일',thu:'목요일',fri:'금요일'};
 var _jinuSlots = [
-  {key:'p1',    label:'1교시',  color:'#4a90d0'},
-  {key:'p2',    label:'2교시',  color:'#4a90d0'},
-  {key:'p3',    label:'3교시',  color:'#4a90d0'},
-  {key:'p4',    label:'4교시',  color:'#4a90d0'},
-  {key:'p5',    label:'5교시',  color:'#4a90d0'},
-  {key:'p6',    label:'6교시',  color:'#4a90d0'},
+  {key:'p1',    label:'1교시',   color:'#4a90d0'},
+  {key:'p2',    label:'2교시',   color:'#4a90d0'},
+  {key:'p3',    label:'3교시',   color:'#4a90d0'},
+  {key:'p4',    label:'4교시',   color:'#4a90d0'},
   {key:'lunch', label:'🍱 급식', color:'#e07800'},
+  {key:'p5',    label:'5교시',   color:'#4a90d0'},
+  {key:'p6',    label:'6교시',   color:'#4a90d0'},
   {key:'nulum', label:'🌱 늘봄', color:'#1a9a60'},
-  {key:'home',  label:'🏠 하교', color:'#9040c0'},
-  {key:'acad1', label:'🎯 학원1',color:'#c04070'},
-  {key:'acad2', label:'🎯 학원2',color:'#c04070'}
+  {key:'after', label:'🏫 방과후',color:'#2a80c0'},
+  {key:'acad1', label:'🎯 학원1', color:'#c04070'},
+  {key:'acad2', label:'🎯 학원2', color:'#c04070'}
 ];
 var _jinuTimeQuick = ['09:00','09:40','10:00','10:40','11:00','11:40','12:00','12:20','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','18:00','19:00','20:00'];
 var _jinuQuick = {
@@ -4674,7 +4690,7 @@ var _jinuQuick = {
   p6:['수학','국어','영어','체육','미술','음악','과학','사회'],
   lunch:['급식','도시락'],
   nulum:['늘봄','없음','늘봄→학원'],
-  home:['하교'],
+  after:['방과후','없음'],
   acad1:['태권도','피아노','수학학원','영어학원','축구'],
   acad2:['태권도','피아노','수학학원','영어학원','축구']
 };
@@ -5629,6 +5645,11 @@ function jinuUploadAndAdd(file, listId, statusId) {
     }
   );
 }
+function jinuHandleFileBtn(e) {
+  var files = [...e.target.files].filter(function(f){ return f.type.startsWith('image/'); });
+  files.forEach(function(f){ jinuUploadAndAdd(f, 'jinu-img-list', 'jinu-img-status'); });
+  e.target.value = '';
+}
 function jinuHandlePaste(e) {
   var items = e.clipboardData && e.clipboardData.items;
   if (!items) return;
@@ -5653,6 +5674,236 @@ function jinuClearImg() {
   if (list) list.innerHTML = '';
   var status = document.getElementById('jinu-img-status');
   if (status) status.textContent = '';
+}
+
+/* ══════════════════════════════════
+   카드관리 JS  (상품관리 구조 참고)
+══════════════════════════════════ */
+var _cmEditId = null;
+var _cmMainImgPending = null;
+var _cmRefImgPending  = null;
+
+function loadCards()     { return loadObj('card_mgmt').list || []; }
+function saveCards(list) { stor('card_mgmt', {list}); }
+
+function renderCardMgmt() {
+  var wrap = document.getElementById('card-mgmt-wrap');
+  if (!wrap) return;
+  var all = loadCards();
+  wrap.innerHTML =
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:14px">'
+    + '<button onclick="cmCardAdd()" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8);border:1.5px solid #b2d8f8;border-radius:10px;padding:7px 18px;font-size:.82rem;font-weight:700;color:#1a5f8a;cursor:pointer;font-family:Pretendard,sans-serif">+ 카드 추가</button>'
+    + '</div>'
+    + '<div id="cm-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>';
+  _renderCmGrid(all);
+}
+
+function _renderCmGrid(list) {
+  var grid = document.getElementById('cm-grid');
+  if (!grid) return;
+  if (!list.length) { grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:32px 0">카드를 추가해요 💳</div>'; return; }
+  grid.innerHTML='';
+  list.forEach(function(c){ grid.appendChild(_cmMakeCard(c)); });
+}
+
+function _cmMakeCard(c) {
+  var card = document.createElement('div');
+  card.id = 'cm-card-'+c.id;
+  card.style.cssText = 'background:white;border:1.5px solid #b2d8f8;display:flex;flex-direction:column;font-family:Pretendard,sans-serif;overflow:hidden;box-shadow:0 2px 8px rgba(74,144,208,.08)';
+
+  /* ── 편집 폼 ── */
+  if (c._editing) {
+    card.style.padding = '12px';
+    card.style.gap = '8px';
+    var eWrap = document.createElement('div');
+    eWrap.style.cssText = 'display:flex;gap:10px;align-items:flex-start';
+
+    // 왼쪽 이미지
+    var eLeft = document.createElement('div');
+    eLeft.style.cssText = 'display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:100px';
+    var eMain = document.createElement('div');
+    eMain.style.cssText = 'width:100px;height:100px;border:2px dashed #b2d8f8;background:#f0f8ff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden';
+    if (c.mainImg) eMain.innerHTML='<img src="'+c.mainImg+'" style="width:100%;height:100%;object-fit:cover">';
+    else           eMain.innerHTML='<span style="font-size:.6rem;color:#90b8e8;text-align:center;line-height:1.6">📷<br>메인</span>';
+    eMain.onclick=(function(id){return function(){cmMainImgOpen(id);};})(c.id);
+    var eSmall=document.createElement('div'); eSmall.style.cssText='display:flex;gap:4px';
+    var eImgs=c.imgs||[];
+    for(var i=0;i<3;i++){
+      var es=document.createElement('div');
+      es.style.cssText='width:30px;height:30px;border:1.5px dashed #b2d8f8;background:#f0f8ff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative';
+      if(eImgs[i]){
+        es.innerHTML='<img src="'+eImgs[i]+'" style="width:100%;height:100%;object-fit:cover">';
+        var xb=document.createElement('button'); xb.textContent='✕';
+        xb.style.cssText='position:absolute;top:-2px;right:-2px;background:#e03c6e;border:none;border-radius:50%;width:13px;height:13px;color:white;font-size:.4rem;cursor:pointer;line-height:1';
+        xb.onclick=(function(id,idx){return function(e){e.stopPropagation();cmImgDel(id,idx);};})(c.id,i);
+        es.appendChild(xb);
+      } else {
+        es.innerHTML='<span style="font-size:.55rem;color:#b2d8f8">+</span>';
+        es.onclick=(function(id){return function(){cmRefImgOpen(id);};})(c.id);
+      }
+      eSmall.appendChild(es);
+    }
+    var eRegBtn=document.createElement('button');
+    eRegBtn.textContent='📷 등록';
+    eRegBtn.style.cssText='width:100%;border:none;padding:3px 0;background:linear-gradient(135deg,#e8f4ff,#b2d8f8);font-size:.65rem;font-weight:700;color:#1a5f8a;cursor:pointer;font-family:Pretendard,sans-serif';
+    eRegBtn.onclick=(function(id){return function(){cmMainImgOpen(id);};})(c.id);
+    eLeft.appendChild(eMain); eLeft.appendChild(eSmall); eLeft.appendChild(eRegBtn);
+
+    // 오른쪽 폼
+    var eRight=document.createElement('div'); eRight.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;gap:6px';
+    eRight.innerHTML=
+      '<div style="display:flex;gap:5px;justify-content:flex-end">'
+        +'<button onclick="cmEditSave('+c.id+')" style="background:#1a5f8a;border:none;padding:5px 12px;color:white;font-size:.74rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;border-radius:6px">저장</button>'
+        +'<button onclick="cmEditCancel('+c.id+')" style="background:#eee;border:none;padding:5px 9px;color:#888;font-size:.74rem;cursor:pointer;font-family:Pretendard,sans-serif;border-radius:6px">취소</button>'
+      +'</div>'
+      +'<input id="cme-issuer-'+c.id+'" type="text" value="'+escHtml(c.issuer||'')+'" placeholder="카드사 (예: 신한, 삼성)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
+      +'<input id="cme-number-'+c.id+'" type="text" value="'+escHtml(c.number||'')+'" placeholder="카드번호 (예: 1234-****-****-5678)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
+      +'<input id="cme-fee-'+c.id+'" type="text" value="'+escHtml(c.fee||'')+'" placeholder="연회비 (예: 15,000원)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
+      +'<input id="cme-bank-'+c.id+'" type="text" value="'+escHtml(c.bank||'')+'" placeholder="납부 은행 (예: 국민은행)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">';
+    eWrap.appendChild(eLeft); eWrap.appendChild(eRight);
+    card.appendChild(eWrap);
+    return card;
+  }
+
+  /* ── 뷰 모드 ── */
+  var body = document.createElement('div');
+  body.style.cssText = 'display:flex;flex:1;min-height:160px';
+
+  // 왼쪽 이미지
+  var imgCol = document.createElement('div');
+  imgCol.style.cssText = 'display:flex;flex-direction:column;flex-shrink:0;width:42%;border-right:1.5px solid #b2d8f8';
+
+  var mainSlot = document.createElement('div');
+  mainSlot.style.cssText = 'position:relative;width:100%;padding-top:100%;overflow:hidden;background:#f0f8ff;cursor:pointer';
+  if (c.mainImg) {
+    var mi=document.createElement('img'); mi.src=c.mainImg; mi.loading='lazy';
+    mi.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f0f8ff';
+    mi.onmouseover=function(){jinuThumbHover(this,true);}; mi.onmouseout=function(){jinuThumbHover(this,false);};
+    mi.onclick=(function(u){return function(){openImgModal(u);};})(c.mainImg);
+    mi.ondblclick=(function(id){return function(e){e.stopPropagation();cmMainImgOpen(id);};})(c.id);
+    mainSlot.appendChild(mi);
+  } else {
+    mainSlot.innerHTML='<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#90b8e8;font-size:.72rem;gap:3px">📷<span>메인</span></div>';
+    mainSlot.onclick=(function(id){return function(){cmMainImgOpen(id);};})(c.id);
+  }
+  imgCol.appendChild(mainSlot);
+
+  var smallRow = document.createElement('div');
+  smallRow.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);height:46px;border-top:1px solid #b2d8f8';
+  var imgs = c.imgs||[];
+  for (var si=0; si<3; si++) {
+    var ss=document.createElement('div');
+    ss.style.cssText='position:relative;overflow:hidden;background:#f0f8ff;cursor:pointer'+(si<2?';border-right:1px solid #b2d8f8':'');
+    if (imgs[si]) {
+      var sm=document.createElement('img'); sm.src=imgs[si]; sm.loading='lazy';
+      sm.style.cssText='width:100%;height:100%;object-fit:cover;display:block';
+      sm.onmouseover=function(){jinuThumbHover(this,true);}; sm.onmouseout=function(){jinuThumbHover(this,false);};
+      sm.ondblclick=(function(u){return function(){openImgModal(u);};})(imgs[si]);
+      var xb2=document.createElement('button'); xb2.textContent='✕';
+      xb2.style.cssText='position:absolute;top:1px;right:1px;background:rgba(224,60,110,.85);border:none;border-radius:50%;width:14px;height:14px;color:white;font-size:.45rem;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center';
+      xb2.onclick=(function(id,idx){return function(e){e.stopPropagation();cmImgDel(id,idx);};})(c.id,si);
+      ss.appendChild(sm); ss.appendChild(xb2);
+    } else {
+      ss.innerHTML='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#b2d8f8;font-size:.85rem">+</div>';
+      ss.onclick=(function(id){return function(){cmRefImgOpen(id);};})(c.id);
+    }
+    smallRow.appendChild(ss);
+  }
+  imgCol.appendChild(smallRow);
+  body.appendChild(imgCol);
+
+  // 오른쪽 정보
+  var infoCol = document.createElement('div');
+  infoCol.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;padding:9px 10px;gap:0;overflow:hidden';
+
+  var row1=document.createElement('div');
+  row1.style.cssText='display:flex;align-items:center;gap:4px;padding-bottom:6px;border-bottom:1px solid #ddeeff;margin-bottom:5px';
+  row1.innerHTML=
+    '<span style="font-size:.88rem;font-weight:800;color:#1a4f7a;flex:1;word-break:break-all">'+escHtml(c.issuer||'(카드사 미입력)')+'</span>'
+    +'<button onclick="cmEditOpen('+c.id+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#1a5f8a\'" onmouseout="this.style.color=\'#ccc\'">✏️</button>'
+    +'<button onclick="cmCardDel('+c.id+')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:0;flex-shrink:0" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ccc\'">🗑️</button>';
+  infoCol.appendChild(row1);
+
+  var fields=[
+    {label:'카드번호', val:c.number, icon:'💳'},
+    {label:'연회비',   val:c.fee,    icon:'💰'},
+    {label:'납부은행', val:c.bank,   icon:'🏦'},
+  ];
+  fields.forEach(function(f){
+    if(!f.val) return;
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:5px;align-items:baseline;margin-bottom:4px;border-top:1px solid #eef4ff;padding-top:4px';
+    row.innerHTML='<span style="font-size:.65rem;color:#90b8e8;font-weight:700;flex-shrink:0;width:46px">'+f.icon+' '+f.label+'</span>'
+      +'<span style="font-size:.8rem;color:#2a4a6a;font-weight:600;word-break:break-all">'+escHtml(f.val)+'</span>';
+    infoCol.appendChild(row);
+  });
+
+  body.appendChild(infoCol);
+  card.appendChild(body);
+  return card;
+}
+
+function cmCardAdd() {
+  var list=loadCards();
+  var nc={id:Date.now(),issuer:'',number:'',fee:'',bank:'',mainImg:'',imgs:[],_editing:true};
+  list.unshift(nc); saveCards(list); renderCardMgmt();
+  var inp=document.getElementById('cme-issuer-'+nc.id);
+  if(inp) inp.focus();
+}
+function cmEditOpen(id) {
+  var list=loadCards(); list.forEach(function(x){x._editing=(x.id===id);}); saveCards(list); renderCardMgmt();
+  var inp=document.getElementById('cme-issuer-'+id); if(inp) inp.focus();
+}
+function cmEditCancel(id) {
+  var list=loadCards();
+  var c=list.find(function(x){return x.id===id;});
+  if(c&&!c.issuer&&!c.mainImg&&!(c.imgs&&c.imgs.length)) list=list.filter(function(x){return x.id!==id;});
+  else list.forEach(function(x){delete x._editing;});
+  saveCards(list); renderCardMgmt();
+}
+function cmEditSave(id) {
+  var list=loadCards(); var idx=list.findIndex(function(x){return x.id===id;}); if(idx===-1)return;
+  list[idx].issuer = document.getElementById('cme-issuer-'+id).value.trim();
+  list[idx].number = document.getElementById('cme-number-'+id).value.trim();
+  list[idx].fee    = document.getElementById('cme-fee-'+id).value.trim();
+  list[idx].bank   = document.getElementById('cme-bank-'+id).value.trim();
+  delete list[idx]._editing;
+  saveCards(list); renderCardMgmt(); toast('💳 저장됐어요!');
+}
+function cmCardDel(id) {
+  if(!confirm('이 카드를 삭제할까요?')) return;
+  saveCards(loadCards().filter(function(x){return x.id!==id;}));
+  renderCardMgmt(); toast('🗑️ 삭제됐어요');
+}
+
+/* 메인 이미지 */
+var _cmImgPopTarget=null;
+function cmMainImgOpen(id) {
+  _cmImgPopTarget={cardId:id,type:'main'};
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(e){
+    var f=e.target.files[0]; if(!f)return;
+    var r=new FileReader(); r.onload=function(ev){
+      var list=loadCards(); var c=list.find(function(x){return x.id===id;});
+      if(c){c.mainImg=ev.target.result; saveCards(list); renderCardMgmt();}
+    }; r.readAsDataURL(f);
+  };
+  inp.click();
+}
+function cmRefImgOpen(id) {
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(e){
+    var f=e.target.files[0]; if(!f)return;
+    var r=new FileReader(); r.onload=function(ev){
+      var list=loadCards(); var c=list.find(function(x){return x.id===id;});
+      if(c){if(!c.imgs)c.imgs=[];c.imgs.push(ev.target.result);saveCards(list);renderCardMgmt();}
+    }; r.readAsDataURL(f);
+  };
+  inp.click();
+}
+function cmImgDel(id,idx) {
+  var list=loadCards(); var c=list.find(function(x){return x.id===id;});
+  if(c&&c.imgs){c.imgs.splice(idx,1);saveCards(list);renderCardMgmt();}
 }
 
 function jinuThumbHover(img, on) {
@@ -6341,6 +6592,9 @@ function switchSub(pageId, num, el) {
   }
   if (pageId === 'menu1' && num === 18) {
     setTimeout(function(){ renderProductMgmt && renderProductMgmt(); }, 0);
+  }
+  if (pageId === 'menu2' && num === 18) {
+    setTimeout(function(){ renderCardMgmt && renderCardMgmt(); }, 0);
   }
 }
 
@@ -7793,6 +8047,7 @@ function initRender(pageId) {
     renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
     renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
     renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
+    renderCardMgmt && renderCardMgmt();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu3') {
     renderRecipe && renderRecipe();
