@@ -2966,15 +2966,23 @@ function goTab(el, id) {
   const mn = document.getElementById('msubnav-'+id);
   if (mn) mn.classList.add('active');
   initRender(id);
-  // 마지막 선택 subpage 복원 (initRender 이후 실행해야 덮어씌워지지 않음)
-  const lastSub = localStorage.getItem('ws_sub_'+id);
-  if (lastSub !== null) {
-    switchSub(id, parseInt(lastSub), null);
-  } else if (id === 'menu2') {
-    switchSub('menu2', 0, null); // 기본값: 월별지출
-  } else if (id === 'menu1') {
-    switchSub('menu1', 8, null); // 기본값: 월별손익
-  }
+  // 기본 subpage: setTimeout으로 늦게 실행해서 함께 호출된 switchSub가 우선 처리
+  setTimeout(function() {
+    const pageEl = document.getElementById(id);
+    if (!pageEl) return;
+    const hasActive = pageEl.querySelector('.subpage.active');
+    if (!hasActive) {
+      // active된 subpage가 없을 때만 기본값 적용
+      const lastSub = localStorage.getItem('ws_sub_'+id);
+      if (lastSub !== null) {
+        switchSub(id, parseInt(lastSub), null);
+      } else if (id === 'menu2') {
+        switchSub('menu2', 0, null);
+      } else if (id === 'menu1') {
+        switchSub('menu1', 8, null);
+      }
+    }
+  }, 50);
 }
 
 function setMobileSubActive(el) {
