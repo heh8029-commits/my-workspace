@@ -2965,7 +2965,8 @@ function goTab(el, id) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+id);
   if (mn) mn.classList.add('active');
-  // 마지막 선택 subpage 복원
+  initRender(id);
+  // 마지막 선택 subpage 복원 (initRender 이후 실행해야 덮어씌워지지 않음)
   const lastSub = localStorage.getItem('ws_sub_'+id);
   if (lastSub !== null) {
     switchSub(id, parseInt(lastSub), null);
@@ -2974,7 +2975,6 @@ function goTab(el, id) {
   } else if (id === 'menu1') {
     switchSub('menu1', 8, null); // 기본값: 월별손익
   }
-  initRender(id);
 }
 
 function setMobileSubActive(el) {
@@ -3065,6 +3065,15 @@ async function syncFromSheet() {
     // 현재 페이지에 맞는 렌더만 실행
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
+    // subpage 복원 (initRender가 active를 건드릴 수 있으므로 복원)
+    const lastSubSync = localStorage.getItem('ws_sub_'+cp);
+    if (lastSubSync !== null) {
+      switchSub(cp, parseInt(lastSubSync), null);
+    } else if (cp === 'menu2') {
+      switchSub('menu2', 0, null);
+    } else if (cp === 'menu1') {
+      switchSub('menu1', 8, null);
+    }
     // 배너: 반드시 initRender 완료 후 실행
     updateTodaySchedBar && updateTodaySchedBar();
     if (!window._syncedOnce) {
