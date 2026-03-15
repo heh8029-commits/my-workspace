@@ -1618,6 +1618,23 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   .three-col,.two-col { grid-template-columns:1fr; }
   .week-row { grid-template-columns:repeat(3,1fr); }
   .recipe-grid { grid-template-columns: 1fr !important; }
+
+  /* 진우 시간표 - 가로 스크롤 */
+  #jinu-timetable-view { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #jinu-timetable-view table { min-width:360px; font-size:.72rem !important; }
+  #jinu-timetable-view th,
+  #jinu-timetable-view td { padding:4px 5px !important; font-size:.7rem !important; min-width:44px !important; }
+
+  /* 여행갈때 two-col 안 카드 패딩 줄이기 */
+  #menu2-sub-20 .card { padding:10px 10px; }
+
+  /* 준비물 체크리스트 모바일 2열 */
+  #trip-check-list { grid-template-columns: repeat(2,1fr) !important; gap:4px; }
+  .trip-check-label { font-size:.72rem; }
+  .trip-check-who   { font-size:.56rem; padding:1px 4px; }
+
+  /* 카드관리 모바일 1열 */
+  #cm-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ── 진우 시간표 ── */
@@ -2589,7 +2606,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <!-- 왼쪽: 시간표 -->
         <div>
           <!-- 시간표 테이블 뷰 (상단) -->
-          <div class="card" style="border-top:3px solid #b2d8f8;margin-bottom:14px;overflow-x:auto">
+          <div class="card" style="border-top:3px solid #b2d8f8;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div style="font-size:.9rem;font-weight:700;color:#2060a0">📋 주간 시간표</div>
               <button onclick="jinuToggleEdit()" id="jinu-edit-toggle-btn" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8);border:1px solid #b2d8f8;border-radius:8px;padding:4px 12px;font-size:.78rem;font-weight:700;color:#2060a0;cursor:pointer;font-family:Pretendard,sans-serif">✏️ 편집</button>
@@ -2717,10 +2734,10 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div><div class="subpage-title">여행갈때</div><div class="subpage-desc">준비물 체크리스트 & 여행 경비 정산</div></div>
       </div>
 
-      <div class="two-col">
+      <div class="two-col" style="align-items:start">
 
         <!-- 왼쪽: 준비물 체크리스트 -->
-        <div>
+        <div style="min-width:0">
           <div class="card" style="border-top:3px solid #a8e0f8;font-family:Pretendard,sans-serif">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div style="font-size:.95rem;font-weight:700;color:#1a6a9a">🧳 준비물 체크리스트</div>
@@ -2741,7 +2758,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         </div>
 
         <!-- 오른쪽: 준비메모(위) + 여행경비(아래) -->
-        <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
 
           <!-- 준비 메모 (상단) -->
           <div class="card" style="border-top:3px solid #f7a8c0;font-family:Pretendard,sans-serif">
