@@ -872,9 +872,7 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 .pw-acts { display:flex; gap:2px; padding:0 5px; justify-content:center; flex-shrink:0; align-items:center; }
 .pw-acts button { background:none; border:none; cursor:pointer; color:#ccc; font-size:.8rem; padding:3px 4px; border-radius:4px; }
 .pw-acts button:hover { color:#333; }
-#pw-list { display:grid; grid-template-columns:1fr 1fr; }
-body.mobile-view #pw-list { grid-template-columns:1fr !important; }
-@media (max-width:700px) { #pw-list { grid-template-columns:1fr !important; } }
+#pw-list { display:grid; grid-template-columns:1fr; }
 
 .jinu-note-card {
   background: linear-gradient(160deg,#fffde0,#fff9c0);
@@ -10453,16 +10451,10 @@ function renderPwList() {
       cell.className = 'pw-cell';
       var inp = document.createElement('input');
       inp.id = 'pw-'+fd.f+'-'+item.id;
+      inp.type = 'text'; // 항상 텍스트 표시
       inp.value = item[fd.f] || '';
       inp.placeholder = fd.ph;
-      if (fd.f==='pw') inp.type = 'password';
-      // 포커스 시 비번 보이기
-      if (fd.f==='pw') {
-        inp.onfocus = function(){ this.type='text'; };
-        inp.onblur  = (function(id){ return function(){ this.type='password'; pwAutoSave(id); }; })(item.id);
-      } else {
-        inp.onblur = (function(id){ return function(){ pwAutoSave(id); }; })(item.id);
-      }
+      inp.onblur = (function(id){ return function(){ pwAutoSave(id); }; })(item.id);
       inp.onkeydown = (function(id){ return function(e){
         if (e.key==='Enter') { e.target.blur(); toast('✅ 저장됐어요!'); }
       };})(item.id);
@@ -10470,11 +10462,14 @@ function renderPwList() {
       row.appendChild(cell);
     });
 
-    // 버튼
+    // 버튼 - 📋 클릭하면 비밀번호만 복사
     var acts = document.createElement('div'); acts.className='pw-acts';
-    var cpB=document.createElement('button'); cpB.innerHTML='📋'; cpB.title='비번 복사';
+    var cpB=document.createElement('button'); cpB.innerHTML='📋'; cpB.title='비밀번호 복사';
     cpB.onclick=(function(id){ return function(){
-      var e=document.getElementById('pw-pw-'+id); if(e) navigator.clipboard.writeText(e.value).then(function(){ toast('📋 비번 복사됐어요!'); });
+      var pwInp=document.getElementById('pw-pw-'+id);
+      if(pwInp && pwInp.value) {
+        navigator.clipboard.writeText(pwInp.value).then(function(){ toast('📋 비밀번호 복사됐어요!'); });
+      } else { toast('비밀번호가 없어요'); }
     };})(item.id);
     var delB=document.createElement('button'); delB.textContent='✕'; delB.title='삭제';
     delB.style.color='#ccc';
