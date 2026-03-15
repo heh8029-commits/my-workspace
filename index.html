@@ -1651,8 +1651,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
-    <div class="tab" onclick="goTab(this,'menu1')">🛍️ 미리제작소</div>
-    <div class="tab" onclick="goTab(this,'menu2')">🏠 우리집</div>
+    <div class="tab" onclick="goTab(this,'menu1');switchSub('menu1',8,null)">🛍️ 미리제작소</div>
+    <div class="tab" onclick="goTab(this,'menu2');switchSub('menu2',0,null)">🏠 우리집</div>
     <div class="tab" onclick="goTab(this,'menu5')">📈 자산관리</div>
     <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
   </div>
@@ -2961,28 +2961,12 @@ function goTab(el, id) {
   if (el) el.classList.add('active');
   localStorage.setItem('ws5_curtab', id);
   gnavActivate(id);
-  // 해당 mobile-subnav 표시
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+id);
   if (mn) mn.classList.add('active');
   initRender(id);
-  // 기본 subpage: setTimeout으로 늦게 실행해서 함께 호출된 switchSub가 우선 처리
-  setTimeout(function() {
-    const pageEl = document.getElementById(id);
-    if (!pageEl) return;
-    const hasActive = pageEl.querySelector('.subpage.active');
-    if (!hasActive) {
-      // active된 subpage가 없을 때만 기본값 적용
-      const lastSub = localStorage.getItem('ws_sub_'+id);
-      if (lastSub !== null) {
-        switchSub(id, parseInt(lastSub), null);
-      } else if (id === 'menu2') {
-        switchSub('menu2', 0, null);
-      } else if (id === 'menu1') {
-        switchSub('menu1', 8, null);
-      }
-    }
-  }, 50);
+  // ※ subpage 선택은 이 함수를 호출하는 쪽(gnav/msub)의 switchSub가 담당
+  //   탭 직접 클릭 시에만 기본값 적용
 }
 
 function setMobileSubActive(el) {
@@ -6394,54 +6378,6 @@ var _whoColors = {
 // 정렬 순서
 var _whoOrder = ['공통','은희','진우','민호'];
 
-/* ── 이름 편집 ── */
-function tripExpNameEdit() {
-  var view = document.getElementById('trip-exp-name-view');
-  var inp  = document.getElementById('trip-exp-name-inp');
-  if (!view||!inp) return;
-  // 현재 이름(이모지 제외) 가져오기
-  inp.value = (loadTripNames().expName || '내가 쓴 것');
-  view.style.display = 'none';
-  inp.style.display  = 'inline-block';
-  inp.focus(); inp.select();
-}
-function tripExpNameSave() {
-  var view = document.getElementById('trip-exp-name-view');
-  var inp  = document.getElementById('trip-exp-name-inp');
-  if (!view||!inp) return;
-  var name = inp.value.trim() || '내가 쓴 것';
-  var d = loadTripNames(); d.expName = name; saveTripNames(d);
-  view.textContent = '👩 ' + name;
-  inp.style.display  = 'none';
-  view.style.display = 'inline';
-}
-function tripComNameEdit() {
-  var view = document.getElementById('trip-com-name-view');
-  var inp  = document.getElementById('trip-com-name-inp');
-  if (!view||!inp) return;
-  inp.value = (loadTripNames().comName || '일행이 쓴 것');
-  view.style.display = 'none';
-  inp.style.display  = 'inline-block';
-  inp.focus(); inp.select();
-}
-function tripComNameSave() {
-  var view = document.getElementById('trip-com-name-view');
-  var inp  = document.getElementById('trip-com-name-inp');
-  if (!view||!inp) return;
-  var name = inp.value.trim() || '일행이 쓴 것';
-  var d = loadTripNames(); d.comName = name; saveTripNames(d);
-  view.textContent = '👥 ' + name;
-  inp.style.display  = 'none';
-  view.style.display = 'inline';
-}
-function _applyTripNames() {
-  var d = loadTripNames();
-  var ev = document.getElementById('trip-exp-name-view');
-  var cv = document.getElementById('trip-com-name-view');
-  if (ev && d.expName) ev.textContent = '👩 ' + d.expName;
-  if (cv && d.comName) cv.textContent = '👥 ' + d.comName;
-}
-
 /* ── 체크리스트 ── */
 function renderTripChecks() {
   var el = document.getElementById('trip-check-list');
@@ -6569,52 +6505,6 @@ function tripComAdd() {
   saveTripCom(list);
   document.getElementById('trip-com-item').value='';
   document.getElementById('trip-com-amt').value='';
-  renderTripCom();
-}
-
-function tripSettle() {
-  var names = loadTripNames();
-  var expName = names.expName || '내가 쓴 것';
-  var comName = names.comName || '일행이 쓴 것';
-  var myTotal  = loadTripExp().reduce(function(s,x){ return s+(parseInt(x.amt)||0); },0);
-  var comTotal = loadTripCom().reduce(function(s,x){ return s+(parseInt(x.amt)||0); },0);
-  var grand = myTotal + comTotal;
-  var half  = grand / 2;
-  var diff  = myTotal - half;
-  var box = document.getElementById('trip-settle-box');
-  var res = document.getElementById('trip-settle-result');
-  if (!box||!res) return;
-  var html =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(expName)+'</div><div style="font-size:1rem;font-weight:700;color:#a07800">'+myTotal.toLocaleString()+'원</div></div>'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:.72rem;color:#888;margin-bottom:2px">'+escHtml(comName)+'</div><div style="font-size:1rem;font-weight:700;color:#1a6a9a">'+comTotal.toLocaleString()+'원</div></div>'
-    + '</div>'
-    + '<div style="background:white;border-radius:8px;padding:8px 10px;text-align:center;margin-bottom:10px">'
-    + '<div style="font-size:.72rem;color:#888;margin-bottom:2px">총 지출</div>'
-    + '<div style="font-size:1.1rem;font-weight:800;color:#1a7a50">'+grand.toLocaleString()+'원</div>'
-    + '<div style="font-size:.75rem;color:#888;margin-top:2px">1인당 '+Math.round(half).toLocaleString()+'원</div>'
-    + '</div>';
-  if (Math.abs(diff) < 1) {
-    html += '<div style="background:#e8fff4;border-radius:8px;padding:10px;text-align:center;font-weight:700;color:#1a7a50">🎉 정확히 반반이에요!</div>';
-  } else if (diff > 0) {
-    html += '<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
-      + '<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      + '<div style="font-weight:700;color:#c05020;font-size:1rem"><b>'+escHtml(comName)+'</b> → <b>'+escHtml(expName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
-      + '</div>';
-  } else {
-    html += '<div style="background:#fff8e0;border-radius:8px;padding:10px;text-align:center">'
-      + '<div style="font-size:.8rem;color:#888;margin-bottom:4px">정산 결과</div>'
-      + '<div style="font-weight:700;color:#1a6a9a;font-size:1rem"><b>'+escHtml(expName)+'</b> → <b>'+escHtml(comName)+'</b>에게 <span style="font-size:1.15rem">'+Math.round(-diff).toLocaleString()+'원</span> 줘야 해요 💸</div>'
-      + '</div>';
-  }
-  res.innerHTML = html;
-  box.style.display = 'block';
-}
-
-function renderTripPage() {
-  _applyTripNames();
-  renderTripChecks();
-  renderTripExp();
   renderTripCom();
 }
 
