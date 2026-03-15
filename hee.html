@@ -5786,7 +5786,7 @@ function _pcShowImgPopup(popId, title, pasteF, dropF, confirmF, cancelF) {
       +'<input id="'+popId+'-file-inp" type="file" accept="image/*" style="display:none">'
       +'<div style="display:flex;gap:8px;justify-content:flex-end">'
         +'<button onclick="'+cancelF+'()" style="background:#eee;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;cursor:pointer;font-family:Pretendard,sans-serif;color:#666">취소</button>'
-        +'<button onclick="document.getElementById(''+popId+'-file-inp').click()" style="background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:white">📁 첨부파일</button>'
+        +'<button onclick="(function(){var inp=document.getElementById(\''+popId+'-file-inp\');if(inp)inp.click();})()" style="background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:white">📁 첨부파일</button>'
         +'<button id="'+popId+'-confirm" onclick="'+confirmF+'()" disabled style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:8px;padding:6px 16px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;color:#5020a0">확인</button>'
       +'</div>';
     pop.appendChild(box); document.body.appendChild(pop);
