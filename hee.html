@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>🎀 우리 작업공간</title>
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest-hee.json">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
@@ -1672,12 +1672,23 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
 </style>
 </head>
-<body>
+<body><script>
+let _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); _pwaPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+function pwaInstall() {
+  if (_pwaPrompt) { _pwaPrompt.prompt(); _pwaPrompt.userChoice.then(()=>{ _pwaPrompt=null; }); }
+}
+</script>
 
 <!-- 상단 탭바 -->
 <div class="topbar">
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
+    <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;align-items:center;gap:4px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:10px;padding:5px 12px;color:white;font-size:.75rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">📲 앱설치</button>
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1');switchSub('menu1',8,null)">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2');switchSub('menu2',0,null)">🏠 우리집</div>
