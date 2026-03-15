@@ -3042,11 +3042,17 @@ function pwaInstall() {
 
       <!-- 비밀번호 관리 -->
       <div style="margin-top:24px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <div style="font-size:.92rem;font-weight:700;color:#333">🔑 비밀번호 관리</div>
           <button onclick="pwAddRow()" style="margin-left:auto;background:#333;border:none;border-radius:8px;padding:5px 14px;color:white;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">+ 추가</button>
         </div>
-        <!-- 테이블 헤더 -->
+        <div style="position:relative;margin-bottom:8px">
+          <input id="pw-search" type="text" placeholder="🔍 사이트명, 아이디 검색..."
+            oninput="renderPwList()"
+            style="width:100%;box-sizing:border-box;border:1.5px solid #ddd;border-radius:9px;padding:7px 32px 7px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;background:#fafafa">
+          <button onclick="document.getElementById('pw-search').value='';renderPwList()"
+            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.82rem;padding:0">✕</button>
+        </div>
         <div class="pw-table-wrap">
           <div id="pw-list"></div>
         </div>
@@ -10422,6 +10428,12 @@ function renderPwList() {
   var el = document.getElementById('pw-list');
   if (!el) return;
   var list = loadPwList();
+  var kw = ((document.getElementById('pw-search')||{}).value||'').trim().toLowerCase();
+  var filtered = kw ? list.filter(function(it){
+    return (it.site||'').toLowerCase().includes(kw)
+        || (it.uid||'').toLowerCase().includes(kw)
+        || (it.memo||'').toLowerCase().includes(kw);
+  }) : list;
 
   el.style.display = 'grid';
   el.innerHTML = '';
@@ -10440,7 +10452,14 @@ function renderPwList() {
     el.appendChild(empty);
     return;
   }
-  list.forEach(function(item) {
+  if (kw && !filtered.length) {
+    var noResult = document.createElement('div');
+    noResult.style.cssText = 'padding:16px;text-align:center;color:#bbb;font-size:.82rem;grid-column:1/-1';
+    noResult.textContent = '검색 결과가 없어요 🔍';
+    el.appendChild(noResult);
+    return;
+  }
+  filtered.forEach(function(item) {
     var row = document.createElement('div');
     row.className = 'pw-row' + (item._editing ? ' pw-editing' : '');
 
