@@ -889,30 +889,30 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 #trip-check-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
+  gap: 5px;
 }
 .trip-check-item {
-  display:flex; flex-direction:column; gap:5px;
-  padding:9px 10px; border:1.5px solid #ddeeff; border-radius:10px;
+  display:flex; flex-direction:row; align-items:center; gap:5px;
+  padding:5px 8px; border:1.5px solid #ddeeff; border-radius:8px;
   background:#f8fbff; cursor:pointer;
-  transition: all .15s;
+  transition: all .12s; min-height:0;
 }
 .trip-check-item:hover { border-color:#a8e0f8; background:#eef7ff; }
 .trip-check-item.checked { background:#f0fff4; border-color:#b2e8d4; opacity:.75; }
 .trip-check-item.checked .trip-check-label { text-decoration:line-through; color:#aaa; }
-.trip-check-item-top { display:flex; align-items:center; gap:5px; }
+.trip-check-item-top { display:none; }
 .trip-check-chk {
-  width:16px; height:16px; border-radius:4px; border:2px solid #a8e0f8;
+  width:14px; height:14px; border-radius:3px; border:2px solid #a8e0f8;
   background:white; display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; transition:background .15s;
+  flex-shrink:0; transition:background .12s;
 }
 .trip-check-item.checked .trip-check-chk { background:#2090d0; border-color:#2090d0; }
-.trip-check-who { font-size:.62rem; font-weight:700; padding:1px 6px; border-radius:8px; flex-shrink:0; }
-.trip-check-label { font-size:.8rem; color:#2a3a50; word-break:break-all; line-height:1.4; }
-.trip-check-del { background:none; border:none; color:#ddd; font-size:.65rem; cursor:pointer; padding:0; align-self:flex-end; margin-top:2px; }
+.trip-check-who { font-size:.58rem; font-weight:700; padding:1px 4px; border-radius:6px; flex-shrink:0; white-space:nowrap; }
+.trip-check-label { font-size:.75rem; color:#2a3a50; word-break:break-all; line-height:1.2; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.trip-check-del { background:none; border:none; color:#ddd; font-size:.6rem; cursor:pointer; padding:0; flex-shrink:0; }
 .trip-check-del:hover { color:#e03c6e; }
 @media (max-width:900px) { #trip-check-list { grid-template-columns: repeat(3,1fr); } }
-@media (max-width:540px) { #trip-check-list { grid-template-columns: repeat(2,1fr); gap:5px; } }
+@media (max-width:540px) { #trip-check-list { grid-template-columns: repeat(2,1fr); gap:4px; } }
 
 /* ── 여행 경비 탭 ── */
 .trip-tab-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
@@ -2683,47 +2683,45 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <!-- 왼쪽: 준비물 체크리스트 -->
         <div>
           <div class="card" style="border-top:3px solid #a8e0f8;font-family:Pretendard,sans-serif">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div style="font-size:.95rem;font-weight:700;color:#1a6a9a">🧳 준비물 체크리스트</div>
-              <button onclick="tripCheckReset()" style="background:#fff0f0;border:1.5px solid #f7a8c0;border-radius:8px;padding:4px 12px;font-size:.75rem;color:#e03c6e;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">🔄 체크 초기화</button>
+              <button onclick="tripCheckReset()" style="background:#fff0f0;border:1.5px solid #f7a8c0;border-radius:8px;padding:3px 10px;font-size:.72rem;color:#e03c6e;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif">🔄 초기화</button>
             </div>
-            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end">
-              <select id="trip-check-who" style="border:1.5px solid #a8e0f8;border-radius:8px;padding:6px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
+            <div style="display:flex;gap:5px;margin-bottom:8px;align-items:center">
+              <select id="trip-check-who" style="border:1.5px solid #a8e0f8;border-radius:7px;padding:5px 6px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
                 <option value="공통">🏠 공통</option>
                 <option value="은희">👩 은희</option>
                 <option value="진우">🧒 진우</option>
                 <option value="민호">👨 민호</option>
               </select>
-              <input id="trip-check-inp" type="text" placeholder="준비물 입력..." style="flex:1;min-width:100px;border:1.5px solid #a8e0f8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripCheckAdd()">
-              <button onclick="tripCheckAdd()" style="background:linear-gradient(135deg,#a8e0f8,#2090d0);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
+              <input id="trip-check-inp" type="text" placeholder="준비물..." style="flex:1;border:1.5px solid #a8e0f8;border-radius:7px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripCheckAdd()">
+              <button onclick="tripCheckAdd()" style="background:linear-gradient(135deg,#a8e0f8,#2090d0);border:none;border-radius:7px;padding:5px 12px;color:white;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
             </div>
             <div id="trip-check-list"></div>
           </div>
         </div>
 
-        <!-- 오른쪽: 여행 경비 + 준비메모 -->
+        <!-- 오른쪽: 준비메모(위) + 여행경비(아래) -->
         <div style="display:flex;flex-direction:column;gap:14px">
 
-          <!-- 여행 경비 (날짜 탭) -->
+          <!-- 준비 메모 (상단) -->
+          <div class="card" style="border-top:3px solid #f7a8c0;font-family:Pretendard,sans-serif">
+            <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:8px">📝 준비 메모</div>
+            <div style="display:flex;gap:5px;margin-bottom:8px">
+              <input id="trip-memo-inp" type="text" placeholder="메모 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripMemoAdd()">
+              <button onclick="tripMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:6px 12px;color:white;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
+            </div>
+            <div id="trip-memo-list"></div>
+          </div>
+
+          <!-- 여행 경비 (하단, 날짜 탭) -->
           <div class="card" style="border-top:3px solid #ffe880;font-family:Pretendard,sans-serif">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div style="font-size:.95rem;font-weight:700;color:#a07800">💰 여행 경비</div>
-              <button onclick="tripAddTrip()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#5a3800;cursor:pointer;font-family:Pretendard,sans-serif">+ 여행 추가</button>
+              <button onclick="tripAddTrip()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:8px;padding:5px 12px;font-size:.78rem;font-weight:700;color:#5a3800;cursor:pointer;font-family:Pretendard,sans-serif">+ 여행 추가</button>
             </div>
-            <!-- 날짜 탭 -->
             <div class="trip-tab-bar" id="trip-tab-bar"></div>
-            <!-- 현재 탭 내용 -->
             <div id="trip-tab-content"></div>
-          </div>
-
-          <!-- 준비 메모 -->
-          <div class="card" style="border-top:3px solid #f7a8c0;font-family:Pretendard,sans-serif">
-            <div style="font-size:.9rem;font-weight:700;color:#c04070;margin-bottom:10px">📝 준비 메모</div>
-            <div style="display:flex;gap:6px;margin-bottom:8px">
-              <input id="trip-memo-inp" type="text" placeholder="메모 추가..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')tripMemoAdd()">
-              <button onclick="tripMemoAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
-            </div>
-            <div id="trip-memo-list"></div>
           </div>
 
         </div>
@@ -6055,7 +6053,7 @@ function renderTripChecks() {
     if(ai===-1)ai=99; if(bi===-1)bi=99; return ai-bi;
   });
   if (!items.length) {
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.82rem;padding:16px 0">준비물을 추가해요 🧳</div>';
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;font-size:.78rem;padding:10px 0">준비물을 추가해요 🧳</div>';
     return;
   }
   el.innerHTML = '';
@@ -6071,23 +6069,21 @@ function renderTripChecks() {
     };})(item.id);
 
     var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
-    var top = document.createElement('div');
-    top.className = 'trip-check-item-top';
 
+    // compact: 체크박스 + 분류뱃지 + 텍스트 + 삭제 한 줄
     var chk = document.createElement('div');
     chk.className = 'trip-check-chk';
-    chk.innerHTML = item.checked ? '<span style="color:white;font-size:.6rem;font-weight:700">✓</span>' : '';
+    chk.innerHTML = item.checked ? '<span style="color:white;font-size:.55rem;font-weight:700">✓</span>' : '';
 
     var who = document.createElement('span');
     who.className = 'trip-check-who';
     who.textContent = item.who||'';
     who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
 
-    top.appendChild(chk); top.appendChild(who);
-
-    var label = document.createElement('div');
+    var label = document.createElement('span');
     label.className = 'trip-check-label';
     label.textContent = item.text;
+    label.title = item.text; // 말줄임 시 툴팁
 
     var del = document.createElement('button');
     del.className = 'trip-check-del';
@@ -6098,7 +6094,7 @@ function renderTripChecks() {
       renderTripChecks();
     };})(item.id);
 
-    card.appendChild(top); card.appendChild(label); card.appendChild(del);
+    card.appendChild(chk); card.appendChild(who); card.appendChild(label); card.appendChild(del);
     el.appendChild(card);
   });
 }
@@ -6120,16 +6116,84 @@ function tripCheckReset() {
 
 /* ── 여행 탭 관리 ── */
 function tripAddTrip() {
-  var name = prompt('여행 이름을 입력해요 ✈️\n(예: 제주도 2박3일, 부산 여름여행)');
-  if (!name || !name.trim()) return;
+  // 달력 팝업 생성
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+  var today = new Date();
+  var todayStr = today.toISOString().slice(0,10);
+
+  modal.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:22px;width:100%;max-width:360px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+      <div style="font-size:1rem;font-weight:700;color:#1a6a9a;margin-bottom:16px">✈️ 여행 추가</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="font-size:.78rem;color:#888;margin-bottom:4px">📍 여행지</div>
+          <input id="tadd-dest" type="text" placeholder="예: 제주도, 부산, 일본 도쿄..." style="width:100%;box-sizing:border-box;border:1.5px solid #a8e0f8;border-radius:9px;padding:8px 11px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none">
+        </div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:.78rem;color:#888;margin-bottom:4px">📅 출발일</div>
+            <input id="tadd-start" type="date" value="${todayStr}" style="width:100%;box-sizing:border-box;border:1.5px solid #a8e0f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" oninput="tripCalcNights()">
+          </div>
+          <div style="flex:1">
+            <div style="font-size:.78rem;color:#888;margin-bottom:4px">📅 귀국일</div>
+            <input id="tadd-end" type="date" value="${todayStr}" style="width:100%;box-sizing:border-box;border:1.5px solid #a8e0f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none" oninput="tripCalcNights()">
+          </div>
+        </div>
+        <div id="tadd-nights" style="text-align:center;font-size:.85rem;font-weight:700;color:#1a6a9a;background:#f0f8ff;border-radius:8px;padding:7px"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;padding:9px;background:#f0f0f0;border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif">취소</button>
+        <button onclick="tripConfirmAdd()" style="flex:2;padding:9px;background:linear-gradient(135deg,#a8e0f8,#2090d0);border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">+ 추가</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+  document.getElementById('tadd-dest').focus();
+  tripCalcNights();
+}
+
+function tripCalcNights() {
+  var s = document.getElementById('tadd-start');
+  var e = document.getElementById('tadd-end');
+  var n = document.getElementById('tadd-nights');
+  if (!s||!e||!n) return;
+  if (!s.value||!e.value) { n.textContent='날짜를 선택해주세요'; return; }
+  var sd = new Date(s.value), ed = new Date(e.value);
+  var diff = Math.round((ed-sd)/86400000);
+  if (diff < 0) { n.textContent='⚠️ 귀국일이 출발일보다 앞서요'; n.style.color='#e03c6e'; return; }
+  n.style.color='#1a6a9a';
+  if (diff === 0) n.textContent = '당일치기 여행 🌟';
+  else n.textContent = diff + '박 ' + (diff+1) + '일 여행 ✈️';
+}
+
+function tripConfirmAdd() {
+  var dest  = (document.getElementById('tadd-dest')||{}).value||'';
+  var start = (document.getElementById('tadd-start')||{}).value||'';
+  var end   = (document.getElementById('tadd-end')||{}).value||'';
+  dest = dest.trim();
+  if (!dest) { toast('여행지를 입력해줘요 📍'); return; }
+  if (!start||!end) { toast('날짜를 선택해줘요 📅'); return; }
+  var sd = new Date(start), ed = new Date(end);
+  var diff = Math.round((ed-sd)/86400000);
+  if (diff < 0) { toast('귀국일을 다시 확인해줘요 📅'); return; }
+  // 탭 이름: "제주도 3박4일 (3/1~3/4)"
+  var sm = (sd.getMonth()+1)+'/'+sd.getDate();
+  var em = (ed.getMonth()+1)+'/'+ed.getDate();
+  var nights = diff===0 ? '당일' : diff+'박'+(diff+1)+'일';
+  var name = dest + ' ' + nights + ' (' + sm + '~' + em + ')';
+
   var list = loadTripTrips();
-  var newTrip = {id:Date.now(), name:name.trim(), expName:'내가 쓴 것', comName:'일행이 쓴 것', exp:[], com:[]};
+  var newTrip = {id:Date.now(), name:name, dest:dest, start:start, end:end, nights:diff, expName:'내가 쓴 것', comName:'일행이 쓴 것', exp:[], com:[]};
   list.push(newTrip);
   saveTripTrips(list);
   _curTripId = newTrip.id;
+  // 팝업 닫기
+  var modal = document.querySelector('[style*="position:fixed"][style*="z-index:9999"]');
+  if (modal) modal.remove();
   renderTripTabs();
   renderTripTabContent();
-  toast('✈️ '+name.trim()+' 추가됐어요!');
+  toast('✈️ ' + name + ' 추가됐어요!');
 }
 
 function renderTripTabs() {
@@ -6377,89 +6441,6 @@ var _whoColors = {
 };
 // 정렬 순서
 var _whoOrder = ['공통','은희','진우','민호'];
-
-/* ── 체크리스트 ── */
-function renderTripChecks() {
-  var el = document.getElementById('trip-check-list');
-  if (!el) return;
-  var raw = loadTripChecks();
-  // 공통→은희→진우→민호 순으로 정렬, 같은 분류 내에서는 추가 순서 유지
-  var items = raw.slice().sort(function(a,b){
-    var ai = _whoOrder.indexOf(a.who); var bi = _whoOrder.indexOf(b.who);
-    if (ai===-1) ai=99; if (bi===-1) bi=99;
-    return ai - bi;
-  });
-  if (!items.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:12px 0">준비물을 추가해요 🧳</div>'; return; }
-  el.innerHTML = '';
-  items.forEach(function(item) {
-    var row = document.createElement('div');
-    row.className = 'trip-check-item' + (item.checked?' checked':'');
-    row.draggable = true;
-    row.dataset.id = item.id;
-    var handle = document.createElement('span');
-    handle.textContent = '⠿'; handle.style.cssText = 'color:#ccc;cursor:grab;font-size:1rem;flex-shrink:0';
-    var chk = document.createElement('div');
-    chk.style.cssText = 'width:18px;height:18px;border-radius:5px;border:2px solid #a8e0f8;background:'+(item.checked?'#2090d0':'white')+';display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s';
-    chk.innerHTML = item.checked ? '<span style="color:white;font-size:.7rem">✓</span>' : '';
-    chk.onclick = (function(id){ return function() {
-      var list = loadTripChecks();
-      var idx = list.findIndex(function(x){ return x.id===id; });
-      if (idx!==-1) { list[idx].checked = !list[idx].checked; saveTripChecks(list); renderTripChecks(); }
-    }; })(item.id);
-    var wc = _whoColors[item.who] || {bg:'#f5f5f5',color:'#888'};
-    var who = document.createElement('span');
-    who.className = 'trip-check-who';
-    who.textContent = item.who || '';
-    who.style.cssText = 'background:'+wc.bg+';color:'+wc.color;
-    var label = document.createElement('span');
-    label.className = 'trip-check-label';
-    label.textContent = item.text;
-    var del = document.createElement('button');
-    del.textContent = '✕'; del.style.cssText = 'background:none;border:none;color:#ddd;font-size:.75rem;cursor:pointer;flex-shrink:0;padding:0';
-    del.onmouseover = function(){ del.style.color='#e03c6e'; }; del.onmouseout = function(){ del.style.color='#ddd'; };
-    del.onclick = (function(id){ return function() {
-      saveTripChecks(loadTripChecks().filter(function(x){ return x.id!==id; }));
-      renderTripChecks();
-    }; })(item.id);
-    row.appendChild(handle); row.appendChild(chk); row.appendChild(who); row.appendChild(label); row.appendChild(del);
-    el.appendChild(row);
-  });
-  initTripCheckDrag(el);
-}
-
-function initTripCheckDrag(container) {
-  var dragEl = null;
-  container.querySelectorAll('.trip-check-item').forEach(function(row) {
-    row.addEventListener('dragstart', function(){ dragEl=row; setTimeout(function(){ row.style.opacity='.4'; },0); });
-    row.addEventListener('dragend', function(){ row.style.opacity=''; container.querySelectorAll('.trip-check-item').forEach(function(r){ r.style.background=''; }); });
-    row.addEventListener('dragover', function(e){ e.preventDefault(); if(row!==dragEl) row.style.background='#e8f4ff'; });
-    row.addEventListener('dragleave', function(){ row.style.background=''; });
-    row.addEventListener('drop', function(e){
-      e.preventDefault(); row.style.background='';
-      if (!dragEl || dragEl===row) return;
-      var list = loadTripChecks();
-      var si = list.findIndex(function(x){ return x.id===parseInt(dragEl.dataset.id); });
-      var ti = list.findIndex(function(x){ return x.id===parseInt(row.dataset.id); });
-      if (si!==-1 && ti!==-1) { var moved=list.splice(si,1)[0]; list.splice(ti,0,moved); saveTripChecks(list); renderTripChecks(); }
-    });
-  });
-}
-
-function tripCheckAdd() {
-  var who = document.getElementById('trip-check-who').value;
-  var text = document.getElementById('trip-check-inp').value.trim();
-  if (!text) { toast('준비물을 입력해줘요 🧳'); return; }
-  var list = loadTripChecks();
-  list.push({ id: Date.now(), who: who, text: text, checked: false });
-  saveTripChecks(list);
-  document.getElementById('trip-check-inp').value = '';
-  renderTripChecks();
-}
-
-function tripCheckReset() {
-  var list = loadTripChecks().map(function(x){ return Object.assign({},x,{checked:false}); });
-  saveTripChecks(list); renderTripChecks(); toast('🔄 체크가 모두 초기화됐어요!');
-}
 
 /* ── 경비 공통 렌더 ── */
 function _renderExpList(elId, totalElId, items, textColor) {
