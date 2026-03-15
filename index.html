@@ -3065,15 +3065,6 @@ async function syncFromSheet() {
     // 현재 페이지에 맞는 렌더만 실행
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
-    // subpage 복원 (initRender가 active를 건드릴 수 있으므로 복원)
-    const lastSubSync = localStorage.getItem('ws_sub_'+cp);
-    if (lastSubSync !== null) {
-      switchSub(cp, parseInt(lastSubSync), null);
-    } else if (cp === 'menu2') {
-      switchSub('menu2', 0, null);
-    } else if (cp === 'menu1') {
-      switchSub('menu1', 8, null);
-    }
     // 배너: 반드시 initRender 완료 후 실행
     updateTodaySchedBar && updateTodaySchedBar();
     if (!window._syncedOnce) {
