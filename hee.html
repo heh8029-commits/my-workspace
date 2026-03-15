@@ -3731,18 +3731,37 @@ function renderCsList() {
   if (!el) return;
   const items = loadCsList();
   if (!items.length) { el.innerHTML='<div class="empty">CS 내용을 추가해요 📋</div>'; return; }
-  el.innerHTML = items.map(it => {
-    const txt = escHtml(it.text||'');
-    const jsonTxt = JSON.stringify(it.text||'');
-    return '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif">'
-      +'<div style="flex:1;font-size:.82rem;color:#333;word-break:break-all;line-height:1.4">'+txt+'</div>'
-      +'<div style="display:flex;gap:2px;flex-shrink:0">'
-        +'<button onclick="navigator.clipboard.writeText('+jsonTxt+').then(()=>toast(\"📋 복사됐어요!\"))" style="background:none;border:none;cursor:pointer;color:#4a80d0;font-size:.8rem;padding:3px 5px;border-radius:5px" title="복사">&#128203;</button>'
-        +'<button onclick="csEdit('+it.id+')" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px" title="편집">&#9998;</button>'
-        +'<button onclick="csDel('+it.id+')" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px" title="삭제">&#128465;</button>'
-      +'</div>'
-      +'</div>';
-  }).join('');
+  el.innerHTML = '';
+  items.forEach(function(it) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif';
+    const txtEl = document.createElement('div');
+    txtEl.style.cssText = 'flex:1;font-size:.82rem;color:#333;word-break:break-all;line-height:1.4';
+    txtEl.textContent = it.text || '';
+    const acts = document.createElement('div');
+    acts.style.cssText = 'display:flex;gap:2px;flex-shrink:0';
+    // 복사
+    const copyBtn = document.createElement('button');
+    copyBtn.innerHTML = '&#128203;';
+    copyBtn.title = '복사';
+    copyBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:#4a80d0;font-size:.8rem;padding:3px 5px;border-radius:5px';
+    copyBtn.onclick = (function(text){ return function(){ navigator.clipboard.writeText(text).then(function(){ toast('📋 복사됐어요!'); }); }; })(it.text||'');
+    // 편집
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '&#9998;';
+    editBtn.title = '편집';
+    editBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px';
+    editBtn.onclick = (function(id){ return function(){ csEdit(id); }; })(it.id);
+    // 삭제
+    const delBtn = document.createElement('button');
+    delBtn.innerHTML = '&#128465;';
+    delBtn.title = '삭제';
+    delBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px';
+    delBtn.onclick = (function(id){ return function(){ csDel(id); }; })(it.id);
+    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    row.appendChild(txtEl); row.appendChild(acts);
+    el.appendChild(row);
+  });
 }
 function csEdit(id) {
   const items = loadCsList();
