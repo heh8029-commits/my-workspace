@@ -889,9 +889,9 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 }
 
 /* ── 포스트잇 이미지 ── */
-.note-card-img { width:100%; border-radius:6px; margin-bottom:5px; display:block; cursor:pointer; max-height:120px; object-fit:cover; }
-.note-img-drop { width:100%; min-height:38px; border:1.5px dashed #d0c8f0; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.68rem; color:#b0a0d8; margin-bottom:4px; background:#f8f5ff; transition:background .12s; }
-.note-img-drop:hover { background:#ede8ff; }
+.note-card-img { width:100%; border-radius:6px; margin-top:4px; display:block; cursor:pointer; max-height:100px; object-fit:cover; }
+.note-img-drop { width:100%; min-height:30px; border:1.5px dashed #d0c8f0; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.65rem; color:#b0a0d8; margin-top:6px; background:#f8f5ff; transition:background .12s; outline:none; }
+.note-img-drop:hover, .note-img-drop:focus { background:#ede8ff; border-color:#a090d0; }
 
 
 /* ── 여행갈때 체크리스트 ── */
@@ -2271,7 +2271,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div style="font-size:.88rem;font-weight:700;color:#c04070;margin-bottom:10px">📦 재고 추가</div>
         <div style="display:flex;gap:10px;align-items:flex-start">
           <!-- 이미지 클립보드 전용 -->
-          <div id="inv-img-drop" tabindex="0" style="width:72px;height:72px;flex-shrink:0;border:2px dashed #f7a8c0;border-radius:9px;background:#fff8fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;outline:none" onpaste="invPasteImg(event)" onclick="this.focus();toast('이미지를 복사한 뒤 Ctrl+V 해주세요 📋')">
+          <div id="inv-img-drop" tabindex="0" style="width:72px;height:72px;flex-shrink:0;border:2px dashed #f7a8c0;border-radius:9px;background:#fff8fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;outline:none" onclick="invOpenImgModal()" onpaste="invPasteImg(event)">
             <div id="inv-img-preview" style="display:none;width:100%;height:100%;position:absolute;inset:0">
               <img id="inv-img-preview-img" style="width:100%;height:100%;object-fit:cover">
               <button onclick="event.stopPropagation();invClearImg()" style="position:absolute;top:2px;right:2px;background:#e03c6e;border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
@@ -4674,16 +4674,19 @@ function renderPnlNotes() {
       renderPnlNotes(); toast('🗑️ 삭제됐어요');
     };
     var imgDrop2 = _noteImgDrop(card, item, savePnlNotes, loadPnlNotes, renderPnlNotes);
+    var imgActs = document.createElement('div');
+    imgActs.style.cssText = 'display:flex;align-items:center;gap:4px;margin-top:3px';
     if (item.img) {
       var imgDelBtn2 = document.createElement('button');
-      imgDelBtn2.textContent='🗑️사진'; imgDelBtn2.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0';
+      imgDelBtn2.textContent='🗑️ 사진삭제'; imgDelBtn2.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0';
       imgDelBtn2.onclick=function(e){e.stopPropagation();var l=loadPnlNotes();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;savePnlNotes(l);renderPnlNotes();}};
-      acts.appendChild(imgDelBtn2);
+      imgActs.appendChild(imgDelBtn2);
     }
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
-    card.appendChild(imgDrop2);  // 이미지 먼저
-    card.appendChild(txt);       // 텍스트
-    card.appendChild(acts);      // 버튼
+    card.appendChild(txt);       // 1. 텍스트 먼저
+    card.appendChild(acts);      // 2. 버튼
+    card.appendChild(imgDrop2);  // 3. 이미지 영역 (아래)
+    if (item.img) card.appendChild(imgActs);
     grid.appendChild(card);
   });
 }
@@ -6228,30 +6231,20 @@ function saveJinuNotes(list) { stor('jinu_notes', {list}); }
 function _noteImgDrop(card, item, saveFn, loadFn, renderFn) {
   var drop = document.createElement('div');
   drop.className = 'note-img-drop';
-  drop.title = '클릭 또는 Ctrl+V로 이미지 추가';
-  drop.innerHTML = item.img ? '' : '📷 이미지 추가';
+  drop.tabIndex = 0;
   if (item.img) {
     var img = document.createElement('img');
-    img.src = item.img; img.className = 'note-card-img';
-    img.onclick = function(e){ e.stopPropagation(); };
+    img.src = item.img;
+    img.className = 'note-card-img';
+    img.onclick = function(e){ e.stopPropagation(); openImgModal && openImgModal(item.img); };
     drop.innerHTML = '';
     drop.appendChild(img);
+  } else {
+    drop.innerHTML = '<span style="pointer-events:none">📷 Ctrl+V로 이미지 추가</span>';
   }
   drop.onclick = function(e) {
     e.stopPropagation();
-    var fi = document.createElement('input');
-    fi.type='file'; fi.accept='image/*';
-    fi.onchange = function() {
-      if (!fi.files||!fi.files[0]) return;
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        var list = loadFn();
-        var idx = list.findIndex(function(x){return x.id===item.id;});
-        if (idx!==-1) { list[idx].img = ev.target.result; saveFn(list); renderFn(); }
-      };
-      reader.readAsDataURL(fi.files[0]);
-    };
-    fi.click();
+    drop.focus();
   };
   drop.onpaste = function(e) {
     var items = (e.clipboardData||{}).items||[];
@@ -6266,6 +6259,7 @@ function _noteImgDrop(card, item, saveFn, loadFn, renderFn) {
         e.preventDefault(); return;
       }
     }
+    toast('이미지를 먼저 복사한 뒤 Ctrl+V 해주세요 📋');
   };
   return drop;
 }
@@ -6314,7 +6308,16 @@ function renderJinuNotes() {
       renderJinuNotes(); toast('🗑️ 삭제됐어요');
     };
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
-    card.appendChild(txt); card.appendChild(acts);
+    var imgDropJ = _noteImgDrop(card, item, saveJinuNotes, loadJinuNotes, renderJinuNotes);
+    card.appendChild(txt);
+    card.appendChild(acts);
+    card.appendChild(imgDropJ);  // 이미지 아래
+    if (item.img) {
+      var imgDelJ = document.createElement('button');
+      imgDelJ.textContent='🗑️ 사진삭제'; imgDelJ.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0;margin-top:2px';
+      imgDelJ.onclick=function(e){e.stopPropagation();var l=loadJinuNotes();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;saveJinuNotes(l);renderJinuNotes();}};
+      card.appendChild(imgDelJ);
+    }
     grid.appendChild(card);
   });
 }
@@ -6324,8 +6327,7 @@ function jinuNoteAdd() {
   var text = inp ? inp.value.trim() : '';
   if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
   var list = loadJinuNotes();
-  list.unshift({ id: Date.now(), text: text });
-  saveJinuNotes(list);
+  list.unshift({ id: Date.now(), text: text, img: null });
   inp.value = '';
   renderJinuNotes();
   toast('📌 메모 추가됐어요!');
@@ -6898,6 +6900,67 @@ function invPasteImg(e) {
   }
   toast('이미지를 먼저 복사한 뒤 Ctrl+V 해주세요 📋');
 }
+
+function invOpenImgModal() {
+  // 기존 모달 제거
+  var old = document.getElementById('inv-paste-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'inv-paste-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:18px;padding:28px 24px;width:100%;max-width:380px;font-family:Pretendard,sans-serif;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.25)';
+  box.innerHTML =
+    '<div style="font-size:1rem;font-weight:700;color:#c04070;margin-bottom:6px">📷 이미지 붙여넣기</div>'
+   +'<div style="font-size:.82rem;color:#888;margin-bottom:18px">이미지를 복사한 뒤 아래 영역 클릭 후<br><b>Ctrl+V</b> 를 눌러주세요</div>'
+   +'<div id="inv-modal-paste-area" tabindex="0" style="width:100%;height:160px;border:2.5px dashed #f7a8c0;border-radius:14px;background:#fff8fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;color:#f7a8c0;gap:8px;outline:none;position:relative;overflow:hidden">'
+     +'<div id="inv-modal-preview" style="display:none;position:absolute;inset:0"><img id="inv-modal-preview-img" style="width:100%;height:100%;object-fit:contain"></div>'
+     +'<div id="inv-modal-ph"><div style="font-size:2.5rem">📷</div><div>여기를 클릭 후 Ctrl+V</div></div>'
+   +'</div>'
+   +'<div style="display:flex;gap:8px;margin-top:16px">'
+     +'<button id="inv-modal-cancel" style="flex:1;padding:9px;background:#f0f0f0;border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif">취소</button>'
+     +'<button id="inv-modal-ok" style="flex:2;padding:9px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">✅ 적용</button>'
+   +'</div>';
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  var pasteArea = document.getElementById('inv-modal-paste-area');
+  var modalPrev = document.getElementById('inv-modal-preview');
+  var modalImg  = document.getElementById('inv-modal-preview-img');
+  var modalPh   = document.getElementById('inv-modal-ph');
+  var _pending  = null;
+
+  pasteArea.focus();
+  pasteArea.onclick = function(){ pasteArea.focus(); };
+  pasteArea.onpaste = function(e) {
+    var items = (e.clipboardData||{}).items||[];
+    for (var i=0;i<items.length;i++) {
+      if (items[i].type.indexOf('image')!==-1) {
+        var reader = new FileReader();
+        (function(blob){ reader.onload = function(ev) {
+          _pending = ev.target.result;
+          modalImg.src = _pending;
+          modalPrev.style.display = 'block';
+          modalPh.style.display   = 'none';
+        }; reader.readAsDataURL(blob); })(items[i].getAsFile());
+        e.preventDefault(); return;
+      }
+    }
+    toast('이미지를 먼저 복사해주세요 📋');
+  };
+
+  document.getElementById('inv-modal-cancel').onclick = function(){ modal.remove(); };
+  document.getElementById('inv-modal-ok').onclick = function(){
+    if (_pending) { invSetImgPreview(_pending); toast('📷 이미지가 등록됐어요!'); }
+    else toast('이미지를 먼저 붙여넣어 주세요 📷');
+    modal.remove();
+  };
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+}
+
 function invSetImgPreview(dataUrl) {
   _invImgPending = dataUrl;
   var img = document.getElementById('inv-img-preview-img');
@@ -6915,6 +6978,32 @@ function invClearImg() {
   if (prev) prev.style.display = 'none';
   if (ph)   ph.style.display   = 'flex';
   if (img)  img.src = '';
+}
+
+// 리스트 이미지 호버 확대
+function invImgHover(el, show) {
+  var tid = 'inv-img-tooltip';
+  var old = document.getElementById(tid);
+  if (old) old.remove();
+  if (!show) return;
+  var imgSrc = el.getAttribute('data-src') || el.src;
+  if (!imgSrc) return;
+  var rect = el.getBoundingClientRect();
+  var tip = document.createElement('div');
+  tip.id = tid;
+  tip.style.cssText = 'position:fixed;z-index:9998;pointer-events:none;'
+    + 'width:200px;height:200px;border-radius:12px;overflow:hidden;'
+    + 'box-shadow:0 8px 30px rgba(0,0,0,.3);border:2.5px solid white;background:white;';
+  var left = rect.right + 12;
+  if (left + 200 > window.innerWidth) left = rect.left - 212;
+  var top = Math.max(8, rect.top + rect.height/2 - 100);
+  tip.style.left = left + 'px';
+  tip.style.top  = top  + 'px';
+  var img = document.createElement('img');
+  img.src = imgSrc;
+  img.style.cssText = 'width:100%;height:100%;object-fit:contain';
+  tip.appendChild(img);
+  document.body.appendChild(tip);
 }
 function invCalcUnit() {
   var price = parseInt(document.getElementById('inv-price').value)||0;
@@ -6965,8 +7054,10 @@ function renderInv() {
     return '<div style="display:grid;grid-template-columns:60px 1fr 110px 80px 60px 70px 32px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
       // 사진
       +'<div style="padding:6px 8px">'
-        +'<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center">'
-        +(it.img ? '<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover">' : '<span style="font-size:.9rem;opacity:.3">📦</span>')
+        +'<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center"+(it.img?";cursor:zoom-in":"")+'">'
+        +(it.img
+          ? '<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)" data-src="'+it.img+'">'
+          : '<span style="font-size:.9rem;opacity:.3">📦</span>')
         +'</div></div>'
       // 상품명 + 링크
       +'<div style="padding:6px 8px;min-width:0">'
@@ -7072,8 +7163,16 @@ function renderPhrases() {
     acts.appendChild(copyBtn);
     acts.appendChild(editBtn);
     acts.appendChild(delBtn);
+    var imgDropP = _noteImgDrop(card, item, savePhrases, loadPhrases, renderPhrases);
     card.appendChild(txt);
     card.appendChild(acts);
+    card.appendChild(imgDropP);  // 이미지 아래
+    if (item.img) {
+      var imgDelP = document.createElement('button');
+      imgDelP.textContent='🗑️ 사진삭제'; imgDelP.style.cssText='background:none;border:none;font-size:.6rem;color:#ccc;cursor:pointer;padding:0;margin-top:2px';
+      imgDelP.onclick=function(e){e.stopPropagation();var l=loadPhrases();var i=l.findIndex(function(x){return x.id===item.id;});if(i!==-1){l[i].img=null;savePhrases(l);renderPhrases();}};
+      card.appendChild(imgDelP);
+    }
     grid.appendChild(card);
   });
 }
@@ -7083,8 +7182,7 @@ function addPhrase() {
   var text = inp.value.trim();
   if (!text) { toast('문구를 입력해줘요 ✍️'); return; }
   var list = loadPhrases();
-  list.unshift({ id: Date.now(), text: text });
-  savePhrases(list);
+  list.unshift({ id: Date.now(), text: text, img: null });
   inp.value = '';
   renderPhrases();
   toast('✍️ 문구 추가됐어요!');
