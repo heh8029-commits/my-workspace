@@ -1716,9 +1716,20 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <input id="order-date" type="date" class="ra-inp" style="flex:1">
           </div>
           <div class="order-row">
+            <label class="order-label">📁 파일위치</label>
+            <input id="order-filepath" type="text" class="ra-inp" placeholder="예: 바탕화면/작업폴더/파일명.ai" style="flex:1">
+          </div>
+          <div class="order-row">
             <label class="order-label">📝 메모</label>
             <textarea id="order-memo" rows="3" class="ra-inp" placeholder="요청 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
           </div>
+          <!-- 이미지 붙여넣기 영역 -->
+          <div id="order-img-zone" onclick="document.getElementById('order-img-file').click()" onpaste="orderHandlePaste(event)" ondragover="event.preventDefault();this.style.borderColor='#8060e0'" ondragleave="this.style.borderColor='#c8b8f8'" ondrop="orderHandleDrop(event)" tabindex="0"
+            style="border:2px dashed #c8b8f8;border-radius:10px;padding:10px 12px;font-size:.78rem;color:#aaa;cursor:pointer;text-align:center;background:#f9f7ff;margin-top:2px;outline:none;transition:border-color .15s;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
+            <span id="order-img-hint">🖼️ 이미지 클릭/붙여넣기(Ctrl+V)/드래그</span>
+            <input id="order-img-file" type="file" accept="image/*" multiple style="display:none" onchange="orderHandleFile(event)">
+          </div>
+          <div id="order-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
           <div style="text-align:right;margin-top:6px">
             <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
           </div>
@@ -1731,9 +1742,11 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div class="card cy">
         <div style="font-size:.95rem;color:#a07800;margin-bottom:10px">📝 메모</div>
         <div class="inp-row">
-          <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addMemo()}"></textarea>
+          <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addMemo()}" onpaste="memoHandlePaste(event)"></textarea>
           <button class="abtn ylw-btn" onclick="addMemo()">+</button>
         </div>
+        <!-- 메모 이미지 미리보기 -->
+        <div id="memo-img-preview" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px"></div>
         <div class="ilist" id="memo-list"><div class="empty">메모를 추가해요 📝</div></div>
       </div>
 
@@ -3041,8 +3054,14 @@ function renderList(key, elId, clsName, emptyMsg) {
     const dateBadge = item.date ? `<span class="ibadge badge-date">📅 ${item.date.slice(5).replace('-','/')}</span>` : '';
     const timeBadge = item.time ? `<span class="ibadge badge-time">⏰ ${item.time}</span>` : '';
     const hideChk = noChk.includes(key);
-    return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}">
+    // 메모 이미지 썸네일 (왼쪽)
+    const hasImgs = key === 'memo' && item.imgs && item.imgs.length;
+    const thumbHtml = hasImgs
+      ? `<div style="flex-shrink:0;display:flex;flex-direction:column;gap:3px;margin-right:4px">${item.imgs.map(src=>`<img src="${src}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1.5px solid #f0e060;cursor:pointer" onclick="openImgModal('${src}')">`).join('')}</div>`
+      : '';
+    return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}" style="${hasImgs?'align-items:flex-start':''}">
       <div class="drag-handle" title="드래그해서 순서 변경">⠿</div>
+      ${thumbHtml}
       ${hideChk ? '' : `<div class="ichk" onclick="${key}Toggle(${item.id})">${item.done?'✓':''}</div>`}
       ${(()=>{
         const txt = item.text || '';
@@ -3302,11 +3321,40 @@ function addSched() {
   rerender('sched'); toast('🎀 저장됐어요!');
 }
 
+// ── 메모 이미지 임시 저장 ──
+let _memoImgs = [];
+
+function memoHandlePaste(e) {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const reader = new FileReader();
+      reader.onload = ev => { _memoImgs.push(ev.target.result); renderMemoImgPreview(); };
+      reader.readAsDataURL(item.getAsFile());
+    }
+  }
+}
+
+function renderMemoImgPreview() {
+  const wrap = document.getElementById('memo-img-preview');
+  if (!wrap) return;
+  wrap.innerHTML = _memoImgs.map((src,i) =>
+    `<div style="position:relative;display:inline-block">
+      <img src="${src}" style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:2px solid #f0e060;cursor:pointer" onclick="openImgModal('${src}')">
+      <button onclick="_memoImgs.splice(${i},1);renderMemoImgPreview()" style="position:absolute;top:-5px;right:-5px;background:#e05050;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.65rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>`
+  ).join('');
+}
+
 function addMemo() {
   const v = document.getElementById('memo-inp').value.trim();
-  if (!v) return;
-  DBS.memo.add({ id:Date.now(), text:v, done:false, createdAt:Date.now() });
+  if (!v && !_memoImgs.length) return;
+  DBS.memo.add({ id:Date.now(), text:v, imgs:[..._memoImgs], done:false, createdAt:Date.now() });
   document.getElementById('memo-inp').value='';
+  _memoImgs = [];
+  renderMemoImgPreview();
   rerender('memo'); toast('🎀 저장됐어요!');
 }
 
@@ -3582,6 +3630,9 @@ function renderOrder() {
   el.innerHTML = filtered.map(row => {
     const dateStr = row.date ? `📅 ${row.date.replace(/-/g,'.')}` : '📅 날짜 미정';
     const st = (row.status === undefined || row.status === null) ? 0 : row.status;
+    const hasImgs = row.imgs && row.imgs.length;
+    const imgThumb = hasImgs ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">${row.imgs.map(src=>`<img src="${src}" style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:1.5px solid #c8b8f8;cursor:pointer" onclick="openImgModal('${src}')">`).join('')}</div>` : '';
+    const filepathHtml = row.filepath ? `<div style="font-size:.75rem;color:#8060e0;background:#f0eeff;border-radius:6px;padding:3px 8px;margin-bottom:4px;word-break:break-all">📁 ${esc(row.filepath)}</div>` : '';
     return `<div class="order-item" id="order-${row.id}">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
         <span class="order-item-date" id="order-date-view-${row.id}" style="flex:1;cursor:pointer" ondblclick="orderEditMode(${row.id})">${dateStr}</span>
@@ -3592,8 +3643,14 @@ function renderOrder() {
           `<button class="order-status-btn${(st===i?' active-'+i:'')}" onclick="setOrderStatus(${row.id},${i})">${lbl}</button>`
         ).join('')}
       </div>
-      <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${orderMemoHtml(row.memo||'')}</div>
+      ${filepathHtml}
+      <div id="order-filepath-edit-wrap-${row.id}" style="display:none;margin-bottom:4px">
+        <input id="order-filepath-edit-${row.id}" type="text" value="${esc(row.filepath||'')}" placeholder="파일위치/이름" style="width:100%;border:1.5px solid #b0a0f8;border-radius:8px;padding:6px 10px;font-family:'Pretendard',sans-serif;font-size:.82rem;box-sizing:border-box">
+      </div>
+      <div class="order-item-memo" id="order-memo-view-${row.id}" style="cursor:pointer;white-space:pre-wrap;word-break:break-all" ondblclick="orderEditMode(${row.id})">${orderMemoHtml(row.memo||'')}${imgThumb}</div>
       <textarea id="order-memo-edit-${row.id}" style="display:none;width:100%;border:1.5px solid #b0a0f8;border-radius:8px;padding:8px 10px;font-family:'Pretendard',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;line-height:1.6;box-sizing:border-box">${esc(row.memo||'')}</textarea>
+      <!-- 편집 중 이미지 미리보기 -->
+      <div id="order-edit-imgs-${row.id}" style="display:none"></div>
       <div class="order-item-acts" id="order-acts-${row.id}">
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="orderEditMode(${row.id})">✏️ 편집</button>
         <button class="abtn" style="font-size:.72rem;padding:3px 10px;background:linear-gradient(135deg,#80c8f8,#3090d0)" onclick="orderCopyAll(${row.id})">📋 복사</button>
@@ -3631,9 +3688,55 @@ function orderEditMode(id) {
   document.getElementById('order-memo-edit-'+id).style.display = 'block';
   document.getElementById('order-date-view-'+id).style.display = 'none';
   document.getElementById('order-date-edit-'+id).style.display = 'block';
+  document.getElementById('order-filepath-edit-wrap-'+id).style.display = 'block';
   document.getElementById('order-acts-'+id).style.display = 'none';
   document.getElementById('order-edit-acts-'+id).style.display = 'flex';
+  // 편집 중 이미지 zone
+  const row = loadOrder().find(r=>r.id===id);
+  const editImgsEl = document.getElementById('order-edit-imgs-'+id);
+  if (editImgsEl && row) {
+    window['_editImgs_'+id] = row.imgs ? [...row.imgs] : [];
+    renderOrderEditImgs(id);
+    editImgsEl.style.display = 'block';
+  }
   document.getElementById('order-memo-edit-'+id).focus();
+}
+
+function renderOrderEditImgs(id) {
+  const el = document.getElementById('order-edit-imgs-'+id);
+  if (!el) return;
+  const imgs = window['_editImgs_'+id] || [];
+  el.innerHTML = `<div style="border:2px dashed #c8b8f8;border-radius:8px;padding:8px;margin-bottom:4px;background:#f9f7ff">
+    <div style="font-size:.72rem;color:#aaa;margin-bottom:5px">🖼️ 이미지 추가 (클릭 또는 Ctrl+V)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px" id="order-edit-img-list-${id}">
+      ${imgs.map((src,i)=>`<div style="position:relative;display:inline-block">
+        <img src="${src}" style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:1.5px solid #c8b8f8;cursor:pointer" onclick="openImgModal('${src}')">
+        <button onclick="window['_editImgs_${id}'].splice(${i},1);renderOrderEditImgs(${id})" style="position:absolute;top:-5px;right:-5px;background:#e05050;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.65rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>`).join('')}
+    </div>
+    <input type="file" accept="image/*" multiple onchange="orderEditHandleFile(event,${id})" style="font-size:.72rem;color:#888">
+  </div>`;
+  // paste 지원
+  el.onpaste = function(e) {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = ev => { (window['_editImgs_'+id] = window['_editImgs_'+id]||[]).push(ev.target.result); renderOrderEditImgs(id); };
+        reader.readAsDataURL(item.getAsFile());
+      }
+    }
+  };
+}
+function orderEditHandleFile(e, id) {
+  [...e.target.files].forEach(f => {
+    const reader = new FileReader();
+    reader.onload = ev => { (window['_editImgs_'+id] = window['_editImgs_'+id]||[]).push(ev.target.result); renderOrderEditImgs(id); };
+    reader.readAsDataURL(f);
+  });
+  e.target.value = '';
 }
 
 function orderCancelEdit(id) {
@@ -3641,6 +3744,8 @@ function orderCancelEdit(id) {
   document.getElementById('order-memo-edit-'+id).style.display = 'none';
   document.getElementById('order-date-view-'+id).style.display = 'flex';
   document.getElementById('order-date-edit-'+id).style.display = 'none';
+  document.getElementById('order-filepath-edit-wrap-'+id).style.display = 'none';
+  document.getElementById('order-edit-imgs-'+id).style.display = 'none';
   document.getElementById('order-acts-'+id).style.display = 'flex';
   document.getElementById('order-edit-acts-'+id).style.display = 'none';
 }
@@ -3648,23 +3753,79 @@ function orderCancelEdit(id) {
 function orderSaveEdit(id) {
   const memo = document.getElementById('order-memo-edit-'+id).value.trim();
   const date = document.getElementById('order-date-edit-'+id).value;
+  const filepath = document.getElementById('order-filepath-edit-'+id).value.trim();
+  const imgs = window['_editImgs_'+id] || undefined;
   const data = loadOrder();
   const idx = data.findIndex(r => r.id === id);
-  if (idx !== -1) { data[idx].memo = memo; data[idx].date = date; /* status 유지 */ }
+  if (idx !== -1) {
+    data[idx].memo = memo;
+    data[idx].date = date;
+    data[idx].filepath = filepath;
+    if (imgs !== undefined) data[idx].imgs = imgs;
+  }
   saveOrder(data);
   renderOrder();
   toast('📦 수정됐어요!');
 }
 
+// ── 주문제작 이미지 임시 저장 ──
+let _orderImgs = [];
+
+function orderHandlePaste(e) {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      orderReadImg(file);
+    }
+  }
+}
+function orderHandleDrop(e) {
+  e.preventDefault();
+  document.getElementById('order-img-zone').style.borderColor = '#c8b8f8';
+  const files = [...(e.dataTransfer.files||[])].filter(f=>f.type.startsWith('image/'));
+  files.forEach(orderReadImg);
+}
+function orderHandleFile(e) {
+  [...e.target.files].forEach(orderReadImg);
+  e.target.value = '';
+}
+function orderReadImg(file) {
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    _orderImgs.push(ev.target.result);
+    renderOrderImgPreview();
+  };
+  reader.readAsDataURL(file);
+}
+function renderOrderImgPreview() {
+  const wrap = document.getElementById('order-img-preview');
+  const hint = document.getElementById('order-img-hint');
+  if (!wrap) return;
+  wrap.innerHTML = _orderImgs.map((src,i) =>
+    `<div style="position:relative;display:inline-block">
+      <img src="${src}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:2px solid #c8b8f8;cursor:pointer" onclick="openImgModal('${src}')">
+      <button onclick="_orderImgs.splice(${i},1);renderOrderImgPreview()" style="position:absolute;top:-5px;right:-5px;background:#e05050;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.65rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>`
+  ).join('');
+  if (hint) hint.style.display = _orderImgs.length ? 'none' : '';
+}
+
 function addOrder() {
   const date = document.getElementById('order-date').value;
   const memo = document.getElementById('order-memo').value.trim();
-  if (!memo) { toast('요청 내용을 입력해줘요 📦'); return; }
+  const filepath = document.getElementById('order-filepath').value.trim();
+  if (!memo && !filepath && !_orderImgs.length) { toast('요청 내용을 입력해줘요 📦'); return; }
   const data = loadOrder();
-  data.unshift({ id: Date.now(), date, memo, status: -1 });
+  data.unshift({ id: Date.now(), date, memo, filepath, imgs: [..._orderImgs], status: -1 });
   saveOrder(data);
   document.getElementById('order-date').value = '';
   document.getElementById('order-memo').value = '';
+  document.getElementById('order-filepath').value = '';
+  _orderImgs = [];
+  renderOrderImgPreview();
   renderOrder();
   toast('📦 요청 등록됐어요!');
 }
