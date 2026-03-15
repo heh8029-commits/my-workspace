@@ -1973,6 +1973,33 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
     </div>
+
+    <!-- CS복사 | AI 문의 답변 -->
+    <div class="sec">📋 CS 복사 &nbsp;|&nbsp; 🤖 AI 문의 답변</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+
+      <!-- CS 복사붙여넣기 -->
+      <div class="card" style="border-top:3px solid #a0c4ff">
+        <div style="font-size:.95rem;color:#4a80d0;margin-bottom:10px">📋 CS 복사 메모</div>
+        <div class="inp-row">
+          <textarea id="cs-inp" rows="2" placeholder="CS 내용 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCs()}"></textarea>
+          <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addCs()">+</button>
+        </div>
+        <div class="ilist" id="cs-list"><div class="empty">CS 내용을 추가해요 📋</div></div>
+      </div>
+
+      <!-- AI 문의 답변 -->
+      <div class="card" style="border-top:3px solid #b090e8">
+        <div style="font-size:.95rem;color:#7040c0;margin-bottom:10px">🤖 AI 문의 답변 생성</div>
+        <textarea id="ai-query-inp" rows="4" placeholder="고객 문의글을 여기에 붙여넣으세요...&#10;버튼 누르면 AI가 열리면서 자동으로 답변해줘요!" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;margin-bottom:8px"></textarea>
+        <div style="display:flex;gap:7px;margin-bottom:6px">
+          <button onclick="generateAiReply('chatgpt')" style="flex:1;background:linear-gradient(135deg,#74aa9c,#10a37f);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif">🟢 ChatGPT로 답변</button>
+          <button onclick="generateAiReply('claude')" style="flex:1;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif">🟣 Claude로 답변</button>
+        </div>
+        <div style="font-size:.72rem;color:#aaa;text-align:center">문의글이 클립보드에 복사되고 AI 사이트가 열려요 → Ctrl+V 붙여넣기!</div>
+      </div>
+
+    </div>
   </div><!-- /home -->
 
   <!-- ══════════════ 메뉴 1,2,3 ══════════════ -->
@@ -3027,7 +3054,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3578,6 +3605,66 @@ function addApp() {
   document.getElementById('app-inp').value='';
   rerender('app');
   toast('💡 메모됐어요!');
+}
+
+// ── CS 복사 메모 ──
+function loadCsList() { return load('cs_list') || []; }
+function saveCsList(d) { stor('cs_list', d); }
+function addCs() {
+  const v = document.getElementById('cs-inp').value.trim();
+  if (!v) return;
+  const list = loadCsList();
+  list.unshift({id:Date.now(), text:v, done:false, createdAt:Date.now()});
+  saveCsList(list);
+  document.getElementById('cs-inp').value='';
+  renderCsList();
+  toast('📋 저장됐어요!');
+}
+function renderCsList() {
+  const el = document.getElementById('cs-list');
+  if (!el) return;
+  const items = loadCsList();
+  if (!items.length) { el.innerHTML='<div class="empty">CS 내용을 추가해요 📋</div>'; return; }
+  el.innerHTML = items.map(it => `
+    <div class="it ${it.done?'done':''}" style="cursor:default">
+      <div class="drag-handle" style="opacity:.3">⠿</div>
+      <div class="itxt-wrap" style="flex:1">
+        <div class="itxt" style="white-space:pre-wrap;word-break:break-all">${linkify(it.text)}</div>
+      </div>
+      <div class="iacts">
+        <button onclick="navigator.clipboard.writeText(${JSON.stringify(it.text)}).then(()=>toast('📋 복사됐어요!'))" title="복사">📋</button>
+        <button onclick="csDel(${it.id})">🗑️</button>
+      </div>
+      ${it.createdAt ? `<div class="cat-badge">${formatCreatedAt(it.createdAt)}</div>` : ''}
+    </div>`).join('');
+}
+function csDel(id) {
+  saveCsList(loadCsList().filter(x => x.id !== id));
+  renderCsList(); toast('🗑️ 삭제됐어요');
+}
+
+// ── AI 문의 답변 생성 (웹 연동) ──
+function generateAiReply(target) {
+  const inp = document.getElementById('ai-query-inp');
+  const query = inp ? inp.value.trim() : '';
+  if (!query) { toast('고객 문의글을 입력해줘요 📝'); return; }
+
+  const prompt = '다음 고객 문의에 대해 친절하고 전문적인 쇼핑몰 CS 답변을 한국어로 작성해줘:\n\n' + query;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    const url = target === 'claude' ? 'https://claude.ai/new' : 'https://chatgpt.com/';
+    window.open(url, '_blank');
+    toast('📋 복사됐어요! 열린 창에 Ctrl+V 하세요 😊');
+  }).catch(() => {
+    const url = target === 'claude' ? 'https://claude.ai/new' : 'https://chatgpt.com/';
+    window.open(url, '_blank');
+    toast('새 창에서 문의글을 직접 붙여넣어 주세요!');
+  });
+}
+function copyAiReply() {
+  const el = document.getElementById('ai-reply-text');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => toast('📋 답변 복사됐어요!'));
 }
 
 function addSched() {
@@ -5175,68 +5262,77 @@ function _pcMakeCard(p) {
 
   /* ══ 편집 폼 ══ */
   if (p._editing) {
-    card.style.padding = '12px';
-    card.style.gap = '8px';
+    card.style.padding = '14px';
+    card.style.gap = '10px';
 
-    var eWrap = document.createElement('div');
-    eWrap.style.cssText = 'display:flex;gap:10px;align-items:flex-start';
+    // 상단: 이미지 등록 (가로 배치)
+    var eImgRow = document.createElement('div');
+    eImgRow.style.cssText = 'display:flex;gap:8px;align-items:flex-end;margin-bottom:4px';
 
-    // 왼쪽 이미지
-    var eLeft = document.createElement('div');
-    eLeft.style.cssText = 'display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:100px';
     var eMain = document.createElement('div');
-    eMain.style.cssText = 'width:100px;height:100px;border:2px dashed #d0b8f8;background:#f8f4ff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden';
+    eMain.style.cssText = 'width:90px;height:90px;border:2px dashed #d0b8f8;background:#f8f4ff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;border-radius:6px';
     if (p.mainImg) eMain.innerHTML='<img src="'+p.mainImg+'" style="width:100%;height:100%;object-fit:cover">';
-    else           eMain.innerHTML='<span style="font-size:.6rem;color:#c0a0e8;text-align:center;line-height:1.6">📷<br>메인</span>';
+    else eMain.innerHTML='<span style="font-size:.65rem;color:#c0a0e8;text-align:center;line-height:1.8">📷<br>메인사진</span>';
     eMain.onclick=(function(id){return function(){pcMainImgOpen(id);};})(p.id);
-    var eSmall=document.createElement('div'); eSmall.style.cssText='display:flex;gap:4px';
+
+    var eSmallWrap = document.createElement('div');
+    eSmallWrap.style.cssText = 'display:flex;flex-direction:column;gap:4px';
+    var eSmallRow = document.createElement('div');
+    eSmallRow.style.cssText = 'display:flex;gap:4px';
     var eImgs=p.imgs||[];
     for(var esi=0;esi<3;esi++){
       var es=document.createElement('div');
-      es.style.cssText='width:30px;height:30px;border:1.5px dashed #d0b8f8;background:#f8f4ff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative';
+      es.style.cssText='width:38px;height:38px;border:1.5px dashed #d0b8f8;background:#f8f4ff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;border-radius:5px';
       if(eImgs[esi]){
         es.innerHTML='<img src="'+eImgs[esi]+'" style="width:100%;height:100%;object-fit:cover">';
         var exb=document.createElement('button'); exb.textContent='✕';
-        exb.style.cssText='position:absolute;top:-2px;right:-2px;background:#e03c6e;border:none;border-radius:50%;width:13px;height:13px;color:white;font-size:.4rem;cursor:pointer;line-height:1';
+        exb.style.cssText='position:absolute;top:-2px;right:-2px;background:#e03c6e;border:none;border-radius:50%;width:14px;height:14px;color:white;font-size:.45rem;cursor:pointer;line-height:1';
         exb.onclick=(function(id,idx){return function(e){e.stopPropagation();pcImgDel(id,idx);};})(p.id,esi);
         es.appendChild(exb);
       } else {
-        es.innerHTML='<span style="font-size:.55rem;color:#d0b8f8">+</span>';
+        es.innerHTML='<span style="font-size:.7rem;color:#d0b8f8">+</span>';
         es.onclick=(function(id){return function(){pcRefImgOpen(id);};})(p.id);
       }
-      eSmall.appendChild(es);
+      eSmallRow.appendChild(es);
     }
     var eRegBtn=document.createElement('button');
-    eRegBtn.textContent='📷 등록';
-    eRegBtn.style.cssText='width:100%;border:none;padding:3px 0;background:linear-gradient(135deg,#ddd0f8,#b090e8);font-size:.65rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif';
+    eRegBtn.textContent='📷 사진 등록';
+    eRegBtn.style.cssText='border:none;padding:4px 0;background:linear-gradient(135deg,#ddd0f8,#b090e8);font-size:.72rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif;border-radius:5px;width:100%';
     eRegBtn.onclick=(function(id){return function(){pcMainImgOpen(id);};})(p.id);
-    eLeft.appendChild(eMain); eLeft.appendChild(eSmall); eLeft.appendChild(eRegBtn);
+    eSmallWrap.appendChild(eSmallRow); eSmallWrap.appendChild(eRegBtn);
+    eImgRow.appendChild(eMain); eImgRow.appendChild(eSmallWrap);
 
-    // 오른쪽 폼
-    var eRight=document.createElement('div'); eRight.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;gap:6px';
+    // 상태/분류/버튼 행
     var statusOpts=['수정','완성'].map(function(s){
       return '<option value="'+s+'"'+((p.status||'수정')===s?' selected':'')+'>'+s+'</option>';
     }).join('');
-    eRight.innerHTML=
-      '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
-        +'<select id="pce-cat-'+p.id+'" style="border:1.5px solid #d0b8f8;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none;background:white">'
-          +'<option value=""'+(!p.cat?' selected':'')+'>분류없음</option>'
-          +'<option value="그로스"'+(p.cat==='그로스'?' selected':'')+'>그로스</option>'
-          +'<option value="일반"'+(p.cat==='일반'?' selected':'')+'>일반</option>'
-        +'</select>'
-        +'<select id="pce-status-'+p.id+'" style="border:1.5px solid #d0b8f8;padding:5px 7px;font-size:.76rem;font-family:Pretendard,sans-serif;outline:none;background:white">'+statusOpts+'</select>'
-        +'<button onclick="pcEditSave('+p.id+')" style="background:#7040c0;border:none;padding:5px 12px;color:white;font-size:.74rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">저장</button>'
-        +'<button onclick="pcEditCancel('+p.id+')" style="background:#eee;border:none;padding:5px 9px;color:#888;font-size:.74rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">취소</button>'
-      +'</div>'
-      +'<input id="pce-name-'+p.id+'" type="text" value="'+escHtml(p.name||'')+'" placeholder="파일위치" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
-      +'<input id="pce-title-'+p.id+'" type="text" value="'+escHtml(p.title||'')+'" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">'
+    var eCtrl = document.createElement('div');
+    eCtrl.style.cssText = 'display:flex;gap:5px;align-items:center;flex-wrap:wrap';
+    eCtrl.innerHTML=
+      '<select id="pce-cat-'+p.id+'" style="border:1.5px solid #d0b8f8;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;border-radius:6px">'
+        +'<option value=""'+(!p.cat?' selected':'')+'>분류없음</option>'
+        +'<option value="그로스"'+(p.cat==='그로스'?' selected':'')+'>그로스</option>'
+        +'<option value="일반"'+(p.cat==='일반'?' selected':'')+'>일반</option>'
+      +'</select>'
+      +'<select id="pce-status-'+p.id+'" style="border:1.5px solid #d0b8f8;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;border-radius:6px">'+statusOpts+'</select>'
+      +'<button onclick="pcEditSave('+p.id+')" style="background:#7040c0;border:none;padding:6px 14px;color:white;font-size:.82rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;border-radius:6px">저장</button>'
+      +'<button onclick="pcEditCancel('+p.id+')" style="background:#eee;border:none;padding:6px 10px;color:#888;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;border-radius:6px">취소</button>';
+
+    // 입력 필드들
+    var eFields = document.createElement('div');
+    eFields.style.cssText = 'display:flex;flex-direction:column;gap:7px';
+    eFields.innerHTML=
+      '<input id="pce-name-'+p.id+'" type="text" value="'+escHtml(p.name||'')+'" placeholder="📁 파일위치 (예: 바탕화면/작업폴더/파일명.ai)" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:8px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;border-radius:7px">'
+      +'<input id="pce-title-'+p.id+'" type="text" value="'+escHtml(p.title||'')+'" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:8px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;border-radius:7px">'
       +'<div style="display:flex;gap:6px">'
-        +'<input id="pce-code-'+p.id+'" type="text" value="'+escHtml(p.code||'')+'" placeholder="코드명" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
-        +'<input id="pce-price-'+p.id+'" type="text" value="'+escHtml(p.price||'')+'" placeholder="가격" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none">'
+        +'<input id="pce-code-'+p.id+'" type="text" value="'+escHtml(p.code||'')+'" placeholder="코드명" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;border-radius:7px">'
+        +'<input id="pce-price-'+p.id+'" type="text" value="'+escHtml(p.price||'')+'" placeholder="가격" style="flex:1;min-width:0;border:1.5px solid #d0b8f8;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;border-radius:7px">'
       +'</div>'
-      +'<textarea id="pce-memo-'+p.id+'" rows="3" placeholder="내용..." style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical">'+escHtml(p.memo||'')+'</textarea>';
-    eWrap.appendChild(eLeft); eWrap.appendChild(eRight);
-    card.appendChild(eWrap);
+      +'<textarea id="pce-memo-'+p.id+'" rows="4" placeholder="내용 메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;padding:8px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;border-radius:7px;line-height:1.6">'+escHtml(p.memo||'')+'</textarea>';
+
+    card.appendChild(eImgRow);
+    card.appendChild(eCtrl);
+    card.appendChild(eFields);
     return card;
   }
 
@@ -8946,6 +9042,7 @@ function initRender(pageId) {
     (function(){ const sc=load('shortcuts'); if(sc&&sc.length) renderShortcuts(sc); })();
     (function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
     renderFabIcons && renderFabIcons();
+    renderCsList && renderCsList();
   } else if (pageId === 'menu1') {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
