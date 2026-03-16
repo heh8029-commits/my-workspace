@@ -2348,6 +2348,9 @@ function pwaInstall() {
           <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
             <div style="display:flex;gap:5px">
               <input id="inv-name" type="text" placeholder="상품명" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
+              <select id="inv-cat" style="border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
+                <option value="">분류</option>
+              </select>
               <input id="inv-link" type="text" placeholder="결제링크 URL" style="flex:1.4;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
             </div>
             <div style="display:flex;gap:5px;align-items:center">
@@ -2357,7 +2360,7 @@ function pwaInstall() {
                 <span style="font-size:.68rem;color:#bbb;flex-shrink:0">단가</span>
                 <span id="inv-unit-display" style="font-weight:700;color:#c04070;font-size:.82rem">-</span>
               </div>
-              <button onclick="invAdd()" style="flex-shrink:0;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:6px 14px;color:white;font-weight:700;font-size:.84rem;cursor:pointer;font-family:Pretendard,sans-serif">+</button>
+              <button onclick="invAdd()" style="flex-shrink:0;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:6px 14px;color:white;font-weight:700;font-size:.84rem;cursor:pointer;font-family:Pretendard,sans-serif">✅ 등록</button>
             </div>
             <textarea id="inv-memo" rows="2" placeholder="메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.5"></textarea>
           </div>
@@ -2373,6 +2376,16 @@ function pwaInstall() {
         <div id="inv-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
       </div>
 
+      <!-- 분류 관리 -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <input id="inv-cat-inp" type="text" placeholder="분류 추가..."
+          style="flex:1;border:1.5px solid #f7a8c0;border-radius:7px;padding:5px 9px;font-size:.78rem;font-family:Pretendard,sans-serif;outline:none;background:#fff8fb"
+          onkeydown="if(event.key==='Enter')invAddCat()">
+        <button onclick="invAddCat()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:5px 12px;font-size:.75rem;font-weight:700;color:white;cursor:pointer">+ 분류</button>
+      </div>
+      <!-- 분류 탭 -->
+      <div id="inv-cat-tabs" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px"></div>
+
       <!-- 재고 퀵검색 -->
       <div style="position:relative;margin-bottom:8px">
         <input id="inv-search" type="text" placeholder="🔍 상품명, 메모 검색..."
@@ -2383,7 +2396,8 @@ function pwaInstall() {
       </div>
 
       <!-- 재고 리스트 헤더 -->
-      <div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 60px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
+      <div style="display:grid;grid-template-columns:auto 60px 160px 90px 60px 60px 1fr 90px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
+        <div style="padding:6px 6px">분류</div>
         <div style="padding:6px 8px">사진</div>
         <div style="padding:6px 8px">상품명 / 링크</div>
         <div style="padding:6px 8px;text-align:right">결제금액</div>
@@ -7487,7 +7501,8 @@ function invAdd() {
   if (!name) { toast('상품명을 입력해줘요 📦'); return; }
   var unit = (price && qty) ? Math.round(price/qty) : 0;
   var list = loadInv();
-  list.unshift({id:Date.now(), img:_invImgPending||null, name, link, price, qty, unit, memo});
+  var cat = (document.getElementById('inv-cat')||{}).value||'';
+  list.unshift({id:Date.now(), img:_invImgPending||null, name, link, price, qty, unit, memo, cat:cat});
   saveInv(list);
   // 입력 초기화
   ['inv-name','inv-link','inv-price','inv-qty','inv-memo'].forEach(function(id){
@@ -7578,6 +7593,81 @@ function renderTaxNotes() {
   });
 }
 
+
+/* ── 재고 분류 ── */
+function loadInvCats()     { return loadObj('inv_cats').list || []; }
+function saveInvCats(list) { stor('inv_cats', {list}); }
+
+var _invCatFilter = '전체';
+var _INV_CAT_COLORS = [
+  {bg:'#fff0f8',color:'#c04070',border:'#f7a8c0'},
+  {bg:'#f0f5ff',color:'#2060a0',border:'#a0c4f0'},
+  {bg:'#f0fff8',color:'#1a7a50',border:'#a0e0c0'},
+  {bg:'#fff8e8',color:'#b06000',border:'#f0d090'},
+  {bg:'#f8f5ff',color:'#6040a0',border:'#c0a0f8'},
+  {bg:'#fff5f0',color:'#a04020',border:'#f0b090'},
+  {bg:'#f0fdff',color:'#1a7a8a',border:'#90d8e8'},
+  {bg:'#fffde0',color:'#8a7000',border:'#e8d840'},
+];
+function _invCatClr(cat) {
+  var cats = loadInvCats();
+  var idx = cats.indexOf(cat);
+  return idx >= 0 ? _INV_CAT_COLORS[idx % _INV_CAT_COLORS.length] : {bg:'#f5f5f5',color:'#888',border:'#ddd'};
+}
+
+function invAddCat() {
+  var inp = document.getElementById('inv-cat-inp');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) return;
+  var cats = loadInvCats();
+  if (cats.includes(text)) { toast('이미 있는 분류예요!'); return; }
+  cats.push(text);
+  saveInvCats(cats);
+  inp.value = '';
+  renderInvCatTabs();
+  updateInvCatSelect();
+  toast('📂 분류 추가됐어요!');
+}
+
+function updateInvCatSelect() {
+  var sel = document.getElementById('inv-cat');
+  if (!sel) return;
+  var cur = sel.value;
+  var cats = loadInvCats();
+  sel.innerHTML = '<option value="">분류</option>';
+  cats.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    if (c === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function renderInvCatTabs() {
+  var bar = document.getElementById('inv-cat-tabs'); if(!bar) return;
+  var cats = loadInvCats();
+  bar.innerHTML = '';
+  // 전체 탭
+  var allBtn = document.createElement('button');
+  allBtn.textContent = '전체';
+  var allActive = _invCatFilter === '전체';
+  allBtn.style.cssText = 'padding:4px 13px;border-radius:20px;border:1.5px solid #e03c6e;background:'+(allActive?'#e03c6e':'white')+';color:'+(allActive?'white':'#e03c6e')+';font-size:.72rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+  allBtn.onclick = function(){ _invCatFilter='전체'; renderInvCatTabs(); renderInv(); };
+  bar.appendChild(allBtn);
+  cats.forEach(function(cat, idx) {
+    var clr = _INV_CAT_COLORS[idx % _INV_CAT_COLORS.length];
+    var active = _invCatFilter === cat;
+    var btn = document.createElement('button');
+    btn.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 9px;border-radius:20px;border:1.5px solid '+clr.border+';background:'+(active?clr.border:clr.bg)+';color:'+(active?'white':clr.color)+';font-size:.72rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+    var label = document.createTextNode(cat);
+    var delB = document.createElement('span'); delB.textContent='✕'; delB.style.cssText='font-size:.6rem;opacity:.6;margin-left:2px;cursor:pointer';
+    delB.onclick = (function(c){ return function(e){ e.stopPropagation(); saveInvCats(loadInvCats().filter(function(x){return x!==c;})); if(_invCatFilter===c)_invCatFilter='전체'; renderInvCatTabs(); updateInvCatSelect(); renderInv(); }; })(cat);
+    btn.appendChild(label); btn.appendChild(delB);
+    btn.onclick = (function(c){ return function(e){ if(e.target.textContent==='✕') return; _invCatFilter=c; renderInvCatTabs(); renderInv(); }; })(cat);
+    bar.appendChild(btn);
+  });
+}
+
 /* ── 재고관리 포스트잇 ── */
 function loadInvNotes()     { return loadObj('inv_notes').list || []; }
 function saveInvNotes(list) { stor('inv_notes', {list}); }
@@ -7646,51 +7736,79 @@ function renderInv() {
   if (!el) return;
   var kw = ((document.getElementById('inv-search')||{}).value||'').trim().toLowerCase();
   var allList = loadInv();
-  var list = kw ? allList.filter(function(it){
+  var cats = loadInvCats();
+  // 분류 필터
+  var filtered = _invCatFilter==='전체' ? allList : allList.filter(function(it){ return it.cat===_invCatFilter; });
+  // 검색 필터
+  var list = kw ? filtered.filter(function(it){
     return (it.name||'').toLowerCase().includes(kw) || (it.memo||'').toLowerCase().includes(kw);
-  }) : allList;
+  }) : filtered;
+  // 분류 순서대로 정렬
+  list = list.slice().sort(function(a,b){
+    var ai=cats.indexOf(a.cat||''); var bi=cats.indexOf(b.cat||'');
+    if(ai===-1)ai=9999; if(bi===-1)bi=9999;
+    return ai-bi;
+  });
   if (!allList.length) {
     el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:20px 0;border:1px solid #f0d0e0;border-top:none">📦 재고를 추가해요</div>';
     return;
   }
   if (!list.length) {
-    el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:20px 0;border:1px solid #f0d0e0;border-top:none">🔍 검색 결과가 없어요</div>';
+    el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:20px 0;border:1px solid #f0d0e0;border-top:none">🔍 검색/필터 결과가 없어요</div>';
     return;
   }
-  var rows = list.map(function(it, idx) {
+  el.innerHTML='';
+  list.forEach(function(it, idx) {
     var unit = (it.price && it.qty) ? Math.round(it.price/it.qty) : it.unit||0;
     var bg = idx%2===0 ? 'white' : '#fff8fb';
-    return '<div style="display:grid;grid-template-columns:60px 160px 90px 60px 60px 1fr 60px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center">'
-      // 사진
-      +'<div style="padding:6px 8px">'
-        +(it.img
-          ? '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;cursor:zoom-in">'
-            +'<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)">'
-            +'</div>'
-          : '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center"><span style="font-size:.9rem;opacity:.3">📦</span></div>'
-        )
-        +'</div>'
-      // 상품명 + 링크
-      +'<div style="padding:6px 8px;min-width:0">'
-        +'<div style="font-size:.83rem;font-weight:700;color:#1a0a2e;word-break:break-all;line-height:1.4">'+escHtml(it.name||'-')+'</div>'
-        +(it.link ? '<a href="'+escHtml(it.link)+'" target="_blank" style="font-size:.7rem;color:#4a80d0;text-decoration:none">🔗 링크</a>' : '')
-      +'</div>'
-      // 결제금액
-      +'<div style="padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#c04070">'+(it.price?Number(it.price).toLocaleString()+'원':'–')+'</div>'
-      // 수량
-      +'<div style="padding:6px 8px;text-align:center;font-size:.82rem;color:#333">'+(it.qty?it.qty+'개':'–')+'</div>'
-      // 단가
-      +'<div style="padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#6040a0">'+(unit?Number(unit).toLocaleString()+'원':'–')+'</div>'
-      // 메모
-      +'<div style="padding:6px 8px;font-size:.75rem;color:#888;word-break:break-all;line-height:1.4">'+escHtml(it.memo||'')+'</div>'
-      // 편집/삭제
-      +'<div style="padding:6px 4px;text-align:center;display:flex;gap:2px;justify-content:center">'
-        +'<button onclick="invEdit('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:2px" onmouseover="this.style.color=\'#4a80d0\'" onmouseout="this.style.color=\'#ddd\'">✏️</button>'
-        +'<button onclick="invDel('+it.id+')" style="background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:2px" onmouseover="this.style.color=\'#e03c6e\'" onmouseout="this.style.color=\'#ddd\'">✕</button>'
-      +'</div>'
-      +'</div>';
-  }).join('');
-  el.innerHTML = rows;
+    var clr = _invCatClr(it.cat||'');
+    var row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:auto 60px 160px 90px 60px 60px 1fr 90px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center';
+    // 분류 뱃지
+    var catCell = document.createElement('div'); catCell.style.cssText='padding:6px 6px';
+    if (it.cat) {
+      var badge = document.createElement('div');
+      badge.textContent = it.cat;
+      badge.style.cssText = 'background:'+clr.bg+';color:'+clr.color+';border:1px solid '+clr.border+';border-radius:8px;padding:2px 6px;font-size:.65rem;font-weight:700;white-space:nowrap';
+      catCell.appendChild(badge);
+    }
+    row.appendChild(catCell);
+    // 사진
+    var imgCell = document.createElement('div'); imgCell.style.cssText='padding:6px 8px';
+    imgCell.innerHTML = it.img
+      ? '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;cursor:zoom-in"><img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)"></div>'
+      : '<div style="width:44px;height:44px;border-radius:6px;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center"><span style="font-size:.9rem;opacity:.3">📦</span></div>';
+    row.appendChild(imgCell);
+    // 상품명 + 링크 (URL 그대로 표시)
+    var nameCell = document.createElement('div'); nameCell.style.cssText='padding:6px 8px;min-width:0';
+    var nameDiv = document.createElement('div'); nameDiv.style.cssText='font-size:.83rem;font-weight:700;color:#1a0a2e;word-break:break-all;line-height:1.4'; nameDiv.textContent=it.name||'-';
+    nameCell.appendChild(nameDiv);
+    if (it.link) {
+      var linkA = document.createElement('a'); linkA.href=it.link; linkA.target='_blank';
+      linkA.style.cssText='font-size:.68rem;color:#4a80d0;text-decoration:none;word-break:break-all;display:block;margin-top:2px;line-height:1.3';
+      linkA.textContent=it.link;
+      nameCell.appendChild(linkA);
+    }
+    row.appendChild(nameCell);
+    // 결제금액
+    var priceCell=document.createElement('div'); priceCell.style.cssText='padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#c04070'; priceCell.textContent=it.price?Number(it.price).toLocaleString()+'원':'–'; row.appendChild(priceCell);
+    // 수량
+    var qtyCell=document.createElement('div'); qtyCell.style.cssText='padding:6px 8px;text-align:center;font-size:.82rem;color:#333'; qtyCell.textContent=it.qty?it.qty+'개':'–'; row.appendChild(qtyCell);
+    // 단가
+    var unitCell=document.createElement('div'); unitCell.style.cssText='padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#6040a0'; unitCell.textContent=unit?Number(unit).toLocaleString()+'원':'–'; row.appendChild(unitCell);
+    // 메모
+    var memoCell=document.createElement('div'); memoCell.style.cssText='padding:6px 8px;font-size:.75rem;color:#888;word-break:break-all;line-height:1.4'; memoCell.textContent=it.memo||''; row.appendChild(memoCell);
+    // 편집/삭제 버튼
+    var acts=document.createElement('div'); acts.style.cssText='padding:4px 6px;display:flex;gap:3px;justify-content:center;align-items:center';
+    var editBtn=document.createElement('button'); editBtn.style.cssText='background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:6px;color:white;font-size:.68rem;font-weight:700;cursor:pointer;padding:3px 7px;white-space:nowrap'; editBtn.textContent='✏️ 수정';
+    editBtn.onclick=(function(id){return function(){invEdit(id);};})(it.id);
+    var delBtn=document.createElement('button'); delBtn.style.cssText='background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:3px 4px;border-radius:4px'; delBtn.textContent='✕';
+    delBtn.onmouseover=function(){this.style.color='#e03c6e';}; delBtn.onmouseout=function(){this.style.color='#ddd';};
+    delBtn.onclick=(function(id){return function(){invDel(id);};})(it.id);
+    acts.appendChild(editBtn); acts.appendChild(delBtn);
+    row.appendChild(acts);
+    el.appendChild(row);
+  });
 }
 
 /* ══════════════════════════════════
