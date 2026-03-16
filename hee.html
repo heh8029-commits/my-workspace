@@ -3004,12 +3004,21 @@ function pwaInstall() {
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">🔄</div>
         <div><div class="subpage-title">자동이체리스트</div><div class="subpage-desc">정기 자동이체 내역을 관리해요</div></div>
       </div>
+
+      <!-- 자동이체 메모 텍스트박스 (상단) -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">📝 메모</div>
+        <textarea id="autotx-memo-box" rows="4" placeholder="자동이체 관련 메모를 자유롭게 적어요..."
+          style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f0fff8;color:#1a3020;font-weight:500"
+          oninput="autotxMemoBoxSave()"></textarea>
+      </div>
+
       <!-- 합산 -->
       <div id="autotx-summary" style="margin-bottom:14px"></div>
       <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">🔄 자동이체 목록</div>
-          <button onclick="autotxAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+          <div style="font-size:.92rem;font-weight:800;color:#1a7a50">🔄 자동이체 목록</div>
+          <button onclick="autotxAdd()" style="margin-left:auto;background:linear-gradient(135deg,#3dbb8f,#1a8a60);border:none;border-radius:8px;padding:6px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
         </div>
         <!-- 테이블 헤더 -->
         <div style="display:grid;grid-template-columns:64px 1.2fr 1fr 1fr 1fr 1.2fr 44px;background:#d0f0e4;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:800;color:#1a6a50;margin-bottom:6px;gap:6px">
@@ -11268,6 +11277,15 @@ function renderAssetNotes() { _m5NoteRender('m5_asset_notes','asset-note-grid');
 function loadAutotx()     { return loadObj('m5_autotx').list || []; }
 function saveAutotx(list) { stor('m5_autotx', {list}); }
 
+function autotxMemoBoxSave() {
+  var el = document.getElementById('autotx-memo-box');
+  if (el) stor('m5_autotx_memo', {text: el.value});
+}
+function loadAutotxMemoBox() {
+  var el = document.getElementById('autotx-memo-box');
+  if (el) el.value = loadObj('m5_autotx_memo').text || '';
+}
+
 function autotxAdd() {
   var list=loadAutotx();
   list.push({id:Date.now(),date:'',name:'',from_bank:'',to_bank:'',amount:'',memo:''});
@@ -11355,8 +11373,10 @@ function renderAutotx(){
     };
     row.appendChild(amtInp);
 
-    // 메모
-    row.appendChild(mkInp(it.memo||'','메모','#555',function(v){autotxSave(it.id,'memo',v);}));
+    // 메모 - 텍스트 잘 보이게
+    var memoInp = mkInp(it.memo||'','메모 (이 이체 이유)','#333',function(v){autotxSave(it.id,'memo',v);});
+    memoInp.style.cssText += ';color:#333;font-size:.86rem;font-weight:600';
+    row.appendChild(memoInp);
 
     // 삭제
     var delWrap=document.createElement('div'); delWrap.style.cssText='display:flex;justify-content:center;align-items:center';
@@ -11615,7 +11635,7 @@ function renderKnowNotes() { _m5NoteRender('m5_know_notes','know-note-grid'); }
 function renderMenu5(sub) {
   sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
   if(sub===1){ renderAssetCatTabs && renderAssetCatTabs(); renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); loadAssetLoan && loadAssetLoan(); }
-  if(sub===2){ renderAutotx(); }
+  if(sub===2){ renderAutotx(); loadAutotxMemoBox&&loadAutotxMemoBox(); }
   if(sub===3){ renderInvest(); loadInvestMemoBox&&loadInvestMemoBox(); renderInvestRoutine&&renderInvestRoutine(); }
   if(sub===4){ renderLoans(); renderLoanNotes(); }
   if(sub===5){ renderHealthCheck(); renderHealthNotes(); renderKnowLinks&&renderKnowLinks(); renderKnowNotes&&renderKnowNotes(); }
