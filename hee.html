@@ -2400,8 +2400,8 @@ function pwaInstall() {
       <!-- 재고 리스트 헤더 -->
       <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
         <div style="width:40px;flex-shrink:0">사진</div>
-        <div style="flex:1.8">상품명</div>
-        <div style="flex:1.2;text-align:right">금액 / 단가</div>
+        <div style="flex:1.8">상품명 / 링크</div>
+        <div style="flex:1.4;text-align:right">단가 / 합계</div>
         <div style="flex:2">메모</div>
         <div style="width:80px"></div>
       </div>
@@ -3025,14 +3025,22 @@ function pwaInstall() {
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">📈</div>
         <div><div class="subpage-title">투자&연금</div><div class="subpage-desc">투자 현황과 연금 정보를 정리해요</div></div>
       </div>
+      <!-- 투자 메모 텍스트박스 (상단) -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">📝 메모</div>
+        <textarea id="invest-memo-box" rows="4" placeholder="투자 관련 메모를 자유롭게 적어요..."
+          style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f0fff8;color:#1a3020;font-weight:500"
+          oninput="investMemoBoxSave()"></textarea>
+      </div>
+
       <!-- 합산 카드 -->
       <div id="invest-summary" style="margin-bottom:14px"></div>
       <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">📈 투자/연금 목록</div>
-          <button onclick="investAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+          <div style="font-size:.92rem;font-weight:800;color:#1a7a50">📈 투자/연금 목록</div>
+          <button onclick="investAdd()" style="margin-left:auto;background:linear-gradient(135deg,#3dbb8f,#1a8a60);border:none;border-radius:8px;padding:6px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
         </div>
-        <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 56px;background:#e8fff4;border-radius:8px;padding:6px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:6px">
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 70px 44px;background:#c8f0dc;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:800;color:#1a5a40;margin-bottom:6px;gap:4px">
           <div>종목/상품명</div><div style="text-align:right">투자금액</div><div style="text-align:right">현재가치</div><div style="text-align:right">수익률</div><div></div>
         </div>
         <div id="invest-list"></div>
@@ -3050,12 +3058,7 @@ function pwaInstall() {
         <button onclick="investRoutineResetAll()" style="margin-top:8px;background:none;border:1px solid #ddd;border-radius:7px;padding:4px 10px;font-size:.72rem;color:#bbb;cursor:pointer">🔄 월초 체크 초기화</button>
       </div>
 
-      <!-- 포스트잇 메모 -->
-      <div style="display:flex;gap:7px;margin-bottom:10px">
-        <textarea id="invest-note-inp" rows="2" placeholder="투자 메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
-        <button onclick="investNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
-      </div>
-      <div id="invest-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
+
     </div>
 
     <!-- ══ 4. 대출 ══ -->
@@ -3442,7 +3445,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_invest_routine','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7836,24 +7839,31 @@ function renderInv() {
     }
     row.appendChild(imgDiv);
 
-    // 상품명 + 링크버튼
-    var nameWrap=document.createElement('div'); nameWrap.style.cssText='flex:1.8;min-width:0;display:flex;align-items:center;gap:6px';
-    var nameDiv=document.createElement('div'); nameDiv.style.cssText='font-size:.84rem;font-weight:700;color:#1a0a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'; nameDiv.textContent=it.name||'-'; nameDiv.title=it.name||'';
+    // 상품명 + 링크 (URL 전체 표시)
+    var nameWrap=document.createElement('div'); nameWrap.style.cssText='flex:1.8;min-width:0;display:flex;flex-direction:column;gap:3px';
+    var nameDiv=document.createElement('div'); nameDiv.style.cssText='font-size:.86rem;font-weight:700;color:#1a0a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'; nameDiv.textContent=it.name||'-'; nameDiv.title=it.name||'';
     nameWrap.appendChild(nameDiv);
     if(it.link){
-      var linkBtn=document.createElement('a'); linkBtn.href=it.link; linkBtn.target='_blank';
-      linkBtn.style.cssText='flex-shrink:0;background:#e8f0ff;border:1px solid #a0c4f0;border-radius:5px;padding:2px 6px;font-size:.65rem;color:#4a80d0;text-decoration:none;white-space:nowrap';
-      linkBtn.textContent='🔗 링크'; linkBtn.title=it.link;
-      nameWrap.appendChild(linkBtn);
+      var linkA=document.createElement('a'); linkA.href=it.link; linkA.target='_blank';
+      linkA.style.cssText='font-size:.67rem;color:#4a80d0;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%';
+      linkA.textContent=it.link; linkA.title=it.link;
+      nameWrap.appendChild(linkA);
     }
     row.appendChild(nameWrap);
 
-    // 금액/수량/단가 - 세로 compact
-    var numWrap=document.createElement('div'); numWrap.style.cssText='flex:1.2;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:right';
-    var pr=document.createElement('div'); pr.style.cssText='font-size:.8rem;font-weight:700;color:#c04070'; pr.textContent=it.price?Number(it.price).toLocaleString()+'원':'–';
-    var qd=document.createElement('div'); qd.style.cssText='font-size:.72rem;color:#888';
-    qd.textContent=(it.qty?it.qty+'개':'')+(unit?' · 단가 '+Number(unit).toLocaleString()+'원':'');
-    numWrap.appendChild(pr); numWrap.appendChild(qd);
+    // 수량 · 단가 · 총금액 - 직관적으로
+    var numWrap=document.createElement('div'); numWrap.style.cssText='flex:1.4;min-width:0;display:flex;flex-direction:column;gap:3px;align-items:flex-end';
+    // 단가 - 가장 크고 강조
+    var unitRow=document.createElement('div'); unitRow.style.cssText='display:flex;align-items:baseline;gap:4px';
+    var unitLabel=document.createElement('span'); unitLabel.textContent='단가'; unitLabel.style.cssText='font-size:.62rem;color:#aaa;font-weight:600';
+    var unitVal=document.createElement('span'); unitVal.style.cssText='font-size:.96rem;font-weight:900;color:#6040a0'; unitVal.textContent=unit?Number(unit).toLocaleString()+'원':'–';
+    unitRow.appendChild(unitLabel); unitRow.appendChild(unitVal);
+    numWrap.appendChild(unitRow);
+    // 수량 · 총결제금액 작게
+    var subRow=document.createElement('div'); subRow.style.cssText='font-size:.72rem;color:#999;display:flex;gap:6px';
+    if(it.qty){ var qsp=document.createElement('span'); qsp.textContent=it.qty+'개'; subRow.appendChild(qsp); }
+    if(it.price){ var psp=document.createElement('span'); psp.style.cssText='color:#c04070;font-weight:700'; psp.textContent='합계 '+Number(it.price).toLocaleString()+'원'; subRow.appendChild(psp); }
+    if(subRow.children.length) numWrap.appendChild(subRow);
     row.appendChild(numWrap);
 
     // 메모
@@ -11362,8 +11372,8 @@ function renderAutotx(){
 
 
 /* ── 투자 루틴 ── */
-function loadInvestRoutine()     { return loadObj('m5_invest_routine').list || []; }
-function saveInvestRoutine(list) { stor('m5_invest_routine', {list}); }
+function loadInvestRoutine()     { return loadObj('m5_invest_routine','m5_invest_memo').list || []; }
+function saveInvestRoutine(list) { stor('m5_invest_routine','m5_invest_memo', {list}); }
 
 function investRoutineAdd() {
   var day  = (document.getElementById('invest-routine-day')||{}).value||'';
@@ -11425,6 +11435,16 @@ function renderInvestRoutine() {
 function loadInvest()     { return loadObj('m5_invest').list || []; }
 function saveInvest(list) { stor('m5_invest', {list}); }
 
+
+function investMemoBoxSave() {
+  var el = document.getElementById('invest-memo-box');
+  if (el) stor('m5_invest_memo', {text: el.value});
+}
+function loadInvestMemoBox() {
+  var el = document.getElementById('invest-memo-box');
+  if (el) el.value = loadObj('m5_invest_memo').text || '';
+}
+
 function investAdd(){
   var list=loadInvest(); list.push({id:Date.now(),name:'',amount:'',current:'',memo:''});
   saveInvest(list); renderInvest();
@@ -11450,24 +11470,57 @@ function renderInvestSummary(){
 function renderInvest(){
   var el=document.getElementById('invest-list'); if(!el) return;
   var list=loadInvest(); renderInvestSummary();
-  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 투자/연금을 등록해요</div>';return;}
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#aaa;font-size:.88rem;padding:20px">+ 추가 버튼으로 투자/연금을 등록해요</div>';return;}
   el.innerHTML='';
-  list.forEach(function(it){
+
+  var BASE='width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:7px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;font-weight:600;background:white;';
+
+  list.forEach(function(it, idx){
     var inv=parseFloat((it.amount||'0').replace(/,/g,''))||0;
     var cur=parseFloat((it.current||'0').replace(/,/g,''))||0;
-    var row=_m5TableRow(it,[
-      {key:'name',label:'종목/상품명',w:'1.2fr'},{key:'amount',label:'투자금액',w:'1fr',right:true},
-      {key:'current',label:'현재가치',w:'1fr',right:true},{key:'memo',label:'메모',w:'1fr'}
-    ],investSave,investDel,M5_MINT);
-    // 수익률 뱃지
-    if(inv>0){
-      var pct=Math.round((cur-inv)/inv*100);
-      var badge=document.createElement('div');
-      badge.style.cssText='padding:4px 8px;font-size:.72rem;font-weight:700;color:'+(pct>=0?'#1a7a50':'#e03c6e')+';text-align:right;min-width:50px;flex-shrink:0';
-      badge.textContent=(pct>=0?'+':'')+pct+'%';
-      // row 마지막 acts 앞에 삽입
-      row.insertBefore(badge, row.lastChild);
+    var pct = inv>0 ? Math.round((cur-inv)/inv*100) : null;
+
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1.4fr 1fr 1fr 70px 44px;gap:6px;align-items:center;padding:7px 10px;border-bottom:1px solid #d8f0e8;background:'+(idx%2===0?'white':'#f4fef9');
+    row.onmouseover=function(){this.style.background='#e8fff4';}; row.onmouseout=function(){this.style.background=idx%2===0?'white':'#f4fef9';};
+
+    function mkInp(val,ph,color,onSaveFn,align,fmt){
+      var inp=document.createElement('input');
+      var dispVal = (fmt && val) ? Number(String(val).replace(/,/g,'')).toLocaleString() : (val||'');
+      inp.value=dispVal; inp.placeholder=ph;
+      inp.style.cssText=BASE+'color:'+(color||'#222')+(align?';text-align:'+align:'');
+      inp.onfocus=function(){this.style.borderColor='#3dbb8f';this.style.background='#f0fff8';};
+      inp.onblur=(function(fn,f){return function(){
+        this.style.borderColor='#b2e8d4'; this.style.background='white';
+        var v=this.value.replace(/,/g,'');
+        if(f && v && !isNaN(v)) this.value=Number(v).toLocaleString();
+        fn(v);
+      };})(onSaveFn,fmt);
+      if(fmt){
+        inp.oninput=function(){
+          var pos=this.selectionStart; var raw=this.value.replace(/,/g,'');
+          if(!isNaN(raw)&&raw!==''){var fmtd=Number(raw).toLocaleString(); var diff=fmtd.length-this.value.length; this.value=fmtd; try{this.setSelectionRange(pos+diff,pos+diff);}catch(e){}}
+        };
+      }
+      inp.onkeydown=function(e){if(e.key==='Enter')this.blur();}; return inp;
     }
+
+    row.appendChild(mkInp(it.name,'종목/상품명','#111',function(v){investSave(it.id,'name',v);},'',false));
+    row.appendChild(mkInp(it.amount,'투자금액','#1050a0',function(v){investSave(it.id,'amount',v);},'right',true));
+    row.appendChild(mkInp(it.current,'현재가치','#1a6a50',function(v){investSave(it.id,'current',v);},'right',true));
+
+    // 수익률 뱃지 (읽기전용)
+    var pctDiv=document.createElement('div');
+    pctDiv.style.cssText='text-align:right;font-size:.9rem;font-weight:800;padding:0 4px;color:'+(pct===null?'#ccc':pct>=0?'#1a7a50':'#e03c6e');
+    pctDiv.textContent = pct===null?'–':(pct>=0?'+':'')+pct+'%';
+    row.appendChild(pctDiv);
+
+    var del=document.createElement('button'); del.textContent='✕';
+    del.style.cssText='background:none;border:none;cursor:pointer;color:#bbb;font-size:1rem;padding:4px 6px;border-radius:4px;font-weight:700';
+    del.onmouseover=function(){this.style.color='#e03c6e';this.style.background='#fff0f5';};
+    del.onmouseout=function(){this.style.color='#bbb';this.style.background='none';};
+    del.onclick=(function(id){return function(){investDel(id);};})(it.id);
+    row.appendChild(del);
     el.appendChild(row);
   });
 }
@@ -11563,7 +11616,7 @@ function renderMenu5(sub) {
   sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
   if(sub===1){ renderAssetCatTabs && renderAssetCatTabs(); renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); loadAssetLoan && loadAssetLoan(); }
   if(sub===2){ renderAutotx(); }
-  if(sub===3){ renderInvest(); renderInvestNotes(); renderInvestRoutine&&renderInvestRoutine(); }
+  if(sub===3){ renderInvest(); loadInvestMemoBox&&loadInvestMemoBox(); renderInvestRoutine&&renderInvestRoutine(); }
   if(sub===4){ renderLoans(); renderLoanNotes(); }
   if(sub===5){ renderHealthCheck(); renderHealthNotes(); renderKnowLinks&&renderKnowLinks(); renderKnowNotes&&renderKnowNotes(); }
 }
