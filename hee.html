@@ -2454,13 +2454,6 @@ function pwaInstall() {
         <div id="pnl-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
       </div>
     </div>
-        <div class="subpage" id="menu1-sub-6">
-      <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7a8c0)">🌸</div>
-        <div><div class="subpage-title">시즌관리</div><div class="subpage-desc">시즌별 이벤트와 상품을 관리해요</div></div>
-      </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">시즌 일정, 기획 등을 여기에 채워요</span></div>
-    </div>
   </div>
 
   <!-- ══════════════ 우리집 ══════════════ -->
@@ -8949,6 +8942,12 @@ function switchSub(pageId, num, el) {
       renderJinuMemos && renderJinuMemos();
     }, 0);
   }
+  if (pageId === 'menu1' && num === 1) {
+    setTimeout(function(){ TAX_KEYS&&TAX_KEYS.forEach(renderTaxList); renderTaxMemoList&&renderTaxMemoList(); renderTaxNotes&&renderTaxNotes(); }, 0);
+  }
+  if (pageId === 'menu1' && num === 2) {
+    setTimeout(function(){ renderSales && renderSales(); }, 0);
+  }
   if (pageId === 'menu1' && num === 3) {
     setTimeout(function(){
       renderDesignLinks && renderDesignLinks();
@@ -8956,14 +8955,23 @@ function switchSub(pageId, num, el) {
       renderDesignComments && renderDesignComments();
     }, 0);
   }
+  if (pageId === 'menu1' && num === 7) {
+    setTimeout(function(){ renderHourly && renderHourly(); }, 0);
+  }
+  if (pageId === 'menu1' && num === 8) {
+    setTimeout(function(){ renderPnlPage && renderPnlPage(); }, 0);
+  }
   if (pageId === 'menu1' && num === 18) {
     setTimeout(function(){ renderProductMgmt && renderProductMgmt(); }, 0);
   }
-  if (pageId === 'menu1' && num === 4) {
-    setTimeout(function(){ renderInv && renderInv(); renderInvNotes && renderInvNotes(); }, 0);
-  }
   if (pageId === 'menu1' && num === 19) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
+  }
+  if (pageId === 'menu1' && num === 4) {
+    setTimeout(function(){ renderInvCatTabs&&renderInvCatTabs(); updateInvCatSelect&&updateInvCatSelect(); renderInv && renderInv(); renderInvNotes && renderInvNotes(); }, 0);
+  }
+  if (pageId === 'menu1' && num === 5) {
+    setTimeout(function(){ renderStaff && renderStaff(); }, 0);
   }
   if (pageId === 'menu2' && num === 18) {
     setTimeout(function(){ renderCardMgmt && renderCardMgmt(); renderCmNotes && renderCmNotes(); }, 0);
