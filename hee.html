@@ -2051,14 +2051,23 @@ function pwaInstall() {
 
       <!-- CS 복사붙여넣기 -->
       <div class="card" style="border-top:3px solid #a0c4ff">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:.95rem;color:#4a80d0">📋 CS 복사 메모</div>
-          <button onclick="csCombinedCopy()" style="margin-left:auto;background:linear-gradient(135deg,#e8f0ff,#4a80d0);border:none;border-radius:8px;padding:4px 11px;font-size:.75rem;font-weight:700;color:white;cursor:pointer" title="체크된 항목 합쳐서 복사">📋 다중복사</button>
-        </div>
+        <div style="font-size:.95rem;color:#4a80d0;margin-bottom:10px">📋 CS 복사 메모</div>
         <div class="inp-row">
           <textarea id="cs-inp" rows="2" placeholder="CS 내용 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCs()}"></textarea>
           <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addCs()">+</button>
         </div>
+
+        <!-- 조합칸 -->
+        <div id="cs-compose-wrap" style="display:none;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <div style="font-size:.78rem;font-weight:700;color:#4a80d0">✍️ 조합 편집</div>
+            <button onclick="csClearCompose()" style="background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;font-size:.7rem;color:#aaa;cursor:pointer">초기화</button>
+            <button onclick="csFinalCopy()" style="margin-left:auto;background:linear-gradient(135deg,#6aaaf0,#4a80d0);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">📋 최종복사</button>
+          </div>
+          <textarea id="cs-compose-area" rows="5" placeholder="체크한 항목이 여기에 쌓여요. 직접 편집도 가능해요!"
+            style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:10px;padding:9px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.7;background:#f5f9ff"></textarea>
+        </div>
+
         <div style="position:relative;margin-bottom:6px">
           <input id="cs-search" type="text" placeholder="🔍 빠른 검색..." oninput="renderCsList()" style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:8px;padding:6px 30px 6px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:#f5f9ff">
           <button onclick="document.getElementById('cs-search').value='';renderCsList()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0">✕</button>
@@ -3951,7 +3960,8 @@ function renderCsList() {
     const chk = document.createElement('input');
     chk.type = 'checkbox'; chk.dataset.csid = it.id;
     chk.style.cssText = 'width:14px;height:14px;accent-color:#4a80d0;cursor:pointer;flex-shrink:0';
-    chk.title = '다중복사에 포함';
+    chk.title = '체크하면 조합칸에 추가';
+    chk.onchange = (function(text){ return function(){ csToggleCompose(text, this.checked); }; })(it.text||'');
     row.appendChild(chk);
     const txtEl = document.createElement('div');
     txtEl.style.cssText = 'flex:1;font-size:.82rem;color:#333;word-break:break-all;line-height:1.4';
@@ -3982,58 +3992,39 @@ function renderCsList() {
   });
 }
 
-function csCombinedCopy() {
-  var checks = document.querySelectorAll('#cs-list input[data-csid]:checked');
-  if (!checks.length) { toast('항목을 먼저 체크해주세요 ☑️'); return; }
-  var items = loadCsList();
-  var texts = [];
-  checks.forEach(function(chk) {
-    var id = parseInt(chk.dataset.csid);
-    var it = items.find(function(x){ return x.id===id; });
-    if (it) texts.push(it.text);
+function csToggleCompose(text, checked) {
+  var wrap = document.getElementById('cs-compose-wrap');
+  var area = document.getElementById('cs-compose-area');
+  if (!wrap || !area) return;
+  if (checked) {
+    // 조합칸 보이기 + 텍스트 추가
+    wrap.style.display = 'block';
+    var cur = area.value;
+    area.value = cur ? cur + '\n\n' + text : text;
+  } else {
+    // 체크 해제 - 해당 텍스트 제거
+    var lines = area.value.split('\n\n');
+    lines = lines.filter(function(l){ return l.trim() !== text.trim(); });
+    area.value = lines.join('\n\n');
+    // 조합칸에 아무것도 없으면 숨기기
+    var anyChecked = document.querySelectorAll('#cs-list input[data-csid]:checked').length;
+    if (!anyChecked && !area.value.trim()) wrap.style.display = 'none';
+  }
+}
+function csClearCompose() {
+  var area = document.getElementById('cs-compose-area');
+  var wrap = document.getElementById('cs-compose-wrap');
+  if (area) area.value = '';
+  if (wrap) wrap.style.display = 'none';
+  // 체크박스 모두 해제
+  document.querySelectorAll('#cs-list input[data-csid]').forEach(function(c){ c.checked = false; });
+}
+function csFinalCopy() {
+  var area = document.getElementById('cs-compose-area');
+  if (!area || !area.value.trim()) { toast('조합칸이 비어있어요'); return; }
+  navigator.clipboard.writeText(area.value.trim()).then(function(){
+    toast('📋 복사됐어요!');
   });
-  var combined = texts.join('\n\n');
-  // 미리보기 모달
-  var old = document.getElementById('cs-combined-modal');
-  if (old) old.remove();
-  var modal = document.createElement('div');
-  modal.id = 'cs-combined-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
-
-  var box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:16px;padding:22px;width:100%;max-width:480px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.2)';
-
-  var title = document.createElement('div');
-  title.style.cssText = 'font-size:.95rem;font-weight:700;color:#4a80d0;margin-bottom:10px';
-  title.textContent = '📋 다중복사 미리보기 (' + texts.length + '개)';
-
-  var preview = document.createElement('div');
-  preview.style.cssText = 'background:#f5f9ff;border:1.5px solid #b8d4f8;border-radius:10px;padding:12px;font-size:.83rem;color:#333;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow-y:auto;margin-bottom:14px';
-  preview.textContent = combined;
-
-  var btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
-
-  var closeBtn = document.createElement('button');
-  closeBtn.textContent = '닫기';
-  closeBtn.style.cssText = 'padding:7px 16px;background:#f0f0f0;border:none;border-radius:9px;font-size:.85rem;font-weight:700;color:#888;cursor:pointer';
-  closeBtn.onclick = function(){ modal.remove(); };
-
-  var copyBtn2 = document.createElement('button');
-  copyBtn2.textContent = '📋 복사하기';
-  copyBtn2.style.cssText = 'padding:7px 20px;background:linear-gradient(135deg,#6aaaf0,#4a80d0);border:none;border-radius:9px;font-size:.85rem;font-weight:700;color:white;cursor:pointer';
-  copyBtn2.onclick = function(){
-    navigator.clipboard.writeText(combined).then(function(){
-      toast('📋 ' + texts.length + '개 항목 복사됐어요!');
-      modal.remove();
-    });
-  };
-
-  btnRow.appendChild(closeBtn); btnRow.appendChild(copyBtn2);
-  box.appendChild(title); box.appendChild(preview); box.appendChild(btnRow);
-  modal.appendChild(box);
-  document.body.appendChild(modal);
-  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
 }
 
 function csEdit(id) {
