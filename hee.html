@@ -2398,15 +2398,12 @@ function pwaInstall() {
         </div>
       </div>
       <!-- 재고 리스트 헤더 -->
-      <div style="display:grid;grid-template-columns:auto 60px 160px 90px 60px 60px 1fr 90px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
-        <div style="padding:6px 6px">분류</div>
-        <div style="padding:6px 8px">사진</div>
-        <div style="padding:6px 8px">상품명 / 링크</div>
-        <div style="padding:6px 8px;text-align:right">결제금액</div>
-        <div style="padding:6px 8px;text-align:center">수량</div>
-        <div style="padding:6px 8px;text-align:right">단가</div>
-        <div style="padding:6px 8px">메모</div>
-        <div style="padding:6px 8px"></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
+        <div style="width:40px;flex-shrink:0">사진</div>
+        <div style="flex:1.8">상품명</div>
+        <div style="flex:1.2;text-align:right">금액 / 단가</div>
+        <div style="flex:2">메모</div>
+        <div style="width:80px"></div>
       </div>
       <div id="inv-list"></div>
     </div>
@@ -7566,24 +7563,32 @@ function invEdit(id) {
   fn('inv-name', it.name); fn('inv-link', it.link);
   fn('inv-price', it.price||''); fn('inv-qty', it.qty||'');
   fn('inv-memo', it.memo);
+  // 분류 select 복원
+  var catSel = document.getElementById('inv-cat');
+  if(catSel) catSel.value = it.cat||'';
   invCalcUnit();
-  // 이미지도 복원
+  // 이미지 복원 - _invImgPending 세팅
+  _invImgPending = it.img || null;
   if (it.img) {
-    _invImgPending = it.img;
     var prev=document.getElementById('inv-img-preview');
     var ph=document.getElementById('inv-img-placeholder');
     var img=document.getElementById('inv-img-preview-img');
     if(img) img.src=it.img;
     if(prev) prev.style.display='block';
     if(ph) ph.style.display='none';
+  } else {
+    invClearImg();
   }
-  // 기존 항목 삭제 후 추가 버튼 누르면 새로 저장되게
+  // 기존 항목 삭제 (등록 버튼 누르면 새로 저장)
   saveInv(list.filter(function(x){return x.id!==id;}));
   // 폼 상단 스크롤
   var sub = document.getElementById('menu1-sub-4');
-  if (sub) sub.scrollTop = 0;
-  document.getElementById('menu1-sub-4').querySelector('#inv-name').focus();
-  toast('✏️ 수정 모드예요! 변경 후 + 버튼 눌러주세요');
+  if (sub) {
+    // 추가폼 위치로 스크롤
+    var form = sub.querySelector('.card[style*="재고 추가"]') || sub;
+    setTimeout(function(){ var nameEl=document.getElementById('inv-name'); if(nameEl){nameEl.focus();nameEl.scrollIntoView({behavior:'smooth',block:'center'});} },50);
+  }
+  toast('✏️ 수정 모드! 변경 후 ✅ 등록 눌러주세요');
   renderInv();
 }
 
@@ -7808,49 +7813,58 @@ function renderInv() {
   el.innerHTML='';
   list.forEach(function(it, idx) {
     var unit = (it.price && it.qty) ? Math.round(it.price/it.qty) : it.unit||0;
-    var bg = idx%2===0 ? 'white' : '#fff8fb';
     var clr = _invCatClr(it.cat||'');
     var row = document.createElement('div');
-    row.style.cssText = 'display:grid;grid-template-columns:auto 60px 160px 90px 60px 60px 1fr 90px;gap:0;background:'+bg+';border:1px solid #f0d0e0;border-top:none;font-family:Pretendard,sans-serif;align-items:center';
+    // 카드형: 한 줄 - [분류뱃지] [썸네일] [상품명] [링크아이콘] | [금액] [수량] [단가] | [메모] | [수정/삭제]
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #f0d0e0;background:'+(idx%2===0?'white':'#fff8fb')+';font-family:Pretendard,sans-serif;min-height:56px';
+
     // 분류 뱃지
-    var catCell = document.createElement('div'); catCell.style.cssText='padding:6px 6px';
     if (it.cat) {
-      var badge = document.createElement('div');
-      badge.textContent = it.cat;
-      badge.style.cssText = 'background:'+clr.bg+';color:'+clr.color+';border:1px solid '+clr.border+';border-radius:8px;padding:2px 6px;font-size:.65rem;font-weight:700;white-space:nowrap';
-      catCell.appendChild(badge);
+      var badge=document.createElement('div');
+      badge.textContent=it.cat;
+      badge.style.cssText='background:'+clr.bg+';color:'+clr.color+';border:1px solid '+clr.border+';border-radius:8px;padding:2px 6px;font-size:.62rem;font-weight:700;white-space:nowrap;flex-shrink:0';
+      row.appendChild(badge);
     }
-    row.appendChild(catCell);
-    // 사진
-    var imgCell = document.createElement('div'); imgCell.style.cssText='padding:6px 8px';
-    imgCell.innerHTML = it.img
-      ? '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;cursor:zoom-in"><img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)"></div>'
-      : '<div style="width:44px;height:44px;border-radius:6px;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center"><span style="font-size:.9rem;opacity:.3">📦</span></div>';
-    row.appendChild(imgCell);
-    // 상품명 + 링크 (URL 그대로 표시)
-    var nameCell = document.createElement('div'); nameCell.style.cssText='padding:6px 8px;min-width:0';
-    var nameDiv = document.createElement('div'); nameDiv.style.cssText='font-size:.83rem;font-weight:700;color:#1a0a2e;word-break:break-all;line-height:1.4'; nameDiv.textContent=it.name||'-';
-    nameCell.appendChild(nameDiv);
-    if (it.link) {
-      var linkA = document.createElement('a'); linkA.href=it.link; linkA.target='_blank';
-      linkA.style.cssText='font-size:.68rem;color:#4a80d0;text-decoration:none;word-break:break-all;display:block;margin-top:2px;line-height:1.3';
-      linkA.textContent=it.link;
-      nameCell.appendChild(linkA);
+
+    // 썸네일
+    var imgDiv=document.createElement('div');
+    imgDiv.style.cssText='width:40px;height:40px;flex-shrink:0;border-radius:6px;overflow:hidden;background:#fff0f5;border:1px solid #f0d0e0;display:flex;align-items:center;justify-content:center;cursor:'+(it.img?'zoom-in':'default');
+    if(it.img){
+      imgDiv.innerHTML='<img src="'+it.img+'" style="width:100%;height:100%;object-fit:cover" onmouseover="invImgHover(this,true)" onmouseout="invImgHover(this,false)" onclick="openImgModal&&openImgModal(this.src)">';
+    } else {
+      imgDiv.innerHTML='<span style="font-size:.85rem;opacity:.3">📦</span>';
     }
-    row.appendChild(nameCell);
-    // 결제금액
-    var priceCell=document.createElement('div'); priceCell.style.cssText='padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#c04070'; priceCell.textContent=it.price?Number(it.price).toLocaleString()+'원':'–'; row.appendChild(priceCell);
-    // 수량
-    var qtyCell=document.createElement('div'); qtyCell.style.cssText='padding:6px 8px;text-align:center;font-size:.82rem;color:#333'; qtyCell.textContent=it.qty?it.qty+'개':'–'; row.appendChild(qtyCell);
-    // 단가
-    var unitCell=document.createElement('div'); unitCell.style.cssText='padding:6px 8px;text-align:right;font-size:.82rem;font-weight:700;color:#6040a0'; unitCell.textContent=unit?Number(unit).toLocaleString()+'원':'–'; row.appendChild(unitCell);
+    row.appendChild(imgDiv);
+
+    // 상품명 + 링크버튼
+    var nameWrap=document.createElement('div'); nameWrap.style.cssText='flex:1.8;min-width:0;display:flex;align-items:center;gap:6px';
+    var nameDiv=document.createElement('div'); nameDiv.style.cssText='font-size:.84rem;font-weight:700;color:#1a0a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'; nameDiv.textContent=it.name||'-'; nameDiv.title=it.name||'';
+    nameWrap.appendChild(nameDiv);
+    if(it.link){
+      var linkBtn=document.createElement('a'); linkBtn.href=it.link; linkBtn.target='_blank';
+      linkBtn.style.cssText='flex-shrink:0;background:#e8f0ff;border:1px solid #a0c4f0;border-radius:5px;padding:2px 6px;font-size:.65rem;color:#4a80d0;text-decoration:none;white-space:nowrap';
+      linkBtn.textContent='🔗 링크'; linkBtn.title=it.link;
+      nameWrap.appendChild(linkBtn);
+    }
+    row.appendChild(nameWrap);
+
+    // 금액/수량/단가 - 세로 compact
+    var numWrap=document.createElement('div'); numWrap.style.cssText='flex:1.2;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:right';
+    var pr=document.createElement('div'); pr.style.cssText='font-size:.8rem;font-weight:700;color:#c04070'; pr.textContent=it.price?Number(it.price).toLocaleString()+'원':'–';
+    var qd=document.createElement('div'); qd.style.cssText='font-size:.72rem;color:#888';
+    qd.textContent=(it.qty?it.qty+'개':'')+(unit?' · 단가 '+Number(unit).toLocaleString()+'원':'');
+    numWrap.appendChild(pr); numWrap.appendChild(qd);
+    row.appendChild(numWrap);
+
     // 메모
-    var memoCell=document.createElement('div'); memoCell.style.cssText='padding:6px 8px;font-size:.75rem;color:#888;word-break:break-all;line-height:1.4'; memoCell.textContent=it.memo||''; row.appendChild(memoCell);
-    // 편집/삭제 버튼
-    var acts=document.createElement('div'); acts.style.cssText='padding:4px 6px;display:flex;gap:3px;justify-content:center;align-items:center';
-    var editBtn=document.createElement('button'); editBtn.style.cssText='background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:6px;color:white;font-size:.68rem;font-weight:700;cursor:pointer;padding:3px 7px;white-space:nowrap'; editBtn.textContent='✏️ 수정';
+    var memoDiv=document.createElement('div'); memoDiv.style.cssText='flex:2;min-width:0;font-size:.75rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; memoDiv.textContent=it.memo||''; memoDiv.title=it.memo||'';
+    row.appendChild(memoDiv);
+
+    // 버튼
+    var acts=document.createElement('div'); acts.style.cssText='display:flex;gap:3px;flex-shrink:0';
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️ 수정'; editBtn.style.cssText='background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:6px;color:white;font-size:.68rem;font-weight:700;cursor:pointer;padding:4px 8px;white-space:nowrap';
     editBtn.onclick=(function(id){return function(){invEdit(id);};})(it.id);
-    var delBtn=document.createElement('button'); delBtn.style.cssText='background:none;border:none;color:#ddd;font-size:.78rem;cursor:pointer;padding:3px 4px;border-radius:4px'; delBtn.textContent='✕';
+    var delBtn=document.createElement('button'); delBtn.textContent='✕'; delBtn.style.cssText='background:none;border:none;color:#ddd;font-size:.8rem;cursor:pointer;padding:3px 5px;border-radius:4px';
     delBtn.onmouseover=function(){this.style.color='#e03c6e';}; delBtn.onmouseout=function(){this.style.color='#ddd';};
     delBtn.onclick=(function(id){return function(){invDel(id);};})(it.id);
     acts.appendChild(editBtn); acts.appendChild(delBtn);
