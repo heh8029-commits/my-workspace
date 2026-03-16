@@ -2959,7 +2959,7 @@ function pwaInstall() {
             <!-- 분류 탭 -->
             <div id="asset-cat-tabs" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px"></div>
             <!-- 헤더 -->
-            <div style="display:grid;grid-template-columns:16px 1.3fr 1fr 1.2fr 40px;background:#e8fff4;border-radius:7px;padding:5px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:5px">
+            <div style="display:grid;grid-template-columns:auto 1.3fr 1fr 1.2fr 40px;background:#e8fff4;border-radius:7px;padding:5px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:5px">
               <div></div><div>자산명</div><div style="text-align:right">금액</div><div>메모</div><div></div>
             </div>
             <div id="asset-list"></div>
@@ -10936,16 +10936,16 @@ function renderAssets() {
   el.innerHTML='';
   list.forEach(function(it){
     var row = document.createElement('div');
-    row.style.cssText = 'display:grid;grid-template-columns:16px 1.3fr 1fr 1.2fr 40px;border-bottom:1px solid #eef8f4;align-items:center;background:white;transition:background .1s';
+    row.style.cssText = 'display:grid;grid-template-columns:auto 1.3fr 1fr 1.2fr 40px;border-bottom:1px solid #eef8f4;align-items:center;background:white;transition:background .1s';
     row.onmouseover=function(){this.style.background='#f8fffe';}; row.onmouseout=function(){this.style.background='white';};
-    // 분류 dot 아이콘
-    var dotCell=document.createElement('div'); dotCell.style.cssText='padding:5px 4px;display:flex;align-items:center;justify-content:center';
-    var dot=document.createElement('div');
+    // 분류 텍스트 뱃지
+    var dotCell=document.createElement('div'); dotCell.style.cssText='padding:4px 6px;display:flex;align-items:center';
     var clr=_assetCatClr(it.cat||'');
-    dot.style.cssText='width:8px;height:8px;border-radius:50%;background:'+clr.dot+';flex-shrink:0;cursor:pointer';
-    dot.title=it.cat||'분류없음';
-    // 클릭하면 분류 변경
-    dot.onclick=(function(id){return function(){
+    var badge=document.createElement('div');
+    badge.textContent = it.cat||'';
+    badge.style.cssText='background:'+clr.bg+';color:'+clr.color+';border:1px solid '+clr.dot+';border-radius:8px;padding:2px 7px;font-size:.68rem;font-weight:700;white-space:nowrap;cursor:pointer;font-family:Pretendard,sans-serif;line-height:1.4';
+    badge.title='클릭해서 분류 변경';
+    badge.onclick=(function(id){return function(){
       var cats=loadAssetCats();
       if(!cats.length){toast('분류를 먼저 추가해요!');return;}
       var cur=loadAssets().find(function(x){return x.id===id;});
@@ -10953,7 +10953,7 @@ function renderAssets() {
       var next=cats[(curIdx+1)%cats.length];
       assetSave(id,'cat',next); renderAssets();
     };})(it.id);
-    dotCell.appendChild(dot); row.appendChild(dotCell);
+    dotCell.appendChild(badge); row.appendChild(dotCell);
     // 자산명
     var nameCell=document.createElement('div'); nameCell.style.cssText='padding:5px 6px;min-width:0';
     var nameInp=document.createElement('input'); nameInp.value=it.name||''; nameInp.placeholder='자산명';
