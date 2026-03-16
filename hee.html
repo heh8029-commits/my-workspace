@@ -109,7 +109,7 @@ body.mobile-view .three-col > .card {
   min-width: 0; height: auto !important; max-height: none !important; }
 body.mobile-view .three-col > .card .ilist { max-height: 300px !important; }
 body.mobile-view .two-col   { grid-template-columns: 1fr; gap: 12px; }
-body.mobile-view .week-row  { grid-template-columns: repeat(3,1fr); gap: 6px; }
+body.mobile-view .week-row  { grid-template-columns: repeat(4,1fr); gap: 4px; }
 
 body.mobile-view .topbar { padding: 7px 10px; gap: 4px; }
 body.mobile-view .tabs   { gap: 4px; }
@@ -311,17 +311,17 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
    요일 박스
 ──────────────────────────────── */
 .week-row {
-  display:grid; grid-template-columns:repeat(5,1fr); gap:10px;
+  display:grid; grid-template-columns:repeat(7,1fr); gap:5px;
   margin-bottom:4px;
 }
 
-.day-col { display:flex; flex-direction:column; gap:6px; }
+.day-col { display:flex; flex-direction:column; gap:3px; }
 
 .day-label {
-  text-align:center; font-size:.92rem; font-weight:700;
-  padding:5px 0; border-radius:10px;
+  text-align:center; font-size:.75rem; font-weight:700;
+  padding:3px 2px; border-radius:8px;
   background:var(--pink-pale); color:var(--rose);
-  border:2px solid var(--pink-mid);
+  border:1.5px solid var(--pink-mid);
   position:relative; overflow:hidden;
 }
 
@@ -343,12 +343,12 @@ body.mobile-view .datebar .dtxt { font-size: .85rem; }
 }
 @keyframes flash { from{opacity:1} to{opacity:.3} }
 
-.day-tasks { display:flex; flex-direction:column; gap:5px; min-height:60px; }
+.day-tasks { display:flex; flex-direction:column; gap:3px; min-height:0; }
 
 .day-task {
   background:var(--pink-pale); border:1.5px solid var(--pink-mid);
-  border-radius:10px; padding:6px 9px; font-size:.82rem;
-  display:flex; align-items:flex-start; gap:6px;
+  border-radius:7px; padding:4px 6px; font-size:.75rem;
+  display:flex; align-items:flex-start; gap:4px;
   transition:all .15s; cursor:default; position:relative;
   animation:popIn .25s ease;
 }
@@ -3687,12 +3687,13 @@ function renderWeek() {
         <button class="dt-del" onclick="delDayTask('${day}',${t.id})">✕</button>
       </div>`).join('');
 
+    const weekend = day==='토' ? 'color:#2060a0;border-color:#a0c4f0;background:#f0f5ff' : day==='일' ? 'color:#e03c6e;border-color:#f7a8c0;background:#fff0f5' : '';
     return `<div class="day-col">
-      <div class="day-label ${isToday?'today':''}">
-        ${day} ${isToday?'<span class="today-badge">오늘!</span>':''}
+      <div class="day-label ${isToday?'today':''}" style="${weekend}">
+        ${day}${isToday?'<span class="today-badge" style="font-size:.5rem;padding:1px 3px">●</span>':''}
       </div>
       <div class="day-tasks">${taskHtml}</div>
-      <button style="background:none;border:1px solid #f0d0e0;border-radius:6px;padding:2px 8px;font-size:.68rem;color:#e03c6e;cursor:pointer;margin-top:3px;font-family:Pretendard,sans-serif" onclick="addDayTask('${day}')">＋</button>
+      <button style="background:none;border:1px dashed #f0d0e0;border-radius:5px;padding:1px 0;font-size:.7rem;color:#f0a0b8;cursor:pointer;width:100%;margin-top:2px;font-family:Pretendard,sans-serif" onclick="addDayTask('${day}')">＋</button>
     </div>`;
   }).join('');
 }
