@@ -2332,51 +2332,12 @@ function pwaInstall() {
         <div><div class="subpage-title">재고관리</div><div class="subpage-desc">재고 현황과 단가를 관리해요</div></div>
       </div>
 
-      <!-- 추가 폼 -->
-      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:14px;font-family:Pretendard,sans-serif">
-        <div style="font-size:.88rem;font-weight:700;color:#c04070;margin-bottom:10px">📦 재고 추가</div>
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <!-- 이미지 클립보드 전용 -->
-          <div id="inv-img-drop" tabindex="0" style="width:72px;height:72px;flex-shrink:0;border:2px dashed #f7a8c0;border-radius:9px;background:#fff8fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;outline:none" onclick="invOpenImgModal()" onpaste="invPasteImg(event)">
-            <div id="inv-img-preview" style="display:none;width:100%;height:100%;position:absolute;inset:0">
-              <img id="inv-img-preview-img" style="width:100%;height:100%;object-fit:cover">
-              <button onclick="event.stopPropagation();invClearImg()" style="position:absolute;top:2px;right:2px;background:#e03c6e;border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
-            </div>
-            <div id="inv-img-placeholder" style="text-align:center;color:#f7a8c0;pointer-events:none">
-              <div style="font-size:1.3rem">📷</div>
-              <div style="font-size:.6rem;margin-top:2px;line-height:1.3">Ctrl+V</div>
-            </div>
-          </div>
-          <!-- 입력 필드들 -->
-          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
-            <div style="display:flex;gap:5px">
-              <input id="inv-name" type="text" placeholder="상품명" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
-              <select id="inv-cat" style="border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
-                <option value="">분류</option>
-              </select>
-              <input id="inv-link" type="text" placeholder="결제링크 URL" style="flex:1.4;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
-            </div>
-            <div style="display:flex;gap:5px;align-items:center">
-              <input id="inv-price" type="number" placeholder="결제금액" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
-              <input id="inv-qty" type="number" placeholder="수량" style="flex:.7;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
-              <div style="flex:.8;background:#fff0f5;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.82rem;display:flex;align-items:center;gap:3px;white-space:nowrap">
-                <span style="font-size:.68rem;color:#bbb;flex-shrink:0">단가</span>
-                <span id="inv-unit-display" style="font-weight:700;color:#c04070;font-size:.82rem">-</span>
-              </div>
-              <button onclick="invAdd()" style="flex-shrink:0;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:6px 14px;color:white;font-weight:700;font-size:.84rem;cursor:pointer;font-family:Pretendard,sans-serif">✅ 등록</button>
-            </div>
-            <textarea id="inv-memo" rows="2" placeholder="메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.5"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- 재고 포스트잇 메모 -->
-      <div style="margin-bottom:16px">
-        <div style="display:flex;gap:7px;margin-bottom:10px">
-          <textarea id="inv-note-inp" rows="2" placeholder="메모 내용..." style="flex:1;border:1.5px solid #f7a8c0;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#fff8fb;line-height:1.6"></textarea>
-          <button onclick="invNoteAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
-        </div>
-        <div id="inv-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
+      <!-- 재고 메모 텍스트박스 -->
+      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:14px">
+        <div style="font-size:.85rem;font-weight:700;color:#c04070;margin-bottom:8px">📝 메모</div>
+        <textarea id="inv-memo-box" rows="4" placeholder="재고 관련 메모를 자유롭게 적어요..."
+          style="width:100%;box-sizing:border-box;border:1.5px solid #f7c0d8;border-radius:10px;padding:9px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#fff8fb;color:#333"
+          oninput="invMemoBoxSave()"></textarea>
       </div>
 
       <!-- 분류 관리 -->
@@ -2398,6 +2359,44 @@ function pwaInstall() {
           style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0">✕</button>
       </div>
 
+
+      <!-- 추가 폼 -->
+      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:14px;font-family:Pretendard,sans-serif">
+        <div style="font-size:.88rem;font-weight:700;color:#c04070;margin-bottom:10px">📦 재고 추가</div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <!-- 이미지 -->
+          <div id="inv-img-drop" tabindex="0" style="width:72px;height:72px;flex-shrink:0;border:2px dashed #f7a8c0;border-radius:9px;background:#fff8fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;outline:none" onclick="invOpenImgModal()" onpaste="invPasteImg(event)">
+            <div id="inv-img-preview" style="display:none;width:100%;height:100%;position:absolute;inset:0">
+              <img id="inv-img-preview-img" style="width:100%;height:100%;object-fit:cover">
+              <button onclick="event.stopPropagation();invClearImg()" style="position:absolute;top:2px;right:2px;background:#e03c6e;border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+            </div>
+            <div id="inv-img-placeholder" style="text-align:center;color:#f7a8c0;pointer-events:none">
+              <div style="font-size:1.3rem">📷</div>
+              <div style="font-size:.6rem;margin-top:2px;line-height:1.3">클릭</div>
+            </div>
+          </div>
+          <!-- 입력 필드들 -->
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;gap:5px">
+              <input id="inv-name" type="text" placeholder="상품명" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" onkeydown="if(event.key==='Enter')invAdd()">
+              <select id="inv-cat" style="border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;flex-shrink:0">
+                <option value="">분류</option>
+              </select>
+              <input id="inv-link" type="text" placeholder="결제링크 URL" style="flex:1.4;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none">
+            </div>
+            <div style="display:flex;gap:5px;align-items:center">
+              <input id="inv-price" type="number" placeholder="결제금액" style="flex:1;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
+              <input id="inv-qty" type="number" placeholder="수량" style="flex:.7;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.84rem;font-family:Pretendard,sans-serif;outline:none" oninput="invCalcUnit()">
+              <div style="flex:.8;background:#fff0f5;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.82rem;display:flex;align-items:center;gap:3px;white-space:nowrap">
+                <span style="font-size:.68rem;color:#bbb;flex-shrink:0">단가</span>
+                <span id="inv-unit-display" style="font-weight:700;color:#c04070;font-size:.82rem">-</span>
+              </div>
+              <button onclick="invAdd()" style="flex-shrink:0;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:7px;padding:6px 14px;color:white;font-weight:700;font-size:.84rem;cursor:pointer;font-family:Pretendard,sans-serif">✅ 등록</button>
+            </div>
+            <textarea id="inv-memo" rows="2" placeholder="메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.5"></textarea>
+          </div>
+        </div>
+      </div>
       <!-- 재고 리스트 헤더 -->
       <div style="display:grid;grid-template-columns:auto 60px 160px 90px 60px 60px 1fr 90px;gap:0;background:#f8f0f5;border:1px solid #f0d0e0;border-bottom:2px solid #e03c6e;font-size:.72rem;font-weight:700;color:#a04060;font-family:Pretendard,sans-serif">
         <div style="padding:6px 6px">분류</div>
@@ -7407,9 +7406,11 @@ function invOpenImgModal() {
      +'<div id="inv-modal-preview" style="display:none;position:absolute;inset:0"><img id="inv-modal-preview-img" style="width:100%;height:100%;object-fit:contain"></div>'
      +'<div id="inv-modal-ph"><div style="font-size:2.5rem">📷</div><div>여기를 클릭 후 Ctrl+V</div></div>'
    +'</div>'
+   +'<input id="inv-modal-file" type="file" accept="image/*" style="display:none">'
    +'<div style="display:flex;gap:8px;margin-top:16px">'
      +'<button id="inv-modal-cancel" style="flex:1;padding:9px;background:#f0f0f0;border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif">취소</button>'
-     +'<button id="inv-modal-ok" style="flex:2;padding:9px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">✅ 적용</button>'
+     +'<button id="inv-modal-file-btn" style="flex:1.2;padding:9px;background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">📁 파일</button>'
+     +'<button id="inv-modal-ok" style="flex:1.5;padding:9px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">✅ 적용</button>'
    +'</div>';
 
   modal.appendChild(box);
@@ -7441,15 +7442,29 @@ function invOpenImgModal() {
   };
 
   document.getElementById('inv-modal-cancel').onclick = function(){ modal.remove(); };
+  // 파일 첨부
+  var fileInp = document.getElementById('inv-modal-file');
+  document.getElementById('inv-modal-file-btn').onclick = function(){ fileInp && fileInp.click(); };
+  if (fileInp) {
+    fileInp.onchange = function() {
+      var f = fileInp.files && fileInp.files[0]; if(!f) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        _pending = ev.target.result;
+        modalImg.src = _pending; modalPrev.style.display='block'; modalPh.style.display='none';
+      };
+      reader.readAsDataURL(f);
+    };
+  }
   document.getElementById('inv-modal-ok').onclick = function(){
-    if (_pending) { invSetImgPreview(_pending); toast('📷 이미지가 등록됐어요!'); }
-    else toast('이미지를 먼저 붙여넣어 주세요 📷');
-    modal.remove();
+    if (_pending) { invSetImgPreview(_pending); toast('📷 이미지가 등록됐어요!'); modal.remove(); }
+    else { invSetImgPreview(null); modal.remove(); }
   };
   modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
 }
 
 function invSetImgPreview(dataUrl) {
+  if (!dataUrl) return;
   _invImgPending = dataUrl;
   var img = document.getElementById('inv-img-preview-img');
   var prev = document.getElementById('inv-img-preview');
@@ -7675,6 +7690,16 @@ function renderInvCatTabs() {
     btn.onclick = (function(c){ return function(e){ if(e.target.textContent==='✕') return; _invCatFilter=c; renderInvCatTabs(); renderInv(); }; })(cat);
     bar.appendChild(btn);
   });
+}
+
+
+function invMemoBoxSave() {
+  var el = document.getElementById('inv-memo-box');
+  if (el) stor('inv_memo_box', {text: el.value});
+}
+function loadInvMemoBox() {
+  var el = document.getElementById('inv-memo-box');
+  if (el) el.value = loadObj('inv_memo_box').text || '';
 }
 
 /* ── 재고관리 포스트잇 ── */
@@ -8984,7 +9009,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
   }
   if (pageId === 'menu1' && num === 4) {
-    setTimeout(function(){ renderInvCatTabs&&renderInvCatTabs(); updateInvCatSelect&&updateInvCatSelect(); renderInv && renderInv(); renderInvNotes && renderInvNotes(); }, 0);
+    setTimeout(function(){ renderInvCatTabs&&renderInvCatTabs(); updateInvCatSelect&&updateInvCatSelect(); renderInv&&renderInv(); loadInvMemoBox&&loadInvMemoBox(); }, 0);
   }
   if (pageId === 'menu1' && num === 5) {
     setTimeout(function(){ renderStaff && renderStaff(); }, 0);
