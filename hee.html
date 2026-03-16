@@ -7402,7 +7402,11 @@ function invPasteImg(e) {
     if (items[i].type.indexOf('image')!==-1) {
       var blob = items[i].getAsFile();
       var reader = new FileReader();
-      reader.onload = function(ev) { invSetImgPreview(ev.target.result); };
+      reader.onload = function(ev) {
+        _invImgPending = ev.target.result; // 먼저 pending 세팅
+        invSetImgPreview(ev.target.result);
+        toast('📷 이미지 준비됐어요! 이제 등록 버튼 눌러주세요');
+      };
       reader.readAsDataURL(blob);
       e.preventDefault();
       return;
@@ -7547,11 +7551,12 @@ function invAdd() {
   var memo  = (document.getElementById('inv-memo').value||'').trim();
   if (!name) { toast('상품명을 입력해줘요 📦'); return; }
   var unit = (price && qty) ? Math.round(price/qty) : 0;
-  var list = loadInv();
   var cat = (document.getElementById('inv-cat')||{}).value||'';
-  list.unshift({id:Date.now(), img:_invImgPending||null, name, link, price, qty, unit, memo, cat:cat});
+  var imgToSave = _invImgPending || null; // 저장 전에 먼저 캡처
+  var list = loadInv();
+  list.unshift({id:Date.now(), img:imgToSave, name:name, link:link, price:price, qty:qty, unit:unit, memo:memo, cat:cat});
   saveInv(list);
-  // 입력 초기화
+  // 입력 초기화 (저장 완료 후)
   ['inv-name','inv-link','inv-price','inv-qty','inv-memo'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.value='';
   });
