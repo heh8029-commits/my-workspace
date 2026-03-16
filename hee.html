@@ -11392,8 +11392,8 @@ function renderAutotx(){
 
 
 /* ── 투자 루틴 ── */
-function loadInvestRoutine()     { return loadObj('m5_invest_routine','m5_invest_memo').list || []; }
-function saveInvestRoutine(list) { stor('m5_invest_routine','m5_invest_memo', {list}); }
+function loadInvestRoutine()     { return loadObj('m5_invest_routine').list || []; }
+function saveInvestRoutine(list) { stor('m5_invest_routine', {list}); }
 
 function investRoutineAdd() {
   var day  = (document.getElementById('invest-routine-day')||{}).value||'';
