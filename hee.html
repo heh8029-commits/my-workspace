@@ -10929,7 +10929,14 @@ function renderAssetSummary() {
 function renderAssets() {
   var el=document.getElementById('asset-list'); if(!el) return;
   var allList=loadAssets();
+  var cats = loadAssetCats();
   var list = _assetCatFilter==='전체' ? allList : allList.filter(function(it){ return it.cat===_assetCatFilter; });
+  // 분류 순서대로 정렬 (분류 없는 건 맨 뒤)
+  list = list.slice().sort(function(a,b){
+    var ai = cats.indexOf(a.cat||''); var bi = cats.indexOf(b.cat||'');
+    if(ai===-1) ai=9999; if(bi===-1) bi=9999;
+    return ai - bi;
+  });
   renderAssetSummary();
   if(!allList.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 자산 버튼으로 등록해요</div>';return;}
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">이 분류에 자산이 없어요</div>';return;}
