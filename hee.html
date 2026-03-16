@@ -1816,11 +1816,7 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',4,null)">🏦 대출</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',5,null)">💊 건강,청결</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',6,null)">📚 지식자산</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',6,null)">🎯 목표 관리</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',7,null)">💳 배당 기록</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',8,null)">📉 손실 기록</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',9,null)">🏦 계좌 현황</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',10,null)">📌 투자 메모</div>
+
   </div>
   <div class="gnav-main" id="gnav-menu4" onclick="infoTabClick(document.querySelector('.tab[onclick*=infoTabClick]')); gnavActivate('menu4')">
     <span class="gnav-main-icon">🔒</span> 정보
@@ -2055,7 +2051,10 @@ function pwaInstall() {
 
       <!-- CS 복사붙여넣기 -->
       <div class="card" style="border-top:3px solid #a0c4ff">
-        <div style="font-size:.95rem;color:#4a80d0;margin-bottom:10px">📋 CS 복사 메모</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.95rem;color:#4a80d0">📋 CS 복사 메모</div>
+          <button onclick="csCombinedCopy()" style="margin-left:auto;background:linear-gradient(135deg,#e8f0ff,#4a80d0);border:none;border-radius:8px;padding:4px 11px;font-size:.75rem;font-weight:700;color:white;cursor:pointer" title="체크된 항목 합쳐서 복사">📋 다중복사</button>
+        </div>
         <div class="inp-row">
           <textarea id="cs-inp" rows="2" placeholder="CS 내용 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCs()}"></textarea>
           <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addCs()">+</button>
@@ -3948,6 +3947,12 @@ function renderCsList() {
   items.forEach(function(it) {
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif';
+    // 체크박스 (다중복사용)
+    const chk = document.createElement('input');
+    chk.type = 'checkbox'; chk.dataset.csid = it.id;
+    chk.style.cssText = 'width:14px;height:14px;accent-color:#4a80d0;cursor:pointer;flex-shrink:0';
+    chk.title = '다중복사에 포함';
+    row.appendChild(chk);
     const txtEl = document.createElement('div');
     txtEl.style.cssText = 'flex:1;font-size:.82rem;color:#333;word-break:break-all;line-height:1.4';
     txtEl.textContent = it.text || '';
@@ -3976,6 +3981,61 @@ function renderCsList() {
     el.appendChild(row);
   });
 }
+
+function csCombinedCopy() {
+  var checks = document.querySelectorAll('#cs-list input[data-csid]:checked');
+  if (!checks.length) { toast('항목을 먼저 체크해주세요 ☑️'); return; }
+  var items = loadCsList();
+  var texts = [];
+  checks.forEach(function(chk) {
+    var id = parseInt(chk.dataset.csid);
+    var it = items.find(function(x){ return x.id===id; });
+    if (it) texts.push(it.text);
+  });
+  var combined = texts.join('\n\n');
+  // 미리보기 모달
+  var old = document.getElementById('cs-combined-modal');
+  if (old) old.remove();
+  var modal = document.createElement('div');
+  modal.id = 'cs-combined-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:16px;padding:22px;width:100%;max-width:480px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.2)';
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:.95rem;font-weight:700;color:#4a80d0;margin-bottom:10px';
+  title.textContent = '📋 다중복사 미리보기 (' + texts.length + '개)';
+
+  var preview = document.createElement('div');
+  preview.style.cssText = 'background:#f5f9ff;border:1.5px solid #b8d4f8;border-radius:10px;padding:12px;font-size:.83rem;color:#333;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow-y:auto;margin-bottom:14px';
+  preview.textContent = combined;
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = '닫기';
+  closeBtn.style.cssText = 'padding:7px 16px;background:#f0f0f0;border:none;border-radius:9px;font-size:.85rem;font-weight:700;color:#888;cursor:pointer';
+  closeBtn.onclick = function(){ modal.remove(); };
+
+  var copyBtn2 = document.createElement('button');
+  copyBtn2.textContent = '📋 복사하기';
+  copyBtn2.style.cssText = 'padding:7px 20px;background:linear-gradient(135deg,#6aaaf0,#4a80d0);border:none;border-radius:9px;font-size:.85rem;font-weight:700;color:white;cursor:pointer';
+  copyBtn2.onclick = function(){
+    navigator.clipboard.writeText(combined).then(function(){
+      toast('📋 ' + texts.length + '개 항목 복사됐어요!');
+      modal.remove();
+    });
+  };
+
+  btnRow.appendChild(closeBtn); btnRow.appendChild(copyBtn2);
+  box.appendChild(title); box.appendChild(preview); box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+}
+
 function csEdit(id) {
   const items = loadCsList();
   const it = items.find(x => x.id===id);
@@ -6675,6 +6735,7 @@ function jinuNoteAdd() {
   if (!text) { toast('메모 내용을 입력해줘요 📌'); return; }
   var list = loadJinuNotes();
   list.unshift({ id: Date.now(), text: text, img: null });
+  saveJinuNotes(list);
   inp.value = '';
   renderJinuNotes();
   toast('📌 메모 추가됐어요!');
@@ -7642,6 +7703,7 @@ function addPhrase() {
   if (!text) { toast('문구를 입력해줘요 ✍️'); return; }
   var list = loadPhrases();
   list.unshift({ id: Date.now(), text: text, img: null });
+  savePhrases(list);
   inp.value = '';
   renderPhrases();
   toast('✍️ 문구 추가됐어요!');
