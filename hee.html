@@ -2982,7 +2982,7 @@ function pwaInstall() {
         <div>
           <div class="card" style="border-top:3px solid #a0c4ff;height:100%;box-sizing:border-box">
             <div style="font-size:.88rem;font-weight:800;color:#4a80d0;margin-bottom:10px">🎯 미래계획</div>
-            <textarea id="asset-plan-inp" rows="8" placeholder="✏️ 자유롭게 적어요&#10;&#10;예)&#10;- 2025년 목표 자산 5억&#10;- 전세 만기 후 매매 전환&#10;- 연금 추가 납입 검토&#10;- 비상금 3000만원 유지"
+            <textarea id="asset-plan-inp" rows="11" placeholder="✏️ 자유롭게 적어요&#10;&#10;예)&#10;- 2025년 목표 자산 5억&#10;- 전세 만기 후 매매 전환&#10;- 연금 추가 납입 검토&#10;- 비상금 3000만원 유지"
               style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:10px;padding:10px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f8fbff;color:#333"
               oninput="assetPlanSave()"></textarea>
             <div style="font-size:.82rem;font-weight:700;color:#e03c6e;margin:10px 0 6px">🏦 대출 메모</div>
@@ -3015,8 +3015,8 @@ function pwaInstall() {
           <button onclick="autotxAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
         </div>
         <!-- 테이블 헤더 -->
-        <div style="display:grid;grid-template-columns:1fr 1.2fr 1fr 1.2fr 56px;background:#e8fff4;border-radius:8px;padding:6px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:6px">
-          <div>날짜</div><div>항목명</div><div style="text-align:right">금액</div><div>통장</div><div></div>
+        <div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 1.4fr 56px;background:#e8fff4;border-radius:8px;padding:6px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:6px">
+          <div>매월</div><div>항목명</div><div>출금</div><div>입금</div><div style="text-align:right">금액 / 메모</div><div></div>
         </div>
         <div id="autotx-list"></div>
       </div>
@@ -3040,6 +3040,20 @@ function pwaInstall() {
         </div>
         <div id="invest-list"></div>
       </div>
+      <!-- 투자 루틴 -->
+      <div class="card" style="border-top:3px solid #b2e8d4;margin-bottom:14px">
+        <div style="font-size:.88rem;font-weight:800;color:#3dbb8f;margin-bottom:6px">🗓️ 투자 루틴</div>
+        <div style="font-size:.75rem;color:#aaa;margin-bottom:10px">매월 반복할 투자 스케줄을 등록해요. 날짜가 되면 체크!</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="invest-routine-day" type="text" placeholder="날짜 (예: 매월 5일)" style="width:130px;border:1.5px solid #b2e8d4;border-radius:7px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:#f0fff8">
+          <input id="invest-routine-text" type="text" placeholder="투자 내용 (예: 미국ETF 30만원 매수)" style="flex:1;border:1.5px solid #b2e8d4;border-radius:7px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:#f0fff8" onkeydown="if(event.key==='Enter')investRoutineAdd()">
+          <button onclick="investRoutineAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:7px;padding:5px 12px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+</button>
+        </div>
+        <div id="invest-routine-list"></div>
+        <button onclick="investRoutineResetAll()" style="margin-top:8px;background:none;border:1px solid #ddd;border-radius:7px;padding:4px 10px;font-size:.72rem;color:#bbb;cursor:pointer">🔄 월초 체크 초기화</button>
+      </div>
+
+      <!-- 포스트잇 메모 -->
       <div style="display:flex;gap:7px;margin-bottom:10px">
         <textarea id="invest-note-inp" rows="2" placeholder="투자 메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
         <button onclick="investNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
@@ -3431,7 +3445,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_invest_routine','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -11232,8 +11246,12 @@ function saveAutotx(list) { stor('m5_autotx', {list}); }
 
 function autotxAdd() {
   var list=loadAutotx();
-  list.push({id:Date.now(),date:'',name:'',amount:'',bank:''});
+  list.push({id:Date.now(),date:'',name:'',from_bank:'',to_bank:'',amount:'',memo:''});
   saveAutotx(list); renderAutotx();
+  setTimeout(function(){
+    var rows=document.querySelectorAll('#autotx-list .autotx-row');
+    if(rows.length){var inp=rows[rows.length-1].querySelector('input');if(inp)inp.focus();}
+  },50);
 }
 function autotxSave(id,field,val){
   var list=loadAutotx(); var it=list.find(function(x){return x.id===id;});
@@ -11250,14 +11268,106 @@ function renderAutotxSummary(){
 }
 function renderAutotx(){
   var el=document.getElementById('autotx-list'); if(!el) return;
-  var list=loadAutotx(); renderAutotxSummary();
+  var list=loadAutotx();
+  // 날짜 숫자 기준 정렬
+  list = list.slice().sort(function(a,b){
+    var an=parseInt((a.date||'').replace(/[^0-9]/g,''))||99;
+    var bn=parseInt((b.date||'').replace(/[^0-9]/g,''))||99;
+    return an-bn;
+  });
+  renderAutotxSummary();
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 자동이체를 등록해요</div>';return;}
   el.innerHTML='';
   list.forEach(function(it){
-    el.appendChild(_m5TableRow(it,[
-      {key:'date',label:'날짜(예:매월5일)',w:'1fr'},{key:'name',label:'항목명',w:'1.2fr'},
-      {key:'amount',label:'금액',w:'1fr',right:true},{key:'bank',label:'통장',w:'1.2fr'}
-    ],autotxSave,autotxDel,M5_MINT));
+    var row=document.createElement('div');
+    row.className='autotx-row';
+    row.style.cssText='display:grid;grid-template-columns:60px 1fr 1fr 1fr 1.4fr 56px;border-bottom:1px solid #eef8f4;align-items:center;background:white';
+    row.onmouseover=function(){this.style.background='#f8fffe';}; row.onmouseout=function(){this.style.background='white';};
+
+    function mkInp(val, ph, color, onSave, align) {
+      var inp=document.createElement('input'); inp.value=val||''; inp.placeholder=ph;
+      inp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:4px 6px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:white'+(color?';color:'+color:'')+(align?';text-align:'+align:'');
+      inp.onfocus=function(){this.style.borderColor=M5_MINT;}; inp.onblur=(function(fn){return function(){this.style.borderColor='#e0f0e8';fn(this.value.trim());};})(onSave);
+      inp.onkeydown=function(e){if(e.key==='Enter')this.blur();}; return inp;
+    }
+    function cell(style){ var d=document.createElement('div'); d.style.cssText='padding:5px 8px;min-width:0'+(style?';'+style:''); return d; }
+
+    var dc=cell(); dc.appendChild(mkInp(it.date,'15일','',function(v){autotxSave(it.id,'date',v);},'center')); row.appendChild(dc);
+    var nc=cell(); nc.appendChild(mkInp(it.name,'항목명','',function(v){autotxSave(it.id,'name',v);})); row.appendChild(nc);
+    var fc=cell(); fc.appendChild(mkInp(it.from_bank||it.bank||'','출금통장','#e03c6e',function(v){autotxSave(it.id,'from_bank',v);})); row.appendChild(fc);
+    var tc=cell(); tc.appendChild(mkInp(it.to_bank||'','입금통장','#2060a0',function(v){autotxSave(it.id,'to_bank',v);})); row.appendChild(tc);
+
+    // 금액+메모 세로
+    var ac=cell('display:flex;flex-direction:column;gap:3px');
+    ac.appendChild(mkInp(it.amount||'','금액','#1a7a50',function(v){autotxSave(it.id,'amount',v);},'right'));
+    var memoInp=mkInp(it.memo||'','메모(왜 이체?)','#aaa',function(v){autotxSave(it.id,'memo',v);}); memoInp.style.fontSize='.7rem';
+    ac.appendChild(memoInp); row.appendChild(ac);
+
+    var acts=cell('display:flex;justify-content:center');
+    var del=document.createElement('button'); del.textContent='✕'; del.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.8rem;padding:3px 5px;border-radius:4px';
+    del.onmouseover=function(){this.style.color='#e03c6e';}; del.onmouseout=function(){this.style.color='#ccc';};
+    del.onclick=(function(id){return function(){autotxDel(id);};})(it.id);
+    acts.appendChild(del); row.appendChild(acts);
+    el.appendChild(row);
+  });
+}
+
+
+/* ── 투자 루틴 ── */
+function loadInvestRoutine()     { return loadObj('m5_invest_routine').list || []; }
+function saveInvestRoutine(list) { stor('m5_invest_routine', {list}); }
+
+function investRoutineAdd() {
+  var day  = (document.getElementById('invest-routine-day')||{}).value||'';
+  var text = (document.getElementById('invest-routine-text')||{}).value||'';
+  text = text.trim(); day = day.trim();
+  if (!text) { toast('투자 내용을 입력해줘요'); return; }
+  var list = loadInvestRoutine();
+  list.push({id:Date.now(), day:day, text:text, done:false});
+  // 날짜 숫자 기준 정렬
+  list.sort(function(a,b){ return (parseInt(a.day)||99)-(parseInt(b.day)||99); });
+  saveInvestRoutine(list);
+  document.getElementById('invest-routine-day').value='';
+  document.getElementById('invest-routine-text').value='';
+  renderInvestRoutine();
+  toast('📅 루틴 추가됐어요!');
+}
+
+function investRoutineResetAll() {
+  var list = loadInvestRoutine().map(function(x){ return Object.assign({},x,{done:false}); });
+  saveInvestRoutine(list); renderInvestRoutine(); toast('🔄 체크 초기화됐어요!');
+}
+
+function renderInvestRoutine() {
+  var el = document.getElementById('invest-routine-list'); if(!el) return;
+  var list = loadInvestRoutine();
+  if (!list.length) { el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.78rem;padding:10px 0">루틴을 추가해요 📅</div>'; return; }
+  el.innerHTML='';
+  list.forEach(function(item) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:'+(item.done?'#f0fff8':'white')+';border:1px solid '+(item.done?'#b2e8d4':'#eee')+';transition:all .15s;cursor:pointer';
+    row.onclick = (function(id){ return function(){
+      var l=loadInvestRoutine(); var it=l.find(function(x){return x.id===id;});
+      if(it){it.done=!it.done;saveInvestRoutine(l);renderInvestRoutine();}
+    };})(item.id);
+    // 체크
+    var chk=document.createElement('div');
+    chk.style.cssText='width:18px;height:18px;border-radius:4px;border:2px solid '+(item.done?'#3dbb8f':'#b2e8d4')+';background:'+(item.done?'#3dbb8f':'white')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s';
+    chk.innerHTML = item.done ? '<span style="color:white;font-size:.65rem;font-weight:700">✓</span>' : '';
+    // 날짜 뱃지
+    var dayBadge=document.createElement('div');
+    dayBadge.style.cssText='background:#e8fff4;color:#1a7a50;border:1px solid #b2e8d4;border-radius:8px;padding:1px 8px;font-size:.68rem;font-weight:700;white-space:nowrap;flex-shrink:0';
+    dayBadge.textContent = item.day || '날짜';
+    // 텍스트
+    var txt=document.createElement('div');
+    txt.style.cssText='flex:1;font-size:.82rem;color:'+(item.done?'#aaa':'#333')+(item.done?';text-decoration:line-through':'');
+    txt.textContent=item.text;
+    // 삭제
+    var del=document.createElement('button'); del.textContent='✕'; del.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.72rem;padding:0 2px';
+    del.onmouseover=function(){this.style.color='#e03c6e';}; del.onmouseout=function(){this.style.color='#ddd';};
+    del.onclick=(function(id){return function(e){e.stopPropagation();saveInvestRoutine(loadInvestRoutine().filter(function(x){return x.id!==id;}));renderInvestRoutine();};})(item.id);
+    row.appendChild(chk); row.appendChild(dayBadge); row.appendChild(txt); row.appendChild(del);
+    el.appendChild(row);
   });
 }
 
@@ -11405,7 +11515,7 @@ function renderMenu5(sub) {
   sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
   if(sub===1){ renderAssetCatTabs && renderAssetCatTabs(); renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); loadAssetLoan && loadAssetLoan(); }
   if(sub===2){ renderAutotx(); }
-  if(sub===3){ renderInvest(); renderInvestNotes(); }
+  if(sub===3){ renderInvest(); renderInvestNotes(); renderInvestRoutine&&renderInvestRoutine(); }
   if(sub===4){ renderLoans(); renderLoanNotes(); }
   if(sub===5){ renderHealthCheck(); renderHealthNotes(); renderKnowLinks&&renderKnowLinks(); renderKnowNotes&&renderKnowNotes(); }
 }
