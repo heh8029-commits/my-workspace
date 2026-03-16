@@ -9900,29 +9900,6 @@ function updateSalesSummary(year, month) {
       ${c.pct>0 ? `<div style="font-size:.68rem;color:${c.color};font-weight:700;margin-top:2px">${c.pct}% <span style="font-weight:400;color:#bbb">(${c.pctLabel})</span></div>` : '<div style="font-size:.68rem;min-height:14px"></div>'}
     </div>`).join('');
 
-  // ── 실제 입력 날 수 기준 하루 평균 카드 ──
-  const dailyAvg = document.getElementById('sales-daily-avg');
-  if (dailyAvg) {
-    const avgCards = [
-      { label:'쿠팡 그로스',   val: cntG  ? Math.round(tg/cntG)   : 0, cnt: cntG,  color:'#3dbb8f', bg:'#f0fff8' },
-      { label:'쿠팡 판매자',   val: cntS  ? Math.round(ts/cntS)   : 0, cnt: cntS,  color:'#3dbb8f', bg:'#f0fff8' },
-      { label:'쿠팡 총매출',   val: cntG||cntS ? Math.round(tc/Math.max(cntG,cntS)) : 0, cnt: Math.max(cntG,cntS), color:'#2a9a6a', bg:'#e8fff4' },
-      { label:'쿠팡 광고비',   val: cntCA ? Math.round(tca/cntCA) : 0, cnt: cntCA, color:'#e03c6e', bg:'#fff0f5' },
-      { label:'네이버 총매출', val: cntN  ? Math.round(tn/cntN)   : 0, cnt: cntN,  color:'#3dbb8f', bg:'#f0fff8' },
-      { label:'네이버 검색광고',val: cntNS ? Math.round(tns/cntNS): 0, cnt: cntNS, color:'#e8648a', bg:'#fff0f5' },
-      { label:'네이버 AI광고', val: cntNA ? Math.round(tna/cntNA) : 0, cnt: cntNA, color:'#e8648a', bg:'#fff0f5' },
-      { label:'전체 총광고비', val: Math.max(cntCA,cntNS,cntNA) ? Math.round(totalAd/Math.max(cntCA,cntNS,cntNA)) : 0, cnt: Math.max(cntCA,cntNS,cntNA), color:'#e03c6e', bg:'#fff0f5' },
-      { label:'전체 총매출',   val: Math.max(cntG,cntS,cntN) ? Math.round(grandTotal/Math.max(cntG,cntS,cntN)) : 0, cnt: Math.max(cntG,cntS,cntN), color:'#8b60d0', bg:'#f8f4ff' },
-    ];
-    dailyAvg.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:#fafafa;border:1.5px solid #eee;border-radius:14px;padding:14px';
-    dailyAvg.innerHTML = '<div style="grid-column:1/-1;font-size:.78rem;font-weight:800;color:#888;margin-bottom:4px">📅 하루 평균 <span style="font-weight:400;font-size:.72rem">(입력된 날 수 기준)</span></div>'
-      + avgCards.map(c => `
-        <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:10px;padding:8px 12px">
-          <div style="font-size:.68rem;color:#aaa;margin-bottom:2px">${c.label}</div>
-          <div style="font-size:.92rem;font-weight:800;color:${c.color}">${c.val > 0 ? c.val.toLocaleString()+'원' : '-'}</div>
-          ${c.cnt > 0 ? `<div style="font-size:.62rem;color:#ccc;margin-top:1px">${c.cnt}일 기준</div>` : ''}
-        </div>`).join('');
-  }
   const sr = document.getElementById('sales-sum-row');
   if (sr) {
     sr.cells[1].textContent = tg.toLocaleString();
@@ -9976,6 +9953,30 @@ function updateSalesSummary(year, month) {
     ar.cells[10].textContent = fmt(avgTotal);
     ar.cells[11].textContent = fmt(avgAd);
     ar.cells[12].textContent = avgTotal>0&&avgAd>0 ? (avgAd/avgTotal*100).toFixed(1)+'%' : '-';
+
+    // ── 실제 입력 날 수 기준 하루 평균 카드 (cntG 등 계산 후) ──
+    const dailyAvg = document.getElementById('sales-daily-avg');
+    if (dailyAvg) {
+      const avgCards = [
+        { label:'쿠팡 그로스',    val: cntG  ? Math.round(tg/cntG)   : 0, cnt: cntG,  color:'#3dbb8f', bg:'#f0fff8' },
+        { label:'쿠팡 판매자',    val: cntS  ? Math.round(ts/cntS)   : 0, cnt: cntS,  color:'#3dbb8f', bg:'#f0fff8' },
+        { label:'쿠팡 총매출',    val: cntG||cntS ? Math.round(tc/Math.max(cntG,cntS)) : 0, cnt: Math.max(cntG,cntS), color:'#2a9a6a', bg:'#e8fff4' },
+        { label:'쿠팡 광고비',    val: cntCA ? Math.round(tca/cntCA) : 0, cnt: cntCA, color:'#e03c6e', bg:'#fff0f5' },
+        { label:'네이버 총매출',  val: cntN  ? Math.round(tn/cntN)   : 0, cnt: cntN,  color:'#3dbb8f', bg:'#f0fff8' },
+        { label:'네이버 검색광고',val: cntNS ? Math.round(tns/cntNS) : 0, cnt: cntNS, color:'#e8648a', bg:'#fff0f5' },
+        { label:'네이버 AI광고',  val: cntNA ? Math.round(tna/cntNA) : 0, cnt: cntNA, color:'#e8648a', bg:'#fff0f5' },
+        { label:'전체 총광고비',  val: cntAd ? Math.round(totalAd/cntAd) : 0, cnt: cntAd, color:'#e03c6e', bg:'#fff0f5' },
+        { label:'전체 총매출',    val: cntTotal ? Math.round(grandTotal/cntTotal) : 0, cnt: cntTotal, color:'#8b60d0', bg:'#f8f4ff' },
+      ];
+      dailyAvg.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:#fafafa;border:1.5px solid #eee;border-radius:14px;padding:14px';
+      dailyAvg.innerHTML = '<div style="grid-column:1/-1;font-size:.78rem;font-weight:800;color:#888;margin-bottom:4px">📅 하루 평균 <span style="font-weight:400;font-size:.72rem">(입력된 날 수 기준)</span></div>'
+        + avgCards.map(c => `
+          <div style="background:${c.bg};border:1.5px solid ${c.color}30;border-radius:10px;padding:8px 12px">
+            <div style="font-size:.68rem;color:#aaa;margin-bottom:2px">${c.label}</div>
+            <div style="font-size:.92rem;font-weight:800;color:${c.color}">${c.val > 0 ? c.val.toLocaleString()+'원' : '-'}</div>
+            ${c.cnt > 0 ? `<div style="font-size:.62rem;color:#ccc;margin-top:1px">${c.cnt}일 기준</div>` : ''}
+          </div>`).join('');
+    }
   }
 }
 
