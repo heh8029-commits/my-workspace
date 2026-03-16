@@ -104,6 +104,7 @@ body {
 /* ── 모바일 뷰 ── */
 body.mobile-view .main { padding: 14px 10px 60px; }
 body.mobile-view .three-col { grid-template-columns: 1fr; gap: 12px; }
+body.mobile-view .asset-layout { grid-template-columns: 1fr !important; }
 body.mobile-view .three-col > .card {
   min-width: 0; height: auto !important; max-height: none !important; }
 body.mobile-view .three-col > .card .ilist { max-height: 300px !important; }
@@ -2942,7 +2943,7 @@ function pwaInstall() {
       </div>
 
       <!-- 2열 레이아웃: 총자산 | 미래계획 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="asset-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 
         <!-- 왼쪽: 총자산 -->
         <div>
