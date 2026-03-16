@@ -10809,12 +10809,26 @@ function assetDel(id) {
   saveAssets(loadAssets().filter(function(x){return x.id!==id;}));
   renderAssets(); toast('🗑️ 삭제됐어요');
 }
+function _assetWan(val) {
+  // 입력값(만원 단위) → 실제 원 값
+  var n = parseFloat((val||'0').toString().replace(/,/g,'')) || 0;
+  return n * 10000;
+}
+function _assetFmt(wan) {
+  // 만원 단위 숫자 → "1,000만원" 표시
+  var n = parseFloat((wan||'0').toString().replace(/,/g,'')) || 0;
+  return n.toLocaleString() + '만원';
+}
 function renderAssetSummary() {
   var el = document.getElementById('asset-summary'); if(!el) return;
-  var total = loadAssets().reduce(function(s,it){ return s+parseFloat((it.amount||'0').replace(/,/g,''))||0; },0);
+  var totalWan = loadAssets().reduce(function(s,it){ return s+(parseFloat((it.amount||'0').replace(/,/g,''))||0); },0);
+  var totalWon = totalWan * 10000;
   el.innerHTML = '<div style="background:linear-gradient(135deg,#e8fff4,#b2e8d4);border:2px solid #3dbb8f;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px">'
     +'<div style="font-size:.8rem;font-weight:700;color:#1a7a50">💰 총 자산</div>'
-    +'<div style="font-size:1.3rem;font-weight:900;color:#1a7a50;margin-left:auto">'+total.toLocaleString()+'<span style="font-size:.75rem;font-weight:600">원</span></div>'
+    +'<div style="display:flex;align-items:baseline;gap:6px;margin-left:auto">'
+      +'<div style="font-size:1.3rem;font-weight:900;color:#1a7a50">'+totalWan.toLocaleString()+'<span style="font-size:.78rem;font-weight:700">만원</span></div>'
+      +'<div style="font-size:.78rem;color:#5aaa80">('+totalWon.toLocaleString()+'원)</div>'
+    +'</div>'
     +'</div>';
 }
 function renderAssets() {
@@ -10824,10 +10838,53 @@ function renderAssets() {
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 자산을 등록해요</div>';return;}
   el.innerHTML='';
   list.forEach(function(it){
-    el.appendChild(_m5TableRow(it,[
-      {key:'name',label:'자산명',w:'1.2fr'},{key:'type',label:'종류(현금/부동산 등)',w:'1fr'},
-      {key:'amount',label:'금액(원)',w:'1fr',right:true},{key:'memo',label:'메모',w:'1.2fr'}
-    ],assetSave,assetDel,M5_MINT));
+    var row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr 56px;border-bottom:1px solid #eee;align-items:center;background:white;transition:background .1s';
+    row.onmouseover=function(){this.style.background='#f8fffe';}; row.onmouseout=function(){this.style.background='white';};
+    // 자산명
+    var fields = [{key:'name',label:'자산명'},{key:'type',label:'종류(현금/부동산 등)'}];
+    fields.forEach(function(f){
+      var cell=document.createElement('div'); cell.style.cssText='padding:6px 8px;min-width:0';
+      var inp=document.createElement('input'); inp.value=it[f.key]||''; inp.placeholder=f.label;
+      inp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white';
+      inp.onfocus=function(){this.style.borderColor=M5_MINT;};
+      inp.onblur=(function(id,k){return function(){this.style.borderColor='#e0f0e8';assetSave(id,k,this.value.trim());};})(it.id,f.key);
+      inp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+      cell.appendChild(inp); row.appendChild(cell);
+    });
+    // 금액 (만원 단위 입력 + 표시)
+    var amtCell=document.createElement('div'); amtCell.style.cssText='padding:6px 8px;min-width:0';
+    var amtWrap=document.createElement('div'); amtWrap.style.cssText='position:relative';
+    var amtInp=document.createElement('input');
+    amtInp.value=it.amount||''; amtInp.placeholder='예: 1000 (=1000만원)';
+    amtInp.type='text'; amtInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 42px 5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;text-align:right';
+    amtInp.onfocus=function(){this.style.borderColor=M5_MINT;};
+    amtInp.onblur=(function(id){return function(){
+      this.style.borderColor='#e0f0e8';
+      var v=this.value.replace(/,/g,'');
+      if(v) this.value=parseFloat(v).toLocaleString();
+      assetSave(id,'amount',v);
+    };})(it.id);
+    amtInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+    var suffix=document.createElement('span'); suffix.textContent='만원';
+    suffix.style.cssText='position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:.68rem;color:#aaa;pointer-events:none';
+    amtWrap.appendChild(amtInp); amtWrap.appendChild(suffix);
+    amtCell.appendChild(amtWrap); row.appendChild(amtCell);
+    // 메모
+    var memoCell=document.createElement('div'); memoCell.style.cssText='padding:6px 8px;min-width:0';
+    var memoInp=document.createElement('input'); memoInp.value=it.memo||''; memoInp.placeholder='메모';
+    memoInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white';
+    memoInp.onfocus=function(){this.style.borderColor=M5_MINT;};
+    memoInp.onblur=(function(id){return function(){this.style.borderColor='#e0f0e8';assetSave(id,'memo',this.value.trim());};})(it.id);
+    memoInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+    memoCell.appendChild(memoInp); row.appendChild(memoCell);
+    // 삭제
+    var acts=document.createElement('div'); acts.style.cssText='display:flex;gap:2px;justify-content:center;padding:0 4px';
+    var del=document.createElement('button'); del.textContent='✕'; del.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.82rem;padding:3px 5px;border-radius:4px';
+    del.onmouseover=function(){this.style.color='#e03c6e';}; del.onmouseout=function(){this.style.color='#ccc';};
+    del.onclick=(function(id){return function(){assetDel(id);};})(it.id);
+    acts.appendChild(del); row.appendChild(acts);
+    el.appendChild(row);
   });
 }
 function assetNoteAdd() { _m5NoteAdd('m5_asset_notes','asset-note-inp','asset-note-grid'); }
