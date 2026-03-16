@@ -1742,6 +1742,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu1',3,null);setMobileSubActive(this)">🎨 디자인관리</button>
   <button class="msub-btn" onclick="switchSub('menu1',19,null);setMobileSubActive(this)">✍️ 문구추천리스트</button>
   <button class="msub-btn" onclick="switchSub('menu1',18,null);setMobileSubActive(this)">🛒 상품관리</button>
+  <button class="msub-btn" onclick="switchSub('menu1',20,null);setMobileSubActive(this)">📣 광고관리</button>
   <button class="msub-btn" onclick="switchSub('menu1',4,null);setMobileSubActive(this)">📦 재고관리(단가)</button>
   <button class="msub-btn" onclick="switchSub('menu1',5,null);setMobileSubActive(this)">👥 직원관리</button>
 </div>
@@ -1759,9 +1760,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
   <button class="msub-btn" onclick="switchSub('menu5',2,null);setMobileSubActive(this)">🔄 자동이체리스트</button>
   <button class="msub-btn" onclick="switchSub('menu5',3,null);setMobileSubActive(this)">📈 투자&연금</button>
-  <button class="msub-btn" onclick="switchSub('menu5',4,null);setMobileSubActive(this)">🏦 대출</button>
-  <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">💊 건강,청결</button>
-  <button class="msub-btn" onclick="switchSub('menu5',6,null);setMobileSubActive(this)">📚 지식자산</button>
+  <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">💊 건강/청결/지식</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu4">
   <button class="msub-btn" onclick="setMobileSubActive(this)">🔒 정보</button>
@@ -1791,6 +1790,7 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',3,null)">🎨 디자인관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',19,null)">✍️ 문구추천리스트</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',18,null)">🛒 상품관리</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',20,null)">📣 광고관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null)">📦 재고관리(단가)</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
   </div>
@@ -1814,9 +1814,7 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',1,null)">💰 현재자산정보</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null)">🔄 자동이체리스트</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',3,null)">📈 투자&연금</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',4,null)">🏦 대출</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',5,null)">💊 건강,청결</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',6,null)">📚 지식자산</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',5,null)">💊 건강/청결/지식</div>
 
   </div>
   <div class="gnav-main" id="gnav-menu4" onclick="infoTabClick(document.querySelector('.tab[onclick*=infoTabClick]')); gnavActivate('menu4')">
@@ -2135,14 +2133,12 @@ function pwaInstall() {
         <!-- 3열: 세금관련 메모 -->
         <div class="card cm">
           <div style="font-size:.95rem;color:var(--mint-dark);font-weight:700;margin-bottom:10px">📝 세금관련 메모</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <input type="text" placeholder="제목 입력..." class="ra-inp" id="tax-memo-title-inp" style="border-color:var(--mint);background:#f0fff8">
-            <div style="display:flex;gap:6px;align-items:flex-start">
-              <textarea rows="3" placeholder="내용 입력..." class="ra-inp" id="tax-memo-inp" style="flex:1;min-width:0;width:0;border-color:var(--mint);background:#f0fff8;resize:vertical" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxMemoItem()}"></textarea>
-              <button class="abtn mint-btn" style="flex-shrink:0;align-self:flex-start" onclick="addTaxMemoItem()">+</button>
-            </div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input type="text" placeholder="📌 제목" class="ra-inp" id="tax-memo-title-inp" style="flex:1;border-color:var(--mint);background:#f0fff8;font-weight:700">
+            <button class="abtn mint-btn" style="flex-shrink:0" onclick="addTaxMemoItem()">+ 추가</button>
           </div>
-          <div id="tax-memo-list" style="height:700px;max-height:700px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px"></div>
+          <textarea rows="2" placeholder="내용 입력... (Shift+Enter로 추가)" class="ra-inp" id="tax-memo-inp" style="width:100%;box-sizing:border-box;border-color:var(--mint);background:#f0fff8;resize:none;line-height:1.6;margin-bottom:8px" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addTaxMemoItem()}"></textarea>
+          <div id="tax-memo-list" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:3px"></div>
         </div>
 
       </div>
@@ -2323,6 +2319,13 @@ function pwaInstall() {
       <div id="phrase-grid"></div>
     </div>
 
+    <div class="subpage" id="menu1-sub-20">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f8,#f7a8c0)">📣</div>
+        <div><div class="subpage-title">광고관리</div><div class="subpage-desc">광고 현황과 키워드를 관리해요</div></div>
+      </div>
+      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">광고 관련 내용을 여기에 채워요</span></div>
+    </div>
     <div class="subpage" id="menu1-sub-4">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#fcd5e5)">📦</div>
@@ -2980,9 +2983,13 @@ function pwaInstall() {
         <div>
           <div class="card" style="border-top:3px solid #a0c4ff;height:100%;box-sizing:border-box">
             <div style="font-size:.88rem;font-weight:800;color:#4a80d0;margin-bottom:10px">🎯 미래계획</div>
-            <textarea id="asset-plan-inp" rows="14" placeholder="✏️ 자유롭게 적어요&#10;&#10;예)&#10;- 2025년 목표 자산 5억&#10;- 전세 만기 후 매매 전환&#10;- 연금 추가 납입 검토&#10;- 비상금 3000만원 유지"
+            <textarea id="asset-plan-inp" rows="8" placeholder="✏️ 자유롭게 적어요&#10;&#10;예)&#10;- 2025년 목표 자산 5억&#10;- 전세 만기 후 매매 전환&#10;- 연금 추가 납입 검토&#10;- 비상금 3000만원 유지"
               style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:10px;padding:10px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f8fbff;color:#333"
-              oninput="assetPlanSave()" placeholder="미래계획을 자유롭게 적어요..."></textarea>
+              oninput="assetPlanSave()"></textarea>
+            <div style="font-size:.82rem;font-weight:700;color:#e03c6e;margin:10px 0 6px">🏦 대출 메모</div>
+            <textarea id="asset-loan-inp" rows="6" placeholder="✏️ 대출 내용 메모&#10;&#10;예)&#10;- 주택담보대출 2억 / 이자 3.5%&#10;- 만기 2032년 3월&#10;- 월 상환 82만원"
+              style="width:100%;box-sizing:border-box;border:1.5px solid #fca0b8;border-radius:10px;padding:10px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#fff8fa;color:#333"
+              oninput="assetLoanSave()"></textarea>
           </div>
         </div>
       </div>
@@ -3070,7 +3077,7 @@ function pwaInstall() {
     <div class="subpage" id="menu5-sub-5">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">💊</div>
-        <div><div class="subpage-title">건강,청결</div><div class="subpage-desc">건강 관리와 청결 습관을 기록해요</div></div>
+        <div><div class="subpage-title">건강/청결/지식</div><div class="subpage-desc">건강 관리, 청결 습관, 지식 자산을 기록해요</div></div>
       </div>
       <!-- 체크리스트 -->
       <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
@@ -3090,15 +3097,8 @@ function pwaInstall() {
         </div>
         <div id="health-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
       </div>
-    </div>
 
-    <!-- ══ 6. 지식자산 ══ -->
-    <div class="subpage" id="menu5-sub-6">
-      <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">📚</div>
-        <div><div class="subpage-title">지식자산</div><div class="subpage-desc">배움과 지식 자산을 기록해요</div></div>
-      </div>
-      <!-- 링크/자료 리스트 -->
+      <!-- 🔗 지식자산 (통합) -->
       <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
         <div style="font-size:.9rem;font-weight:800;color:#3dbb8f;margin-bottom:10px">🔗 자료 링크</div>
         <div class="inp-row">
@@ -3107,7 +3107,6 @@ function pwaInstall() {
         </div>
         <div class="ilist" id="know-link-list" style="margin-top:8px"></div>
       </div>
-      <!-- 포스트잇 메모 -->
       <div class="card" style="border-top:3px solid #b2e8d4">
         <div style="font-size:.9rem;font-weight:800;color:#3dbb8f;margin-bottom:10px">📌 지식 메모</div>
         <div style="display:flex;gap:7px;margin-bottom:10px">
@@ -3433,7 +3432,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_invest','m5_invest_notes','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -3644,7 +3643,7 @@ function flowDrop(e, type, targetId) {
 }
 
 // ── 요일 박스 ──
-const WEEKDAYS = ['월','화','수','목','금'];
+const WEEKDAYS = ['월','화','수','목','금','토','일'];
 const weekData = loadObj('week');
 // weekData 구조: { 월:[{id,text,done},...], 화:... }
 WEEKDAYS.forEach(d => { if (!weekData[d]) weekData[d] = []; });
@@ -3671,7 +3670,7 @@ function renderWeek() {
         ${day} ${isToday?'<span class="today-badge">오늘!</span>':''}
       </div>
       <div class="day-tasks">${taskHtml}</div>
-      <div class="day-add" onclick="addDayTask('${day}')">＋ 추가</div>
+      <button style="background:none;border:1px solid #f0d0e0;border-radius:6px;padding:2px 8px;font-size:.68rem;color:#e03c6e;cursor:pointer;margin-top:3px;font-family:Pretendard,sans-serif" onclick="addDayTask('${day}')">＋</button>
     </div>`;
   }).join('');
 }
@@ -6628,23 +6627,35 @@ function saveJinuNotes(list) { stor('jinu_notes', {list}); }
 
 /* ── 포스트잇 공통 이미지 함수 ── */
 function _noteImgDrop(card, item, saveFn, loadFn, renderFn) {
-  var drop = document.createElement('div');
-  drop.className = 'note-img-drop';
-  if (item.img) {
+  // imgs 배열 지원 (최대 3개), 하위호환: item.img
+  var imgs = item.imgs || (item.img ? [item.img] : []);
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-top:4px';
+  // 기존 이미지들 표시
+  imgs.forEach(function(src, idx) {
+    var imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'position:relative';
     var img = document.createElement('img');
-    img.src = item.img;
-    img.className = 'note-card-img';
-    img.onclick = function(e){ e.stopPropagation(); openImgModal && openImgModal(item.img); };
-    drop.innerHTML = '';
-    drop.appendChild(img);
-  } else {
-    drop.innerHTML = '<span style="pointer-events:none">📷 클릭해서 이미지 추가</span>';
+    img.src = src; img.className = 'note-card-img';
+    img.onclick = function(e){ e.stopPropagation(); openImgModal && openImgModal(src); };
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '✕'; delBtn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0';
+    delBtn.onclick = (function(i){ return function(e){ e.stopPropagation();
+      var list=loadFn(); var it=list.find(function(x){return x.id===item.id;});
+      if(it){ var arr=it.imgs||(it.img?[it.img]:[]); arr.splice(i,1); it.imgs=arr; it.img=arr[0]||null; saveFn(list); renderFn(); }
+    };})(idx);
+    imgWrap.appendChild(img); imgWrap.appendChild(delBtn);
+    wrap.appendChild(imgWrap);
+  });
+  // 추가 버튼 (3개 미만일 때만)
+  if (imgs.length < 3) {
+    var drop = document.createElement('div');
+    drop.className = 'note-img-drop';
+    drop.innerHTML = '<span style="pointer-events:none">' + (imgs.length===0?'📷 이미지 추가':'📷 추가('+(imgs.length)+'/3)')+'</span>';
+    drop.onclick = function(e){ e.stopPropagation(); _noteImgModal(item, saveFn, loadFn, renderFn); };
+    wrap.appendChild(drop);
   }
-  drop.onclick = function(e) {
-    e.stopPropagation();
-    _noteImgModal(item, saveFn, loadFn, renderFn);
-  };
-  return drop;
+  return wrap;
 }
 
 function _noteImgModal(item, saveFn, loadFn, renderFn) {
@@ -6711,7 +6722,12 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
     if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
     var list = loadFn();
     var idx = list.findIndex(function(x){return x.id===item.id;});
-    if (idx!==-1) { list[idx].img = _pending; saveFn(list); renderFn(); }
+    if (idx!==-1) {
+      var arr = list[idx].imgs || (list[idx].img ? [list[idx].img] : []);
+      arr.push(_pending);
+      list[idx].imgs = arr; list[idx].img = arr[0];
+      saveFn(list); renderFn();
+    }
     modal.remove();
     toast('📷 이미지 등록됐어요!');
   };
@@ -10721,12 +10737,16 @@ function renderInfoNotes() {
     var txt = document.createElement('div');
     txt.className = 'jinu-note-text';
     txt.contentEditable = 'false';
-    txt.textContent = item.text;
-    txt.ondblclick = function(){ txt.contentEditable='true'; txt.focus(); };
+    txt.innerHTML = linkify(item.text||'');
+    txt.ondblclick = function(e){
+      if(e.target.tagName==='A') return;
+      txt.textContent = item.text||''; txt.contentEditable='true'; txt.focus();
+    };
     txt.onblur = function(){
       var v = txt.innerText.trim();
       if (v) { var l=loadInfoNotes(); var i=l.findIndex(function(x){return x.id===item.id;}); if(i!==-1){l[i].text=v;saveInfoNotes(l);} }
       txt.contentEditable='false';
+      txt.innerHTML = linkify(txt.innerText);
     };
     txt.onkeydown = function(e){ if(e.key==='Escape') txt.blur(); };
     var acts = document.createElement('div');
@@ -11158,6 +11178,16 @@ function renderAssets() {
     el.appendChild(row);
   });
 }
+
+function assetLoanSave() {
+  var el = document.getElementById('asset-loan-inp');
+  if (el) stor('m5_asset_loan', {text: el.value});
+}
+function loadAssetLoan() {
+  var el = document.getElementById('asset-loan-inp');
+  if (el) el.value = loadObj('m5_asset_loan').text || '';
+}
+
 function assetPlanSave() {
   var el = document.getElementById('asset-plan-inp');
   if (el) stor('m5_asset_plan', {text: el.value});
@@ -11348,12 +11378,11 @@ function renderKnowNotes() { _m5NoteRender('m5_know_notes','know-note-grid'); }
 // ── initRender menu5 ──
 function renderMenu5(sub) {
   sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
-  if(sub===1){ renderAssetCatTabs && renderAssetCatTabs(); renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); }
+  if(sub===1){ renderAssetCatTabs && renderAssetCatTabs(); renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); loadAssetLoan && loadAssetLoan(); }
   if(sub===2){ renderAutotx(); }
   if(sub===3){ renderInvest(); renderInvestNotes(); }
   if(sub===4){ renderLoans(); renderLoanNotes(); }
-  if(sub===5){ renderHealthCheck(); renderHealthNotes(); }
-  if(sub===6){ renderKnowLinks(); renderKnowNotes(); }
+  if(sub===5){ renderHealthCheck(); renderHealthNotes(); renderKnowLinks&&renderKnowLinks(); renderKnowNotes&&renderKnowNotes(); }
 }
 
 // ── 단일파일 시작 초기화 ──
