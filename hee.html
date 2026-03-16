@@ -2940,22 +2940,43 @@ function pwaInstall() {
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">💰</div>
         <div><div class="subpage-title">현재자산정보</div><div class="subpage-desc">보유 자산을 한눈에 정리해요</div></div>
       </div>
-      <!-- 합산 카드 -->
-      <div id="asset-summary" style="margin-bottom:14px"></div>
-      <!-- 자산 입력 -->
-      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:.9rem;font-weight:800;color:#3dbb8f">💰 자산 목록</div>
-          <button onclick="assetAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+
+      <!-- 2열 레이아웃: 총자산 | 미래계획 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- 왼쪽: 총자산 -->
+        <div>
+          <div id="asset-summary" style="margin-bottom:10px"></div>
+          <div class="card" style="border-top:3px solid #3dbb8f">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <div style="font-size:.88rem;font-weight:800;color:#3dbb8f">💰 자산 목록</div>
+              <button onclick="assetAdd()" style="margin-left:auto;background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:8px;padding:4px 12px;font-size:.75rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+            </div>
+            <!-- 헤더 -->
+            <div style="display:grid;grid-template-columns:1.3fr 1fr 1.2fr 40px;background:#e8fff4;border-radius:7px;padding:5px 8px;font-size:.72rem;font-weight:700;color:#3dbb8f;margin-bottom:5px">
+              <div>자산명</div><div style="text-align:right">금액</div><div>메모</div><div></div>
+            </div>
+            <div id="asset-list"></div>
+          </div>
         </div>
-        <div id="asset-list"></div>
+
+        <!-- 오른쪽: 미래계획 -->
+        <div>
+          <div class="card" style="border-top:3px solid #a0c4ff;height:100%;box-sizing:border-box">
+            <div style="font-size:.88rem;font-weight:800;color:#4a80d0;margin-bottom:10px">🎯 미래계획</div>
+            <textarea id="asset-plan-inp" rows="14" placeholder="✏️ 자유롭게 적어요&#10;&#10;예)&#10;- 2025년 목표 자산 5억&#10;- 전세 만기 후 매매 전환&#10;- 연금 추가 납입 검토&#10;- 비상금 3000만원 유지"
+              style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:10px;padding:10px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f8fbff;color:#333"
+              oninput="assetPlanSave()" placeholder="미래계획을 자유롭게 적어요..."></textarea>
+          </div>
+        </div>
       </div>
-      <!-- 포스트잇 메모 -->
+
+      <!-- 포스트잇 메모 (하단 1줄) -->
       <div style="display:flex;gap:7px;margin-bottom:10px">
         <textarea id="asset-note-inp" rows="2" placeholder="메모..." style="flex:1;border:1.5px solid #b2e8d4;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
         <button onclick="assetNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;align-self:flex-end">+</button>
       </div>
-      <div id="asset-note-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px"></div>
+      <div id="asset-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
     </div>
 
     <!-- ══ 2. 자동이체리스트 ══ -->
@@ -10839,53 +10860,58 @@ function renderAssets() {
   el.innerHTML='';
   list.forEach(function(it){
     var row = document.createElement('div');
-    row.style.cssText = 'display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr 56px;border-bottom:1px solid #eee;align-items:center;background:white;transition:background .1s';
+    row.style.cssText = 'display:grid;grid-template-columns:1.3fr 1fr 1.2fr 40px;border-bottom:1px solid #eef8f4;align-items:center;background:white;transition:background .1s';
     row.onmouseover=function(){this.style.background='#f8fffe';}; row.onmouseout=function(){this.style.background='white';};
     // 자산명
-    var fields = [{key:'name',label:'자산명'},{key:'type',label:'종류(현금/부동산 등)'}];
-    fields.forEach(function(f){
-      var cell=document.createElement('div'); cell.style.cssText='padding:6px 8px;min-width:0';
-      var inp=document.createElement('input'); inp.value=it[f.key]||''; inp.placeholder=f.label;
-      inp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white';
-      inp.onfocus=function(){this.style.borderColor=M5_MINT;};
-      inp.onblur=(function(id,k){return function(){this.style.borderColor='#e0f0e8';assetSave(id,k,this.value.trim());};})(it.id,f.key);
-      inp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
-      cell.appendChild(inp); row.appendChild(cell);
-    });
-    // 금액 (만원 단위 입력 + 표시)
-    var amtCell=document.createElement('div'); amtCell.style.cssText='padding:6px 8px;min-width:0';
+    var nameCell=document.createElement('div'); nameCell.style.cssText='padding:5px 6px;min-width:0';
+    var nameInp=document.createElement('input'); nameInp.value=it.name||''; nameInp.placeholder='자산명';
+    nameInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:4px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white';
+    nameInp.onfocus=function(){this.style.borderColor=M5_MINT;};
+    nameInp.onblur=(function(id){return function(){this.style.borderColor='#e0f0e8';assetSave(id,'name',this.value.trim());};})(it.id);
+    nameInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+    nameCell.appendChild(nameInp); row.appendChild(nameCell);
+    // 금액 (만원 단위)
+    var amtCell=document.createElement('div'); amtCell.style.cssText='padding:5px 6px;min-width:0';
     var amtWrap=document.createElement('div'); amtWrap.style.cssText='position:relative';
     var amtInp=document.createElement('input');
-    amtInp.value=it.amount||''; amtInp.placeholder='예: 1000 (=1000만원)';
-    amtInp.type='text'; amtInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 42px 5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;text-align:right';
+    amtInp.value=it.amount||''; amtInp.placeholder='0';
+    amtInp.type='text'; amtInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:4px 36px 4px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;text-align:right';
     amtInp.onfocus=function(){this.style.borderColor=M5_MINT;};
     amtInp.onblur=(function(id){return function(){
       this.style.borderColor='#e0f0e8';
       var v=this.value.replace(/,/g,'');
-      if(v) this.value=parseFloat(v).toLocaleString();
+      if(v&&!isNaN(v)) this.value=parseFloat(v).toLocaleString();
       assetSave(id,'amount',v);
     };})(it.id);
     amtInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
     var suffix=document.createElement('span'); suffix.textContent='만원';
-    suffix.style.cssText='position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:.68rem;color:#aaa;pointer-events:none';
+    suffix.style.cssText='position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.65rem;color:#aaa;pointer-events:none;white-space:nowrap';
     amtWrap.appendChild(amtInp); amtWrap.appendChild(suffix);
     amtCell.appendChild(amtWrap); row.appendChild(amtCell);
     // 메모
-    var memoCell=document.createElement('div'); memoCell.style.cssText='padding:6px 8px;min-width:0';
+    var memoCell=document.createElement('div'); memoCell.style.cssText='padding:5px 6px;min-width:0';
     var memoInp=document.createElement('input'); memoInp.value=it.memo||''; memoInp.placeholder='메모';
-    memoInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:5px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white';
+    memoInp.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid #e0f0e8;border-radius:6px;padding:4px 7px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white';
     memoInp.onfocus=function(){this.style.borderColor=M5_MINT;};
     memoInp.onblur=(function(id){return function(){this.style.borderColor='#e0f0e8';assetSave(id,'memo',this.value.trim());};})(it.id);
     memoInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
     memoCell.appendChild(memoInp); row.appendChild(memoCell);
     // 삭제
-    var acts=document.createElement('div'); acts.style.cssText='display:flex;gap:2px;justify-content:center;padding:0 4px';
-    var del=document.createElement('button'); del.textContent='✕'; del.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.82rem;padding:3px 5px;border-radius:4px';
+    var acts=document.createElement('div'); acts.style.cssText='display:flex;justify-content:center;padding:0 3px';
+    var del=document.createElement('button'); del.textContent='✕'; del.style.cssText='background:none;border:none;cursor:pointer;color:#ccc;font-size:.78rem;padding:3px 4px;border-radius:4px';
     del.onmouseover=function(){this.style.color='#e03c6e';}; del.onmouseout=function(){this.style.color='#ccc';};
     del.onclick=(function(id){return function(){assetDel(id);};})(it.id);
     acts.appendChild(del); row.appendChild(acts);
     el.appendChild(row);
   });
+}
+function assetPlanSave() {
+  var el = document.getElementById('asset-plan-inp');
+  if (el) stor('m5_asset_plan', {text: el.value});
+}
+function loadAssetPlan() {
+  var el = document.getElementById('asset-plan-inp');
+  if (el) el.value = loadObj('m5_asset_plan').text || '';
 }
 function assetNoteAdd() { _m5NoteAdd('m5_asset_notes','asset-note-inp','asset-note-grid'); }
 function renderAssetNotes() { _m5NoteRender('m5_asset_notes','asset-note-grid'); }
@@ -11069,7 +11095,7 @@ function renderKnowNotes() { _m5NoteRender('m5_know_notes','know-note-grid'); }
 // ── initRender menu5 ──
 function renderMenu5(sub) {
   sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
-  if(sub===1){ renderAssets(); renderAssetNotes(); }
+  if(sub===1){ renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); }
   if(sub===2){ renderAutotx(); }
   if(sub===3){ renderInvest(); renderInvestNotes(); }
   if(sub===4){ renderLoans(); renderLoanNotes(); }
