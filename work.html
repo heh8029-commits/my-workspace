@@ -1719,20 +1719,12 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <div id="design-links-wrap" style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px"></div>
       </div>
 
-      <!-- 디자인 코멘트 -->
-      <div style="background:#fff;border-radius:14px;border:1.5px solid #e8e0f8;padding:13px 16px;margin-bottom:18px;box-shadow:0 2px 8px rgba(180,160,240,.08)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:.88rem;font-weight:700;color:#7040c0">💬 코멘트</div>
-          <div style="flex:1">
-            <div style="display:flex;gap:6px">
-              <input id="design-comment-inp" type="text" placeholder="간단한 메모 남기기..." maxlength="100"
-                style="flex:1;border:1.5px solid #d0b8f8;border-radius:8px;padding:5px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:#faf8ff"
-                onkeydown="if(event.key==='Enter'){event.preventDefault();designCommentAdd()}">
-              <button onclick="designCommentAdd()" style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:8px;padding:5px 13px;font-size:.78rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">+</button>
-            </div>
-          </div>
-        </div>
-        <div id="design-comment-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0"></div>
+      <!-- 디자인 메모 텍스트박스 -->
+      <div class="card" style="border-top:3px solid #b090e8;margin-bottom:18px">
+        <div style="font-size:.88rem;font-weight:700;color:#7040c0;margin-bottom:8px">💬 메모</div>
+        <textarea id="design-comment-box" rows="5" placeholder="자유롭게 메모해요..."
+          style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:10px;padding:10px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#faf8ff;color:#2a1060;font-weight:500"
+          oninput="designCommentBoxSave()"></textarea>
       </div>
 
       <!-- 디자인 카드 -->
@@ -4916,6 +4908,16 @@ function dcImgDel(cardId, slotIdx) {
 function loadDesignComments()     { return loadObj('design_comments').list || []; }
 function saveDesignComments(list) { stor('design_comments', {list}); }
 
+
+function designCommentBoxSave() {
+  var el = document.getElementById('design-comment-box');
+  if (el) stor('design_comments', {text: el.value});
+}
+function loadDesignCommentBox() {
+  var el = document.getElementById('design-comment-box');
+  if (el) el.value = loadObj('design_comments').text || '';
+}
+
 function renderDesignComments() {
   var el = document.getElementById('design-comment-list');
   if (!el) return;
@@ -7094,7 +7096,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){
       renderDesignLinks && renderDesignLinks();
       renderDesignCards && renderDesignCards();
-      renderDesignComments && renderDesignComments();
+      loadDesignCommentBox && loadDesignCommentBox();
     }, 0);
   }
   if (pageId === 'menu1' && num === 18) {
@@ -8639,7 +8641,7 @@ function workSwitchTab(idx, el) {
   el.classList.add('active');
   document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3').forEach(s => s.classList.remove('active'));
   document.getElementById('work-sub-'+(idx+1)).classList.add('active');
-  if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); renderDesignComments && renderDesignComments(); }
+  if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); loadDesignCommentBox && loadDesignCommentBox(); }
   if (idx===1) { renderProductMgmt && renderProductMgmt(); }
   if (idx===2) { renderPhrases && renderPhrases(); }
 }
@@ -8658,7 +8660,7 @@ async function workSync() {
     const activeTab = document.querySelector('.work-tab.active');
     const tabs = [...document.querySelectorAll('.work-tab')];
     const idx = tabs.indexOf(activeTab);
-    if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); renderDesignComments && renderDesignComments(); }
+    if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); loadDesignCommentBox && loadDesignCommentBox(); }
     if (idx===1) { renderProductMgmt && renderProductMgmt(); }
     if (idx===2) { renderPhrases && renderPhrases(); }
     toast('✅ 동기화 완료!');
@@ -8672,7 +8674,7 @@ async function workSync() {
   document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3').forEach((s,i) => s.classList.toggle('active', i===0));
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
-  renderDesignComments && renderDesignComments();
+  loadDesignCommentBox && loadDesignCommentBox();
   // 자동 동기화
   workSync();
 })();
