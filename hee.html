@@ -3575,9 +3575,18 @@ async function syncFromSheet() {
     // 항상 렌더 (F5든 수동이든 동일하게)
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
+    // subpage 복원
     const ls = localStorage.getItem('ws_sub_'+cp);
-    if (ls !== null && cp === 'menu5' && typeof renderMenu5==='function') renderMenu5(parseInt(ls));
-    if (ls !== null && (cp==='menu1'||cp==='menu2') && typeof switchSub==='function') switchSub(cp, parseInt(ls), null);
+    if (ls !== null && cp === 'menu5') renderMenu5 && renderMenu5(parseInt(ls));
+    // 메모박스 강제 로드 (textarea는 initRender 후 DOM에 있음)
+    setTimeout(function() {
+      loadDesignCommentBox && loadDesignCommentBox();
+      loadInvMemoBox && loadInvMemoBox();
+      loadAssetPlan && loadAssetPlan();
+      loadAssetLoan && loadAssetLoan();
+      loadAutotxMemoBox && loadAutotxMemoBox();
+      loadInvestMemoBox && loadInvestMemoBox();
+    }, 50);
     updateTodaySchedBar && updateTodaySchedBar();
     toast('✅ 동기화 완료!');
   } catch(e) {
@@ -11932,13 +11941,17 @@ function renderMenu5(sub) {
   _startAutoSync();
   // F5: syncFromSheet 완료 후 렌더 (동기화버튼과 동일)
   syncFromSheet().then(function() {
-    // sync 완료 후 subpage 복원 + 렌더
+    // sync 완료 후 subpage 복원 + 메모박스 직접 로드
     const lastSub = localStorage.getItem('ws_sub_'+savedTab);
-    if (lastSub !== null) {
-      switchSub(savedTab, parseInt(lastSub), null);
-    } else if (savedTab === 'menu5') {
-      renderMenu5 && renderMenu5();
-    }
+    if (lastSub !== null && savedTab === 'menu5') renderMenu5 && renderMenu5(parseInt(lastSub));
+    setTimeout(function() {
+      loadDesignCommentBox && loadDesignCommentBox();
+      loadInvMemoBox && loadInvMemoBox();
+      loadAssetPlan && loadAssetPlan();
+      loadAssetLoan && loadAssetLoan();
+      loadAutotxMemoBox && loadAutotxMemoBox();
+      loadInvestMemoBox && loadInvestMemoBox();
+    }, 50);
     updateTodaySchedBar && updateTodaySchedBar();
   }).catch(function() {
     initRender(savedTab);
