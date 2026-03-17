@@ -10783,12 +10783,21 @@ function initRender(pageId) {
   } else if (pageId === 'menu1') {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
+    renderTaxNotes && renderTaxNotes();
     renderSales && renderSales();
     renderHourly && renderHourly();
     renderStaff && renderStaff();
     renderPnlPage && renderPnlPage();
     renderInv && renderInv();
-    renderInvNotes && renderInvNotes();
+    loadInvMemoBox && loadInvMemoBox();
+    renderInvCatTabs && renderInvCatTabs();
+    updateInvCatSelect && updateInvCatSelect();
+    renderDesignLinks && renderDesignLinks();
+    renderDesignCards && renderDesignCards();
+    loadDesignCommentBox && loadDesignCommentBox();
+    renderDesignComments && renderDesignComments();
+    renderProductMgmt && renderProductMgmt();
+    renderPhrases && renderPhrases();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
@@ -10809,6 +10818,11 @@ function initRender(pageId) {
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu5') {
     renderMenu5 && renderMenu5();
+    // 현재 sub에 맞는 메모박스도 로드
+    loadAssetPlan && loadAssetPlan();
+    loadAssetLoan && loadAssetLoan();
+    loadAutotxMemoBox && loadAutotxMemoBox();
+    loadInvestMemoBox && loadInvestMemoBox();
   } else if (pageId === 'menu4') {
     renderInfoCats && renderInfoCats();
     renderInfoNotes && renderInfoNotes();
