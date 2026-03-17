@@ -8707,20 +8707,19 @@ function initRender(pageId) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
-  // 저장된 subpage 복원
-  const lastSub = localStorage.getItem('ws_sub_'+savedTab);
-  if (lastSub !== null) {
-    switchSub(savedTab, parseInt(lastSub), null);
-  } else if (savedTab === 'menu2') {
-    switchSub('menu2', 0, null);
-  } else if (savedTab === 'menu1') {
-    switchSub('menu1', 8, null);
-  }
   updateTodaySchedBar();
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
-  syncFromSheet().catch(function() {
+  syncFromSheet().then(function() {
+    const lastSub = localStorage.getItem('ws_sub_'+savedTab);
+    if (lastSub !== null) {
+      switchSub(savedTab, parseInt(lastSub), null);
+    } else if (savedTab === 'menu5') {
+      renderMenu5 && renderMenu5();
+    }
+    updateTodaySchedBar && updateTodaySchedBar();
+  }).catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
   });
