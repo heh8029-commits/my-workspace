@@ -8649,7 +8649,14 @@ function initRender(pageId) {
     renderStaff && renderStaff();
     renderPnlPage && renderPnlPage();
     renderInv && renderInv();
-    renderInvNotes && renderInvNotes();
+    loadInvMemoBox && loadInvMemoBox();
+    renderInvCatTabs && renderInvCatTabs();
+    updateInvCatSelect && updateInvCatSelect();
+    renderDesignLinks && renderDesignLinks();
+    renderDesignCards && renderDesignCards();
+    loadDesignCommentBox && loadDesignCommentBox();
+    renderProductMgmt && renderProductMgmt();
+    renderPhrases && renderPhrases();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
     renderExp && renderExp();
