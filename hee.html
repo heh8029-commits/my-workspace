@@ -3572,15 +3572,14 @@ async function syncFromSheet() {
     WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
     Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
     recipeDB.data = load('recipe');
-    // 동기화 버튼으로 수동 호출 시엔 렌더까지
+    // 항상 렌더 (F5든 수동이든 동일하게)
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
-    if (window._syncedOnce) {
-      initRender(cp);
-      updateTodaySchedBar && updateTodaySchedBar();
-      toast('✅ 동기화 완료!');
-    } else {
-      window._syncedOnce = true;
-    }
+    initRender(cp);
+    const ls = localStorage.getItem('ws_sub_'+cp);
+    if (ls !== null && cp === 'menu5' && typeof renderMenu5==='function') renderMenu5(parseInt(ls));
+    if (ls !== null && (cp==='menu1'||cp==='menu2') && typeof switchSub==='function') switchSub(cp, parseInt(ls), null);
+    updateTodaySchedBar && updateTodaySchedBar();
+    toast('✅ 동기화 완료!');
   } catch(e) {
     console.log('sync err', e);
     toast('❌ ' + (e.message || '동기화 실패'));
@@ -11940,17 +11939,8 @@ function renderMenu5(sub) {
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
-  // 최초 1회 풀싱크 후 렌더 (F5 새로고침 시 Firebase 데이터 먼저 받고 그리기)
-  syncFromSheet().then(function() {
-    // sync 완료 후 현재 subpage 재렌더 (메모박스 등 반영)
-    const cp = window._currentPage || savedTab;
-    if (typeof initRender === 'function') initRender(cp);
-    // subpage도 재복원
-    const ls = localStorage.getItem('ws_sub_'+cp);
-    if (ls !== null && typeof renderMenu5 === 'function' && cp === 'menu5') renderMenu5(parseInt(ls));
-    if (ls !== null && typeof switchSub === 'function' && (cp === 'menu1' || cp === 'menu2')) switchSub(cp, parseInt(ls), null);
-    updateTodaySchedBar && updateTodaySchedBar();
-  }).catch(function() {
+  // F5 포함 항상 syncFromSheet 실행 (동기화 버튼과 동일하게)
+  syncFromSheet().catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
   });
