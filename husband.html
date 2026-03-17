@@ -2840,17 +2840,95 @@ function loadObj(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
 }
 
-// Firebase에 PUT 저장 + 로컬캐시
+// stor → 아래 실시간싱크 블록에서 재정의
+
+// ── Firebase Realtime Sync ──────────────────────────
+var _fbStream = null;
+var _fbStreamRetry = 0;
+var _fbLastSyncTs = 0;
+var _fbSyncThrottle = null;
+
+function _fbApplyData(all) {
+  if (!all) return;
+  for (const k of Object.keys(all)) {
+    if (all[k] !== undefined && all[k] !== null) {
+      localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
+    }
+  }
+  if (typeof flowData !== 'undefined') ['boss','basic','design'].forEach(t => { if(typeof load==='function') flowData[t] = load(t+'_flow'); });
+  if (typeof weekData !== 'undefined' && typeof WEEKDAYS !== 'undefined') { const wd = (typeof loadObj==='function')?loadObj('week'):''; if(wd) WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; }); }
+  if (typeof DBS !== 'undefined') Object.keys(DBS).forEach(k => { DBS[k].data = (typeof load==='function')?load(k):[]; });
+  if (typeof recipeDB !== 'undefined' && typeof load==='function') recipeDB.data = load('recipe');
+}
+
+function _fbRender() {
+  const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
+  if (typeof initRender === 'function') initRender(cp);
+  if (typeof updateTodaySchedBar === 'function') updateTodaySchedBar();
+}
+
+function startFbStream() {
+  if (_fbStream) { try { _fbStream.close(); } catch(e){} }
+  try {
+    _fbStream = new EventSource(FB_URL + '.json?t=' + Date.now());
+    _fbStream.onopen = function() { _fbStreamRetry = 0; };
+    _fbStream.addEventListener('put', function(e) {
+      try {
+        var d = JSON.parse(e.data);
+        var data = d.path === '/' ? d.data : null;
+        if (data) {
+          if (Date.now() - _fbLastSyncTs < 500) return;
+          _fbApplyData(data);
+          clearTimeout(_fbSyncThrottle);
+          _fbSyncThrottle = setTimeout(_fbRender, 200);
+        }
+      } catch(err) {}
+    });
+    _fbStream.addEventListener('patch', function(e) {
+      try {
+        var d = JSON.parse(e.data);
+        if (d.data) {
+          Object.keys(d.data).forEach(function(k) {
+            if (d.data[k] !== null) localStorage.setItem('ws5_'+k, JSON.stringify(d.data[k]));
+          });
+          clearTimeout(_fbSyncThrottle);
+          _fbSyncThrottle = setTimeout(_fbRender, 200);
+        }
+      } catch(err) {}
+    });
+    _fbStream.onerror = function() {
+      try { _fbStream.close(); } catch(e){}
+      _fbStreamRetry++;
+      setTimeout(startFbStream, Math.min(30000, 2000 * _fbStreamRetry));
+    };
+  } catch(e) { setTimeout(startFbStream, 5000); }
+}
+
 function stor(k, v) {
+  _fbLastSyncTs = Date.now();
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
   fetch(FB_URL + '/' + k + '.json', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(v)
-  }).then(r => r.json())
-    .then(() => console.log('✅ 저장:', k))
-    .catch(e => console.log('❌ 저장 실패:', k, e));
+  }).catch(e => console.log('❌ 저장 실패:', k, e));
 }
+
+function _startAutoSync() {
+  setInterval(async function() {
+    try {
+      var res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return;
+      var all = await res.json();
+      _fbApplyData(all);
+      const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
+      if (typeof initRender === 'function') initRender(cp);
+    } catch(e) {}
+  }, 30000);
+}
+// ───────────────────────────────────────────────────
+
+
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
@@ -8311,7 +8389,9 @@ function initRender(pageId) {
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
-  // Firebase sync (sync 내부에서 initRender + 배너 업데이트)
+  // Firebase 실시간 스트림 + 자동싱크 시작
+  startFbStream();
+  _startAutoSync();
   syncFromSheet().catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
