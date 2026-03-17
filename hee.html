@@ -11926,21 +11926,21 @@ function renderMenu5(sub) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
-  // 저장된 subpage 복원
-  const lastSub = localStorage.getItem('ws_sub_'+savedTab);
-  if (lastSub !== null) {
-    switchSub(savedTab, parseInt(lastSub), null);
-  } else if (savedTab === 'menu2') {
-    switchSub('menu2', 0, null);
-  } else if (savedTab === 'menu1') {
-    switchSub('menu1', 8, null);
-  }
   updateTodaySchedBar();
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
-  // F5 포함 항상 syncFromSheet 실행 (동기화 버튼과 동일하게)
-  syncFromSheet().catch(function() {
+  // F5: syncFromSheet 완료 후 렌더 (동기화버튼과 동일)
+  syncFromSheet().then(function() {
+    // sync 완료 후 subpage 복원 + 렌더
+    const lastSub = localStorage.getItem('ws_sub_'+savedTab);
+    if (lastSub !== null) {
+      switchSub(savedTab, parseInt(lastSub), null);
+    } else if (savedTab === 'menu5') {
+      renderMenu5 && renderMenu5();
+    }
+    updateTodaySchedBar && updateTodaySchedBar();
+  }).catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
   });
