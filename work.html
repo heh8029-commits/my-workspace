@@ -1736,9 +1736,16 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
       <!-- 디자인 카드 -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
         <div style="font-size:.88rem;font-weight:700;color:#7040c0">🖼️ 디자인할거</div>
-        <button onclick="designCardAdd()" style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:10px;padding:6px 16px;font-size:.82rem;font-weight:700;color:#5020a0;cursor:pointer;font-family:Pretendard,sans-serif">+ 카드 추가</button>
+        <div id="dc-cat-tabs" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
+        <div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
+          <input id="dc-cat-inp" type="text" placeholder="분류 추가..."
+            style="border:1.5px solid #ddd0f8;border-radius:7px;padding:4px 9px;font-size:.75rem;font-family:Pretendard,sans-serif;outline:none;width:90px"
+            onkeydown="if(event.key==='Enter')dcCatAdd()">
+          <button onclick="dcCatAdd()" style="background:linear-gradient(135deg,#ddd0f8,#b090e8);border:none;border-radius:7px;padding:4px 10px;font-size:.73rem;font-weight:700;color:#5020a0;cursor:pointer">+ 분류</button>
+          <button onclick="designCardAdd()" style="background:linear-gradient(135deg,#b090e8,#7040c0);border:none;border-radius:10px;padding:6px 14px;font-size:.82rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif">+ 카드</button>
+        </div>
       </div>
       <div id="design-cards-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
 
@@ -1767,7 +1774,10 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div id="dc-edit-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
         <div style="background:white;border-radius:16px;padding:24px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
           <div style="font-size:.92rem;font-weight:700;color:#5020a0;margin-bottom:14px">✏️ 카드 편집</div>
-          <input id="dc-edit-title" type="text" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #ddd0f8;border-radius:9px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;margin-bottom:10px">
+          <input id="dc-edit-title" type="text" placeholder="제목" style="width:100%;box-sizing:border-box;border:1.5px solid #ddd0f8;border-radius:9px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;margin-bottom:8px">
+          <select id="dc-edit-cat" style="width:100%;box-sizing:border-box;border:1.5px solid #ddd0f8;border-radius:9px;padding:8px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white;margin-bottom:8px;color:#5020a0;font-weight:600">
+            <option value="">분류 없음</option>
+          </select>
           <textarea id="dc-edit-memo" rows="4" placeholder="메모 내용..." style="width:100%;box-sizing:border-box;border:1.5px solid #ddd0f8;border-radius:9px;padding:8px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical"></textarea>
           <div style="display:flex;gap:8px;margin-top:12px">
             <button onclick="dcEditCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
@@ -1857,7 +1867,7 @@ function stor(k, v) {
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4595,20 +4605,34 @@ function _dcMakeSlot(cid, url, si) {
 function renderDesignCards() {
   var el = document.getElementById('design-cards-wrap');
   if (!el) return;
+  renderDcCatTabs();
   el.innerHTML = '';
-  var cards = loadDesignCards();
-  if (!cards.length) {
+  var allCards = loadDesignCards();
+  var cards = _dcCatFilter==='전체' ? allCards : allCards.filter(function(c){ return c.cat===_dcCatFilter; });
+  if (!allCards.length) {
     el.innerHTML = '<div class="empty" style="grid-column:1/-1">+ 카드 추가 버튼으로 디자인 카드를 만들어요 🎨</div>';
     return;
   }
+  if (!cards.length) {
+    el.innerHTML = '<div class="empty" style="grid-column:1/-1">이 분류에 카드가 없어요</div>';
+    return;
+  }
   cards.forEach(function(card) {
+    var clr = card.cat ? _dcCatClr(card.cat) : null;
     var cardDiv = document.createElement('div');
-    cardDiv.style.cssText = 'background:#fff;border-radius:14px;border:1.5px solid #ddd0f8;box-shadow:0 2px 10px rgba(160,120,240,.1);padding:14px;display:flex;flex-direction:column;gap:10px';
+    cardDiv.style.cssText = 'background:#fff;border-radius:14px;border:1.5px solid '+(clr?clr.border:'#ddd0f8')+';box-shadow:0 2px 10px rgba(160,120,240,.1);padding:14px;display:flex;flex-direction:column;gap:10px';
     // 헤더
     var header = document.createElement('div');
     header.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:6px';
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0';
+    // 분류 뱃지
+    if (card.cat && clr) {
+      var badge = document.createElement('div');
+      badge.textContent = card.cat;
+      badge.style.cssText = 'display:inline-block;background:'+clr.bg+';color:'+clr.color+';border:1px solid '+clr.border+';border-radius:8px;padding:1px 7px;font-size:.62rem;font-weight:700;margin-bottom:4px';
+      info.appendChild(badge);
+    }
     var titleEl = document.createElement('div');
     titleEl.textContent = card.title || '(제목 없음)';
     titleEl.style.cssText = 'font-size:.92rem;font-weight:700;color:#5020a0;margin-bottom:4px;word-break:break-all';
@@ -4649,9 +4673,76 @@ function renderDesignCards() {
     el.appendChild(cardDiv);
   });
 }
+
+/* ── 디자인카드 분류 ── */
+function loadDcCats()     { return loadObj('design_card_cats').list || []; }
+function saveDcCats(list) { stor('design_card_cats', {list}); }
+var _dcCatFilter = '전체';
+var _DC_CAT_COLORS = [
+  {bg:'#f8f5ff',color:'#5020a0',border:'#c8a8f8'},
+  {bg:'#fff0f8',color:'#c03070',border:'#f7a8c0'},
+  {bg:'#f0f8ff',color:'#1050a0',border:'#a0c4f0'},
+  {bg:'#f0fff8',color:'#1a7a50',border:'#90d8b0'},
+  {bg:'#fff8e8',color:'#a06000',border:'#f0c860'},
+  {bg:'#fff0f5',color:'#a03060',border:'#f0a0c0'},
+  {bg:'#f5f0ff',color:'#6030a0',border:'#c090f0'},
+  {bg:'#e8f8ff',color:'#1060a0',border:'#80c8f0'},
+];
+function _dcCatClr(cat) {
+  var cats = loadDcCats();
+  var idx = cats.indexOf(cat);
+  return idx>=0 ? _DC_CAT_COLORS[idx % _DC_CAT_COLORS.length] : {bg:'#f5f5f5',color:'#888',border:'#ddd'};
+}
+function dcCatAdd() {
+  var inp = document.getElementById('dc-cat-inp');
+  var text = (inp ? inp.value : '').trim();
+  if (!text) return;
+  var cats = loadDcCats();
+  if (cats.includes(text)) { toast('이미 있는 분류예요!'); return; }
+  cats.push(text); saveDcCats(cats);
+  if (inp) inp.value = '';
+  renderDcCatTabs(); updateDcEditCatSelect();
+  toast('📂 분류 추가됐어요!');
+}
+function renderDcCatTabs() {
+  var bar = document.getElementById('dc-cat-tabs'); if(!bar) return;
+  var cats = loadDcCats();
+  bar.innerHTML = '';
+  var allBtn = document.createElement('button');
+  allBtn.textContent = '전체';
+  var allActive = _dcCatFilter === '전체';
+  allBtn.style.cssText = 'padding:3px 12px;border-radius:20px;border:1.5px solid #b090e8;background:'+(allActive?'#7040c0':'white')+';color:'+(allActive?'white':'#7040c0')+';font-size:.72rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+  allBtn.onclick = function(){ _dcCatFilter='전체'; renderDcCatTabs(); renderDesignCards(); };
+  bar.appendChild(allBtn);
+  cats.forEach(function(cat, idx) {
+    var clr = _DC_CAT_COLORS[idx % _DC_CAT_COLORS.length];
+    var active = _dcCatFilter === cat;
+    var btn = document.createElement('button');
+    btn.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:3px 10px 3px 8px;border-radius:20px;border:1.5px solid '+clr.border+';background:'+(active?clr.border:clr.bg)+';color:'+(active?'white':clr.color)+';font-size:.72rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+    var label = document.createTextNode(cat);
+    var delB = document.createElement('span'); delB.textContent='✕'; delB.style.cssText='font-size:.58rem;opacity:.6;margin-left:2px;cursor:pointer';
+    delB.onclick=(function(c){return function(e){e.stopPropagation();saveDcCats(loadDcCats().filter(function(x){return x!==c;}));if(_dcCatFilter===c)_dcCatFilter='전체';renderDcCatTabs();updateDcEditCatSelect();renderDesignCards();};})(cat);
+    btn.appendChild(label); btn.appendChild(delB);
+    btn.onclick=(function(c){return function(e){if(e.target.textContent==='✕')return;_dcCatFilter=c;renderDcCatTabs();renderDesignCards();};})(cat);
+    bar.appendChild(btn);
+  });
+}
+function updateDcEditCatSelect(currentCat) {
+  var sel = document.getElementById('dc-edit-cat'); if(!sel) return;
+  var cats = loadDcCats();
+  sel.innerHTML = '<option value="">분류 없음</option>';
+  cats.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    if (c === currentCat) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
 function designCardAdd() {
   var cards = loadDesignCards();
-  cards.push({id: Date.now()+'', title:'새 디자인', memo:'', imgs:['','','','','','']});
+  var initCat = _dcCatFilter !== '전체' ? _dcCatFilter : '';
+  cards.push({id: Date.now()+'', title:'새 디자인', cat:initCat, memo:'', imgs:['','','','','','']});
   saveDesignCards(cards);
   renderDesignCards();
   // 편집창 바로 열기
@@ -4671,6 +4762,7 @@ function dcEditOpen(id) {
   if (!card) return;
   document.getElementById('dc-edit-title').value = card.title||'';
   document.getElementById('dc-edit-memo').value  = card.memo||'';
+  updateDcEditCatSelect(card.cat||'');
   document.getElementById('dc-edit-popup').style.display = 'flex';
 }
 function dcEditCancel() { document.getElementById('dc-edit-popup').style.display='none'; _dcEditTarget=null; }
@@ -4680,6 +4772,7 @@ function dcEditSave() {
   if (idx<0) return;
   cards[idx].title = document.getElementById('dc-edit-title').value.trim()||'(제목 없음)';
   cards[idx].memo  = document.getElementById('dc-edit-memo').value.trim();
+  cards[idx].cat   = (document.getElementById('dc-edit-cat')||{}).value||'';
   saveDesignCards(cards);
   dcEditCancel();
   renderDesignCards();
