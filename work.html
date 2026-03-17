@@ -1845,17 +1845,107 @@ function loadObj(k) {
   try { return JSON.parse(localStorage.getItem('ws5_'+k)||'{}'); } catch { return {}; }
 }
 
-// Firebase에 PUT 저장 + 로컬캐시
+// stor → 아래 실시간싱크 블록에서 재정의
+// ── Firebase Realtime Sync ──────────────────────────
+// EventSource(SSE)로 실시간 변경 감지
+var _fbStream = null;
+var _fbStreamRetry = 0;
+var _fbLastSyncTs = 0;
+var _fbSyncThrottle = null;
+
+function _fbApplyData(all) {
+  if (!all) return;
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
+  for (const k of allKeys) {
+    if (all[k] !== undefined && all[k] !== null) {
+      localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
+    }
+  }
+  // 메모리 갱신
+  if (typeof flowData !== 'undefined') ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
+  if (typeof weekData !== 'undefined' && typeof WEEKDAYS !== 'undefined') { const wd = loadObj('week'); WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; }); }
+  if (typeof DBS !== 'undefined') Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
+  if (typeof recipeDB !== 'undefined') recipeDB.data = load('recipe');
+}
+
+function _fbRender() {
+  const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
+  if (typeof initRender === 'function') initRender(cp);
+  if (typeof updateTodaySchedBar === 'function') updateTodaySchedBar();
+}
+
+function startFbStream() {
+  if (_fbStream) { try { _fbStream.close(); } catch(e){} }
+  try {
+    _fbStream = new EventSource(FB_URL + '.json?t=' + Date.now());
+    _fbStream.onopen = function() { _fbStreamRetry = 0; };
+    _fbStream.addEventListener('put', function(e) {
+      try {
+        var d = JSON.parse(e.data);
+        var data = d.path === '/' ? d.data : null;
+        if (data) {
+          var now = Date.now();
+          // 300ms 쓰로틀 (자기 자신이 방금 저장한 건 무시)
+          if (now - _fbLastSyncTs < 500) return;
+          _fbApplyData(data);
+          clearTimeout(_fbSyncThrottle);
+          _fbSyncThrottle = setTimeout(_fbRender, 200);
+        }
+      } catch(err) { console.log('SSE parse err', err); }
+    });
+    _fbStream.addEventListener('patch', function(e) {
+      try {
+        var d = JSON.parse(e.data);
+        if (d.data) {
+          Object.keys(d.data).forEach(function(k) {
+            if (d.data[k] !== null) localStorage.setItem('ws5_'+k, JSON.stringify(d.data[k]));
+          });
+          clearTimeout(_fbSyncThrottle);
+          _fbSyncThrottle = setTimeout(_fbRender, 200);
+        }
+      } catch(err) {}
+    });
+    _fbStream.onerror = function() {
+      try { _fbStream.close(); } catch(e){}
+      _fbStreamRetry++;
+      var delay = Math.min(30000, 2000 * _fbStreamRetry);
+      setTimeout(startFbStream, delay);
+    };
+  } catch(e) {
+    setTimeout(startFbStream, 5000);
+  }
+}
+
+// stor에 타임스탬프 기록 (자기 저장 후 SSE 무시용)
+var _origStor = stor;
 function stor(k, v) {
+  _fbLastSyncTs = Date.now();
   localStorage.setItem('ws5_'+k, JSON.stringify(v));
   fetch(FB_URL + '/' + k + '.json', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(v)
-  }).then(r => r.json())
-    .then(() => console.log('✅ 저장:', k))
-    .catch(e => console.log('❌ 저장 실패:', k, e));
+  }).catch(e => console.log('❌ 저장 실패:', k, e));
 }
+
+// 30초 백그라운드 자동 싱크 (SSE 누락 보완)
+function _startAutoSync() {
+  setInterval(async function() {
+    try {
+      var res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return;
+      var all = await res.json();
+      _fbApplyData(all);
+      // 현재 페이지만 조용히 리렌더 (토스트 없이)
+      const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
+      if (typeof initRender === 'function') initRender(cp);
+    } catch(e) {}
+  }, 30000);
+}
+// ───────────────────────────────────────────────────
+
+
 
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
@@ -8622,7 +8712,10 @@ function initRender(pageId) {
     switchSub('menu1', 8, null);
   }
   updateTodaySchedBar();
-  // Firebase sync (sync 내부에서 initRender + 배너 업데이트)
+  // Firebase 실시간 스트림 + 자동싱크 시작
+  startFbStream();
+  _startAutoSync();
+  // 최초 1회 풀싱크 (캐시 없을 때 대비)
   syncFromSheet().catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
