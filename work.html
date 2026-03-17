@@ -1974,15 +1974,14 @@ async function syncFromSheet() {
     WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
     Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
     recipeDB.data = load('recipe');
-    // 현재 페이지에 맞는 렌더만 실행
+    // 동기화 버튼으로 수동 호출 시엔 렌더까지
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
-    initRender(cp);
-    // 배너: 반드시 initRender 완료 후 실행
-    updateTodaySchedBar && updateTodaySchedBar();
-    if (!window._syncedOnce) {
-      window._syncedOnce = true;
-    } else {
+    if (window._syncedOnce) {
+      initRender(cp);
+      updateTodaySchedBar && updateTodaySchedBar();
       toast('✅ 동기화 완료!');
+    } else {
+      window._syncedOnce = true;
     }
   } catch(e) {
     console.log('sync err', e);
@@ -8722,8 +8721,14 @@ function initRender(pageId) {
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
-  // 최초 1회 풀싱크 (캐시 없을 때 대비)
-  syncFromSheet().catch(function() {
+  // 최초 1회 풀싱크 후 렌더
+  syncFromSheet().then(function() {
+    const cp = window._currentPage || savedTab;
+    if (typeof initRender === 'function') initRender(cp);
+    const ls = localStorage.getItem('ws_sub_'+cp);
+    if (ls !== null && typeof switchSub === 'function' && (cp === 'menu1' || cp === 'menu2')) switchSub(cp, parseInt(ls), null);
+    updateTodaySchedBar && updateTodaySchedBar();
+  }).catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
   });
