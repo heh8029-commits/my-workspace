@@ -5253,100 +5253,113 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
   var modal = document.createElement('div');
   modal.id = 'note-img-modal';
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.innerHTML =
-    '<div style="background:white;border-radius:18px;padding:24px;width:100%;max-width:340px;font-family:Pretendard,sans-serif;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.25)">'
-    +'<div style="font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:6px">📷 이미지 추가</div>'
-    +'<div style="font-size:.78rem;color:#aaa;margin-bottom:12px">클립보드 붙여넣기 또는 파일 첨부</div>'
-    +'<div id="nimg-area" style="width:100%;height:130px;border:2px dashed #d0b8f8;border-radius:12px;background:#f8f5ff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;color:#b090d8;position:relative;overflow:hidden">'
-      +'<div id="nimg-ph" style="pointer-events:none">📋 Ctrl+V 로 붙여넣기</div>'
-      +'<div id="nimg-prev" style="display:none;position:absolute;inset:0"><img id="nimg-prev-img" style="width:100%;height:100%;object-fit:contain"></div>'
-    +'</div>'
-    +'<input id="nimg-file-inp" type="file" accept="image/*" style="display:none">'
-    +'<div style="display:flex;gap:8px;margin-top:12px">'
-      +'<button id="nimg-cancel" style="flex:1;padding:8px;background:#f0f0f0;border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:#888;cursor:pointer">취소</button>'
-      +'<button id="nimg-file-btn" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">📁 첨부파일</button>'
-      +'<button id="nimg-ok" style="flex:1.2;padding:8px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer">✅ 적용</button>'
-    +'</div>'
-    +'</div>';
-  document.body.appendChild(modal);
 
-  var prev    = document.getElementById('nimg-prev');
-  var prevImg = document.getElementById('nimg-prev-img');
-  var ph      = document.getElementById('nimg-ph');
-  var fileInp = document.getElementById('nimg-file-inp');
-  var _pending = null;
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:18px;padding:24px;width:100%;max-width:360px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.25)';
 
-  function setPreview(dataUrl) {
-    _pending = dataUrl;
-    prevImg.src = dataUrl;
-    prev.style.display = 'block';
-    ph.style.display = 'none';
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:.95rem;font-weight:700;color:#7040c0;margin-bottom:8px;text-align:center';
+  title.textContent = '📷 이미지 추가';
+
+  var status = document.createElement('div');
+  status.style.cssText = 'font-size:.75rem;color:#aaa;text-align:center;margin-bottom:10px;min-height:18px';
+  status.textContent = '이미지를 붙여넣거나 파일을 첨부해요';
+
+  // 미리보기 영역
+  var previewWrap = document.createElement('div');
+  previewWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;min-height:0;margin-bottom:10px';
+
+  var pendingUrls = [];
+
+  function renderPreview() {
+    previewWrap.innerHTML = '';
+    pendingUrls.forEach(function(url, i) {
+      var w2 = document.createElement('div'); w2.style.cssText = 'position:relative;width:72px;height:72px';
+      var img = document.createElement('img'); img.src = url;
+      img.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:8px;border:1.5px solid #d0b8f8';
+      var del = document.createElement('button'); del.textContent = '✕';
+      del.style.cssText = 'position:absolute;top:-5px;right:-5px;background:#7040c0;border:none;border-radius:50%;width:18px;height:18px;color:white;font-size:.6rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center';
+      del.onclick = (function(idx){ return function(){ pendingUrls.splice(idx,1); renderPreview(); }; })(i);
+      w2.appendChild(img); w2.appendChild(del); previewWrap.appendChild(w2);
+    });
   }
 
-  // document 레벨에서 paste 캡처 (모달이 열려있는 동안)
-  function docPasteHandler(e) {
-    console.log('📋 paste 감지! items:', (e.clipboardData||{}).items);
-    var its = (e.clipboardData || window.clipboardData || {}).items || [];
-    console.log('items 개수:', its.length);
-    for (var i = 0; i < its.length; i++) {
-      console.log('item type:', its[i].type, 'kind:', its[i].kind);
-      if (its[i].type.indexOf('image') !== -1) {
-        var blob = its[i].getAsFile();
-        console.log('blob:', blob);
-        if (!blob) continue;
-        var reader = new FileReader();
-        reader.onload = function(ev) { setPreview(ev.target.result); };
-        reader.readAsDataURL(blob);
+  function uploadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    status.textContent = '⬆️ 업로드 중...'; status.style.color = '#9040c0';
+    cloudinaryUpload(file,
+      function(url) {
+        pendingUrls.push(url); renderPreview();
+        status.textContent = '✅ 완료! ('+pendingUrls.length+'장)'; status.style.color = '#1a9a60';
+      },
+      function(err) { status.textContent = '❌ ' + err; status.style.color = '#e03c6e'; }
+    );
+  }
+
+  // 붙여넣기용 textarea (보이지 않음)
+  var pasteArea = document.createElement('textarea');
+  pasteArea.style.cssText = 'width:100%;border:2px dashed #d0b8f8;border-radius:10px;padding:12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f8f5ff;color:#7040c0;box-sizing:border-box;text-align:center;cursor:pointer;min-height:52px;line-height:1.6';
+  pasteArea.placeholder = '📋 여기 클릭 후 Ctrl+V로 붙여넣기 (또는 아래 파일첨부 버튼 이용)';
+  pasteArea.readOnly = true;
+  pasteArea.onpaste = function(e) {
+    var items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
         e.preventDefault();
+        uploadFile(items[i].getAsFile());
         return;
       }
     }
-    toast('이미지가 클립보드에 없어요. 이미지를 먼저 복사해주세요 📋');
-  }
-  document.addEventListener('paste', docPasteHandler);
+  };
 
-  // 첨부파일
-  document.getElementById('nimg-file-btn').onclick = function() { fileInp.click(); };
+  // 파일 input
+  var fileInp = document.createElement('input');
+  fileInp.type = 'file'; fileInp.accept = 'image/*'; fileInp.multiple = true;
+  fileInp.style.display = 'none';
   fileInp.onchange = function() {
-    if (!fileInp.files || !fileInp.files[0]) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) { setPreview(ev.target.result); };
-    reader.readAsDataURL(fileInp.files[0]);
+    Array.from(fileInp.files).forEach(function(f){ uploadFile(f); });
+    fileInp.value = '';
   };
 
-  function closeModal() {
-    document.removeEventListener('paste', docPasteHandler);
+  // 버튼들
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px';
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '취소'; cancelBtn.style.cssText = 'flex:1;padding:9px;background:#f0f0f0;border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:#888;cursor:pointer';
+  cancelBtn.onclick = function(){ modal.remove(); };
+
+  var fileBtn = document.createElement('button');
+  fileBtn.textContent = '📁 파일첨부'; fileBtn.style.cssText = 'flex:1.2;padding:9px;background:linear-gradient(135deg,#e8f4ff,#4a80d0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer';
+  fileBtn.onclick = function(){ fileInp.click(); };
+
+  var okBtn = document.createElement('button');
+  okBtn.textContent = '✅ 등록'; okBtn.style.cssText = 'flex:1.2;padding:9px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:9px;font-size:.83rem;font-weight:700;color:white;cursor:pointer';
+  okBtn.onclick = function() {
+    if (!pendingUrls.length) { toast('이미지를 먼저 추가해주세요 📷'); return; }
+    var list = loadFn();
+    var idx = list.findIndex(function(x){ return x.id === item.id; });
+    if (idx !== -1) {
+      var arr = list[idx].imgs || (list[idx].img ? [list[idx].img] : []);
+      pendingUrls.forEach(function(u){ arr.push(u); });
+      if (arr.length > 3) arr = arr.slice(0, 3);
+      list[idx].imgs = arr; list[idx].img = arr[0];
+      saveFn(list); renderFn();
+    }
     modal.remove();
-  }
-
-  document.getElementById('nimg-cancel').onclick = closeModal;
-  document.getElementById('nimg-ok').onclick = function() {
-    console.log('✅ 적용 클릭! _pending:', _pending ? '있음('+_pending.length+')' : 'null');
-    if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
-    compressImg(_pending, function(compressed) {
-      var list = loadFn();
-      console.log('list 길이:', list.length, 'item.id:', item.id);
-      var idx = list.findIndex(function(x) { return x.id === item.id; });
-      console.log('idx:', idx);
-      if (idx !== -1) {
-        var arr = list[idx].imgs || (list[idx].img ? [list[idx].img] : []);
-        arr.push(compressed);
-        list[idx].imgs = arr; list[idx].img = arr[0];
-        saveFn(list); renderFn();
-        closeModal();
-        toast('📷 이미지 등록됐어요!');
-      } else {
-        var arr2 = item.imgs || (item.img ? [item.img] : []);
-        arr2.push(compressed);
-        item.imgs = arr2; item.img = arr2[0];
-        list.push(item);
-        saveFn(list); renderFn();
-        closeModal();
-        toast('📷 이미지 등록됐어요!');
-      }
-    });
+    toast('📷 이미지 등록됐어요!');
   };
-  modal.onclick = function(e) { if (e.target === modal) closeModal(); };
+
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(fileBtn); btnRow.appendChild(okBtn);
+  box.appendChild(title); box.appendChild(status); box.appendChild(previewWrap);
+  box.appendChild(pasteArea); box.appendChild(fileInp); box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+
+  // 열리면 자동 포커스 (paste 받으려면 클릭 필요)
+  setTimeout(function(){ pasteArea.focus(); }, 50);
 }
 
 function renderJinuNotes() {
