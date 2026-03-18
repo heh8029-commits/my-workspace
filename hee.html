@@ -3519,7 +3519,14 @@ function startFbStream() {
 var _origStor = stor;
 function stor(k, v) {
   _fbLastSyncTs = Date.now();
-  localStorage.setItem('ws5_'+k, JSON.stringify(v));
+  try {
+    localStorage.setItem('ws5_'+k, JSON.stringify(v));
+  } catch(e) {
+    if (e.name === 'QuotaExceededError') {
+      toast('⚠️ 저장공간이 부족해요! 이미지를 줄여주세요');
+      console.warn('QuotaExceeded:', k);
+    }
+  }
   fetch(FB_URL + '/' + k + '.json', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -3593,6 +3600,28 @@ async function syncFromSheet() {
     console.log('sync err', e);
     toast('❌ ' + (e.message || '동기화 실패'));
   }
+}
+
+
+// ── 이미지 압축 (base64 용량 줄이기) ──
+function _compressImg(dataUrl, maxW, maxH, quality, cb) {
+  var img = new Image();
+  img.onload = function() {
+    var w = img.width, h = img.height;
+    var ratio = Math.min(1, maxW/w, maxH/h);
+    var nw = Math.round(w*ratio), nh = Math.round(h*ratio);
+    var canvas = document.createElement('canvas');
+    canvas.width = nw; canvas.height = nh;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, nw, nh);
+    cb(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
+}
+// 편의 함수: 최대 800px, quality 0.7
+function compressImg(dataUrl, cb) {
+  if (!dataUrl || !dataUrl.startsWith('data:image')) { cb(dataUrl); return; }
+  _compressImg(dataUrl, 800, 800, 0.7, cb);
 }
 
 // ── FLOW 데이터 ──
@@ -7000,27 +7029,28 @@ function _noteImgModal(item, saveFn, loadFn, renderFn) {
   document.getElementById('nimg-ok').onclick = function() {
     console.log('✅ 적용 클릭! _pending:', _pending ? '있음('+_pending.length+')' : 'null');
     if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
-    var list = loadFn();
-    console.log('list 길이:', list.length, 'item.id:', item.id);
-    var idx = list.findIndex(function(x) { return x.id === item.id; });
-    console.log('idx:', idx);
-    if (idx !== -1) {
-      var arr = list[idx].imgs || (list[idx].img ? [list[idx].img] : []);
-      arr.push(_pending);
-      list[idx].imgs = arr; list[idx].img = arr[0];
-      saveFn(list); renderFn();
-      closeModal();
-      toast('📷 이미지 등록됐어요!');
-    } else {
-      // id 못 찾으면 그냥 item 직접 수정해서 저장
-      var arr2 = item.imgs || (item.img ? [item.img] : []);
-      arr2.push(_pending);
-      item.imgs = arr2; item.img = arr2[0];
-      list.push(item);
-      saveFn(list); renderFn();
-      closeModal();
-      toast('📷 이미지 등록됐어요!');
-    }
+    compressImg(_pending, function(compressed) {
+      var list = loadFn();
+      console.log('list 길이:', list.length, 'item.id:', item.id);
+      var idx = list.findIndex(function(x) { return x.id === item.id; });
+      console.log('idx:', idx);
+      if (idx !== -1) {
+        var arr = list[idx].imgs || (list[idx].img ? [list[idx].img] : []);
+        arr.push(compressed);
+        list[idx].imgs = arr; list[idx].img = arr[0];
+        saveFn(list); renderFn();
+        closeModal();
+        toast('📷 이미지 등록됐어요!');
+      } else {
+        var arr2 = item.imgs || (item.img ? [item.img] : []);
+        arr2.push(compressed);
+        item.imgs = arr2; item.img = arr2[0];
+        list.push(item);
+        saveFn(list); renderFn();
+        closeModal();
+        toast('📷 이미지 등록됐어요!');
+      }
+    });
   };
   modal.onclick = function(e) { if (e.target === modal) closeModal(); };
 }
@@ -7746,15 +7776,19 @@ function invOpenImgModal() {
       var f = fileInp.files && fileInp.files[0]; if(!f) return;
       var reader = new FileReader();
       reader.onload = function(ev) {
-        _pending = ev.target.result;
-        modalImg.src = _pending; modalPrev.style.display='block'; modalPh.style.display='none';
+        compressImg(ev.target.result, function(c){
+          _pending = c;
+          modalImg.src = c; modalPrev.style.display='block'; modalPh.style.display='none';
+        });
       };
       reader.readAsDataURL(f);
     };
   }
   document.getElementById('inv-modal-ok').onclick = function(){
-    if (_pending) { invSetImgPreview(_pending); toast('📷 이미지가 등록됐어요!'); modal.remove(); }
-    else { invSetImgPreview(null); modal.remove(); }
+    if (_pending) {
+      compressImg(_pending, function(c){ invSetImgPreview(c); });
+      toast('📷 이미지가 등록됐어요!'); modal.remove();
+    } else { modal.remove(); }
   };
   modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
 }
