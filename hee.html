@@ -1975,14 +1975,15 @@ function pwaInstall() {
           </div>
           <div class="order-row">
             <label class="order-label">📝 메모</label>
-            <textarea id="order-memo" rows="8" class="ra-inp" placeholder="요청 내용..." style="min-height:160px;resize:vertical" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}"></textarea>
+            <textarea id="order-memo" rows="8" class="ra-inp" placeholder="요청 내용... (이미지는 Ctrl+V 또는 아래 첨부버튼)" style="min-height:160px;resize:vertical" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addOrder()}" onpaste="orderHandlePaste(event)"></textarea>
           </div>
           <!-- 이미지 첨부 버튼 -->
           <div style="margin-top:4px">
             <button type="button" onclick="document.getElementById('order-img-file').click()" style="background:linear-gradient(135deg,#ede8ff,#c8b8f8);border:1.5px solid #b0a0f8;border-radius:9px;padding:5px 13px;font-size:.78rem;font-weight:700;color:#6040c0;cursor:pointer;font-family:Pretendard,sans-serif">🖼️ 이미지 첨부</button>
             <input id="order-img-file" type="file" accept="image/*" multiple style="display:none" onchange="orderHandleFile(event)">
           </div>
-          <div id="order-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+          <div id="order-img-status" style="font-size:.72rem;min-height:16px;margin-top:4px"></div>
+          <div id="order-img-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
           <div style="text-align:right;margin-top:6px">
             <button class="abtn" style="background:linear-gradient(135deg,#b0a0f8,#8060e0)" onclick="addOrder()">+ 등록</button>
           </div>
@@ -2016,10 +2017,14 @@ function pwaInstall() {
       <div class="card cy">
         <div style="font-size:.95rem;color:#a07800;margin-bottom:10px">📝 메모</div>
         <div class="inp-row">
-          <textarea id="memo-inp" rows="2" placeholder="메모 내용..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addMemo()}" onpaste="memoHandlePaste(event)"></textarea>
+          <textarea id="memo-inp" rows="2" placeholder="메모 내용... (이미지 Ctrl+V 가능)" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addMemo()}" onpaste="memoHandlePaste(event)"></textarea>
           <button class="abtn ylw-btn" onclick="addMemo()">+</button>
         </div>
-        <!-- 메모 이미지 미리보기 -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <button type="button" onclick="document.getElementById('memo-img-file').click()" style="background:linear-gradient(135deg,#fffbe0,#f0d840);border:1.5px solid #e0c000;border-radius:7px;padding:3px 10px;font-size:.72rem;font-weight:700;color:#7a6000;cursor:pointer">🖼️ 이미지 첨부</button>
+          <input id="memo-img-file" type="file" accept="image/*" multiple style="display:none" onchange="memoHandleFile(event)">
+          <span id="memo-img-status" style="font-size:.68rem;color:#aaa"></span>
+        </div>
         <div id="memo-img-preview" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px"></div>
         <div class="ilist" id="memo-list"><div class="empty">메모를 추가해요 📝</div></div>
       </div>
@@ -4292,17 +4297,32 @@ function addSched() {
 // ── 메모 이미지 임시 저장 ──
 let _memoImgs = [];
 
+function memoUploadImg(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const status = document.getElementById('memo-img-status');
+  if (status) { status.textContent = '⬆️ 업로드 중...'; status.style.color='#8060e0'; }
+  cloudinaryUpload(file,
+    function(url) {
+      _memoImgs.push(url); renderMemoImgPreview();
+      if (status) { status.textContent = '✅ 완료! ('+_memoImgs.length+'장)'; status.style.color='#1a9a60'; }
+    },
+    function(err) { if (status) { status.textContent = '❌ ' + err; status.style.color='#e03c6e'; } }
+  );
+}
 function memoHandlePaste(e) {
   const items = e.clipboardData && e.clipboardData.items;
   if (!items) return;
   for (const item of items) {
     if (item.type.startsWith('image/')) {
       e.preventDefault();
-      const reader = new FileReader();
-      reader.onload = ev => { _memoImgs.push(ev.target.result); renderMemoImgPreview(); };
-      reader.readAsDataURL(item.getAsFile());
+      memoUploadImg(item.getAsFile());
+      return;
     }
   }
+}
+function memoHandleFile(e) {
+  [...e.target.files].forEach(memoUploadImg);
+  e.target.value = '';
 }
 
 function renderMemoImgPreview() {
@@ -4636,19 +4656,16 @@ function renderOrder() {
 function orderCopyAll(id) {
   const row = loadOrder().find(function(r){ return r.id === id; });
   if (!row) return;
-  const dateStr = row.date ? row.date.replace(/-/g,'.') : '';
-  const statusLabels = ['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'];
-  const status = statusLabels[(row.status >= 0 && row.status <= 3) ? row.status : 0];
-  const text = [dateStr, status, row.memo||''].filter(Boolean).join('\n');
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function(){ toast('📋 복사됐어요!'); });
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    toast('📋 복사됐어요!');
-  }
+  const text = (row.memo||'').trim();
+  if (!text) { toast('복사할 메모 내용이 없어요'); return; }
+  navigator.clipboard.writeText(text).then(function(){ toast('📋 복사됐어요!'); })
+    .catch(function(){
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('📋 복사됐어요!');
+    });
 }
 
 function orderEditMode(id) {
@@ -4761,12 +4778,30 @@ function orderHandleFile(e) {
   e.target.value = '';
 }
 function orderReadImg(file) {
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    _orderImgs.push(ev.target.result);
-    renderOrderImgPreview();
-  };
-  reader.readAsDataURL(file);
+  if (!file || !file.type.startsWith('image/')) return;
+  const status = document.getElementById('order-img-status');
+  if (status) { status.textContent = '⬆️ 업로드 중...'; status.style.color='#8060e0'; }
+  cloudinaryUpload(file,
+    function(url) {
+      _orderImgs.push(url);
+      renderOrderImgPreview();
+      if (status) { status.textContent = '✅ 완료! ('+_orderImgs.length+'장)'; status.style.color='#1a9a60'; }
+    },
+    function(err) {
+      if (status) { status.textContent = '❌ ' + err; status.style.color='#e03c6e'; }
+    }
+  );
+}
+function orderHandlePaste(e) {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      orderReadImg(item.getAsFile());
+      return;
+    }
+  }
 }
 function renderOrderImgPreview() {
   const wrap = document.getElementById('order-img-preview');
