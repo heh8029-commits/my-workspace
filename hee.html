@@ -583,7 +583,7 @@ body.mobile-view .app-icon-img {
 
 
 /* ── 글로벌 네비 사이드바 ── */
-body.mobile-view .gnav { display: none !important; }
+body.mobile-view .gnav { display: none !important; position: static !important; }
 
 /* ── 모바일 서브메뉴 바 ── */
 .mobile-subnav {
@@ -624,7 +624,8 @@ body.mobile-view .mobile-subnav.active {
 .gnav {
   width: 160px;
   flex-shrink: 0;
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: var(--header-h, 100px);
   height: calc(100vh - var(--header-h, 100px));
   overflow-y: auto;
@@ -636,6 +637,7 @@ body.mobile-view .mobile-subnav.active {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  z-index: 100;
 }
 .gnav::-webkit-scrollbar { display: none; }
 
@@ -723,12 +725,13 @@ body.mobile-view .mobile-subnav.active {
   width: 100%;
   overflow-x: hidden;
   padding-top: var(--header-h, 100px);
+  padding-left: 160px;
   box-sizing: border-box;
 }
 .hourly-dow-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
 .sales-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 
-body.mobile-view .app-wrapper { display: block; width: 100%; overflow-x: hidden; }
+body.mobile-view .app-wrapper { display: block; width: 100%; overflow-x: hidden; padding-left: 0 !important; }
 body.mobile-view .app-body { width: 100%; overflow-x: hidden; }
 body.mobile-view .main { padding: 14px 10px 60px; width: 100%; overflow-x: hidden; }
 body.mobile-view .hourly-dow-grid { grid-template-columns:repeat(4,1fr); gap:6px; }
@@ -748,6 +751,8 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 .gnav.collapsed {
   width: 44px;
   padding: 14px 6px 30px;
+  width: 40px;
+  padding: 10px 4px;
 }
 .gnav.collapsed .gnav-logo span,
 .gnav.collapsed .gnav-main span:last-child { display: none; }
@@ -3602,13 +3607,18 @@ function _startAutoSync() {
 function _fixHeaderOffset() {
   var hdr = document.getElementById('sticky-header');
   if (!hdr) return;
-  // 여러 번 시도 (렌더 완료 후 측정)
   function apply() {
     var hh = hdr.offsetHeight;
-    if (hh < 10) { setTimeout(apply, 50); return; } // 아직 렌더 안됨
+    if (hh < 10) { setTimeout(apply, 50); return; }
     document.documentElement.style.setProperty('--header-h', hh + 'px');
     var wrapper = document.getElementById('app-wrapper');
-    if (wrapper) wrapper.style.paddingTop = hh + 'px';
+    if (wrapper) {
+      wrapper.style.paddingTop = hh + 'px';
+      // gnav collapsed 여부에 따라 padding-left 조정
+      var gnav = document.getElementById('gnav');
+      var gnavW = (gnav && gnav.classList.contains('collapsed')) ? 40 : 160;
+      wrapper.style.paddingLeft = gnavW + 'px';
+    }
   }
   apply();
 }
