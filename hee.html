@@ -625,10 +625,10 @@ body.mobile-view .mobile-subnav.active {
   width: 160px;
   flex-shrink: 0;
   position: sticky;
-  top: 0;
-  height: 100vh;
-  padding-top: 100px;
+  top: var(--header-h, 100px);
+  max-height: calc(100vh - var(--header-h, 100px));
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: none;
   background: linear-gradient(180deg, #fff5f9 0%, #fff0f5 100%);
   border-right: 2px solid #fce8f0;
@@ -636,6 +636,7 @@ body.mobile-view .mobile-subnav.active {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-self: flex-start;
 }
 .gnav::-webkit-scrollbar { display: none; }
 
@@ -1770,7 +1771,7 @@ function pwaInstall() {
 
 <div class="mobile-subnav" id="msubnav-menu5">
   <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
-  <button class="msub-btn" onclick="switchSub('menu5',2,null);setMobileSubActive(this)">🔄 자동이체리스트</button>
+  <button class="msub-btn" onclick="switchSub('menu5',2,null);setMobileSubActive(this)">🔄 자동이체&카드값</button>
   <button class="msub-btn" onclick="switchSub('menu5',3,null);setMobileSubActive(this)">📈 투자&연금</button>
   <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">💊 건강/청결/지식</button>
 </div>
@@ -1824,7 +1825,7 @@ function pwaInstall() {
   </div>
   <div class="gnav-subs" id="gnav-subs-menu5">
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',1,null)">💰 현재자산정보</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null)">🔄 자동이체리스트</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null)">🔄 자동이체&카드값</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',3,null)">📈 투자&연금</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',5,null)">💊 건강/청결/지식</div>
 
@@ -2105,6 +2106,14 @@ function pwaInstall() {
         <div><div class="subpage-title">부가세 / 종소세 / 세금관련</div><div class="subpage-desc">세금 관련 자료를 정리해요</div></div>
       </div>
 
+      <!-- 세금 메모 텍스트박스 (상단) -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">📝 메모</div>
+        <textarea id="tax-note-box" rows="4" placeholder="세금 관련 메모를 자유롭게 적어요..."
+          style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f0fff8;color:#1a3020;font-weight:500"
+          oninput="taxMemoBoxSave()"></textarea>
+      </div>
+
       <div class="three-col">
 
         <!-- 1열: 부가세 -->
@@ -2160,15 +2169,6 @@ function pwaInstall() {
 
       </div>
 
-      <!-- 세금 메모 텍스트박스 -->
-      <div style="margin-top:20px">
-        <div class="card" style="border-top:3px solid #3dbb8f">
-          <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">📝 메모</div>
-          <textarea id="tax-note-box" rows="5" placeholder="세금 관련 메모를 자유롭게 적어요..."
-            style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f0fff8;color:#1a3020;font-weight:500"
-            oninput="taxMemoBoxSave()"></textarea>
-        </div>
-      </div>
     </div>
     <div class="subpage" id="menu1-sub-2">
       <div class="subpage-header">
@@ -2454,6 +2454,13 @@ function pwaInstall() {
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">📉</div>
         <div><div class="subpage-title">월별 손익</div><div class="subpage-desc">매월 수입과 지출을 정리해요</div></div>
       </div>
+      <!-- 손익 메모 텍스트박스 -->
+      <div class="card" style="border-top:3px solid #f0c800;margin-bottom:14px">
+        <div style="font-size:.88rem;font-weight:700;color:#a07800;margin-bottom:8px">📝 메모</div>
+        <textarea id="pnl-note-box" rows="4" placeholder="월별 손익 관련 메모를 자유롭게 적어요..."
+          style="width:100%;box-sizing:border-box;border:2px solid #ffe880;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#fffef5;color:#3a2800;font-weight:500"
+          oninput="pnlMemoBoxSave()"></textarea>
+      </div>
       <!-- 월 탭 -->
       <div id="pnl-month-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
       <!-- 순이익 요약 -->
@@ -2463,15 +2470,7 @@ function pwaInstall() {
         <div id="pnl-income-card" style="margin-bottom:12px"></div>
         <div id="pnl-expense-card"></div>
       </div>
-      <!-- 손익 메모 텍스트박스 -->
-      <div style="margin-top:20px">
-        <div class="card" style="border-top:3px solid #f0c800">
-          <div style="font-size:.88rem;font-weight:700;color:#a07800;margin-bottom:8px">📝 메모</div>
-          <textarea id="pnl-note-box" rows="5" placeholder="월별 손익 관련 메모를 자유롭게 적어요..."
-            style="width:100%;box-sizing:border-box;border:2px solid #ffe880;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#fffef5;color:#3a2800;font-weight:500"
-            oninput="pnlMemoBoxSave()"></textarea>
-        </div>
-      </div>
+
     </div>
   </div>
 
@@ -3028,7 +3027,7 @@ function pwaInstall() {
     <div class="subpage" id="menu5-sub-2">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">🔄</div>
-        <div><div class="subpage-title">자동이체리스트</div><div class="subpage-desc">정기 자동이체 내역을 관리해요</div></div>
+        <div><div class="subpage-title">자동이체&카드값</div><div class="subpage-desc">정기 자동이체와 카드 지출을 관리해요</div></div>
       </div>
 
       <!-- 자동이체 메모 텍스트박스 (상단) -->
@@ -3051,6 +3050,19 @@ function pwaInstall() {
           <div style="text-align:center">매월</div><div>항목명</div><div>출금</div><div>입금</div><div style="text-align:right">금액</div><div>메모</div><div></div>
         </div>
         <div id="autotx-list"></div>
+      </div>
+
+      <!-- 카드값 섹션 -->
+      <div id="card-spend-summary" style="margin-bottom:10px"></div>
+      <div class="card" style="border-top:3px solid #e03c6e;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="font-size:.92rem;font-weight:800;color:#c03060">💳 카드값</div>
+          <button onclick="cardSpendAdd()" style="margin-left:auto;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:6px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr 1fr 44px;background:#ffe0ec;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:800;color:#c03060;margin-bottom:6px;gap:6px">
+          <div>날짜</div><div>분류</div><div style="text-align:right">금액</div><div></div>
+        </div>
+        <div id="card-spend-list"></div>
       </div>
     </div>
 
@@ -3482,7 +3494,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -3597,7 +3609,7 @@ function _fixHeaderOffset() {
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -11772,7 +11784,7 @@ function renderAssetSummary() {
 
   // 색상 팔레트
   var PIE_COLORS = ['#3dbb8f','#4a80d0','#e03c6e','#f0a000','#9060d0','#2aaa80','#d06030','#2a80c0'];
-  var catKeys = Object.keys(catTotals);
+  var catKeys = Object.keys(catTotals).sort(function(a,b){ return catTotals[b]-catTotals[a]; });
 
   // SVG 도넛 생성
   var size = 110, cx = 55, cy = 55, r = 38, stroke = 18;
@@ -11916,6 +11928,122 @@ function assetNoteAdd() { _m5NoteAdd('m5_asset_notes','asset-note-inp','asset-no
 function renderAssetNotes() { _m5NoteRender('m5_asset_notes','asset-note-grid'); }
 
 // ────────────────────────
+
+/* ── 카드값 ── */
+function loadCardSpend()     { return loadObj('m5_card_spend').list || []; }
+function saveCardSpend(list) { stor('m5_card_spend', {list}); }
+
+var _CARD_CATS = ['현대카드','신한카드','롯데카드','삼성카드','직접입력'];
+
+function cardSpendAdd() {
+  var today = new Date();
+  var yy = today.getFullYear();
+  var mm = String(today.getMonth()+1).padStart(2,'0');
+  var dd = String(today.getDate()).padStart(2,'0');
+  var list = loadCardSpend();
+  list.push({id:Date.now(), date:yy+'-'+mm+'-'+dd, cat:'현대카드', catCustom:'', amount:''});
+  saveCardSpend(list);
+  renderCardSpend();
+  // 새 행으로 스크롤
+  setTimeout(function(){
+    var rows = document.querySelectorAll('#card-spend-list .cs-row');
+    if(rows.length) rows[rows.length-1].querySelector('input') && rows[rows.length-1].querySelector('input').focus();
+  }, 50);
+}
+function cardSpendDel(id) { saveCardSpend(loadCardSpend().filter(function(x){return x.id!==id;})); renderCardSpend(); }
+function cardSpendSave(id, field, val) {
+  var list=loadCardSpend(); var it=list.find(function(x){return x.id===id;});
+  if(it){it[field]=val; saveCardSpend(list); renderCardSpendSummary();}
+}
+
+function renderCardSpendSummary() {
+  var el = document.getElementById('card-spend-summary'); if(!el) return;
+  var list = loadCardSpend();
+  var total = list.reduce(function(s,it){ return s+(parseFloat((it.amount||'0').replace(/,/g,''))||0); },0);
+  // 카드별 합계
+  var byCard = {};
+  list.forEach(function(it){
+    var c = it.cat==='직접입력' ? (it.catCustom||'기타') : it.cat;
+    byCard[c] = (byCard[c]||0) + (parseFloat((it.amount||'0').replace(/,/g,''))||0);
+  });
+  var byHtml = Object.keys(byCard).map(function(c){
+    return '<div style="font-size:.72rem;color:#c03060"><span style="color:#888">'+c+'</span> '+byCard[c].toLocaleString()+'원</div>';
+  }).join('');
+  el.innerHTML = '<div style="background:linear-gradient(135deg,#fff0f5,#ffd0e8);border:2px solid #e03c6e;border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+    +'<div style="font-size:.8rem;font-weight:700;color:#c03060">💳 이달 카드값 합계</div>'
+    +'<div style="font-size:1.3rem;font-weight:900;color:#c03060;margin-left:auto">'+total.toLocaleString()+'<span style="font-size:.75rem;font-weight:600">원</span></div>'
+    +(byHtml ? '<div style="width:100%;display:flex;gap:12px;flex-wrap:wrap">'+byHtml+'</div>' : '')
+    +'</div>';
+}
+
+function renderCardSpend() {
+  var el = document.getElementById('card-spend-list'); if(!el) return;
+  var list = loadCardSpend();
+  renderCardSpendSummary();
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 카드 지출을 입력해요</div>';return;}
+  el.innerHTML='';
+  var BASE='width:100%;box-sizing:border-box;border:2px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;background:white;';
+  list.forEach(function(it, idx){
+    var row=document.createElement('div');
+    row.className='cs-row';
+    row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr 44px;gap:6px;align-items:center;padding:5px 4px;border-bottom:1px solid #ffe0ec;background:'+(idx%2===0?'white':'#fff8fb');
+
+    // 날짜
+    var dateInp=document.createElement('input'); dateInp.type='date'; dateInp.value=it.date||'';
+    dateInp.style.cssText=BASE+'font-size:.8rem';
+    dateInp.onblur=(function(id){return function(){cardSpendSave(id,'date',this.value);};})(it.id);
+    row.appendChild(dateInp);
+
+    // 분류 (select + 직접입력)
+    var catWrap=document.createElement('div'); catWrap.style.cssText='display:flex;flex-direction:column;gap:3px';
+    var sel=document.createElement('select'); sel.style.cssText=BASE+'color:#c03060;font-weight:700';
+    _CARD_CATS.forEach(function(c){
+      var opt=document.createElement('option'); opt.value=c; opt.textContent=c;
+      if(c===it.cat) opt.selected=true;
+      sel.appendChild(opt);
+    });
+    sel.onchange=(function(id){return function(){
+      cardSpendSave(id,'cat',this.value);
+      renderCardSpend();
+    };})(it.id);
+    catWrap.appendChild(sel);
+    if(it.cat==='직접입력'){
+      var custInp=document.createElement('input'); custInp.type='text'; custInp.placeholder='카드명 입력';
+      custInp.value=it.catCustom||''; custInp.style.cssText=BASE+'font-size:.78rem';
+      custInp.onblur=(function(id){return function(){cardSpendSave(id,'catCustom',this.value.trim());};})(it.id);
+      catWrap.appendChild(custInp);
+    }
+    row.appendChild(catWrap);
+
+    // 금액 (자동 콤마)
+    var amtVal=it.amount ? Number(String(it.amount).replace(/,/g,'')).toLocaleString() : '';
+    var amtInp=document.createElement('input'); amtInp.type='text'; amtInp.value=amtVal; amtInp.placeholder='금액';
+    amtInp.style.cssText=BASE+'text-align:right;font-weight:800;color:#c03060;font-size:.92rem';
+    amtInp.onfocus=function(){this.style.borderColor='#e03c6e';this.style.background='#fff0f5';};
+    amtInp.onblur=(function(id){return function(){
+      this.style.borderColor='#f7c0d8'; this.style.background='white';
+      var raw=this.value.replace(/,/g,'');
+      if(raw&&!isNaN(raw))this.value=Number(raw).toLocaleString();
+      cardSpendSave(id,'amount',raw);
+    };})(it.id);
+    amtInp.oninput=function(){
+      var pos=this.selectionStart; var raw=this.value.replace(/,/g,'');
+      if(!isNaN(raw)&&raw!==''){var fmt=Number(raw).toLocaleString();var diff=fmt.length-this.value.length;this.value=fmt;try{this.setSelectionRange(pos+diff,pos+diff);}catch(e){}}
+    };
+    amtInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+    row.appendChild(amtInp);
+
+    // 삭제
+    var del=document.createElement('button'); del.textContent='✕';
+    del.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;padding:3px 6px;border-radius:4px;font-weight:700';
+    del.onmouseover=function(){this.style.color='#e03c6e';this.style.background='#fff0f5';};
+    del.onmouseout=function(){this.style.color='#ddd';this.style.background='none';};
+    del.onclick=(function(id){return function(){cardSpendDel(id);};})(it.id);
+    row.appendChild(del);
+    el.appendChild(row);
+  });
+}
+
 // 2. 자동이체리스트
 // ────────────────────────
 function loadAutotx()     { return loadObj('m5_autotx').list || []; }
@@ -12279,7 +12407,7 @@ function renderKnowNotes() { _m5NoteRender('m5_know_notes','know-note-grid'); }
 function renderMenu5(sub) {
   sub = sub || parseInt(localStorage.getItem('ws_sub_menu5')||'1');
   if(sub===1){ renderAssetCatTabs && renderAssetCatTabs(); renderAssets(); renderAssetNotes(); loadAssetPlan && loadAssetPlan(); loadAssetLoan && loadAssetLoan(); }
-  if(sub===2){ renderAutotx(); loadAutotxMemoBox&&loadAutotxMemoBox(); }
+  if(sub===2){ renderAutotx(); loadAutotxMemoBox&&loadAutotxMemoBox(); renderCardSpend&&renderCardSpend(); }
   if(sub===3){ renderInvest(); loadInvestMemoBox&&loadInvestMemoBox(); renderInvestRoutine&&renderInvestRoutine(); }
   if(sub===4){ renderLoans(); renderLoanNotes(); }
   if(sub===5){ renderHealthCheck(); renderHealthNotes(); renderKnowLinks&&renderKnowLinks(); renderKnowNotes&&renderKnowNotes(); }
