@@ -3951,9 +3951,9 @@ function renderList(key, elId, clsName, emptyMsg) {
     const timeBadge = item.time ? `<span class="ibadge badge-time">⏰ ${item.time}</span>` : '';
     const hideChk = noChk.includes(key);
     // 메모 이미지 썸네일 (왼쪽)
-    const hasImgs = key === 'memo' && item.imgs && item.imgs.length;
+    const hasImgs = (key === 'memo' || key === 'todo') && item.imgs && item.imgs.length;
     const thumbHtml = hasImgs
-      ? `<div style="flex-shrink:0;display:flex;flex-direction:column;gap:3px;margin-right:4px">${item.imgs.map(src=>`<img src="${src}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1.5px solid #f0e060;cursor:pointer" onclick="openImgModal('${src}')">`).join('')}</div>`
+      ? `<div style="flex-shrink:0;display:flex;flex-direction:column;gap:3px;margin-right:4px">${item.imgs.map(src=>`<img src="${src}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1.5px solid #f7a8c0;cursor:pointer" onclick="openImgModal('${src}')">`).join('')}</div>`
       : '';
     return `<div class="it ${clsName} ${item.done?'done':''}" id="it_${key}_${item.id}" draggable="true" data-id="${item.id}" data-key="${key}" style="${hasImgs?'align-items:flex-start':''}">
       <div class="drag-handle" title="드래그해서 순서 변경">⠿</div>
