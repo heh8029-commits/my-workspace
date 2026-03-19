@@ -1707,7 +1707,7 @@ function pwaInstall() {
 </script>
 
 <!-- 상단 탭바 (고정) -->
-<div id="sticky-header" style="position:sticky;top:0;z-index:300">
+<div id="sticky-header" style="position:fixed;top:0;left:0;right:0;z-index:300">
 <div class="topbar" style="position:static">
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
@@ -1771,7 +1771,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu3',0,null);setMobileSubActive(this)">🍳 레시피</button>
 </div>
 
-<div class="app-wrapper">
+<div class="app-wrapper" id="app-wrapper" style="padding-top:0">
 <nav class="gnav" id="gnav">
   <div class="gnav-logo" style="display:flex;align-items:center;justify-content:space-between">
     <span>🎀 My Space</span>
@@ -3559,6 +3559,14 @@ function _startAutoSync() {
 
 
 
+
+function _fixHeaderOffset() {
+  var hdr = document.getElementById('sticky-header');
+  var wrapper = document.getElementById('app-wrapper');
+  if (hdr && wrapper) {
+    wrapper.style.paddingTop = hdr.offsetHeight + 'px';
+  }
+}
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
   const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
@@ -12045,6 +12053,8 @@ function renderMenu5(sub) {
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
+  _fixHeaderOffset();
+  window.addEventListener('resize', _fixHeaderOffset);
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
