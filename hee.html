@@ -35,6 +35,7 @@
 html {
   overflow-x: hidden;
   width: 100%;
+  --header-h: 100px;
 }
 body {
   font-family: 'Pretendard', -apple-system, sans-serif;
@@ -721,6 +722,8 @@ body.mobile-view .mobile-subnav.active {
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
+  padding-top: var(--header-h, 100px);
+  box-sizing: border-box;
 }
 .hourly-dow-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
 .sales-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
@@ -1778,7 +1781,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu3',0,null);setMobileSubActive(this)">🍳 레시피</button>
 </div>
 
-<div class="app-wrapper" id="app-wrapper" style="padding-top:0">
+<div class="app-wrapper" id="app-wrapper">
 <nav class="gnav" id="gnav">
   <div class="gnav-logo" style="display:flex;align-items:center;justify-content:space-between">
     <span>🎀 My Space</span>
@@ -3581,13 +3584,16 @@ function _startAutoSync() {
 
 function _fixHeaderOffset() {
   var hdr = document.getElementById('sticky-header');
-  var wrapper = document.getElementById('app-wrapper');
-  var gnav = document.getElementById('gnav');
-  if (hdr) {
-    var h = hdr.offsetHeight;
-    if (wrapper) wrapper.style.paddingTop = h + 'px';
-    if (gnav) { gnav.style.top = h + 'px'; gnav.style.height = 'calc(100vh - ' + h + 'px)'; gnav.style.paddingTop = '14px'; }
+  if (!hdr) return;
+  // 여러 번 시도 (렌더 완료 후 측정)
+  function apply() {
+    var hh = hdr.offsetHeight;
+    if (hh < 10) { setTimeout(apply, 50); return; } // 아직 렌더 안됨
+    document.documentElement.style.setProperty('--header-h', hh + 'px');
+    var wrapper = document.getElementById('app-wrapper');
+    if (wrapper) wrapper.style.paddingTop = hh + 'px';
   }
+  apply();
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
@@ -12307,7 +12313,10 @@ function renderMenu5(sub) {
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
-  _fixHeaderOffset();
+  // 헤더 offset - DOM 완전 렌더 후 측정
+  setTimeout(_fixHeaderOffset, 0);
+  setTimeout(_fixHeaderOffset, 200);
+  setTimeout(_fixHeaderOffset, 500);
   window.addEventListener('resize', _fixHeaderOffset);
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
