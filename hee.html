@@ -1799,6 +1799,7 @@ function pwaInstall() {
     <div class="tab" onclick="goTab(this,'menu5')">📈 자산관리</div>
     <div class="tab" onclick="goTab(this,'menu3')">🍳 요리레시피</div>
     <div class="tab" onclick="infoTabClick(this)">🔒 정보</div>
+    <div class="tab" onclick="goTab(this,'search')">🔍 전체검색</div>
   </div>
   <div class="divider"></div>
   <div class="tb-right">
@@ -1903,6 +1904,9 @@ function pwaInstall() {
   </div>
   <div class="gnav-main" id="gnav-menu4" onclick="infoTabClick(document.querySelector('.tab[onclick*=infoTabClick]')); gnavActivate('menu4')">
     <span class="gnav-main-icon">🔒</span> 정보
+  </div>
+  <div class="gnav-main" id="gnav-search" onclick="goTab(document.querySelector('.tab[onclick*=search]'),'search');gnavActivate('search')">
+    <span class="gnav-main-icon">🔍</span> 전체검색
   </div>
   <div class="gnav-main" id="gnav-menu3" onclick="goTab(document.querySelector('.tab[onclick*=menu3]'),'menu3');gnavActivate('menu3')">
     <span class="gnav-main-icon">🍳</span> 요리레시피
@@ -3373,6 +3377,53 @@ function pwaInstall() {
           <div id="pw-list"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════ 전체검색 ══════════════ -->
+  <div class="page" id="search">
+    <div style="max-width:800px;margin:0 auto;padding:24px 16px">
+
+      <!-- 검색 헤더 -->
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:2rem;margin-bottom:8px">🔍</div>
+        <div style="font-size:1.3rem;font-weight:900;color:var(--rose);margin-bottom:4px">전체 검색</div>
+        <div style="font-size:.82rem;color:#aaa">등록된 모든 데이터를 한번에 검색해요</div>
+      </div>
+
+      <!-- 검색창 -->
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input id="search-inp" type="text" placeholder="검색어를 입력해요... (메모, 할일, 일정, 레시피, 문구 등)"
+          style="flex:1;border:2.5px solid #f7a8c0;border-radius:14px;padding:13px 20px;font-size:1rem;font-family:Pretendard,sans-serif;outline:none;background:white;box-shadow:0 2px 12px rgba(220,100,140,.1);transition:border-color .15s"
+          onfocus="this.style.borderColor='#e03c6e'"
+          onblur="this.style.borderColor='#f7a8c0'"
+          oninput="globalSearch(this.value)"
+          onkeydown="if(event.key==='Enter'){globalSearch(this.value)}">
+        <button onclick="globalSearch(document.getElementById('search-inp').value)"
+          style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:14px;padding:13px 22px;color:white;font-size:1rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;white-space:nowrap">
+          검색
+        </button>
+      </div>
+
+      <!-- 검색 대상 안내 -->
+      <div id="search-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:20px;justify-content:center">
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">할일</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">메모</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">주문제작</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">달력일정</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">진우일정</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">문구추천</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">레시피</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">재고</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">자동이체</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">정보메모</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">카드관리</span>
+        <span style="font-size:.72rem;color:#ccc;padding:3px 10px;border:1px solid #eee;border-radius:20px">크티이미지</span>
+      </div>
+
+      <!-- 검색 결과 -->
+      <div id="search-results"></div>
     </div>
   </div>
 
@@ -10138,6 +10189,174 @@ function recipeClearImgs() {
   if (status) status.textContent = '';
 }
 
+
+/* ══════════════════════════════════════════
+   전체 검색 (globalSearch)
+══════════════════════════════════════════ */
+function _hl(text, kw) {
+  if (!kw || !text) return escHtml ? escHtml(text) : text;
+  var safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var re = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return safe.replace(re, '<mark style="background:#ffe066;border-radius:3px;padding:0 2px">$1</mark>');
+}
+
+function _searchMatch(text, kw) {
+  return text && text.toLowerCase().indexOf(kw.toLowerCase()) !== -1;
+}
+
+function globalSearch(kw) {
+  kw = (kw || '').trim();
+  var el = document.getElementById('search-results');
+  if (!el) return;
+  if (!kw) {
+    el.innerHTML = '<div style="text-align:center;color:#ccc;padding:40px;font-size:.9rem">검색어를 입력해요 🔍</div>';
+    return;
+  }
+
+  var results = [];
+
+  // ── 할일 ──
+  var todos = (typeof DBS !== 'undefined' && DBS.todo) ? DBS.todo.data : (typeof load === 'function' ? load('todo') : []);
+  todos.forEach(function(it) {
+    if (_searchMatch(it.text, kw)) results.push({cat:'✅ 할일', text:it.text, sub:'', nav:function(){goTab(document.querySelector('.tab[onclick*=home]'),'home');}});
+  });
+
+  // ── 메모 ──
+  var memos = (typeof DBS !== 'undefined' && DBS.memo) ? DBS.memo.data : (typeof load === 'function' ? load('memo') : []);
+  memos.forEach(function(it) {
+    if (_searchMatch(it.text, kw)) results.push({cat:'📝 메모', text:it.text, sub:'', nav:function(){goTab(document.querySelector('.tab[onclick*=home]'),'home');}});
+  });
+
+  // ── 달력 일정 ──
+  var scheds = typeof loadCalScheds === 'function' ? loadCalScheds() : [];
+  scheds.forEach(function(s) {
+    if (_searchMatch(s.text, kw) || _searchMatch(s.memo, kw))
+      results.push({cat:'📅 달력일정', text:s.text, sub:s.date+(s.memo?' · '+s.memo.slice(0,40):''), nav:function(){goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',14,null);}});
+  });
+
+  // ── 주문제작 ──
+  var orders = typeof loadOrder === 'function' ? loadOrder() : [];
+  orders.forEach(function(o) {
+    if (_searchMatch(o.memo, kw) || _searchMatch(o.filepath, kw))
+      results.push({cat:'📦 주문제작', text:o.memo||o.filepath||'', sub:o.date||'', nav:function(){goTab(document.querySelector('.tab[onclick*=home]'),'home');}});
+  });
+
+  // ── 진우일정 ──
+  var jinus = typeof loadJinuScheds === 'function' ? loadJinuScheds() : [];
+  jinus.forEach(function(s) {
+    if (_searchMatch(s.text, kw) || _searchMatch(s.memo, kw))
+      results.push({cat:'🎒 진우일정', text:s.text||s.memo||'', sub:s.date||'', nav:function(){goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',16,null);}});
+  });
+
+  // ── 문구추천 ──
+  var phrases = typeof loadPhrases === 'function' ? loadPhrases() : [];
+  phrases.forEach(function(p) {
+    if (_searchMatch(p.text, kw))
+      results.push({cat:'✍️ 문구추천', text:p.text, sub:'', nav:function(){goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',19,null);}});
+  });
+
+  // ── 크티이미지 ──
+  var ctis = typeof loadCti === 'function' ? loadCti() : [];
+  ctis.forEach(function(c) {
+    if (_searchMatch(c.text, kw))
+      results.push({cat:'🖼️ 크티이미지', text:c.text, sub:'', nav:function(){goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',19,null);}});
+  });
+
+  // ── 레시피 ──
+  var recipes = typeof recipeDB !== 'undefined' ? recipeDB.data : (typeof load === 'function' ? load('recipe') : []);
+  recipes.forEach(function(r) {
+    if (_searchMatch(r.title, kw) || _searchMatch(r.memo, kw))
+      results.push({cat:'🍳 레시피', text:r.title, sub:r.memo?r.memo.slice(0,50):'', nav:function(){goTab(document.querySelector('.tab[onclick*=menu3]'),'menu3');}});
+  });
+
+  // ── 재고 ──
+  var invs = typeof loadInvList === 'function' ? loadInvList() : (typeof loadObj === 'function' ? (loadObj('inv_list').list||[]) : []);
+  invs.forEach(function(it) {
+    if (_searchMatch(it.name, kw) || _searchMatch(it.memo, kw))
+      results.push({cat:'📦 재고관리', text:it.name, sub:(it.cat||'')+(it.memo?' · '+it.memo:''), nav:function(){goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null);}});
+  });
+
+  // ── 자동이체 ──
+  var autotxs = typeof loadAutotx === 'function' ? loadAutotx() : [];
+  autotxs.forEach(function(it) {
+    if (_searchMatch(it.name, kw) || _searchMatch(it.memo, kw) || _searchMatch(it.from_bank, kw))
+      results.push({cat:'🔄 자동이체', text:it.name, sub:(it.amount||'')+'원'+(it.memo?' · '+it.memo:''), nav:function(){goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');switchSub('menu5',2,null);}});
+  });
+
+  // ── 정보 메모 ──
+  var infoNotes = typeof loadObj === 'function' ? (loadObj('info_notes').list||[]) : [];
+  infoNotes.forEach(function(n) {
+    if (_searchMatch(n.title, kw) || _searchMatch(n.text, kw))
+      results.push({cat:'🔒 정보메모', text:n.title||n.text||'', sub:n.text?n.text.slice(0,50):'', nav:function(){infoTabClick&&infoTabClick();}});
+  });
+
+  // ── 카드관리 ──
+  var cards = typeof loadObj === 'function' ? (loadObj('card_mgmt').list||[]) : [];
+  cards.forEach(function(c) {
+    if (_searchMatch(c.name, kw) || _searchMatch(c.memo, kw))
+      results.push({cat:'💳 카드관리', text:c.name, sub:c.memo||'', nav:function(){goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',18,null);}});
+  });
+
+  // ── 이벤트/경조사 ──
+  var events = typeof loadObj === 'function' ? (loadObj('event_rec').list||[]) : [];
+  events.forEach(function(e) {
+    if (_searchMatch(e.text, kw) || _searchMatch(e.memo, kw))
+      results.push({cat:'🎊 경조사', text:e.text||'', sub:e.memo||'', nav:function(){goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null);}});
+  });
+
+  // ══ 렌더 ══
+  if (!results.length) {
+    el.innerHTML = '<div style="text-align:center;padding:50px 20px">'
+      +'<div style="font-size:2.5rem;margin-bottom:12px">🔍</div>'
+      +'<div style="font-size:1rem;font-weight:700;color:#888;margin-bottom:6px">검색 결과가 없어요</div>'
+      +'<div style="font-size:.82rem;color:#bbb">"'+kw+'"에 해당하는 내용을 찾지 못했어요</div>'
+      +'</div>';
+    return;
+  }
+
+  // 카테고리 그룹핑
+  var groups = {};
+  results.forEach(function(r) {
+    if (!groups[r.cat]) groups[r.cat] = [];
+    groups[r.cat].push(r);
+  });
+
+  var html = '<div style="font-size:.82rem;color:#888;margin-bottom:12px">총 '+results.length+'개 결과 · "'+kw+'"</div>';
+
+  Object.keys(groups).forEach(function(cat) {
+    var items = groups[cat];
+    html += '<div style="margin-bottom:18px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<div style="font-size:.82rem;font-weight:800;color:#e03c6e;background:linear-gradient(135deg,#fff0f5,#ffd8ee);border:1.5px solid #f7a8c0;border-radius:20px;padding:3px 12px">'+cat+'</div>'
+      +'<div style="font-size:.75rem;color:#bbb">'+items.length+'개</div>'
+      +'</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:6px">';
+    items.forEach(function(r, idx) {
+      html += '<div '
+        +'style="background:white;border:1.5px solid #f0e8f8;border-radius:10px;padding:11px 16px;cursor:pointer;transition:all .13s;box-shadow:0 1px 4px rgba(200,150,220,.07)" '
+        +'onmouseover="this.style.background=\'#fdf8ff\';this.style.borderColor=\'#e0b8f8\';this.style.transform=\'translateX(3px)\'" '
+        +'onmouseout="this.style.background=\'white\';this.style.borderColor=\'#f0e8f8\';this.style.transform=\'\'" '
+        +'data-idx="'+idx+'" data-cat="'+cat+'">'
+        +'<div style="font-size:.88rem;font-weight:700;color:#2a1060;line-height:1.5">'+_hl(r.text.slice(0,80), kw)+(r.text.length>80?'...':'')+'</div>'
+        +(r.sub ? '<div style="font-size:.76rem;color:#999;margin-top:3px;line-height:1.4">'+_hl(r.sub.slice(0,60), kw)+'</div>' : '')
+        +'</div>';
+    });
+    html += '</div></div>';
+  });
+
+  el.innerHTML = html;
+
+  // 클릭 이벤트 - nav 함수 별도 연결
+  var allItems = [];
+  Object.keys(groups).forEach(function(cat) { groups[cat].forEach(function(r){ allItems.push(r); }); });
+  el.querySelectorAll('[data-cat]').forEach(function(div) {
+    var cat = div.dataset.cat;
+    var idx = parseInt(div.dataset.idx);
+    var navFn = groups[cat] && groups[cat][idx] ? groups[cat][idx].nav : null;
+    if (navFn) div.onclick = navFn;
+  });
+}
+
 /* ── 요일별 메뉴 ── */
 function loadWeekMenu() { return loadObj('week_menu').data || {월:'',화:'',수:'',목:'',금:'',토:'',일:''}; }
 function saveWeekMenu(data) { stor('week_menu', {data}); }
@@ -11478,6 +11697,9 @@ function initRender(pageId) {
     renderRecipe && renderRecipe();
     renderWeekMenu && renderWeekMenu();
     renderFabIcons && renderFabIcons();
+  } else if (pageId === 'search') {
+    // 검색 페이지 - 검색창 포커스
+    setTimeout(function(){ var inp=document.getElementById('search-inp'); if(inp) inp.focus(); }, 100);
   } else {
     renderFabIcons && renderFabIcons();
   }
