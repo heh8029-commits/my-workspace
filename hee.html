@@ -626,6 +626,7 @@ body.mobile-view .mobile-subnav.active {
   position: sticky;
   top: 0;
   height: 100vh;
+  padding-top: 100px;
   overflow-y: auto;
   scrollbar-width: none;
   background: linear-gradient(180deg, #fff5f9 0%, #fff0f5 100%);
@@ -678,7 +679,7 @@ body.mobile-view .mobile-subnav.active {
   color:white;border-color:var(--rose);font-weight:700;
 }
 
-.gnav-subs {
+.gnav-subs-DISABLED {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -701,6 +702,12 @@ body.mobile-view .mobile-subnav.active {
 .gnav-sub:hover { background: #fce8f0; color: var(--rose); }
 .gnav-sub.active { color: var(--rose); font-weight: 700; background: #fff0f5; }
 
+.gnav-subs {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-left: 4px;
+}
 .gnav-divider {
   height: 1px;
   background: #fce8f0;
@@ -741,7 +748,7 @@ body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 }
 .gnav.collapsed .gnav-logo span,
 .gnav.collapsed .gnav-main span:last-child { display: none; }
-.gnav.collapsed .gnav-subs { display: none; }
+.gnav.collapsed .gnav-subs { display: none !important; }
 .gnav.collapsed .gnav-main { padding: 10px; justify-content: center; }
 .gnav.collapsed .gnav-main-icon { font-size: 1.2rem; }
 .gnav.collapsed #gnav-toggle-btn { transform: rotate(180deg); }
@@ -2150,14 +2157,14 @@ function pwaInstall() {
 
       </div>
 
-      <!-- 세금 포스트잇 -->
+      <!-- 세금 메모 텍스트박스 -->
       <div style="margin-top:20px">
-        <div style="font-size:.88rem;font-weight:700;color:var(--mint-dark);margin-bottom:10px">📌 메모</div>
-        <div style="display:flex;gap:7px;margin-bottom:10px">
-          <textarea id="tax-note-inp" rows="2" placeholder="세금 관련 메모..." style="flex:1;border:1.5px solid var(--mint);border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#f0fff8;line-height:1.6"></textarea>
-          <button onclick="taxNoteAdd()" style="background:linear-gradient(135deg,#b2e8d4,#3dbb8f);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
+        <div class="card" style="border-top:3px solid #3dbb8f">
+          <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">📝 메모</div>
+          <textarea id="tax-note-box" rows="5" placeholder="세금 관련 메모를 자유롭게 적어요..."
+            style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f0fff8;color:#1a3020;font-weight:500"
+            oninput="taxMemoBoxSave()"></textarea>
         </div>
-        <div id="tax-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
       </div>
     </div>
     <div class="subpage" id="menu1-sub-2">
@@ -2453,14 +2460,14 @@ function pwaInstall() {
         <div id="pnl-income-card" style="margin-bottom:12px"></div>
         <div id="pnl-expense-card"></div>
       </div>
-      <!-- 손익 포스트잇 메모 -->
+      <!-- 손익 메모 텍스트박스 -->
       <div style="margin-top:20px">
-        <div class="sec">📌 메모 포스트잇</div>
-        <div style="display:flex;gap:7px;margin-bottom:12px">
-          <textarea id="pnl-note-inp" rows="2" placeholder="메모 내용..." style="flex:1;border:1.5px solid #ffe880;border-radius:9px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:none;background:#fffef5;line-height:1.6"></textarea>
-          <button onclick="pnlNoteAdd()" style="background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:9px;padding:8px 14px;font-size:.85rem;font-weight:700;color:#7a5800;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;align-self:flex-end">+</button>
+        <div class="card" style="border-top:3px solid #f0c800">
+          <div style="font-size:.88rem;font-weight:700;color:#a07800;margin-bottom:8px">📝 메모</div>
+          <textarea id="pnl-note-box" rows="5" placeholder="월별 손익 관련 메모를 자유롭게 적어요..."
+            style="width:100%;box-sizing:border-box;border:2px solid #ffe880;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#fffef5;color:#3a2800;font-weight:500"
+            oninput="pnlMemoBoxSave()"></textarea>
         </div>
-        <div id="pnl-note-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
       </div>
     </div>
   </div>
@@ -3460,7 +3467,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -3563,13 +3570,16 @@ function _startAutoSync() {
 function _fixHeaderOffset() {
   var hdr = document.getElementById('sticky-header');
   var wrapper = document.getElementById('app-wrapper');
-  if (hdr && wrapper) {
-    wrapper.style.paddingTop = hdr.offsetHeight + 'px';
+  var gnav = document.getElementById('gnav');
+  if (hdr) {
+    var h = hdr.offsetHeight;
+    if (wrapper) wrapper.style.paddingTop = h + 'px';
+    if (gnav) { gnav.style.top = h + 'px'; gnav.style.height = 'calc(100vh - ' + h + 'px)'; gnav.style.paddingTop = '14px'; }
   }
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -11025,7 +11035,7 @@ function initRender(pageId) {
   } else if (pageId === 'menu1') {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
-    renderTaxNotes && renderTaxNotes();
+    loadTaxMemoBox && loadTaxMemoBox();
     renderSales && renderSales();
     renderHourly && renderHourly();
     renderStaff && renderStaff();
@@ -11662,17 +11672,71 @@ function _assetFmt(wan) {
   var n = parseFloat((wan||'0').toString().replace(/,/g,'')) || 0;
   return n.toLocaleString() + '만원';
 }
+
+function pnlMemoBoxSave() { var el=document.getElementById('pnl-note-box'); if(el) stor('pnl_note_box',{text:el.value}); }
+function loadPnlMemoBox() { var el=document.getElementById('pnl-note-box'); if(el) el.value=loadObj('pnl_note_box').text||''; }
+function taxMemoBoxSave() { var el=document.getElementById('tax-note-box'); if(el) stor('tax_note_box',{text:el.value}); }
+function loadTaxMemoBox() { var el=document.getElementById('tax-note-box'); if(el) el.value=loadObj('tax_note_box').text||''; }
+
 function renderAssetSummary() {
   var el = document.getElementById('asset-summary'); if(!el) return;
-  var totalWan = loadAssets().reduce(function(s,it){ return s+(parseFloat((it.amount||'0').replace(/,/g,''))||0); },0);
+  var list = loadAssets();
+  var cats = loadAssetCats();
+  var totalWan = list.reduce(function(s,it){ return s+(parseFloat((it.amount||'0').replace(/,/g,''))||0); },0);
   var totalWon = totalWan * 10000;
-  el.innerHTML = '<div style="background:linear-gradient(135deg,#e8fff4,#b2e8d4);border:2px solid #3dbb8f;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px">'
-    +'<div style="font-size:.8rem;font-weight:700;color:#1a7a50">💰 총 자산</div>'
-    +'<div style="display:flex;align-items:baseline;gap:6px;margin-left:auto">'
-      +'<div style="font-size:1.3rem;font-weight:900;color:#1a7a50">'+totalWan.toLocaleString()+'<span style="font-size:.78rem;font-weight:700">만원</span></div>'
-      +'<div style="font-size:.78rem;color:#5aaa80">('+totalWon.toLocaleString()+'원)</div>'
-    +'</div>'
-    +'</div>';
+
+  // 분류별 합계
+  var catTotals = {};
+  list.forEach(function(it){
+    var c = it.cat || '미분류';
+    catTotals[c] = (catTotals[c]||0) + (parseFloat((it.amount||'0').replace(/,/g,''))||0);
+  });
+
+  // 색상 팔레트
+  var PIE_COLORS = ['#3dbb8f','#4a80d0','#e03c6e','#f0a000','#9060d0','#2aaa80','#d06030','#2a80c0'];
+  var catKeys = Object.keys(catTotals);
+
+  // SVG 도넛 생성
+  var size = 110, cx = 55, cy = 55, r = 38, stroke = 18;
+  var circ = 2 * Math.PI * r;
+  var offset = 0;
+  var slices = '';
+  catKeys.forEach(function(c, i){
+    var pct = totalWan > 0 ? catTotals[c] / totalWan : 0;
+    var dash = pct * circ;
+    var gap = circ - dash;
+    var color = PIE_COLORS[i % PIE_COLORS.length];
+    slices += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+stroke+'" '
+      +'stroke-dasharray="'+dash+' '+gap+'" stroke-dashoffset="'+(-(offset * circ - circ/4))+'" style="transition:all .4s"/>';
+    offset += pct;
+  });
+  if (!slices) slices = '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#e0f0e8" stroke-width="'+stroke+'"/>';
+
+  var svgHtml = '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" style="flex-shrink:0">'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#e8f8f0" stroke-width="'+stroke+'"/>'
+    +slices
+    +'<text x="'+cx+'" y="'+(cy-6)+'" text-anchor="middle" font-size="11" font-weight="900" fill="#1a7a50" font-family="Pretendard,sans-serif">'+totalWan.toLocaleString()+'</text>'
+    +'<text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-size="9" fill="#5aaa80" font-family="Pretendard,sans-serif">만원</text>'
+    +'</svg>';
+
+  // 범례
+  var legendHtml = '<div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">';
+  catKeys.forEach(function(c, i){
+    var pct = totalWan > 0 ? Math.round(catTotals[c]/totalWan*100) : 0;
+    var color = PIE_COLORS[i % PIE_COLORS.length];
+    legendHtml += '<div style="display:flex;align-items:center;gap:5px">'
+      +'<div style="width:10px;height:10px;border-radius:2px;background:'+color+';flex-shrink:0"></div>'
+      +'<div style="font-size:.72rem;color:#333;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c+'</div>'
+      +'<div style="font-size:.72rem;font-weight:700;color:#1a7a50;white-space:nowrap">'+catTotals[c].toLocaleString()+'만 <span style="color:#aaa;font-weight:400">('+pct+'%)</span></div>'
+      +'</div>';
+  });
+  legendHtml += '<div style="border-top:1px solid #e0f0e8;margin-top:3px;padding-top:3px;display:flex;justify-content:space-between">'
+    +'<div style="font-size:.75rem;font-weight:800;color:#1a7a50">합계</div>'
+    +'<div style="font-size:.75rem;font-weight:900;color:#1a7a50">'+totalWan.toLocaleString()+'만원</div>'
+    +'</div></div>';
+
+  el.innerHTML = '<div style="background:linear-gradient(135deg,#e8fff4,#f0fffb);border:2px solid #3dbb8f;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px">'
+    +svgHtml+legendHtml+'</div>';
 }
 function renderAssets() {
   var el=document.getElementById('asset-list'); if(!el) return;
