@@ -3069,7 +3069,7 @@ function pwaInstall() {
           <div style="font-size:.92rem;font-weight:800;color:#c03060">💳 카드값</div>
           <button onclick="cardSpendAdd()" style="margin-left:auto;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:6px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
         </div>
-        <div style="display:grid;grid-template-columns:140px 100px 1fr 44px;background:#ffe0ec;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:800;color:#c03060;margin-bottom:6px;gap:6px">
+        <div style="display:grid;grid-template-columns:150px 130px 1fr 44px;background:#ffe0ec;border-radius:8px;padding:8px 10px;font-size:.82rem;font-weight:800;color:#c03060;margin-bottom:6px;gap:8px">
           <div>날짜</div><div>분류</div><div style="text-align:right">금액</div><div></div>
         </div>
         <div id="card-spend-list"></div>
@@ -12042,48 +12042,66 @@ function renderCardSpend() {
   var el = document.getElementById('card-spend-list'); if(!el) return;
   var list = loadCardSpend();
   renderCardSpendSummary();
-  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.82rem;padding:16px">+ 추가 버튼으로 카드 지출을 입력해요</div>';return;}
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:.88rem;padding:20px">+ 추가 버튼으로 카드 지출을 입력해요</div>';return;}
   el.innerHTML='';
-  var BASE='width:100%;box-sizing:border-box;border:2px solid #f7c0d8;border-radius:7px;padding:6px 9px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;background:white;';
+
+  var BASE='width:100%;box-sizing:border-box;border:2px solid #f7c0d8;border-radius:8px;padding:7px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;font-weight:600;background:white;';
+
   list.forEach(function(it, idx){
     var row=document.createElement('div');
     row.className='cs-row';
-    row.style.cssText='display:grid;grid-template-columns:140px 100px 1fr 44px;gap:6px;align-items:center;padding:5px 4px;border-bottom:1px solid #ffe0ec;background:'+(idx%2===0?'white':'#fff8fb');
+    row.style.cssText='display:grid;grid-template-columns:150px 130px 1fr 44px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid #ffe0ec;background:'+(idx%2===0?'white':'#fff8fb');
+    row.onmouseover=function(){this.style.background='#fff0f7';};
+    row.onmouseout=function(){this.style.background=idx%2===0?'white':'#fff8fb';};
 
-    // 날짜
+    // ── 날짜 (date picker) ──
     var dateInp=document.createElement('input'); dateInp.type='date'; dateInp.value=it.date||'';
-    dateInp.style.cssText=BASE+'font-size:.8rem';
-    dateInp.onblur=(function(id){return function(){cardSpendSave(id,'date',this.value);};})(it.id);
+    dateInp.style.cssText=BASE+'font-size:.9rem;font-weight:800;color:#c03060;';
+    dateInp.onfocus=function(){this.style.borderColor='#e03c6e';this.style.background='#fff0f5';};
+    dateInp.onblur=(function(id){return function(){
+      this.style.borderColor='#f7c0d8';this.style.background='white';
+      cardSpendSave(id,'date',this.value);
+    };})(it.id);
     row.appendChild(dateInp);
 
-    // 분류 (select + 직접입력)
-    var catWrap=document.createElement('div'); catWrap.style.cssText='display:flex;flex-direction:column;gap:3px';
-    var sel=document.createElement('select'); sel.style.cssText=BASE+'color:#c03060;font-weight:700';
+    // ── 분류 select ──
+    var catWrap=document.createElement('div'); catWrap.style.cssText='display:flex;flex-direction:column;gap:4px';
+    var sel=document.createElement('select');
+    sel.style.cssText=BASE+'color:#c03060;font-weight:800;font-size:.9rem;cursor:pointer;';
     _CARD_CATS.forEach(function(c){
       var opt=document.createElement('option'); opt.value=c; opt.textContent=c;
       if(c===it.cat) opt.selected=true;
       sel.appendChild(opt);
     });
+    sel.onfocus=function(){this.style.borderColor='#e03c6e';this.style.background='#fff0f5';};
+    sel.onblur=function(){this.style.borderColor='#f7c0d8';this.style.background='white';};
     sel.onchange=(function(id){return function(){
       cardSpendSave(id,'cat',this.value);
       renderCardSpend();
     };})(it.id);
     catWrap.appendChild(sel);
     if(it.cat==='직접입력'){
-      var custInp=document.createElement('input'); custInp.type='text'; custInp.placeholder='카드명 입력';
-      custInp.value=it.catCustom||''; custInp.style.cssText=BASE+'font-size:.78rem';
-      custInp.onblur=(function(id){return function(){cardSpendSave(id,'catCustom',this.value.trim());};})(it.id);
+      var custInp=document.createElement('input'); custInp.type='text'; custInp.placeholder='카드명 직접입력';
+      custInp.value=it.catCustom||'';
+      custInp.style.cssText=BASE+'font-size:.85rem;color:#c03060;font-weight:700;';
+      custInp.onfocus=function(){this.style.borderColor='#e03c6e';this.style.background='#fff0f5';};
+      custInp.onblur=(function(id){return function(){
+        this.style.borderColor='#f7c0d8';this.style.background='white';
+        cardSpendSave(id,'catCustom',this.value.trim());
+      };})(it.id);
+      custInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
       catWrap.appendChild(custInp);
     }
     row.appendChild(catWrap);
 
-    // 금액 (자동 콤마)
+    // ── 금액 (자동 콤마) ──
     var amtVal=it.amount ? Number(String(it.amount).replace(/,/g,'')).toLocaleString() : '';
-    var amtInp=document.createElement('input'); amtInp.type='text'; amtInp.value=amtVal; amtInp.placeholder='금액';
-    amtInp.style.cssText=BASE+'text-align:right;font-weight:800;color:#c03060;font-size:.92rem';
+    var amtInp=document.createElement('input'); amtInp.type='text';
+    amtInp.value=amtVal; amtInp.placeholder='금액 입력';
+    amtInp.style.cssText=BASE+'text-align:right;font-weight:900;color:#c03060;font-size:1rem;';
     amtInp.onfocus=function(){this.style.borderColor='#e03c6e';this.style.background='#fff0f5';};
     amtInp.onblur=(function(id){return function(){
-      this.style.borderColor='#f7c0d8'; this.style.background='white';
+      this.style.borderColor='#f7c0d8';this.style.background='white';
       var raw=this.value.replace(/,/g,'');
       if(raw&&!isNaN(raw))this.value=Number(raw).toLocaleString();
       cardSpendSave(id,'amount',raw);
@@ -12095,13 +12113,15 @@ function renderCardSpend() {
     amtInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
     row.appendChild(amtInp);
 
-    // 삭제
+    // ── 삭제 ──
+    var delWrap=document.createElement('div'); delWrap.style.cssText='display:flex;justify-content:center;align-items:center';
     var del=document.createElement('button'); del.textContent='✕';
-    del.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;padding:3px 6px;border-radius:4px;font-weight:700';
+    del.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:1.1rem;padding:4px 6px;border-radius:4px;font-weight:700;line-height:1';
     del.onmouseover=function(){this.style.color='#e03c6e';this.style.background='#fff0f5';};
     del.onmouseout=function(){this.style.color='#ddd';this.style.background='none';};
     del.onclick=(function(id){return function(){cardSpendDel(id);};})(it.id);
-    row.appendChild(del);
+    delWrap.appendChild(del);
+    row.appendChild(delWrap);
     el.appendChild(row);
   });
 }
