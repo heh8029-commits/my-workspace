@@ -3629,6 +3629,64 @@ function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 // ── Firebase Realtime Database 연동 ──
 const FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
 
+function confirmDel(msg, onConfirm) {
+  var old = document.getElementById('confirm-del-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'confirm-del-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:18px;padding:28px 26px 22px;width:100%;max-width:320px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.22);text-align:center';
+
+  var icon = document.createElement('div');
+  icon.style.cssText = 'font-size:2rem;margin-bottom:10px';
+  icon.textContent = '🗑️';
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:1rem;font-weight:800;color:#222;margin-bottom:7px';
+  title.textContent = '삭제하시겠어요?';
+
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:.83rem;color:#888;line-height:1.5;margin-bottom:20px;word-break:break-all';
+  sub.textContent = msg || '삭제하면 복구할 수 없어요.';
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:10px;justify-content:center';
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '취소';
+  cancelBtn.style.cssText = 'flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.9rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif';
+  cancelBtn.onclick = function(){ modal.remove(); };
+
+  var okBtn = document.createElement('button');
+  okBtn.textContent = '삭제';
+  okBtn.id = 'confirm-del-ok';
+  okBtn.style.cssText = 'flex:1;padding:10px;background:linear-gradient(135deg,#f05070,#e03060);border:none;border-radius:10px;font-size:.9rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif';
+  okBtn.onclick = function(){ modal.remove(); onConfirm(); };
+
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(okBtn);
+  box.appendChild(icon);
+  box.appendChild(title);
+  box.appendChild(sub);
+  box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  // 배경 클릭 시 닫기
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+
+  // 엔터 키 → 삭제 확인
+  function keyHandler(e) {
+    if (e.key === 'Enter') { modal.remove(); onConfirm(); document.removeEventListener('keydown', keyHandler); }
+    if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', keyHandler); }
+  }
+  document.addEventListener('keydown', keyHandler);
+  setTimeout(function(){ okBtn.focus(); }, 50);
+}
+
 function load(k) {
   try {
     const v = localStorage.getItem('ws5_'+k);
@@ -4128,7 +4186,7 @@ function renderList(key, elId, clsName, emptyMsg) {
       <div class="iacts">
         <button onclick="navigator.clipboard.writeText('${item.text.replace(/'/g,"\\'").replace(/\n/g,'\\n')}').then(()=>toast('📋 복사됐어요!'))" title="복사">📋</button>
         <button onclick="memoEditOpen(this,${item.id})">✏️</button>
-        <button onclick="confirmDel(item.text?item.text.slice(0,30):'이 항목', function(){window[key+'Del'](item.id);})">🗑️</button>
+        <button onclick="confirmDel('${(item.text||'이 항목').slice(0,30).replace(/'/g,' ')}', function(){${key}Del(${item.id});})">🗑️</button>
       </div>
       ${item.createdAt ? `<div class="cat-badge">${formatCreatedAt(item.createdAt)}</div>` : ''}
     </div>`;
@@ -11641,63 +11699,6 @@ function initPage(pageId) { /* 단일파일 - goTab이 처리 */ }
 
 
 /* ── 삭제 확인 모달 ── */
-function confirmDel(msg, onConfirm) {
-  var old = document.getElementById('confirm-del-modal');
-  if (old) old.remove();
-
-  var modal = document.createElement('div');
-  modal.id = 'confirm-del-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
-
-  var box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:18px;padding:28px 26px 22px;width:100%;max-width:320px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.22);text-align:center';
-
-  var icon = document.createElement('div');
-  icon.style.cssText = 'font-size:2rem;margin-bottom:10px';
-  icon.textContent = '🗑️';
-
-  var title = document.createElement('div');
-  title.style.cssText = 'font-size:1rem;font-weight:800;color:#222;margin-bottom:7px';
-  title.textContent = '삭제하시겠어요?';
-
-  var sub = document.createElement('div');
-  sub.style.cssText = 'font-size:.83rem;color:#888;line-height:1.5;margin-bottom:20px;word-break:break-all';
-  sub.textContent = msg || '삭제하면 복구할 수 없어요.';
-
-  var btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:10px;justify-content:center';
-
-  var cancelBtn = document.createElement('button');
-  cancelBtn.textContent = '취소';
-  cancelBtn.style.cssText = 'flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.9rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif';
-  cancelBtn.onclick = function(){ modal.remove(); };
-
-  var okBtn = document.createElement('button');
-  okBtn.textContent = '삭제';
-  okBtn.id = 'confirm-del-ok';
-  okBtn.style.cssText = 'flex:1;padding:10px;background:linear-gradient(135deg,#f05070,#e03060);border:none;border-radius:10px;font-size:.9rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif';
-  okBtn.onclick = function(){ modal.remove(); onConfirm(); };
-
-  btnRow.appendChild(cancelBtn);
-  btnRow.appendChild(okBtn);
-  box.appendChild(icon);
-  box.appendChild(title);
-  box.appendChild(sub);
-  box.appendChild(btnRow);
-  modal.appendChild(box);
-  document.body.appendChild(modal);
-
-  // 배경 클릭 시 닫기
-  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
-
-  // 엔터 키 → 삭제 확인
-  function keyHandler(e) {
-    if (e.key === 'Enter') { modal.remove(); onConfirm(); document.removeEventListener('keydown', keyHandler); }
-    if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', keyHandler); }
-  }
-  document.addEventListener('keydown', keyHandler);
-  setTimeout(function(){ okBtn.focus(); }, 50);
-}
 
 function initRender(pageId) {
   if (pageId === 'home') {
