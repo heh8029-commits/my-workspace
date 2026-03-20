@@ -597,6 +597,15 @@ body.mobile-view .gnav { display: none !important; position: static !important; 
 .mobile-subnav::-webkit-scrollbar { display: none; }
 body.mobile-view .mobile-subnav.active {
   display: flex;
+  position: fixed;
+  top: var(--header-h, 100px);
+  left: 0;
+  right: 0;
+  z-index: 290;
+  box-shadow: 0 3px 10px rgba(0,0,0,.1);
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
 }
 .msub-btn {
   display: inline-flex;
@@ -733,7 +742,7 @@ body.mobile-view .mobile-subnav.active {
 
 body.mobile-view .app-wrapper { display: block; width: 100%; overflow-x: hidden; padding-left: 0 !important; }
 body.mobile-view .app-body { width: 100%; overflow-x: hidden; }
-body.mobile-view .main { padding: 14px 10px 60px; width: 100%; overflow-x: hidden; }
+body.mobile-view .main { padding: 14px 10px 60px; width: 100%; overflow-x: hidden; padding-top: calc(var(--subnav-h, 0px) + 14px); }
 body.mobile-view .hourly-dow-grid { grid-template-columns:repeat(4,1fr); gap:6px; }
 body.mobile-view .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
 
@@ -1817,11 +1826,10 @@ function pwaInstall() {
   <span class="salary-alarm" id="salary-alarm"></span>
   <div class="dpill" id="dpill" style="max-width:55vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
 </div>
-</div>
 
 <div class="mobile-subnav" id="msubnav-menu1">
   <button class="msub-btn" onclick="switchSub('menu1',8,null);setMobileSubActive(this)">📉 월별손익</button>
-    <button class="msub-btn" onclick="switchSub('menu1',1,null);setMobileSubActive(this)">💰 부가세/종소세/세금</button>
+  <button class="msub-btn" onclick="switchSub('menu1',1,null);setMobileSubActive(this)">💰 부가세/종소세/세금</button>
   <button class="msub-btn" onclick="switchSub('menu1',2,null);setMobileSubActive(this)">📊 매출정리/광고비</button>
   <button class="msub-btn" onclick="switchSub('menu1',7,null);setMobileSubActive(this)">⏰ 그로스시간별매출</button>
   <button class="msub-btn" onclick="switchSub('menu1',3,null);setMobileSubActive(this)">🎨 디자인관리</button>
@@ -1835,23 +1843,20 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu2',14,null);setMobileSubActive(this)">📅 달력/일정</button>
   <button class="msub-btn" onclick="switchSub('menu2',15,null);setMobileSubActive(this)">✅ 중요체크리스트</button>
   <button class="msub-btn" onclick="switchSub('menu2',0,null);setMobileSubActive(this)">💳 월별지출</button>
-  <button class="msub-btn" onclick="switchSub('menu2',16,null);setMobileSubActive(this)">🎒 초딩진우일정</button>
+  <button class="msub-btn" onclick="switchSub('menu2',16,null);setMobileSubActive(this)">🎒 초딩진우 일정</button>
   <button class="msub-btn" onclick="switchSub('menu2',18,null);setMobileSubActive(this)">💳 카드관리</button>
   <button class="msub-btn" onclick="switchSub('menu2',20,null);setMobileSubActive(this)">✈️ 여행갈때</button>
-  <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사기록</button>
+  <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사 기록</button>
 </div>
-
 <div class="mobile-subnav" id="msubnav-menu5">
   <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
   <button class="msub-btn" onclick="switchSub('menu5',2,null);setMobileSubActive(this)">🔄 자동이체&카드값</button>
   <button class="msub-btn" onclick="switchSub('menu5',3,null);setMobileSubActive(this)">📈 투자&연금</button>
   <button class="msub-btn" onclick="switchSub('menu5',5,null);setMobileSubActive(this)">💊 건강/청결/지식</button>
 </div>
-<div class="mobile-subnav" id="msubnav-menu4">
-  <button class="msub-btn" onclick="setMobileSubActive(this)">🔒 정보</button>
-</div>
-<div class="mobile-subnav" id="msubnav-menu3">
-  <button class="msub-btn" onclick="switchSub('menu3',0,null);setMobileSubActive(this)">🍳 레시피</button>
+<div class="mobile-subnav" id="msubnav-menu4"></div>
+<div class="mobile-subnav" id="msubnav-menu3"></div>
+
 </div>
 
 <div class="app-wrapper" id="app-wrapper">
@@ -3819,10 +3824,15 @@ function _fixHeaderOffset() {
     var wrapper = document.getElementById('app-wrapper');
     if (wrapper) {
       wrapper.style.paddingTop = hh + 'px';
-      // gnav collapsed 여부에 따라 padding-left 조정
       var gnav = document.getElementById('gnav');
       var gnavW = (gnav && gnav.classList.contains('collapsed')) ? 40 : 160;
       wrapper.style.paddingLeft = gnavW + 'px';
+    }
+    // 모바일: 서브메뉴 높이도 감안해서 main padding-top 조정
+    var activeSub = document.querySelector('.mobile-subnav.active');
+    if (activeSub) {
+      var subH = activeSub.offsetHeight;
+      document.documentElement.style.setProperty('--subnav-h', subH + 'px');
     }
   }
   apply();
@@ -4565,6 +4575,10 @@ function csEdit(id) {
   it.text = newText.trim();
   saveCsList(items.filter(x=>x.text));
   renderCsList();
+}
+function csDel(id) {
+  var it2 = loadCs().find(function(x){return x.id===id;});
+  confirmDel(it2?it2.title:'이 항목', function(){csDel_orig(id);});
 }
 function csDel_orig(id) {
   saveCsList(loadCsList().filter(x => x.id !== id));
