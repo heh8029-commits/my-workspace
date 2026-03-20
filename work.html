@@ -635,9 +635,10 @@ body.mobile-view .mobile-subnav.active {
 .gnav {
   width: 160px;
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: var(--header-h, 100px);
+  height: calc(100vh - var(--header-h, 100px));
   overflow-y: auto;
   scrollbar-width: none;
   background: linear-gradient(180deg, #fff5f9 0%, #fff0f5 100%);
@@ -1833,6 +1834,64 @@ function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 // ── Firebase Realtime Database 연동 ──
 const FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
 
+function confirmDel(msg, onConfirm) {
+  var old = document.getElementById('confirm-del-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'confirm-del-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:18px;padding:28px 26px 22px;width:100%;max-width:320px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.22);text-align:center';
+
+  var icon = document.createElement('div');
+  icon.style.cssText = 'font-size:2rem;margin-bottom:10px';
+  icon.textContent = '🗑️';
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:1rem;font-weight:800;color:#222;margin-bottom:7px';
+  title.textContent = '삭제하시겠어요?';
+
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:.83rem;color:#888;line-height:1.5;margin-bottom:20px;word-break:break-all';
+  sub.textContent = msg || '삭제하면 복구할 수 없어요.';
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:10px;justify-content:center';
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '취소';
+  cancelBtn.style.cssText = 'flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.9rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif';
+  cancelBtn.onclick = function(){ modal.remove(); };
+
+  var okBtn = document.createElement('button');
+  okBtn.textContent = '삭제';
+  okBtn.id = 'confirm-del-ok';
+  okBtn.style.cssText = 'flex:1;padding:10px;background:linear-gradient(135deg,#f05070,#e03060);border:none;border-radius:10px;font-size:.9rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif';
+  okBtn.onclick = function(){ modal.remove(); onConfirm(); };
+
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(okBtn);
+  box.appendChild(icon);
+  box.appendChild(title);
+  box.appendChild(sub);
+  box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  // 배경 클릭 시 닫기
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+
+  // 엔터 키 → 삭제 확인
+  function keyHandler(e) {
+    if (e.key === 'Enter') { modal.remove(); onConfirm(); document.removeEventListener('keydown', keyHandler); }
+    if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', keyHandler); }
+  }
+  document.addEventListener('keydown', keyHandler);
+  setTimeout(function(){ okBtn.focus(); }, 50);
+}
+
 function load(k) {
   try {
     const v = localStorage.getItem('ws5_'+k);
@@ -1955,6 +2014,29 @@ function _startAutoSync() {
 
 
 // Firebase에서 전체 데이터 불러오기
+async function _fixHeaderOffset() {
+  var hdr = document.getElementById('sticky-header');
+  if (!hdr) return;
+  function apply() {
+    var hh = hdr.offsetHeight;
+    if (hh < 10) { setTimeout(apply, 50); return; }
+    document.documentElement.style.setProperty('--header-h', hh + 'px');
+    var wrapper = document.getElementById('app-wrapper');
+    if (wrapper) {
+      wrapper.style.paddingTop = hh + 'px';
+      var gnav = document.getElementById('gnav');
+      var gnavW = (gnav && gnav.classList.contains('collapsed')) ? 40 : 160;
+      wrapper.style.paddingLeft = gnavW + 'px';
+    }
+    // 모바일: 서브메뉴 높이도 감안해서 main padding-top 조정
+    var activeSub = document.querySelector('.mobile-subnav.active');
+    if (activeSub) {
+      var subH = activeSub.offsetHeight;
+      document.documentElement.style.setProperty('--subnav-h', subH + 'px');
+    }
+  }
+  apply();
+}
 async function syncFromSheet() {
   const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
