@@ -1849,6 +1849,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu2',18,null);setMobileSubActive(this)">💳 카드관리</button>
   <button class="msub-btn" onclick="switchSub('menu2',20,null);setMobileSubActive(this)">✈️ 여행갈때</button>
   <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사 기록</button>
+  <button class="msub-btn" onclick="switchSub('menu2',21,null);setMobileSubActive(this)">🔔 알림설정</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu5">
   <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
@@ -1897,6 +1898,7 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',18,null)">💳 카드관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',20,null)">✈️ 여행갈때</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null)">🎊 경조사 기록</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',21,null)">🔔 알림설정</div>
   </div>
 
   <div class="gnav-main" id="gnav-menu5" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');gnavActivate('menu5')">
@@ -10482,6 +10484,221 @@ function globalSearch(kw) {
   });
 }
 
+
+/* ══════════════════════════════════════════
+   🔔 알림 시스템 (물 + 시간별 할일)
+══════════════════════════════════════════ */
+var _waterTimer = null;
+var _customAlarmTimers = [];
+
+function loadAlarmSettings() {
+  return JSON.parse(localStorage.getItem('ws5_alarm_settings') || JSON.stringify({
+    waterOn: false, waterInterval: 60, waterStart: '09:00', waterEnd: '22:00',
+    customs: []
+  }));
+}
+function saveAlarmSettings() {
+  var s = {
+    waterOn:       (document.getElementById('water-alarm-on')||{}).checked || false,
+    waterInterval: parseInt((document.getElementById('water-interval')||{}).value||'60'),
+    waterStart:    (document.getElementById('water-start')||{}).value || '09:00',
+    waterEnd:      (document.getElementById('water-end')||{}).value || '22:00',
+    customs:       loadAlarmSettings().customs
+  };
+  localStorage.setItem('ws5_alarm_settings', JSON.stringify(s));
+  startAlarms();
+  renderCustomAlarms();
+}
+
+// ── 알림 권한 ──
+async function requestAlarmPerm() {
+  var result = await Notification.requestPermission();
+  checkAlarmPermBanner();
+  if (result === 'granted') { toast('🔔 알림 허용됐어요!'); startAlarms(); }
+  else toast('알림 차단됐어요. 브라우저 설정에서 허용해주세요.');
+}
+function checkAlarmPermBanner() {
+  var b = document.getElementById('alarm-perm-banner');
+  if (!b) return;
+  if (Notification.permission === 'granted') b.style.display = 'none';
+  else b.style.display = 'block';
+}
+
+// ── 알림 보내기 ──
+function sendNotif(title, body, icon) {
+  if (Notification.permission !== 'granted') return;
+  try {
+    new Notification(title, {
+      body: body,
+      icon: icon || 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
+      badge: icon || '',
+      tag: title,
+      renotify: true
+    });
+  } catch(e) { console.log('알림 오류:', e); }
+  toast(title + ' ' + body);
+}
+
+// ── 시간 범위 체크 ──
+function _inTimeRange(startStr, endStr) {
+  var now = new Date();
+  var cur = now.getHours()*60 + now.getMinutes();
+  var s = startStr.split(':'); var start = parseInt(s[0])*60+parseInt(s[1]);
+  var e = endStr.split(':');   var end   = parseInt(e[0])*60+parseInt(e[1]);
+  return cur >= start && cur <= end;
+}
+
+// ── 물 마시기 알림 시작 ──
+function startWaterAlarm() {
+  if (_waterTimer) { clearInterval(_waterTimer); _waterTimer = null; }
+  var s = loadAlarmSettings();
+  if (!s.waterOn) return;
+  var ms = s.waterInterval * 60 * 1000;
+  _waterTimer = setInterval(function() {
+    if (_inTimeRange(s.waterStart, s.waterEnd)) {
+      sendNotif('💧 물 마실 시간이에요!', '건강을 위해 물 한 잔 마셔요 🥤');
+    }
+    updateWaterNext();
+  }, ms);
+  updateWaterNext();
+}
+
+function updateWaterNext() {
+  var el = document.getElementById('water-next'); if (!el) return;
+  var s = loadAlarmSettings();
+  if (!s.waterOn) { el.textContent = '알림이 꺼져있어요'; return; }
+  var ms = s.waterInterval * 60 * 1000;
+  var remain = ms - (Date.now() % ms);
+  var m = Math.floor(remain/60000);
+  var sec = Math.floor((remain%60000)/1000);
+  el.textContent = '다음 알림까지 ' + m + '분 ' + sec + '초';
+  setTimeout(updateWaterNext, 1000);
+}
+
+// ── 시간별 커스텀 알림 ──
+function addCustomAlarm() {
+  var s = loadAlarmSettings();
+  s.customs = s.customs || [];
+  s.customs.push({ id: Date.now(), time: '09:00', text: '', on: true });
+  localStorage.setItem('ws5_alarm_settings', JSON.stringify(s));
+  renderCustomAlarms();
+  startCustomAlarms();
+}
+function delCustomAlarm(id) {
+  var s = loadAlarmSettings();
+  s.customs = (s.customs||[]).filter(function(c){ return c.id !== id; });
+  localStorage.setItem('ws5_alarm_settings', JSON.stringify(s));
+  renderCustomAlarms();
+  startCustomAlarms();
+}
+function saveCustomAlarm(id, field, val) {
+  var s = loadAlarmSettings();
+  var c = (s.customs||[]).find(function(x){ return x.id===id; });
+  if (c) { c[field] = val; }
+  localStorage.setItem('ws5_alarm_settings', JSON.stringify(s));
+  startCustomAlarms();
+}
+
+function renderCustomAlarms() {
+  var el = document.getElementById('custom-alarm-list'); if (!el) return;
+  var s = loadAlarmSettings();
+  var customs = s.customs || [];
+  if (!customs.length) {
+    el.innerHTML = '<div style="text-align:center;color:#ccc;font-size:.82rem;padding:16px">+ 추가 버튼으로 시간별 알림을 등록해요</div>';
+    return;
+  }
+  el.innerHTML = '';
+  var BASE = 'border:2px solid #ffe880;border-radius:8px;padding:7px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;background:white;font-weight:600;';
+  customs.forEach(function(c) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid #fff8cc;flex-wrap:wrap';
+
+    // 켜기/끄기
+    var chk = document.createElement('input'); chk.type='checkbox'; chk.checked=c.on;
+    chk.style.cssText='width:18px;height:18px;accent-color:#f0c800;cursor:pointer;flex-shrink:0';
+    chk.onchange=(function(id){return function(){saveCustomAlarm(id,'on',this.checked);};})(c.id);
+
+    // 시간
+    var timeInp = document.createElement('input'); timeInp.type='time'; timeInp.value=c.time||'09:00';
+    timeInp.style.cssText=BASE+'width:110px;flex-shrink:0;color:#a07800;';
+    timeInp.onchange=(function(id){return function(){saveCustomAlarm(id,'time',this.value);};})(c.id);
+
+    // 내용
+    var txtInp = document.createElement('input'); txtInp.type='text'; txtInp.value=c.text||''; txtInp.placeholder='알림 내용 입력...';
+    txtInp.style.cssText=BASE+'flex:1;min-width:120px;color:#3a2800;';
+    txtInp.onblur=(function(id){return function(){saveCustomAlarm(id,'text',this.value.trim());};})(c.id);
+    txtInp.onkeydown=function(e){if(e.key==='Enter')this.blur();};
+
+    // 삭제
+    var del=document.createElement('button'); del.textContent='✕';
+    del.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:1rem;font-weight:700;flex-shrink:0';
+    del.onmouseover=function(){this.style.color='#e03c6e';};
+    del.onmouseout=function(){this.style.color='#ddd';};
+    del.onclick=(function(id){return function(){confirmDel('이 알림', function(){delCustomAlarm(id);});};})(c.id);
+
+    row.appendChild(chk); row.appendChild(timeInp); row.appendChild(txtInp); row.appendChild(del);
+    el.appendChild(row);
+  });
+}
+
+function startCustomAlarms() {
+  // 기존 타이머 제거
+  _customAlarmTimers.forEach(function(t){ clearTimeout(t); });
+  _customAlarmTimers = [];
+  var s = loadAlarmSettings();
+  var customs = (s.customs||[]).filter(function(c){ return c.on && c.time; });
+
+  function scheduleNext(c) {
+    var now = new Date();
+    var parts = c.time.split(':');
+    var target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1); // 내일로
+    var ms = target - now;
+    var t = setTimeout(function() {
+      sendNotif('⏰ ' + (c.text||'할일 알림'), c.time + ' 알림이에요!');
+      scheduleNext(c); // 매일 반복
+    }, ms);
+    _customAlarmTimers.push(t);
+  }
+
+  customs.forEach(scheduleNext);
+}
+
+function startAlarms() {
+  startWaterAlarm();
+  startCustomAlarms();
+}
+
+function testAlarm(type) {
+  if (Notification.permission !== 'granted') {
+    requestAlarmPerm(); return;
+  }
+  if (type === 'water') sendNotif('💧 물 마실 시간이에요!', '건강을 위해 물 한 잔 마셔요 🥤');
+  else sendNotif('⏰ 할일 알림 테스트', '이렇게 알림이 와요!');
+}
+
+function initAlarmPage() {
+  checkAlarmPermBanner();
+  var s = loadAlarmSettings();
+  var w = document.getElementById('water-alarm-on');
+  var wi = document.getElementById('water-interval');
+  var ws = document.getElementById('water-start');
+  var we = document.getElementById('water-end');
+  if (w)  w.checked = s.waterOn;
+  if (wi) wi.value = s.waterInterval;
+  if (ws) ws.value = s.waterStart;
+  if (we) we.value = s.waterEnd;
+  renderCustomAlarms();
+  updateWaterNext();
+}
+
+// 앱 시작 시 알림 자동 시작
+(function() {
+  if (Notification.permission === 'granted') {
+    setTimeout(startAlarms, 2000);
+  }
+})();
+
 /* ── 요일별 메뉴 ── */
 function loadWeekMenu() { return loadObj('week_menu').data || {월:'',화:'',수:'',목:'',금:'',토:'',일:''}; }
 function saveWeekMenu(data) { stor('week_menu', {data}); }
@@ -11809,6 +12026,7 @@ function initRender(pageId) {
     renderCardMgmt && renderCardMgmt();
     renderCmNotes && renderCmNotes();
     renderTripPage && renderTripPage();
+    initAlarmPage && initAlarmPage();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu5') {
     renderMenu5 && renderMenu5();
