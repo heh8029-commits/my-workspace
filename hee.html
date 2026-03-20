@@ -8814,13 +8814,17 @@ function renderCti() {
       }
     }
 
-    // 텍스트 - 하단 오버레이
+    // 텍스트 - 하단 오버레이 (이미지 있든 없든)
     if (item.text) {
       var overlay = document.createElement('div');
-      overlay.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:18px 10px 8px;z-index:2;';
+      overlay.style.cssText = item.imgs && item.imgs.length
+        ? 'position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:22px 10px 10px;z-index:2;border-radius:0 0 6px 6px;'
+        : 'padding:8px 4px 4px;';
       var txt = document.createElement('div');
-      txt.style.cssText = 'font-size:.75rem;font-weight:700;color:white;line-height:1.4;word-break:break-all;text-shadow:0 1px 3px rgba(0,0,0,.5)';
-      txt.textContent = item.text.slice(0, 40);
+      txt.style.cssText = item.imgs && item.imgs.length
+        ? 'font-size:.82rem;font-weight:700;color:white;line-height:1.6;word-break:break-all;text-shadow:0 1px 4px rgba(0,0,0,.8);white-space:pre-wrap'
+        : 'font-size:.85rem;font-weight:700;color:#7a1040;line-height:1.6;word-break:break-all;white-space:pre-wrap';
+      txt.innerHTML = typeof linkify === 'function' ? linkify(item.text) : item.text;
       overlay.appendChild(txt);
       card.appendChild(overlay);
     }
@@ -8911,14 +8915,25 @@ function renderPhrases() {
       bgImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;cursor:pointer;border-radius:6px;';
       bgImg.onclick = function(){ openImgModal && openImgModal(cardImgs[0]); };
       card.appendChild(bgImg);
-      // 텍스트 오버레이
+      // 텍스트 오버레이 - 링크 포함, 잘 보이게
       if (item.text) {
         var overlay = document.createElement('div');
-        overlay.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:18px 10px 8px;z-index:2;border-radius:0 0 6px 6px;';
+        overlay.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:22px 10px 10px;z-index:2;border-radius:0 0 6px 6px;';
         var txto = document.createElement('div');
-        txto.style.cssText = 'font-size:.78rem;font-weight:700;color:white;line-height:1.5;word-break:break-all;text-shadow:0 1px 3px rgba(0,0,0,.5)';
-        txto.textContent = item.text.slice(0, 40);
+        txto.style.cssText = 'font-size:.82rem;font-weight:700;color:white;line-height:1.6;word-break:break-all;text-shadow:0 1px 4px rgba(0,0,0,.8);white-space:pre-wrap';
+        txto.innerHTML = typeof linkify === 'function' ? linkify(item.text) : item.text;
+        // 링크 색상 오버라이드 (흰 배경 위 링크처럼 보이도록)
+        txto.querySelectorAll && setTimeout(function(){
+          txto.querySelectorAll('a').forEach(function(a){ a.style.color='#ffe080'; a.style.textDecoration='underline'; });
+        }, 0);
         overlay.appendChild(txto); card.appendChild(overlay);
+      }
+      // 이미지 여러 장이면 우상단에 표시
+      if (cardImgs.length > 1) {
+        var cnt = document.createElement('div');
+        cnt.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:white;font-size:.68rem;font-weight:700;border-radius:10px;padding:2px 7px;z-index:3';
+        cnt.textContent = '+' + (cardImgs.length - 1);
+        card.appendChild(cnt);
       }
       // 액션 (hover 시 좌상단)
       acts.style.cssText = 'position:absolute;top:6px;left:6px;z-index:3;display:flex;gap:4px;opacity:0;transition:opacity .15s;';
@@ -8926,7 +8941,9 @@ function renderPhrases() {
       card.onmouseout  = function(){ acts.style.opacity='0'; };
       card.appendChild(acts);
     } else {
-      // 텍스트만 있으면 기존 스타일
+      // 텍스트만 - linkify 적용, 잘 보이게
+      txt.innerHTML = typeof linkify === 'function' ? linkify(item.text||'') : (item.text||'');
+      txt.contentEditable = 'false';
       card.appendChild(txt);
       card.appendChild(acts);
     }
