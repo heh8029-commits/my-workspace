@@ -2595,6 +2595,71 @@ function pwaInstall() {
 
   <!-- ══════════════ 우리집 ══════════════ -->
   <div class="page" id="menu2">
+
+    <!-- ══ 알림 설정 ══ -->
+    <div class="subpage" id="menu2-sub-21">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f8,#f7a8c0)">🔔</div>
+        <div><div class="subpage-title">알림 설정</div><div class="subpage-desc">물 마시기 & 시간별 할일 알림</div></div>
+      </div>
+
+      <!-- 알림 권한 배너 -->
+      <div id="alarm-perm-banner" class="card" style="border-top:3px solid #e03c6e;margin-bottom:14px;display:none">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:.88rem;color:#c04070">🔔 알림 권한이 필요해요</div>
+          <button onclick="requestAlarmPerm()" style="margin-left:auto;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">권한 허용</button>
+        </div>
+      </div>
+
+      <!-- 물 마시기 알림 -->
+      <div class="card" style="border-top:3px solid #4da6e8;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div style="font-size:1.2rem">💧</div>
+          <div style="font-size:.95rem;font-weight:800;color:#1060a0">물 마시기 알림</div>
+          <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="water-alarm-on" onchange="saveAlarmSettings()" style="width:18px;height:18px;accent-color:#4da6e8;cursor:pointer">
+            <span style="font-size:.88rem;font-weight:700;color:#4da6e8">켜기</span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <div style="font-size:.82rem;color:#666">⏱️ 매</div>
+          <select id="water-interval" onchange="saveAlarmSettings()" style="border:2px solid #90c8f0;border-radius:8px;padding:6px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;color:#1060a0;font-weight:700;background:white">
+            <option value="30">30분</option>
+            <option value="60" selected>1시간</option>
+            <option value="90">1시간 30분</option>
+            <option value="120">2시간</option>
+          </select>
+          <div style="font-size:.82rem;color:#666">마다 알림</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div style="font-size:.82rem;color:#666">🕐 시작</div>
+          <input type="time" id="water-start" value="09:00" onchange="saveAlarmSettings()" style="border:2px solid #90c8f0;border-radius:8px;padding:6px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;color:#1060a0;font-weight:700">
+          <div style="font-size:.82rem;color:#666">~ 종료</div>
+          <input type="time" id="water-end" value="22:00" onchange="saveAlarmSettings()" style="border:2px solid #90c8f0;border-radius:8px;padding:6px 10px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;color:#1060a0;font-weight:700">
+        </div>
+        <div id="water-next" style="margin-top:10px;font-size:.78rem;color:#aaa;min-height:18px"></div>
+      </div>
+
+      <!-- 시간별 할일 알림 -->
+      <div class="card" style="border-top:3px solid #f0c800;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="font-size:1.2rem">⏰</div>
+          <div style="font-size:.95rem;font-weight:800;color:#a07800">시간별 할일 알림</div>
+          <button onclick="addCustomAlarm()" style="margin-left:auto;background:linear-gradient(135deg,#ffe880,#f0c800);border:none;border-radius:8px;padding:6px 14px;font-size:.82rem;font-weight:700;color:#7a5800;cursor:pointer">+ 추가</button>
+        </div>
+        <div id="custom-alarm-list"></div>
+      </div>
+
+      <!-- 테스트 -->
+      <div class="card" style="border-top:3px solid #3dbb8f">
+        <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:10px">🧪 알림 테스트</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="testAlarm('water')" style="background:linear-gradient(135deg,#e0f4ff,#4da6e8);border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">💧 물 알림 테스트</button>
+          <button onclick="testAlarm('task')" style="background:linear-gradient(135deg,#fffbe0,#f0c800);border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;color:#7a5800;cursor:pointer">⏰ 할일 알림 테스트</button>
+        </div>
+      </div>
+    </div>
+
     <div class="subpage" id="menu2-sub-15">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f5,#f7d4e8)">✅</div>
@@ -10092,6 +10157,9 @@ function switchSub(pageId, num, el) {
   }
   if (pageId === 'menu2' && num === 20) {
     setTimeout(function(){ renderTripPage && renderTripPage(); }, 0);
+  }
+  if (pageId === 'menu2' && num === 21) {
+    setTimeout(function(){ initAlarmPage && initAlarmPage(); }, 0);
   }
   // ── 자산관리 menu5 ──
   if (pageId === 'menu5') {
