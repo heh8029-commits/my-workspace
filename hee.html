@@ -4692,7 +4692,7 @@ function renderCsList() {
     delBtn.innerHTML = '&#128465;';
     delBtn.title = '삭제';
     delBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:#aaa;font-size:.8rem;padding:3px 5px;border-radius:5px';
-    delBtn.onclick = (function(id){ return function(){ var it2=loadCs().find(function(x){return x.id===id;}); confirmDel(it2?it2.title:'이 항목', function(){csDel_orig(id);}); }; })(it.id);
+    delBtn.onclick = (function(id){ return function(){ var it2=loadCsList().find(function(x){return x.id===id;}); confirmDel(it2?(it2.text||'이 항목'):'이 항목', function(){csDel_orig(id);}); }; })(it.id);
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
     row.appendChild(txtEl); row.appendChild(acts);
     el.appendChild(row);
@@ -4746,7 +4746,7 @@ function csEdit(id) {
 }
 function csDel(id) {
   var it2 = loadCsList().find(function(x){return x.id===id;});
-  confirmDel(it2?it2.title:'이 항목', function(){csDel_orig(id);});
+  confirmDel(it2?(it2.text||it2.title||'이 항목'):'이 항목', function(){csDel_orig(id);});
 }
 function csDel_orig(id) {
   saveCsList(loadCsList().filter(x => x.id !== id));
@@ -11679,9 +11679,11 @@ function renderExp() {
   if (_expSearchKw) {
     const kw = _expSearchKw.toLowerCase();
     filtered = filtered.filter(r =>
-      (r.name||'').toLowerCase().includes(kw) ||
+      (r.item||'').toLowerCase().includes(kw) ||
       (r.bank||'').toLowerCase().includes(kw) ||
+      (r.note||'').toLowerCase().includes(kw) ||
       (r.memo||'').toLowerCase().includes(kw) ||
+      (r.amt||'').toLowerCase().includes(kw) ||
       (r.day||'').toLowerCase().includes(kw)
     );
   }
