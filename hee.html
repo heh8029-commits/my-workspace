@@ -2466,6 +2466,9 @@ function pwaInstall() {
         <div><div class="subpage-title">광고관리</div><div class="subpage-desc">상품 이미지 · 제목 · 키워드 관리</div></div>
       </div>
 
+      <!-- 필터 탭 -->
+      <div id="ad-filter-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+
       <!-- 입력 카드 -->
       <div class="card" style="border-top:3px solid #e03c6e;margin-bottom:14px">
         <div style="font-size:.92rem;font-weight:800;color:#c03060;margin-bottom:12px">➕ 상품 등록</div>
@@ -2489,6 +2492,9 @@ function pwaInstall() {
             <button onclick="adAddKw()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px 14px;color:white;font-weight:700;cursor:pointer">+</button>
           </div>
           <div id="ad-kw-preview" style="display:flex;flex-wrap:wrap;gap:5px;min-height:0"></div>
+          <!-- 분류 (다중선택) -->
+          <div style="font-size:.78rem;color:#666;font-weight:600;margin-top:2px">📌 분류 (다중선택)</div>
+          <div id="ad-cat-btns" style="display:flex;flex-wrap:wrap;gap:5px"></div>
           <button onclick="adAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:10px;color:white;font-size:.9rem;font-weight:700;cursor:pointer;width:100%">📣 등록</button>
         </div>
       </div>
@@ -10253,7 +10259,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
   }
   if (pageId === 'menu1' && num === 20) {
-    setTimeout(function(){ renderAdGrid && renderAdGrid(); }, 0);
+    setTimeout(function(){ adRenderCatBtns && adRenderCatBtns(); renderAdGrid && renderAdGrid(); }, 0);
   }
   if (pageId === 'menu1' && num === 22) {
     setTimeout(function(){ renderCostSaved && renderCostSaved(); }, 0);
@@ -11052,8 +11058,12 @@ function adRenderKwPreview() {
 function adAdd() {
   var title = (document.getElementById('ad-title-inp')||{}).value?.trim() || '';
   if (!title && !_adPendingImg) { toast('제목 또는 이미지를 입력해요'); return; }
+  // 선택된 분류
+  var selCats = [];
+  var catBtns = document.querySelectorAll('#ad-cat-btns button[data-on="1"]');
+  catBtns.forEach(function(b){ selCats.push(b.dataset.cat); });
   var list = loadAdList();
-  list.unshift({ id: Date.now(), img: _adPendingImg||'', title: title, kws: [..._adPendingKws] });
+  list.unshift({ id: Date.now(), img: _adPendingImg||'', title: title, kws: [..._adPendingKws], cats: selCats });
   saveAdList(list);
   // 초기화
   _adPendingImg = null; _adPendingKws = [];
@@ -11061,13 +11071,71 @@ function adAdd() {
   var st = document.getElementById('adimg-status'); if (st) st.textContent='';
   var ti = document.getElementById('ad-title-inp'); if (ti) ti.value='';
   adRenderKwPreview();
+  adRenderCatBtns();
   renderAdGrid();
   toast('📣 상품 등록됐어요!');
 }
 
+var _AD_CATS = [["naver_on", "🟢 네이버 광고중", "#1a9a40", "#f0fff4", "#0a7030"], ["naver_plan", "🔵 네이버 광고예정", "#1060c0", "#f0f4ff", "#0840a0"], ["coupang_on", "🟠 쿠팡 광고중", "#e06000", "#fff4e8", "#b04000"], ["coupang_plan", "🟡 쿠팡 광고예정", "#c0a000", "#fffce0", "#806800"]];
+
+var _adCatFilter = new Set(); // 빈 Set = 전체
+
+function adRenderCatBtns() {
+  // 입력폼 분류 버튼
+  var wrap = document.getElementById('ad-cat-btns'); if (!wrap) return;
+  wrap.innerHTML = '';
+  _AD_CATS.forEach(function(c) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.cat = c[0];
+    btn.dataset.on = '0';
+    btn.textContent = c[1];
+    btn.style.cssText = 'padding:4px 11px;border-radius:14px;border:1.5px solid '+c[2]+';background:'+c[3]+';color:'+c[4]+';font-size:.75rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;transition:all .1s';
+    btn.onclick = function() {
+      var on = this.dataset.on === '1';
+      this.dataset.on = on ? '0' : '1';
+      this.style.background = on ? c[3] : c[2];
+      this.style.color = on ? c[4] : 'white';
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function adRenderFilterBar() {
+  var bar = document.getElementById('ad-filter-bar'); if (!bar) return;
+  bar.innerHTML = '';
+  // 전체 버튼
+  var allBtn = document.createElement('button');
+  allBtn.textContent = '전체';
+  var allActive = _adCatFilter.size === 0;
+  allBtn.style.cssText = 'padding:4px 14px;border-radius:20px;border:1.5px solid #e03c6e;background:'+(allActive?'#e03c6e':'white')+';color:'+(allActive?'white':'#e03c6e')+';font-size:.75rem;font-weight:700;cursor:pointer';
+  allBtn.onclick = function(){ _adCatFilter.clear(); adRenderFilterBar(); renderAdGrid(); };
+  bar.appendChild(allBtn);
+  _AD_CATS.forEach(function(c) {
+    var active = _adCatFilter.has(c[0]);
+    var btn = document.createElement('button');
+    btn.textContent = (active?'✓ ':'')+c[1];
+    btn.style.cssText = 'padding:4px 11px;border-radius:20px;border:1.5px solid '+c[2]+';background:'+(active?c[2]:c[3])+';color:'+(active?'white':c[4])+';font-size:.75rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif';
+    btn.onclick = function() {
+      if (_adCatFilter.has(c[0])) _adCatFilter.delete(c[0]);
+      else _adCatFilter.add(c[0]);
+      adRenderFilterBar(); renderAdGrid();
+    };
+    bar.appendChild(btn);
+  });
+}
+
 function renderAdGrid() {
+  adRenderFilterBar();
   var grid = document.getElementById('ad-grid'); if (!grid) return;
   var list = loadAdList();
+  // 분류 필터
+  if (_adCatFilter.size > 0) {
+    list = list.filter(function(it) {
+      var cats = it.cats || [];
+      return Array.from(_adCatFilter).some(function(f){ return cats.indexOf(f) !== -1; });
+    });
+  }
   if (!list.length) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ccc;padding:40px;font-size:.88rem">상품을 등록해요 📣</div>';
     return;
@@ -11100,6 +11168,20 @@ function renderAdGrid() {
     var body = document.createElement('div');
     body.style.cssText = 'padding:8px;display:flex;flex-direction:column;gap:4px;flex:1';
 
+    // 분류 뱃지
+    if (item.cats && item.cats.length) {
+      var catWrap = document.createElement('div');
+      catWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:2px;margin-bottom:2px';
+      item.cats.forEach(function(cid) {
+        var cd = _AD_CATS.find(function(x){return x[0]===cid;});
+        if (!cd) return;
+        var badge = document.createElement('span');
+        badge.style.cssText = 'background:'+cd[2]+';color:white;border-radius:8px;padding:1px 5px;font-size:.58rem;font-weight:700';
+        badge.textContent = cd[1].replace(/🟢|🔵|🟠|🟡/g,'').trim();
+        catWrap.appendChild(badge);
+      });
+      body.appendChild(catWrap);
+    }
     // 제목
     if (item.title) {
       var title = document.createElement('div');
@@ -11196,6 +11278,27 @@ function adEditOpen(id) {
   }
   renderEditKws();
 
+  // 분류 편집
+  var catEditWrap = document.createElement('div');
+  catEditWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;padding:2px 0';
+  var editCats = [...(item.cats||[])];
+  function renderEditCats() {
+    catEditWrap.innerHTML = '';
+    _AD_CATS.forEach(function(c) {
+      var on = editCats.indexOf(c[0]) !== -1;
+      var btn = document.createElement('button');
+      btn.type='button'; btn.dataset.cat=c[0];
+      btn.textContent = (on?'✓ ':'')+c[1];
+      btn.style.cssText = 'padding:4px 10px;border-radius:14px;border:1.5px solid '+c[2]+';background:'+(on?c[2]:c[3])+';color:'+(on?'white':c[4])+';font-size:.75rem;font-weight:700;cursor:pointer';
+      btn.onclick = function() {
+        var idx = editCats.indexOf(c[0]);
+        if (idx!==-1) editCats.splice(idx,1); else editCats.push(c[0]);
+        renderEditCats();
+      };
+      catEditWrap.appendChild(btn);
+    });
+  }
+  renderEditCats();
   var kwRow = document.createElement('div');
   kwRow.style.cssText = 'display:flex;gap:6px';
   var kwInp = document.createElement('input'); kwInp.type='text'; kwInp.placeholder='키워드 추가...';
@@ -11215,12 +11318,15 @@ function adEditOpen(id) {
   saveBtn.style.cssText='flex:1.5;padding:9px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:9px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
   saveBtn.onclick = function() {
     var idx = list.findIndex(function(x){return x.id===id;});
-    if (idx!==-1) { list[idx].title = titleInp.value.trim(); list[idx].kws = [...kwList]; saveAdList(list); }
+    if (idx!==-1) { list[idx].title = titleInp.value.trim(); list[idx].kws = [...kwList]; list[idx].cats = [...editCats]; saveAdList(list); }
     modal.remove(); renderAdGrid(); toast('✅ 수정됐어요!');
   };
 
   btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
-  box.appendChild(ttl); box.appendChild(titleInp); box.appendChild(kwWrap); box.appendChild(kwRow); box.appendChild(btnRow);
+  var catLabel = document.createElement('div');
+  catLabel.style.cssText = 'font-size:.78rem;color:#666;font-weight:600';
+  catLabel.textContent = '📌 분류 (다중선택)';
+  box.appendChild(ttl); box.appendChild(titleInp); box.appendChild(catLabel); box.appendChild(catEditWrap); box.appendChild(kwWrap); box.appendChild(kwRow); box.appendChild(btnRow);
   modal.appendChild(box);
   document.body.appendChild(modal);
   modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
