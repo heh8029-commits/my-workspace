@@ -1804,6 +1804,8 @@ function pwaInstall() {
 <div class="topbar" style="position:static">
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
+    <div class="tb-icon" onclick="_cleanLocalStorageBase64();toast('🧹 저장공간 정리 완료!')" title="저장공간 정리 (base64 이미지 제거)" style="font-size:.75rem;font-weight:700;color:#e03c6e">🧹</div>
+    <div class="tb-icon" onclick="_cleanLocalStorageBase64()" title="저장공간 정리 (base64 이미지 제거)">🧹</div>
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1');switchSub('menu1',8,null)">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2');switchSub('menu2',0,null)">🏠 우리집</div>
@@ -3866,6 +3868,31 @@ function confirmDel(msg, onConfirm) {
   setTimeout(function(){ okBtn.focus(); }, 50);
 }
 
+function _cleanLocalStorageBase64() {
+  var cleaned = 0;
+  for (var i = localStorage.length - 1; i >= 0; i--) {
+    var key = localStorage.key(i);
+    if (!key || !key.startsWith('ws5_')) continue;
+    try {
+      var val = localStorage.getItem(key);
+      if (!val || val.indexOf('data:image') === -1) continue;
+      var obj = JSON.parse(val);
+      var changed = false;
+      function cleanObj(item) {
+        if (!item || typeof item !== 'object') return;
+        ['img','mainImg','imgs','refImgs'].forEach(function(f) {
+          if (typeof item[f] === 'string' && item[f].startsWith('data:image')) { item[f]=''; changed=true; }
+          if (Array.isArray(item[f])) { item[f]=item[f].filter(function(u){return u&&!u.startsWith('data:image');}); changed=true; }
+        });
+      }
+      if (Array.isArray(obj)) obj.forEach(cleanObj);
+      if (obj && obj.list) obj.list.forEach(cleanObj);
+      if (changed) { localStorage.setItem(key, JSON.stringify(obj)); cleaned++; }
+    } catch(err) {}
+  }
+  if (cleaned > 0) { console.log('🧹 base64 정리:', cleaned+'개'); toast('🧹 저장 공간 정리됐어요!'); }
+}
+
 function load(k) {
   try {
     const v = localStorage.getItem('ws5_'+k);
@@ -3957,9 +3984,10 @@ function stor(k, v) {
   try {
     localStorage.setItem('ws5_'+k, JSON.stringify(v));
   } catch(e) {
-    if (e.name === 'QuotaExceededError') {
-      toast('⚠️ 저장공간이 부족해요! 이미지를 줄여주세요');
-      console.warn('QuotaExceeded:', k);
+    if (e.name === 'QuotaExceededError' || (e.message && e.message.includes('quota'))) {
+      _cleanLocalStorageBase64();
+      try { localStorage.setItem('ws5_'+k, JSON.stringify(v)); }
+      catch(e2) { toast('⚠️ 저장 공간이 부족해요. 오래된 이미지를 정리했어요.'); }
     }
   }
   fetch(FB_URL + '/' + k + '.json', {
@@ -5329,19 +5357,24 @@ function renderOrderEditImgs(id) {
     for (const item of items) {
       if (item.type.startsWith('image/')) {
         e.preventDefault();
-        const reader = new FileReader();
-        reader.onload = ev => { (window['_editImgs_'+id] = window['_editImgs_'+id]||[]).push(ev.target.result); renderOrderEditImgs(id); };
-        reader.readAsDataURL(item.getAsFile());
+        _orderEditUploadImg(item.getAsFile(), id);
       }
     }
   };
 }
+function _orderEditUploadImg(file, id) {
+  var fd = new FormData(); fd.append('file', file); fd.append('upload_preset','hwx2iwfz');
+  fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if (data.secure_url) {
+        (window['_editImgs_'+id] = window['_editImgs_'+id]||[]).push(data.secure_url);
+        renderOrderEditImgs(id);
+      }
+    });
+}
 function orderEditHandleFile(e, id) {
-  [...e.target.files].forEach(f => {
-    const reader = new FileReader();
-    reader.onload = ev => { (window['_editImgs_'+id] = window['_editImgs_'+id]||[]).push(ev.target.result); renderOrderEditImgs(id); };
-    reader.readAsDataURL(f);
-  });
+  [...e.target.files].forEach(f => { _orderEditUploadImg(f, id); });
   e.target.value = '';
 }
 
@@ -6939,12 +6972,19 @@ function _pcShowImgPopup(popId, title, pasteF, dropF, confirmF, cancelF) {
       var f = e.target.files && e.target.files[0];
       if (!f) return;
       var reader = new FileReader();
-      reader.onload = function(ev) {
-        // 현재 팝업에 맞는 핸들러 호출
-        if (popId === 'pc-main-img-popup') { _pcMainImgPending = ev.target.result; _pcSetPopupPreview(popId, ev.target.result); }
-        else if (popId === 'pc-ref-img-popup') { _pcRefImgPending = ev.target.result; _pcSetPopupPreview(popId, ev.target.result); }
-      };
-      reader.readAsDataURL(f);
+      // Cloudinary 업로드
+      var st2 = document.getElementById(popId+'-status');
+      if (st2) st2.textContent = '⬆️ 업로드 중...';
+      var fd2 = new FormData(); fd2.append('file', f); fd2.append('upload_preset','hwx2iwfz');
+      fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd2})
+        .then(function(r){return r.json();})
+        .then(function(data){
+          if (data.secure_url) {
+            if (popId === 'pc-main-img-popup') { _pcMainImgPending = data.secure_url; _pcSetPopupPreview(popId, data.secure_url); }
+            else if (popId === 'pc-ref-img-popup') { _pcRefImgPending = data.secure_url; _pcSetPopupPreview(popId, data.secure_url); }
+            if (st2) st2.textContent = '✅ 완료';
+          } else { if (st2) st2.textContent = '❌ 실패'; }
+        }).catch(function(){ if (st2) st2.textContent = '❌ 오류'; });
     };
   }
   pop.style.display='flex';
