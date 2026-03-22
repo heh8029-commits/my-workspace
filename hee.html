@@ -1839,6 +1839,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu1',18,null);setMobileSubActive(this)">🛒 상품관리</button>
   <button class="msub-btn" onclick="switchSub('menu1',20,null);setMobileSubActive(this)">📣 광고관리</button>
   <button class="msub-btn" onclick="switchSub('menu1',4,null);setMobileSubActive(this)">📦 재고관리(단가)</button>
+  <button class="msub-btn" onclick="switchSub('menu1',22,null);setMobileSubActive(this)">🧮 원가계산</button>
   <button class="msub-btn" onclick="switchSub('menu1',5,null);setMobileSubActive(this)">👥 직원관리</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu2">
@@ -1885,6 +1886,7 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',18,null)">🛒 상품관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',20,null)">📣 광고관리</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null)">📦 재고관리(단가)</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',22,null)">🧮 원가계산</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
   </div>
   <div class="gnav-main" id="gnav-menu2" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');gnavActivate('menu2')">
@@ -2461,9 +2463,38 @@ function pwaInstall() {
     <div class="subpage" id="menu1-sub-20">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f8,#f7a8c0)">📣</div>
-        <div><div class="subpage-title">광고관리</div><div class="subpage-desc">광고 현황과 키워드를 관리해요</div></div>
+        <div><div class="subpage-title">광고관리</div><div class="subpage-desc">상품 이미지 · 제목 · 키워드 관리</div></div>
       </div>
-      <div class="subpage-empty">✏️ 아직 내용이 없어요<br><span style="font-size:.85rem">광고 관련 내용을 여기에 채워요</span></div>
+
+      <!-- 입력 카드 -->
+      <div class="card" style="border-top:3px solid #e03c6e;margin-bottom:14px">
+        <div style="font-size:.92rem;font-weight:800;color:#c03060;margin-bottom:12px">➕ 상품 등록</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <!-- 이미지 -->
+          <div style="display:flex;align-items:center;gap:8px">
+            <button type="button" onclick="document.getElementById('adimg-file').click()" style="background:linear-gradient(135deg,#ffe0ee,#f7a8c0);border:1.5px solid #f7a8c0;border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:700;color:#c04070;cursor:pointer">🖼️ 이미지</button>
+            <input id="adimg-file" type="file" accept="image/*" style="display:none" onchange="adHandleFile(event)">
+            <span id="adimg-status" style="font-size:.72rem;color:#aaa"></span>
+            <div id="adimg-preview" style="display:flex;gap:5px"></div>
+          </div>
+          <!-- 제목 -->
+          <input id="ad-title-inp" type="text" placeholder="상품 제목"
+            style="border:2px solid #f7a8c0;border-radius:8px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;width:100%;box-sizing:border-box;font-weight:600"
+            onpaste="adHandlePaste(event)" onkeydown="if(event.key==='Enter')document.getElementById('ad-kw-inp').focus()">
+          <!-- 키워드 -->
+          <div style="display:flex;gap:6px">
+            <input id="ad-kw-inp" type="text" placeholder="키워드 입력 후 Enter"
+              style="flex:1;border:2px solid #f7a8c0;border-radius:8px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;font-weight:600"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();adAddKw()}">
+            <button onclick="adAddKw()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:8px 14px;color:white;font-weight:700;cursor:pointer">+</button>
+          </div>
+          <div id="ad-kw-preview" style="display:flex;flex-wrap:wrap;gap:5px;min-height:0"></div>
+          <button onclick="adAdd()" style="background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;padding:10px;color:white;font-size:.9rem;font-weight:700;cursor:pointer;width:100%">📣 등록</button>
+        </div>
+      </div>
+
+      <!-- 상품 그리드 (5열) -->
+      <div id="ad-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px"></div>
     </div>
     <div class="subpage" id="menu1-sub-4">
       <div class="subpage-header">
@@ -2546,6 +2577,71 @@ function pwaInstall() {
       </div>
       <div id="inv-list"></div>
     </div>
+
+    <!-- ══ 원가계산기 ══ -->
+    <div class="subpage" id="menu1-sub-22">
+      <div class="subpage-header">
+        <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff4,#b2e8d4)">🧮</div>
+        <div><div class="subpage-title">원가계산기</div><div class="subpage-desc">판매가 대비 수익률을 계산해요</div></div>
+      </div>
+
+      <!-- 계산기 -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:14px">
+        <div style="font-size:.92rem;font-weight:800;color:#1a7a50;margin-bottom:14px">💰 수익 계산</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+
+          <div>
+            <div style="font-size:.78rem;color:#666;margin-bottom:4px;font-weight:600">🏷️ 판매가 (원)</div>
+            <input id="cc-price" type="number" placeholder="판매가" oninput="calcCost()"
+              style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:8px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;font-weight:700;color:#1a7a50">
+          </div>
+          <div>
+            <div style="font-size:.78rem;color:#666;margin-bottom:4px;font-weight:600">📦 원가 (원)</div>
+            <input id="cc-cost" type="number" placeholder="원가" oninput="calcCost()"
+              style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:8px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;font-weight:700;color:#1a7a50">
+          </div>
+          <div>
+            <div style="font-size:.78rem;color:#666;margin-bottom:4px;font-weight:600">🛒 플랫폼 수수료 (%)</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px">
+              <button onclick="setCcFee(10.8)" style="background:#fff0f5;border:1.5px solid #f7a8c0;border-radius:6px;padding:3px 8px;font-size:.72rem;font-weight:700;color:#c04070;cursor:pointer">스마트스토어 10.8%</button>
+              <button onclick="setCcFee(14)" style="background:#fff4e8;border:1.5px solid #f0c890;border-radius:6px;padding:3px 8px;font-size:.72rem;font-weight:700;color:#a06010;cursor:pointer">쿠팡 14%</button>
+              <button onclick="setCcFee(3.5)" style="background:#f0f8ff;border:1.5px solid #90c0f0;border-radius:6px;padding:3px 8px;font-size:.72rem;font-weight:700;color:#1050a0;cursor:pointer">자사몰 3.5%</button>
+            </div>
+            <input id="cc-fee" type="number" placeholder="수수료 %" step="0.1" value="10.8" oninput="calcCost()"
+              style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:8px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;font-weight:700;color:#1a7a50">
+          </div>
+          <div>
+            <div style="font-size:.78rem;color:#666;margin-bottom:4px;font-weight:600">🚚 배송비 (원)</div>
+            <input id="cc-ship" type="number" placeholder="배송비" value="0" oninput="calcCost()"
+              style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:8px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;font-weight:700;color:#1a7a50">
+          </div>
+          <div>
+            <div style="font-size:.78rem;color:#666;margin-bottom:4px;font-weight:600">💳 결제수수료 (%)</div>
+            <input id="cc-pgfee" type="number" placeholder="결제수수료 %" step="0.1" value="3.5" oninput="calcCost()"
+              style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:8px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;font-weight:700;color:#1a7a50">
+          </div>
+          <div>
+            <div style="font-size:.78rem;color:#666;margin-bottom:4px;font-weight:600">📢 광고비 (원)</div>
+            <input id="cc-ad" type="number" placeholder="광고비" value="0" oninput="calcCost()"
+              style="width:100%;box-sizing:border-box;border:2px solid #b2e8d4;border-radius:8px;padding:8px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;font-weight:700;color:#1a7a50">
+          </div>
+        </div>
+
+        <!-- 결과 -->
+        <div id="cc-result" style="background:linear-gradient(135deg,#e8fff4,#f0fffb);border:2px solid #3dbb8f;border-radius:12px;padding:16px;margin-top:6px;display:none">
+        </div>
+      </div>
+
+      <!-- 저장된 계산 목록 -->
+      <div class="card" style="border-top:3px solid #4a80d0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="font-size:.92rem;font-weight:800;color:#1050a0">📋 저장된 계산</div>
+          <button onclick="saveCostCalc()" style="margin-left:auto;background:linear-gradient(135deg,#3dbb8f,#1a8a60);border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:700;color:white;cursor:pointer">💾 저장</button>
+        </div>
+        <div id="cc-saved-list"></div>
+      </div>
+    </div>
+
     <div class="subpage" id="menu1-sub-5">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8f4ff,#b2d8f8)">👥</div>
@@ -2769,6 +2865,9 @@ function pwaInstall() {
           <!-- 합계 + 분류 필터 -->
           <div class="exp-topbar">
             <div class="exp-total" id="exp-total">합계: 0원</div>
+            <input id="exp-search" type="text" placeholder="🔍 빠른 검색..."
+              style="border:1.5px solid #f7c8a0;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:white;width:160px"
+              oninput="filterExpSearch(this.value)">
           </div>
           <div class="exp-bank-tabs">
             <div class="ebt active" onclick="filterExpBank('전체',this)">전체</div>
@@ -3783,7 +3882,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -3908,7 +4007,7 @@ function _fixHeaderOffset() {
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -4646,7 +4745,7 @@ function csEdit(id) {
   renderCsList();
 }
 function csDel(id) {
-  var it2 = loadCs().find(function(x){return x.id===id;});
+  var it2 = loadCsList().find(function(x){return x.id===id;});
   confirmDel(it2?it2.title:'이 항목', function(){csDel_orig(id);});
 }
 function csDel_orig(id) {
@@ -6178,6 +6277,13 @@ function renderImpList(type) {
     });
   }
 
+  // 분류별 정렬 (분류 있는 것 우선, 같은 분류끼리 묶음)
+  var catOrder = ['daiso','coupang','naver','online','mart',''];
+  items = items.slice().sort(function(a,b){
+    var ai = catOrder.indexOf(a.cat||''); var bi = catOrder.indexOf(b.cat||'');
+    if(ai<0) ai=catOrder.length; if(bi<0) bi=catOrder.length;
+    return ai-bi;
+  });
   el.innerHTML = items.map(function(it) {
     var cs = it.cat ? CAT_STYLES[it.cat] : null;
     var catBadge = cs
@@ -10146,6 +10252,12 @@ function switchSub(pageId, num, el) {
   if (pageId === 'menu1' && num === 19) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
   }
+  if (pageId === 'menu1' && num === 20) {
+    setTimeout(function(){ renderAdGrid && renderAdGrid(); }, 0);
+  }
+  if (pageId === 'menu1' && num === 22) {
+    setTimeout(function(){ renderCostSaved && renderCostSaved(); }, 0);
+  }
   if (pageId === 'menu1' && num === 4) {
     setTimeout(function(){ renderInvCatTabs&&renderInvCatTabs(); updateInvCatSelect&&updateInvCatSelect(); renderInv&&renderInv(); loadInvMemoBox&&loadInvMemoBox(); }, 0);
   }
@@ -10767,6 +10879,353 @@ function initAlarmPage() {
   }
 })();
 
+
+/* ── 원가계산기 ── */
+function setCcFee(v) {
+  var el = document.getElementById('cc-fee');
+  if (el) { el.value = v; calcCost(); }
+}
+function calcCost() {
+  var price  = parseFloat(document.getElementById('cc-price')?.value)||0;
+  var cost   = parseFloat(document.getElementById('cc-cost')?.value)||0;
+  var fee    = parseFloat(document.getElementById('cc-fee')?.value)||0;
+  var ship   = parseFloat(document.getElementById('cc-ship')?.value)||0;
+  var pgfee  = parseFloat(document.getElementById('cc-pgfee')?.value)||0;
+  var ad     = parseFloat(document.getElementById('cc-ad')?.value)||0;
+  var el     = document.getElementById('cc-result');
+  if (!el) return;
+  if (!price) { el.style.display='none'; return; }
+
+  var feeAmt   = price * fee / 100;
+  var pgfeeAmt = price * pgfee / 100;
+  var totalCost = cost + feeAmt + pgfeeAmt + ship + ad;
+  var profit   = price - totalCost;
+  var margin   = price > 0 ? (profit / price * 100) : 0;
+  var roi      = cost > 0  ? (profit / cost  * 100) : 0;
+
+  var color = profit >= 0 ? '#1a7a50' : '#c03060';
+  var bg    = profit >= 0 ? '#e8fff4' : '#fff0f4';
+
+  el.style.display = 'block';
+  el.style.background = bg;
+  el.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div style="text-align:center;background:white;border-radius:8px;padding:10px">'
+    +'<div style="font-size:.72rem;color:#888;margin-bottom:4px">플랫폼수수료</div>'
+    +'<div style="font-size:.92rem;font-weight:800;color:#c06020">'+feeAmt.toLocaleString('ko',{maximumFractionDigits:0})+'원</div></div>'
+    +'<div style="text-align:center;background:white;border-radius:8px;padding:10px">'
+    +'<div style="font-size:.72rem;color:#888;margin-bottom:4px">결제수수료</div>'
+    +'<div style="font-size:.92rem;font-weight:800;color:#c06020">'+pgfeeAmt.toLocaleString('ko',{maximumFractionDigits:0})+'원</div></div>'
+    +'<div style="text-align:center;background:white;border-radius:8px;padding:10px">'
+    +'<div style="font-size:.72rem;color:#888;margin-bottom:4px">총 비용</div>'
+    +'<div style="font-size:.92rem;font-weight:800;color:#666">'+totalCost.toLocaleString('ko',{maximumFractionDigits:0})+'원</div></div>'
+    +'<div style="text-align:center;background:white;border-radius:8px;padding:10px">'
+    +'<div style="font-size:.72rem;color:#888;margin-bottom:4px">ROI</div>'
+    +'<div style="font-size:.92rem;font-weight:800;color:'+color+'">'+roi.toFixed(1)+'%</div></div>'
+    +'</div>'
+    +'<div style="text-align:center;background:white;border-radius:10px;padding:14px">'
+    +'<div style="font-size:.78rem;color:#888;margin-bottom:4px">순이익 (마진율)</div>'
+    +'<div style="font-size:1.5rem;font-weight:900;color:'+color+'">'+profit.toLocaleString('ko',{maximumFractionDigits:0})+'원'
+    +'<span style="font-size:.9rem;margin-left:8px">('+margin.toFixed(1)+'%)</span></div>'
+    +'</div>';
+}
+
+function loadCostSaved() { return loadObj('cost_calc_saved').list || []; }
+function saveCostCalc() {
+  var price = parseFloat(document.getElementById('cc-price')?.value)||0;
+  var cost  = parseFloat(document.getElementById('cc-cost')?.value)||0;
+  if (!price || !cost) { toast('판매가와 원가를 입력해요'); return; }
+  var name = prompt('저장할 이름을 입력해요 (예: 상품A)') || ('상품 '+new Date().toLocaleDateString());
+  var list = loadCostSaved();
+  list.unshift({
+    id: Date.now(), name,
+    price, cost,
+    fee:   parseFloat(document.getElementById('cc-fee')?.value)||0,
+    ship:  parseFloat(document.getElementById('cc-ship')?.value)||0,
+    pgfee: parseFloat(document.getElementById('cc-pgfee')?.value)||0,
+    ad:    parseFloat(document.getElementById('cc-ad')?.value)||0
+  });
+  stor('cost_calc_saved', {list});
+  renderCostSaved();
+  toast('💾 저장됐어요!');
+}
+function renderCostSaved() {
+  var el = document.getElementById('cc-saved-list'); if(!el) return;
+  var list = loadCostSaved();
+  if (!list.length) { el.innerHTML='<div style="text-align:center;color:#ccc;padding:16px;font-size:.82rem">저장된 계산이 없어요</div>'; return; }
+  el.innerHTML = '';
+  list.forEach(function(it) {
+    var feeAmt   = it.price * it.fee / 100;
+    var pgfeeAmt = it.price * it.pgfee / 100;
+    var total    = it.cost + feeAmt + pgfeeAmt + it.ship + it.ad;
+    var profit   = it.price - total;
+    var margin   = it.price > 0 ? (profit/it.price*100).toFixed(1) : 0;
+    var color    = profit >= 0 ? '#1a7a50' : '#c03060';
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid #e8f4ff;flex-wrap:wrap';
+    row.innerHTML =
+      '<div style="font-weight:700;font-size:.88rem;flex:1;min-width:80px">'+it.name+'</div>'
+      +'<div style="font-size:.8rem;color:#666">판매 '+it.price.toLocaleString()+'원 / 원가 '+it.cost.toLocaleString()+'원</div>'
+      +'<div style="font-size:.92rem;font-weight:800;color:'+color+'">'+profit.toLocaleString()+'원 ('+margin+'%)</div>';
+    var loadBtn = document.createElement('button');
+    loadBtn.textContent = '불러오기';
+    loadBtn.style.cssText = 'background:#f0f8ff;border:1.5px solid #90c0f0;border-radius:6px;padding:3px 9px;font-size:.72rem;font-weight:700;color:#1050a0;cursor:pointer';
+    loadBtn.onclick = (function(d){ return function() {
+      ['cc-price','cc-cost','cc-fee','cc-ship','cc-pgfee','cc-ad'].forEach(function(id, i) {
+        var el2 = document.getElementById(id);
+        if (el2) el2.value = [d.price,d.cost,d.fee,d.ship,d.pgfee,d.ad][i];
+      });
+      calcCost();
+    };})(it);
+    var del = document.createElement('button');
+    del.textContent = '✕';
+    del.style.cssText = 'background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;font-weight:700';
+    del.onmouseover = function(){ this.style.color='#e03c6e'; };
+    del.onmouseout  = function(){ this.style.color='#ddd'; };
+    del.onclick = (function(id){ return function() {
+      confirmDel('이 계산', function(){
+        stor('cost_calc_saved', {list: loadCostSaved().filter(function(x){return x.id!==id;})});
+        renderCostSaved();
+      });
+    };})(it.id);
+    row.appendChild(loadBtn); row.appendChild(del);
+    el.appendChild(row);
+  });
+}
+
+
+/* ── 광고관리 ── */
+function loadAdList()     { return loadObj('ad_list').list || []; }
+function saveAdList(list) { stor('ad_list', {list}); }
+
+var _adPendingImg = null;
+var _adPendingKws = [];
+
+function adHandlePaste(e) {
+  var items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (var i=0; i<items.length; i++) {
+    if (items[i].type.startsWith('image/')) {
+      e.preventDefault();
+      adUploadImg(items[i].getAsFile()); return;
+    }
+  }
+}
+function adHandleFile(e) {
+  var f = e.target.files && e.target.files[0];
+  if (f) adUploadImg(f);
+  e.target.value = '';
+}
+function adUploadImg(file) {
+  var st = document.getElementById('adimg-status');
+  if (st) { st.textContent='⬆️ 업로드 중...'; st.style.color='#e03c6e'; }
+  var fd = new FormData(); fd.append('file', file); fd.append('upload_preset','hwx2iwfz');
+  fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if (data.secure_url) {
+        _adPendingImg = data.secure_url;
+        var prev = document.getElementById('adimg-preview');
+        if (prev) prev.innerHTML = '<img src="'+data.secure_url+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #f7a8c0;cursor:pointer" onclick="openImgModal && openImgModal(this.src)">';
+        if (st) { st.textContent='✅ 완료'; st.style.color='#1a9a60'; }
+      }
+    }).catch(function(){ if(st){st.textContent='❌ 실패';st.style.color='#e03c6e';} });
+}
+function adAddKw() {
+  var inp = document.getElementById('ad-kw-inp'); if (!inp) return;
+  var kw = inp.value.trim();
+  if (!kw) return;
+  _adPendingKws.push(kw);
+  inp.value = '';
+  adRenderKwPreview();
+}
+function adRenderKwPreview() {
+  var el = document.getElementById('ad-kw-preview'); if (!el) return;
+  el.innerHTML = '';
+  _adPendingKws.forEach(function(kw, i) {
+    var tag = document.createElement('span');
+    tag.style.cssText = 'background:#fff0f5;border:1.5px solid #f7a8c0;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;color:#c03060;display:inline-flex;align-items:center;gap:4px';
+    tag.innerHTML = kw + '<span style="cursor:pointer;opacity:.6" onclick="_adPendingKws.splice('+i+',1);adRenderKwPreview()">✕</span>';
+    el.appendChild(tag);
+  });
+}
+function adAdd() {
+  var title = (document.getElementById('ad-title-inp')||{}).value?.trim() || '';
+  if (!title && !_adPendingImg) { toast('제목 또는 이미지를 입력해요'); return; }
+  var list = loadAdList();
+  list.unshift({ id: Date.now(), img: _adPendingImg||'', title: title, kws: [..._adPendingKws] });
+  saveAdList(list);
+  // 초기화
+  _adPendingImg = null; _adPendingKws = [];
+  var prev = document.getElementById('adimg-preview'); if (prev) prev.innerHTML='';
+  var st = document.getElementById('adimg-status'); if (st) st.textContent='';
+  var ti = document.getElementById('ad-title-inp'); if (ti) ti.value='';
+  adRenderKwPreview();
+  renderAdGrid();
+  toast('📣 상품 등록됐어요!');
+}
+
+function renderAdGrid() {
+  var grid = document.getElementById('ad-grid'); if (!grid) return;
+  var list = loadAdList();
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ccc;padding:40px;font-size:.88rem">상품을 등록해요 📣</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  list.forEach(function(item) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:white;border:1.5px solid #f7c0d8;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(220,100,140,.08);transition:transform .13s';
+    card.onmouseover = function(){ this.style.transform='translateY(-2px)'; };
+    card.onmouseout  = function(){ this.style.transform=''; };
+
+    // 썸네일
+    if (item.img) {
+      var imgWrap = document.createElement('div');
+      imgWrap.style.cssText = 'width:100%;aspect-ratio:1/1;overflow:hidden;position:relative;cursor:pointer';
+      var img = document.createElement('img');
+      img.src = item.img;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+      img.onclick = function(){ openImgModal && openImgModal(item.img); };
+      imgWrap.appendChild(img);
+      card.appendChild(imgWrap);
+    } else {
+      var noImg = document.createElement('div');
+      noImg.style.cssText = 'width:100%;aspect-ratio:1/1;background:#fafafa;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#ddd';
+      noImg.textContent = '📦';
+      card.appendChild(noImg);
+    }
+
+    // 내용
+    var body = document.createElement('div');
+    body.style.cssText = 'padding:8px;display:flex;flex-direction:column;gap:4px;flex:1';
+
+    // 제목
+    if (item.title) {
+      var title = document.createElement('div');
+      title.style.cssText = 'font-size:.78rem;font-weight:800;color:#222;line-height:1.4;word-break:break-all';
+      title.textContent = item.title;
+      body.appendChild(title);
+    }
+
+    // 키워드들
+    if (item.kws && item.kws.length) {
+      var kwWrap = document.createElement('div');
+      kwWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px';
+      item.kws.forEach(function(kw) {
+        var tag = document.createElement('span');
+        tag.style.cssText = 'background:#fff0f5;border:1px solid #f7a8c0;border-radius:10px;padding:1px 6px;font-size:.65rem;font-weight:700;color:#c03060;line-height:1.5';
+        tag.textContent = kw;
+        kwWrap.appendChild(tag);
+      });
+      body.appendChild(kwWrap);
+    }
+
+    // 액션 버튼
+    var acts = document.createElement('div');
+    acts.style.cssText = 'display:flex;gap:4px;margin-top:4px;flex-wrap:wrap';
+
+    // 복사 (키워드 줄바꿈)
+    var copyBtn = document.createElement('button');
+    copyBtn.textContent = '📋';
+    copyBtn.title = '키워드 복사';
+    copyBtn.style.cssText = 'flex:1;background:#f8f0ff;border:1px solid #e0c0f8;border-radius:6px;padding:4px;font-size:.75rem;cursor:pointer;font-weight:700;color:#7040c0';
+    copyBtn.onclick = (function(it){ return function() {
+      var txt = (it.title||'') + (it.kws&&it.kws.length ? '\n' + it.kws.join('\n') : '');
+      navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사됐어요!'); });
+    };})(item);
+
+    // 편집
+    var editBtn = document.createElement('button');
+    editBtn.textContent = '✏️';
+    editBtn.title = '편집';
+    editBtn.style.cssText = 'flex:1;background:#fff8e0;border:1px solid #f0d840;border-radius:6px;padding:4px;font-size:.75rem;cursor:pointer;font-weight:700;color:#a07800';
+    editBtn.onclick = (function(it){ return function(){ adEditOpen(it.id); };})(item);
+
+    // 삭제
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️';
+    delBtn.style.cssText = 'flex:1;background:#fff0f5;border:1px solid #f7a8c0;border-radius:6px;padding:4px;font-size:.75rem;cursor:pointer;font-weight:700;color:#c04070';
+    delBtn.onclick = (function(it){ return function() {
+      confirmDel(it.title||'이 상품', function(){
+        saveAdList(loadAdList().filter(function(x){return x.id!==it.id;}));
+        renderAdGrid(); toast('🗑️ 삭제됐어요');
+      });
+    };})(item);
+
+    acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
+    body.appendChild(acts);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+}
+
+function adEditOpen(id) {
+  var list = loadAdList();
+  var item = list.find(function(x){ return x.id===id; });
+  if (!item) return;
+
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:16px;padding:22px;width:100%;max-width:400px;font-family:Pretendard,sans-serif;display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow-y:auto';
+
+  var ttl = document.createElement('div');
+  ttl.style.cssText = 'font-size:.95rem;font-weight:800;color:#c03060;margin-bottom:2px';
+  ttl.textContent = '✏️ 상품 편집';
+
+  var titleInp = document.createElement('input');
+  titleInp.type = 'text'; titleInp.value = item.title || '';
+  titleInp.placeholder = '상품 제목';
+  titleInp.style.cssText = 'border:2px solid #f7a8c0;border-radius:8px;padding:8px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;width:100%;box-sizing:border-box;font-weight:600';
+
+  // 키워드 편집
+  var kwList = [...(item.kws||[])];
+  var kwWrap = document.createElement('div');
+  kwWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;padding:8px;border:2px solid #f7a8c0;border-radius:8px;min-height:36px';
+  function renderEditKws() {
+    kwWrap.innerHTML = '';
+    kwList.forEach(function(kw, i) {
+      var tag = document.createElement('span');
+      tag.style.cssText = 'background:#fff0f5;border:1.5px solid #f7a8c0;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;color:#c03060;display:inline-flex;align-items:center;gap:4px';
+      tag.innerHTML = kw + '<span style="cursor:pointer;opacity:.6" >✕</span>';
+      tag.querySelector('span').onclick = function(){ kwList.splice(i,1); renderEditKws(); };
+      kwWrap.appendChild(tag);
+    });
+  }
+  renderEditKws();
+
+  var kwRow = document.createElement('div');
+  kwRow.style.cssText = 'display:flex;gap:6px';
+  var kwInp = document.createElement('input'); kwInp.type='text'; kwInp.placeholder='키워드 추가...';
+  kwInp.style.cssText = 'flex:1;border:2px solid #f7a8c0;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none';
+  var kwAddBtn = document.createElement('button'); kwAddBtn.textContent='+';
+  kwAddBtn.style.cssText='background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:7px 14px;color:white;font-weight:700;cursor:pointer';
+  kwAddBtn.onclick = function(){ if(kwInp.value.trim()){kwList.push(kwInp.value.trim());kwInp.value='';renderEditKws();} };
+  kwInp.onkeydown = function(e){ if(e.key==='Enter'){kwAddBtn.onclick();} };
+  kwRow.appendChild(kwInp); kwRow.appendChild(kwAddBtn);
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:4px';
+  var cancelBtn = document.createElement('button'); cancelBtn.textContent='취소';
+  cancelBtn.style.cssText='flex:1;padding:9px;background:#f0f0f0;border:none;border-radius:9px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer';
+  cancelBtn.onclick = function(){ modal.remove(); };
+  var saveBtn = document.createElement('button'); saveBtn.textContent='💾 저장';
+  saveBtn.style.cssText='flex:1.5;padding:9px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:9px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
+  saveBtn.onclick = function() {
+    var idx = list.findIndex(function(x){return x.id===id;});
+    if (idx!==-1) { list[idx].title = titleInp.value.trim(); list[idx].kws = [...kwList]; saveAdList(list); }
+    modal.remove(); renderAdGrid(); toast('✅ 수정됐어요!');
+  };
+
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
+  box.appendChild(ttl); box.appendChild(titleInp); box.appendChild(kwWrap); box.appendChild(kwRow); box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+}
+
 /* ── 요일별 메뉴 ── */
 function loadWeekMenu() { return loadObj('week_menu').data || {월:'',화:'',수:'',목:'',금:'',토:'',일:''}; }
 function saveWeekMenu(data) { stor('week_menu', {data}); }
@@ -11198,20 +11657,34 @@ function filterExpBank(bank, el) {
   el.classList.add('active');
   renderExp();
 }
+var _expSearchKw = '';
+function filterExpSearch(kw) {
+  _expSearchKw = kw.trim();
+  renderExp();
+}
 
 function renderExp() {
   const _tbody = document.getElementById('exp-tbody');
   if (!_tbody) return;
   let data = loadExp();
-  // 날짜 오름차순 정렬 — "10일", "2일", "10" 등 숫자만 추출해서 정수 비교
   data = [...data].sort((a,b) => {
     const na = parseInt((a.day||'').match(/\d+/)?.[0] || '0');
     const nb = parseInt((b.day||'').match(/\d+/)?.[0] || '0');
     return na - nb;
   });
-  const filtered = currentBankFilter !== '전체'
+  let filtered = currentBankFilter !== '전체'
     ? data.filter(r => (r.bank||'') === currentBankFilter)
     : data;
+  // 퀵검색
+  if (_expSearchKw) {
+    const kw = _expSearchKw.toLowerCase();
+    filtered = filtered.filter(r =>
+      (r.name||'').toLowerCase().includes(kw) ||
+      (r.bank||'').toLowerCase().includes(kw) ||
+      (r.memo||'').toLowerCase().includes(kw) ||
+      (r.day||'').toLowerCase().includes(kw)
+    );
+  }
 
   const tbody = _tbody;
   if (!filtered.length) {
