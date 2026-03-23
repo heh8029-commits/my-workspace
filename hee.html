@@ -1804,7 +1804,7 @@ function pwaInstall() {
 <div class="topbar" style="position:static">
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
-    <div class="tb-icon" onclick="_cleanLocalStorageBase64();toast('🧹 저장공간 정리 완료!')" title="저장공간 정리 (base64 이미지 제거)" style="font-size:.75rem;font-weight:700;color:#e03c6e">🧹</div>
+
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1');switchSub('menu1',8,null)">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2');switchSub('menu2',0,null)">🏠 우리집</div>
@@ -4447,7 +4447,7 @@ function renderList(key, elId, clsName, emptyMsg) {
       <div class="iacts">
         <button onclick="navigator.clipboard.writeText('${item.text.replace(/'/g,"\\'").replace(/\n/g,'\\n')}').then(()=>toast('📋 복사됐어요!'))" title="복사">📋</button>
         <button onclick="memoEditOpen(this,${item.id})">✏️</button>
-        <button onclick="confirmDel('${(item.text||'이 항목').slice(0,30).replace(/'/g,' ')}', function(){${key}Del(${item.id});})">🗑️</button>
+        <button onclick="(function(){var k='${key}',id=${item.id};confirmDel('삭제할까요?',function(){window[k+'Del']&&window[k+'Del'](id);});})()" >🗑️</button>
       </div>
       ${item.createdAt ? `<div class="cat-badge">${formatCreatedAt(item.createdAt)}</div>` : ''}
     </div>`;
