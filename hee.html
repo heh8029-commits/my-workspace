@@ -1805,7 +1805,6 @@ function pwaInstall() {
   <div class="tabs">
     <div class="tb-icon" onclick="syncFromSheet()" title="Firebase 동기화">🔄</div>
     <div class="tb-icon" onclick="_cleanLocalStorageBase64();toast('🧹 저장공간 정리 완료!')" title="저장공간 정리 (base64 이미지 제거)" style="font-size:.75rem;font-weight:700;color:#e03c6e">🧹</div>
-    <div class="tb-icon" onclick="_cleanLocalStorageBase64()" title="저장공간 정리 (base64 이미지 제거)">🧹</div>
     <div class="tab active" onclick="goTab(this,'home')">🎀 홈</div>
     <div class="tab" onclick="goTab(this,'menu1');switchSub('menu1',8,null)">🛍️ 미리제작소</div>
     <div class="tab" onclick="goTab(this,'menu2');switchSub('menu2',0,null)">🏠 우리집</div>
@@ -3890,7 +3889,45 @@ function _cleanLocalStorageBase64() {
       if (changed) { localStorage.setItem(key, JSON.stringify(obj)); cleaned++; }
     } catch(err) {}
   }
-  if (cleaned > 0) { console.log('🧹 base64 정리:', cleaned+'개'); toast('🧹 저장 공간 정리됐어요!'); }
+  if (cleaned > 0) { console.log('🧹 base64 자동 정리:', cleaned+'개 키'); }
+}
+
+function _cleanFirebaseBase64(all, keys) {
+  // Firebase 데이터에서 base64 발견 시 Cloudinary 없이 그냥 제거 후 재업로드
+  if (!all || !keys) return;
+  keys.forEach(function(k) {
+    var val = all[k];
+    if (!val) return;
+    var str = JSON.stringify(val);
+    if (str.indexOf('data:image') === -1) return; // base64 없으면 스킵
+    // base64 제거
+    function cleanItem(item) {
+      if (!item || typeof item !== 'object') return false;
+      var changed = false;
+      ['img','mainImg','imgs','refImgs'].forEach(function(f) {
+        if (typeof item[f] === 'string' && item[f].startsWith('data:image')) { item[f]=''; changed=true; }
+        if (Array.isArray(item[f])) {
+          var before = item[f].length;
+          item[f] = item[f].filter(function(u){ return u && !u.startsWith('data:image'); });
+          if (item[f].length !== before) changed = true;
+        }
+      });
+      return changed;
+    }
+    var changed = false;
+    if (Array.isArray(val)) val.forEach(function(it){ if(cleanItem(it)) changed=true; });
+    if (val && val.list) val.list.forEach(function(it){ if(cleanItem(it)) changed=true; });
+    if (changed) {
+      // Firebase에 정리된 버전 재업로드
+      fetch(FB_URL + '/' + k + '.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(val)
+      }).then(function(){ console.log('🧹 Firebase base64 정리:', k); })
+        .catch(function(){});
+      localStorage.setItem('ws5_'+k, JSON.stringify(val));
+    }
+  });
 }
 
 function load(k) {
@@ -3987,7 +4024,7 @@ function stor(k, v) {
     if (e.name === 'QuotaExceededError' || (e.message && e.message.includes('quota'))) {
       _cleanLocalStorageBase64();
       try { localStorage.setItem('ws5_'+k, JSON.stringify(v)); }
-      catch(e2) { toast('⚠️ 저장 공간이 부족해요. 오래된 이미지를 정리했어요.'); }
+      catch(e2) { console.warn('stor quota 초과 (정리 후에도 실패):', k); }
     }
   }
   fetch(FB_URL + '/' + k + '.json', {
@@ -4055,9 +4092,19 @@ async function syncFromSheet() {
     if (!all) { toast('🎀 최신 데이터예요!'); return; }
     // 고정 키 + sales_ 로 시작하는 키 모두 저장
     const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
+    // 먼저 base64 정리
+    _cleanLocalStorageBase64();
     for (const k of allKeys) {
       if (all[k] !== undefined && all[k] !== null) {
-        localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
+        try {
+          localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
+        } catch(qe) {
+          // quota 초과 시 한번 더 정리 후 재시도
+          _cleanLocalStorageBase64();
+          try { localStorage.setItem('ws5_'+k, JSON.stringify(all[k])); } catch(e2) {
+            console.warn('저장 실패 (용량 초과):', k);
+          }
+        }
       }
     }
     // 메모리 데이터 갱신
@@ -4083,6 +4130,8 @@ async function syncFromSheet() {
     }, 50);
     updateTodaySchedBar && updateTodaySchedBar();
     toast('✅ 동기화 완료!');
+    // Firebase에 남은 base64 이미지도 정리해서 재업로드
+    setTimeout(function(){ _cleanFirebaseBase64(all, allKeys); }, 500);
   } catch(e) {
     console.log('sync err', e);
     toast('❌ ' + (e.message || '동기화 실패'));
@@ -14027,10 +14076,14 @@ function renderMenu5(sub) {
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
   // 헤더 offset - DOM 완전 렌더 후 측정
+  // 시작 시 base64 자동 정리 (용량 확보)
+  setTimeout(_cleanLocalStorageBase64, 1000);
   setTimeout(_fixHeaderOffset, 0);
   setTimeout(_fixHeaderOffset, 200);
   setTimeout(_fixHeaderOffset, 500);
   window.addEventListener('resize', _fixHeaderOffset);
+  // 시작 시 base64 자동 정리
+  _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
