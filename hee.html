@@ -4445,7 +4445,7 @@ function renderList(key, elId, clsName, emptyMsg) {
       })()}
       ${dateBadge}${timeBadge}
       <div class="iacts">
-        <button onclick="navigator.clipboard.writeText('${item.text.replace(/'/g,"\\'").replace(/\n/g,'\\n')}').then(()=>toast('📋 복사됐어요!'))" title="복사">📋</button>
+        <button onclick="(function(b){var t=b.closest('.it').querySelector('.itxt');if(t)navigator.clipboard.writeText(t.innerText).then(function(){toast('📋 복사됐어요!');});})(this)" title="복사">📋</button>
         <button onclick="memoEditOpen(this,${item.id})">✏️</button>
         <button onclick="(function(){var k='${key}',id=${item.id};confirmDel('삭제할까요?',function(){window[k+'Del']&&window[k+'Del'](id);});})()" >🗑️</button>
       </div>
