@@ -131,18 +131,17 @@
     .edit-btn:hover { color: var(--pink); background: var(--pink-light); }
     body.edit-mode .edit-btn { display: inline-flex; }
 
-    /* del row button */
-    .del-btn {
+    /* cell delete button (✕) */
+    .cell-del-btn {
       display: none;
       border: none; background: none;
-      cursor: pointer; font-size: 0.78rem;
-      color: #ddd; padding: 2px 6px;
-      border-radius: 3px;
-      transition: color 0.12s;
-      vertical-align: middle;
+      cursor: pointer; font-size: 0.68rem;
+      color: #ccc; padding: 1px 3px;
+      border-radius: 3px; line-height: 1;
+      transition: color 0.12s, background 0.12s;
     }
-    body.edit-mode .del-btn { display: inline-block; }
-    .del-btn:hover { color: #e74c3c; }
+    body.edit-mode .cell-del-btn { display: inline-flex; }
+    .cell-del-btn:hover { color: #e74c3c; background: #fdecea; }
 
     /* edit-mode row highlight */
     body.edit-mode tbody td { position: relative; }
@@ -297,13 +296,8 @@ function render() {
         const content = name
           ? (url ? `<a href="${url}" target="_blank">${esc(name)}</a>` : `<span>${esc(name)}</span>`)
           : `<span style="color:#ddd;font-size:0.72rem">─</span>`;
-        td.innerHTML = `<span class="cell-wrap">${content}<button class="edit-btn" onclick="openModal(${ri},${ci})" title="편집">✏️</button></span>`;
-      }
-      if (ci === 3) {
-        const db = document.createElement('button');
-        db.className = 'del-btn'; db.title = '행 삭제'; db.textContent = '🗑';
-        db.onclick = () => deleteRow(ri);
-        td.appendChild(db);
+        const delBtn = name ? `<button class="cell-del-btn" onclick="clearCell(${ri},${ci})" title="이 칸 삭제">✕</button>` : '';
+        td.innerHTML = `<span class="cell-wrap">${content}<button class="edit-btn" onclick="openModal(${ri},${ci})" title="편집">✏️</button>${delBtn}</span>`;
       }
       tr.appendChild(td);
     });
@@ -321,7 +315,7 @@ function toggleEdit() {
   document.body.classList.toggle('edit-mode', isEditMode);
   document.querySelector('.btn-edit').textContent = isEditMode ? '✅ 편집 종료' : '✏️ 편집 모드';
   document.getElementById('hint-text').textContent = isEditMode
-    ? '✏️ 클릭해서 이름·URL 수정  |  🗑 행 삭제  |  아래 버튼으로 행 추가'
+    ? '✏️ 수정  |  ✕ 칸 비우기  |  아래 버튼으로 행 추가'
     : '💡 편집 모드를 켜면 ✏️ 버튼으로 이름·URL을 바꿀 수 있어요';
   document.getElementById('add-row-btn').style.display = isEditMode ? 'block' : 'none';
 }
@@ -356,16 +350,18 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter')  applyEdit();
 });
 
-/* ── row add/del ── */
+/* ── cell clear ── */
+function clearCell(ri, ci) {
+  data[ri][ci] = ["", ""];
+  render();
+  showToast('🗑 칸을 비웠습니다');
+}
+
+/* ── row add ── */
 function addRow() {
   data.push([["",""],["",""],["",""],["",""]]);
   render();
   showToast('행을 추가했습니다');
-}
-function deleteRow(ri) {
-  if (!confirm('이 행을 삭제할까요?')) return;
-  data.splice(ri, 1);
-  render();
 }
 
 /* ── save ── */
