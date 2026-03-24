@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>미리토퍼 북마크</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --pink:       #e91e8c;
+      --pink-light: #fce4f3;
+      --yellow:     #fffacd;
+      --yellow-hdr: #f5f0a0;
+      --border:     #d4c97a;
+      --text:       #333;
+      --hover-bg:   #fff7e6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #fafafa;
+      color: var(--text);
+      padding: 40px 20px 80px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--pink);
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+    }
+    h1::before, h1::after { content: "♥"; margin: 0 6px; }
+
+    /* toolbar */
+    .toolbar {
+      max-width: 960px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toolbar .hint { font-size: 0.78rem; color: #999; margin-right: auto; }
+
+    .btn {
+      border: none; cursor: pointer; border-radius: 5px;
+      font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      padding: 7px 16px; transition: all 0.15s;
+    }
+    .btn-edit   { background: var(--pink); color: #fff; }
+    .btn-edit:hover { background: #c01070; }
+    .btn-save   { background: #27ae60; color: #fff; }
+    .btn-save:hover { background: #1e8449; }
+    .btn-export { background: #2980b9; color: #fff; }
+    .btn-export:hover { background: #1f6592; }
+    .btn-reset  { background: #e0e0e0; color: #555; }
+    .btn-reset:hover { background: #ccc; }
+
+    /* add row */
+    .btn-add-row {
+      background: #f5f5f5; color: #777;
+      border: 1.5px dashed #ccc;
+      font-size: 0.78rem; padding: 6px;
+      border-radius: 4px; cursor: pointer;
+      width: 100%; margin-top: 6px;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .btn-add-row:hover { background: var(--pink-light); color: var(--pink); border-color: var(--pink); }
+
+    /* table */
+    .table-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+    }
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: var(--yellow-hdr);
+      font-weight: 700; font-size: 0.88rem;
+      padding: 13px 10px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    tbody tr { transition: background 0.12s; }
+    tbody tr:hover { background: var(--hover-bg); }
+    tbody tr:nth-child(even) { background: var(--yellow); }
+    tbody tr:nth-child(even):hover { background: var(--hover-bg); }
+
+    tbody td {
+      padding: 7px 8px;
+      border: 1px solid #e0d9a0;
+      text-align: center;
+      font-size: 0.84rem;
+      vertical-align: middle;
+    }
+
+    /* link */
+    a {
+      color: var(--text); text-decoration: none;
+      padding: 2px 5px; border-radius: 3px;
+      transition: background 0.15s, color 0.15s;
+    }
+    a:hover { background: var(--pink); color: #fff; }
+
+    .bank-label { font-weight: 700; }
+
+    /* cell wrap */
+    .cell-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      justify-content: center;
+    }
+
+    /* edit pen button – hidden until edit mode */
+    .edit-btn {
+      display: none;
+      border: none; background: none;
+      cursor: pointer; font-size: 0.7rem;
+      color: #ccc; padding: 2px 4px;
+      border-radius: 3px; line-height: 1;
+      transition: color 0.12s, background 0.12s;
+    }
+    .edit-btn:hover { color: var(--pink); background: var(--pink-light); }
+    body.edit-mode .edit-btn { display: inline-flex; }
+
+    /* del row button */
+    .del-btn {
+      display: none;
+      border: none; background: none;
+      cursor: pointer; font-size: 0.78rem;
+      color: #ddd; padding: 2px 6px;
+      border-radius: 3px;
+      transition: color 0.12s;
+      vertical-align: middle;
+    }
+    body.edit-mode .del-btn { display: inline-block; }
+    .del-btn:hover { color: #e74c3c; }
+
+    /* edit-mode row highlight */
+    body.edit-mode tbody td { position: relative; }
+
+    /* modal overlay */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.38); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-bg.open { display: flex; }
+
+    .modal {
+      background: #fff; border-radius: 14px;
+      padding: 28px 30px; width: 370px;
+      box-shadow: 0 10px 44px rgba(0,0,0,0.18);
+      animation: pop .16s ease;
+    }
+    @keyframes pop { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+    .modal h2 { font-size: 1rem; color: var(--pink); margin-bottom: 20px; }
+    .modal label { display:block; font-size:0.76rem; color:#888; margin-bottom:4px; margin-top:4px; }
+    .modal input {
+      width:100%; padding:9px 11px;
+      border:1.5px solid #e0e0e0; border-radius:7px;
+      font-family:inherit; font-size:0.88rem;
+      margin-bottom:4px; transition:border 0.15s;
+    }
+    .modal input:focus { outline:none; border-color:var(--pink); }
+    .modal-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+    .modal-btns button {
+      border:none; border-radius:7px; padding:9px 20px;
+      font-family:inherit; font-size:0.84rem; font-weight:700;
+      cursor:pointer; transition:background 0.15s;
+    }
+    .m-cancel { background:#f0f0f0; color:#555; }
+    .m-cancel:hover { background:#e0e0e0; }
+    .m-ok { background:var(--pink); color:#fff; }
+    .m-ok:hover { background:#c01070; }
+
+    /* toast */
+    .toast {
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+      background:#333; color:#fff;
+      padding:10px 24px; border-radius:30px;
+      font-size:0.82rem; font-weight:600;
+      opacity:0; pointer-events:none;
+      transition:opacity 0.25s; z-index:200;
+    }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+
+<h1>미리토퍼 북마크</h1>
+
+<div class="toolbar">
+  <span class="hint" id="hint-text">💡 편집 모드를 켜면 ✏️ 버튼으로 이름·URL을 바꿀 수 있어요</span>
+  <button class="btn btn-edit"   onclick="toggleEdit()">✏️ 편집 모드</button>
+  <button class="btn btn-save"   onclick="saveData()"  title="브라우저에 자동 저장 (다음에 열어도 유지)">💾 저장</button>
+  <button class="btn btn-export" onclick="exportHTML()" title="깃허브에 올릴 완성 HTML 다운로드">📥 HTML 저장</button>
+  <button class="btn btn-reset"  onclick="resetData()" title="초기 데이터로 되돌리기">↩ 초기화</button>
+</div>
+
+<div class="table-wrap">
+  <table id="bm-table">
+    <thead>
+      <tr>
+        <th>관리자페이지</th>
+        <th>광고페이지</th>
+        <th>오픈마켓 미니샵</th>
+        <th>사이트 바로가기</th>
+      </tr>
+    </thead>
+    <tbody id="bm-body"></tbody>
+  </table>
+</div>
+<div style="max-width:960px;margin:0 auto;">
+  <button class="btn-add-row" id="add-row-btn" style="display:none" onclick="addRow()">＋ 행 추가</button>
+</div>
+
+<!-- modal -->
+<div class="modal-bg" id="modal" onclick="bgClick(event)">
+  <div class="modal">
+    <h2>🔗 링크 편집</h2>
+    <label>표시 이름</label>
+    <input type="text" id="m-name" placeholder="예) 스마트스토어센터"/>
+    <label>URL <span style="color:#bbb;font-size:0.7rem">(없으면 비워두세요)</span></label>
+    <input type="url" id="m-url" placeholder="https://..."/>
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeModal()">취소</button>
+      <button class="m-ok"     onclick="applyEdit()">적용</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   DATA
+   형식: 각 행 = [ [이름, url], [이름, url], [이름, url], [이름, url] ]
+   - url 없으면: ["이름", ""]
+   - 빈 칸:     ["", ""]
+   - 은행라벨:  ["__bank__", ""]
+============================================================ */
+const DEFAULT_DATA = [
+  [["토글","https://toggl.com"],["",""],["스마트스토어·유니온탑","https://smartstore.naver.com"],["",""]],
+  [["스마트스토어센터","https://sell.smartstore.naver.com"],["네이버광고","https://searchad.naver.com"],["스마트스토어·미리토퍼","https://smartstore.naver.com"],["네이버쇼핑","https://shopping.naver.com"]],
+  [["쿠팡","https://partners.coupang.com"],["",""],["스마트스토어·미리트래블(제이크탭)","https://smartstore.naver.com"],["쿠팡","https://www.coupang.com"]],
+  [["ESM PLUS(지마켓,옥션)","https://www.esmplus.com"],["ESM-CPC광고","https://www.esmplus.com"],["쿠팡·길쭈기집화가게","https://www.coupang.com"],["G마켓","https://www.gmarket.co.kr"]],
+  [["11번가 셀러오피스","https://soffice.11st.co.kr"],["11번가-CPC광고","https://adcenter.11st.co.kr"],["쿠팡·제이크탭","https://www.coupang.com"],["옥션","https://www.auction.co.kr"]],
+  [["티몬","https://www.tmon.co.kr"],["티몬-CPC광고","https://www.tmon.co.kr"],["G마켓·유니온탑(길쭈기집화가게)","https://www.gmarket.co.kr"],["11번가","https://www.11st.co.kr"]],
+  [["위메프 2.0","https://www.wemakeprice.com"],["위메프-CPC광고","https://www.wemakeprice.com"],["G마켓·미리트래블(제이크탭)","https://www.gmarket.co.kr"],["티몬","https://www.tmon.co.kr"]],
+  [["cafe24","https://www.cafe24.com"],["",""],["옥션·유니온탑(길쭈기집화가게)","https://www.auction.co.kr"],["위메프","https://www.wemakeprice.com"]],
+  [["인터파크","https://www.interpark.com"],["G마켓 키워드광고","https://www.gmarket.co.kr"],["옥션·미리트래블(제이크탭)","https://www.auction.co.kr"],["인터파크","https://www.interpark.com"]],
+  [["도매국 관리자페이지","https://domae.co.kr"],["옥션 키워드광고","https://www.auction.co.kr"],["11번가·길쭈기집화가게","https://www.11st.co.kr"],["도매","https://domae.co.kr"]],
+  [["ESM 이미지호스팅","https://www.esmplus.com"],["11번가 키워드광고","https://adcenter.11st.co.kr"],["11번가·제이크탭","https://www.11st.co.kr"],["유투브","https://www.youtube.com"]],
+  [["QSM","https://qsm.co.kr"],["",""],["위메프·길쭈기집화가게","https://www.wemakeprice.com"],["",""]],
+  [["쿠팡 로켓배송","https://www.coupang.com"],["",""],["위메프·제이크탭","https://www.wemakeprice.com"],["네이버","https://www.naver.com"]],
+  [["",""],["",""],["티몬·길쭈기집화가게","https://www.tmon.co.kr"],["다음","https://www.daum.net"]],
+  [["롯데온","https://www.lotteon.com"],["",""],["티몬·제이크탭","https://www.tmon.co.kr"],["구글","https://www.google.com"]],
+  [["쑥판매자센터","https://sell.ssf.com"],["",""],["미리트래블 사이트","https://miritravel.co.kr"],["구글드라이브","https://drive.google.com"]],
+  [["",""],["",""],["인터파크·길쭈기집화가게","https://www.interpark.com"],["네이트","https://www.nate.com"]],
+  [["",""],["",""],["도매꾹·줌줌도매","https://domae.co.kr"],["__bank__",""]],
+  [["",""],["",""],["",""],["농협","https://www.nonghyup.com"]],
+  [["",""],["",""],["",""],["국민은행","https://www.kbstar.com"]],
+  [["",""],["",""],["",""],["기업은행","https://www.ibk.co.kr"]],
+  [["",""],["",""],["",""],["",""]],
+];
+
+let data = [];
+let editTarget = null;
+let isEditMode = false;
+
+/* ── init ── */
+function init() {
+  const saved = localStorage.getItem('bm_data_v2');
+  data = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+  render();
+}
+
+/* ── render ── */
+function render() {
+  const tbody = document.getElementById('bm-body');
+  tbody.innerHTML = '';
+  data.forEach((row, ri) => {
+    const tr = document.createElement('tr');
+    row.forEach(([name, url], ci) => {
+      const td = document.createElement('td');
+      if (name === '__bank__') {
+        td.innerHTML = `<span class="bank-label">은행바로가기</span>`;
+      } else {
+        const content = name
+          ? (url ? `<a href="${url}" target="_blank">${esc(name)}</a>` : `<span>${esc(name)}</span>`)
+          : `<span style="color:#ddd;font-size:0.72rem">─</span>`;
+        td.innerHTML = `<span class="cell-wrap">${content}<button class="edit-btn" onclick="openModal(${ri},${ci})" title="편집">✏️</button></span>`;
+      }
+      if (ci === 3) {
+        const db = document.createElement('button');
+        db.className = 'del-btn'; db.title = '행 삭제'; db.textContent = '🗑';
+        db.onclick = () => deleteRow(ri);
+        td.appendChild(db);
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── edit mode ── */
+function toggleEdit() {
+  isEditMode = !isEditMode;
+  document.body.classList.toggle('edit-mode', isEditMode);
+  document.querySelector('.btn-edit').textContent = isEditMode ? '✅ 편집 종료' : '✏️ 편집 모드';
+  document.getElementById('hint-text').textContent = isEditMode
+    ? '✏️ 클릭해서 이름·URL 수정  |  🗑 행 삭제  |  아래 버튼으로 행 추가'
+    : '💡 편집 모드를 켜면 ✏️ 버튼으로 이름·URL을 바꿀 수 있어요';
+  document.getElementById('add-row-btn').style.display = isEditMode ? 'block' : 'none';
+}
+
+/* ── modal ── */
+function openModal(ri, ci) {
+  if (!isEditMode) return;
+  editTarget = {ri, ci};
+  const [name, url] = data[ri][ci];
+  document.getElementById('m-name').value = name === '__bank__' ? '은행바로가기' : (name || '');
+  document.getElementById('m-url').value  = url || '';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('m-name').select(), 50);
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editTarget = null;
+}
+function bgClick(e) { if (e.target === e.currentTarget) closeModal(); }
+function applyEdit() {
+  if (!editTarget) return;
+  const name = document.getElementById('m-name').value.trim();
+  const url  = document.getElementById('m-url').value.trim();
+  data[editTarget.ri][editTarget.ci] = [name, url];
+  render();
+  closeModal();
+  showToast('✅ 수정 완료');
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('modal').classList.contains('open')) return;
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter')  applyEdit();
+});
+
+/* ── row add/del ── */
+function addRow() {
+  data.push([["",""],["",""],["",""],["",""]]);
+  render();
+  showToast('행을 추가했습니다');
+}
+function deleteRow(ri) {
+  if (!confirm('이 행을 삭제할까요?')) return;
+  data.splice(ri, 1);
+  render();
+}
+
+/* ── save ── */
+function saveData() {
+  localStorage.setItem('bm_data_v2', JSON.stringify(data));
+  showToast('💾 저장 완료! 다음에 열어도 유지됩니다');
+}
+
+/* ── reset ── */
+function resetData() {
+  if (!confirm('모든 수정 내용이 사라집니다. 초기화할까요?')) return;
+  localStorage.removeItem('bm_data_v2');
+  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  render();
+  showToast('↩ 초기화 완료');
+}
+
+/* ── export HTML ── */
+function exportHTML() {
+  const rows = data.map(row => {
+    const cells = row.map(([n,u]) => {
+      if (n==='__bank__') return `<td><strong>은행바로가기</strong></td>`;
+      if (!n) return `<td></td>`;
+      return u ? `<td><a href="${u}" target="_blank">${n}</a></td>` : `<td>${n}</td>`;
+    }).join('');
+    return `    <tr>${cells}</tr>`;
+  }).join('\n');
+
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>미리토퍼 북마크</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#e91e8c;--yellow:#fffacd;--yellow-hdr:#f5f0a0;--border:#d4c97a;--text:#333;--hover:#fff7e6;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Noto Sans KR',sans-serif;background:#fff;color:var(--text);padding:40px 20px 60px;}
+    h1{text-align:center;font-size:1.3rem;font-weight:700;color:var(--pink);margin-bottom:26px;letter-spacing:2px;}
+    h1::before,h1::after{content:"♥";margin:0 6px;}
+    .wrap{max-width:960px;margin:0 auto;border:2px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);}
+    table{width:100%;border-collapse:collapse;}
+    thead th{background:var(--yellow-hdr);font-weight:700;font-size:.88rem;padding:13px 10px;border:1px solid var(--border);text-align:center;}
+    tbody tr:nth-child(even){background:var(--yellow);}
+    tbody tr:hover{background:var(--hover);}
+    tbody td{padding:8px 12px;border:1px solid #e0d9a0;text-align:center;font-size:.84rem;vertical-align:middle;}
+    a{color:var(--text);text-decoration:none;padding:2px 6px;border-radius:3px;transition:background .15s,color .15s;}
+    a:hover{background:var(--pink);color:#fff;}
+  </style>
+</head>
+<body>
+<h1>미리토퍼 북마크</h1>
+<div class="wrap"><table>
+  <thead><tr><th>관리자페이지</th><th>광고페이지</th><th>오픈마켓 미니샵</th><th>사이트 바로가기</th></tr></thead>
+  <tbody>
+${rows}
+  </tbody>
+</table></div>
+</body>
+</html>`;
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+  a.download = 'bookmark.html';
+  a.click();
+  showToast('📥 HTML 다운로드 완료 → 깃허브에 올리세요!');
+}
+
+/* ── toast ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+init();
+</script>
+</body>
+</html>
