@@ -1698,15 +1698,52 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:0;flex-wrap:wrap">
     <div onclick="workSync()" title="동기화" style="width:32px;height:32px;border-radius:50%;background:white;border:2px solid #b090e8;display:flex;align-items:center;justify-content:center;font-size:.97rem;cursor:pointer;transition:all .15s;box-shadow:0 2px 5px rgba(160,120,240,.2);flex-shrink:0" onmouseover="this.style.background='#f5eeff';this.style.transform='scale(1.1)'" onmouseout="this.style.background='white';this.style.transform='scale(1)'">🔄</div>
     <div class="work-tabs" style="margin-bottom:0;flex:1">
-    <button class="work-tab active" onclick="workSwitchTab(0,this)">🎨 디자인관리</button>
-    <button class="work-tab" onclick="workSwitchTab(1,this)">🛒 상품관리</button>
-    <button class="work-tab" onclick="workSwitchTab(2,this)">✍️ 문구추천리스트</button>
+    <button class="work-tab" onclick="workSwitchTab(0,this)">💬 CS실시간공유</button>
+    <button class="work-tab active" onclick="workSwitchTab(1,this)">🎨 디자인관리</button>
+    <button class="work-tab" onclick="workSwitchTab(2,this)">🛒 상품관리</button>
+    <button class="work-tab" onclick="workSwitchTab(3,this)">✍️ 문구추천리스트</button>
   </div>
   </div>
   <div style="margin-bottom:16px"></div>
 
   <!-- 콘텐츠 -->
-  <div class="subpage" id="work-sub-1" class="subpage active">
+  <!-- CS실시간공유 -->
+  <div class="subpage" id="work-sub-1">
+    <!-- 입력 -->
+    <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
+      <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:10px">💬 CS 내용 공유</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <!-- 유형 선택 -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="cs-type-btns">
+          <button type="button" onclick="setCsType('문의')" class="cs-type-btn active" data-type="문의" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.78rem;font-weight:700;cursor:pointer">💬 문의</button>
+          <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:4px 12px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.78rem;font-weight:700;cursor:pointer">🔄 교환</button>
+          <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.78rem;font-weight:700;cursor:pointer">↩️ 반품</button>
+          <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.78rem;font-weight:700;cursor:pointer">🚚 배송</button>
+          <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:4px 12px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.78rem;font-weight:700;cursor:pointer">📌 기타</button>
+        </div>
+        <textarea id="cs-share-inp" rows="4" placeholder="CS 내용을 입력해요... (고객문의, 교환/반품 요청, 배송문의 등)" style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input id="cs-share-order" type="text" placeholder="주문번호 (선택)" style="flex:1;border:2px solid #b0c8f8;border-radius:8px;padding:7px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none">
+          <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:9px 20px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;flex-shrink:0">📤 공유</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 검색 + 필터 -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+      <input id="cs-share-search" type="text" placeholder="🔍 검색..." oninput="renderCsShare()" style="flex:1;min-width:120px;border:1.5px solid #d0dff8;border-radius:20px;padding:6px 14px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button onclick="setCsFilter('전체',this)" class="cs-filter-btn active" style="padding:3px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
+        <button onclick="setCsFilter('미완료',this)" class="cs-filter-btn" style="padding:3px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
+        <button onclick="setCsFilter('완료',this)" class="cs-filter-btn" style="padding:3px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+      </div>
+    </div>
+
+    <!-- 목록 -->
+    <div id="cs-share-list"></div>
+  </div>
+
+  <div class="subpage" id="work-sub-2" class="subpage active">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f8f4ff,#ddd0f8)">🎨</div>
         <div><div class="subpage-title">디자인관리</div><div class="subpage-desc">타업체 바로가기 &amp; 디자인 카드 관리</div></div>
@@ -1793,14 +1830,14 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
     </div>
-  <div class="subpage" id="work-sub-2" class="subpage">
+  <div class="subpage" id="work-sub-4" class="subpage">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,#b2f0d0)">🛒</div>
         <div><div class="subpage-title">상품관리</div><div class="subpage-desc">판매 상품 목록 &amp; 상태 관리</div></div>
       </div>
       <div id="product-mgmt-wrap"></div>
     </div>
-  <div class="subpage" id="work-sub-3" class="subpage">
+  <div class="subpage" id="work-sub-4" class="subpage">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fffbe0,#ffe880)">✍️</div>
         <div><div class="subpage-title">문구추천리스트</div><div class="subpage-desc">토퍼·작업에 쓰기 좋은 문구 모음</div></div>
@@ -1980,7 +2017,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -2103,7 +2140,7 @@ function _fixHeaderOffset() {
   apply();
 }
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2140,6 +2177,7 @@ async function syncFromSheet() {
     initRender(cp);
     // work 탭 렌더
     setTimeout(function() {
+      renderCsShare && renderCsShare();
       renderDesignLinks && renderDesignLinks();
       renderDesignCards && renderDesignCards();
       loadDesignCommentBox && loadDesignCommentBox();
@@ -8981,11 +9019,163 @@ function initRender(pageId) {
 function workSwitchTab(idx, el) {
   document.querySelectorAll('.work-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3,#work-sub-4').forEach(s => s.classList.remove('active'));
   document.getElementById('work-sub-'+(idx+1)).classList.add('active');
+  if (idx===0) setTimeout(function(){ renderCsShare&&renderCsShare(); }, 50);
   if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); loadDesignCommentBox && loadDesignCommentBox(); }
   if (idx===1) { renderProductMgmt && renderProductMgmt(); }
   if (idx===2) { renderPhrases && renderPhrases(); }
+}
+
+
+/* ── CS 실시간 공유 ── */
+var _csShareType = '문의';
+var _csShareFilter = '전체';
+
+function loadCsShare() { return loadObj('cs_share').list || []; }
+function saveCsShare(list) { stor('cs_share', {list}); }
+
+function setCsType(type) {
+  _csShareType = type;
+  document.querySelectorAll('.cs-type-btn').forEach(function(b) {
+    var on = b.dataset.type === type;
+    var colors = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#aaa'};
+    var c = colors[b.dataset.type] || '#aaa';
+    b.style.background = on ? c : 'white';
+    b.style.color = on ? 'white' : c;
+  });
+}
+function setCsFilter(f, el) {
+  _csShareFilter = f;
+  document.querySelectorAll('.cs-filter-btn').forEach(function(b) { b.classList.remove('active'); b.style.background='white'; });
+  if (el) { el.classList.add('active'); el.style.background=el.style.borderColor||'#4a80d0'; el.style.color='white'; }
+  renderCsShare();
+}
+function addCsShare() {
+  var txt = (document.getElementById('cs-share-inp')||{}).value?.trim()||'';
+  var order = (document.getElementById('cs-share-order')||{}).value?.trim()||'';
+  if (!txt) { toast('CS 내용을 입력해요'); return; }
+  var list = loadCsShare();
+  list.unshift({ id:Date.now(), type:_csShareType, text:txt, order:order, done:false, createdAt:Date.now(), replies:[] });
+  saveCsShare(list);
+  var inp = document.getElementById('cs-share-inp'); if(inp) inp.value='';
+  var ord = document.getElementById('cs-share-order'); if(ord) ord.value='';
+  renderCsShare();
+  toast('📤 공유됐어요!');
+}
+function toggleCsShareDone(id) {
+  var list = loadCsShare();
+  var it = list.find(function(x){return x.id===id;});
+  if (it) it.done = !it.done;
+  saveCsShare(list); renderCsShare();
+}
+function delCsShare(id) {
+  confirmDel('이 CS 항목', function(){
+    saveCsShare(loadCsShare().filter(function(x){return x.id!==id;}));
+    renderCsShare(); toast('🗑️ 삭제됐어요');
+  });
+}
+function addCsReply(id) {
+  var inp = document.getElementById('cs-reply-inp-'+id);
+  if (!inp || !inp.value.trim()) return;
+  var list = loadCsShare();
+  var it = list.find(function(x){return x.id===id;});
+  if (it) {
+    it.replies = it.replies || [];
+    it.replies.push({ id:Date.now(), text:inp.value.trim(), createdAt:Date.now() });
+  }
+  saveCsShare(list); inp.value=''; renderCsShare();
+}
+
+function renderCsShare() {
+  var el = document.getElementById('cs-share-list'); if(!el) return;
+  var list = loadCsShare();
+  var kw = ((document.getElementById('cs-share-search')||{}).value||'').trim().toLowerCase();
+  if (kw) list = list.filter(function(it){ return (it.text||'').toLowerCase().includes(kw)||(it.order||'').toLowerCase().includes(kw); });
+  if (_csShareFilter==='미완료') list = list.filter(function(it){return !it.done;});
+  if (_csShareFilter==='완료')   list = list.filter(function(it){return it.done;});
+  if (!list.length) { el.innerHTML='<div style="text-align:center;color:#bbb;padding:30px;font-size:.88rem">CS 내용을 공유해요 💬</div>'; return; }
+
+  var TYPE_COLORS = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#aaa'};
+  var TYPE_BG = {'문의':'#f0f4ff','교환':'#fff8e8','반품':'#fff0f4','배송':'#f0fff8','기타':'#f8f8f8'};
+
+  el.innerHTML='';
+  list.forEach(function(it) {
+    var color = TYPE_COLORS[it.type]||'#aaa';
+    var bg = TYPE_BG[it.type]||'#fafafa';
+    var card = document.createElement('div');
+    card.style.cssText = 'background:'+(it.done?'#f8f8f8':'white')+';border:1.5px solid '+(it.done?'#ddd':color)+';border-left:4px solid '+color+';border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:all .15s;opacity:'+(it.done?'0.6':'1');
+
+    // 헤더
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap';
+    // 유형 뱃지
+    var badge = document.createElement('span');
+    badge.style.cssText = 'background:'+color+';color:white;border-radius:10px;padding:2px 9px;font-size:.72rem;font-weight:800;flex-shrink:0';
+    badge.textContent = it.type||'문의';
+    // 주문번호
+    var orderSpan = document.createElement('span');
+    orderSpan.style.cssText = 'font-size:.75rem;color:#888;font-weight:600';
+    orderSpan.textContent = it.order ? '📦 '+it.order : '';
+    // 시간
+    var timeSpan = document.createElement('span');
+    timeSpan.style.cssText = 'font-size:.7rem;color:#bbb;margin-left:auto';
+    var d = new Date(it.createdAt||it.id);
+    timeSpan.textContent = (d.getMonth()+1)+'/'+d.getDate()+' '+(d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+    hdr.appendChild(badge); if(it.order) hdr.appendChild(orderSpan); hdr.appendChild(timeSpan);
+
+    // 본문
+    var body = document.createElement('div');
+    body.style.cssText = 'font-size:.88rem;color:'+(it.done?'#aaa':'#222')+';line-height:1.7;white-space:pre-wrap;word-break:break-all;margin-bottom:8px';
+    body.textContent = it.text||'';
+
+    // 답변들
+    var replies = it.replies||[];
+    if (replies.length) {
+      replies.forEach(function(r) {
+        var rDiv = document.createElement('div');
+        rDiv.style.cssText = 'background:#f8f9ff;border-left:3px solid #b0c8f8;border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:.82rem;color:#333;line-height:1.6';
+        rDiv.textContent = '↪ ' + r.text;
+        body.appendChild(rDiv);
+      });
+    }
+
+    // 답변 입력
+    var replyRow = document.createElement('div');
+    replyRow.style.cssText = 'display:flex;gap:6px;margin-bottom:8px';
+    var replyInp = document.createElement('input');
+    replyInp.id = 'cs-reply-inp-'+it.id;
+    replyInp.type='text'; replyInp.placeholder='답변 메모 추가...';
+    replyInp.style.cssText = 'flex:1;border:1.5px solid #d0dff8;border-radius:7px;padding:5px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none';
+    replyInp.onkeydown = (function(id){return function(e){if(e.key==='Enter')addCsReply(id);};})(it.id);
+    var replyBtn = document.createElement('button');
+    replyBtn.textContent='↪'; replyBtn.type='button';
+    replyBtn.style.cssText='background:linear-gradient(135deg,#b0c8f8,#4a80d0);border:none;border-radius:7px;padding:5px 12px;color:white;font-weight:700;cursor:pointer';
+    replyBtn.onclick=(function(id){return function(){addCsReply(id);};})(it.id);
+    replyRow.appendChild(replyInp); replyRow.appendChild(replyBtn);
+
+    // 액션 버튼
+    var acts = document.createElement('div');
+    acts.style.cssText = 'display:flex;gap:6px;align-items:center';
+    var doneBtn = document.createElement('button');
+    doneBtn.textContent = it.done ? '↺ 미완료로' : '✅ 완료';
+    doneBtn.style.cssText = 'padding:4px 12px;border-radius:8px;border:1.5px solid '+(it.done?'#bbb':'#3dbb8f')+';background:'+(it.done?'white':'#3dbb8f')+';color:'+(it.done?'#aaa':'white')+';font-size:.78rem;font-weight:700;cursor:pointer';
+    doneBtn.onclick=(function(id){return function(){toggleCsShareDone(id);};})(it.id);
+    var copyBtn = document.createElement('button');
+    copyBtn.textContent='📋 복사'; copyBtn.type='button';
+    copyBtn.style.cssText='padding:4px 10px;border-radius:8px;border:1.5px solid #b0c8f8;background:white;color:#4a80d0;font-size:.78rem;font-weight:700;cursor:pointer';
+    copyBtn.onclick=(function(text){return function(){navigator.clipboard.writeText(text).then(function(){toast('📋 복사됐어요!');});};})(it.text||'');
+    var delBtn = document.createElement('button');
+    delBtn.textContent='🗑️'; delBtn.type='button';
+    delBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;margin-left:auto;font-weight:700';
+    delBtn.onmouseover=function(){this.style.color='#e03c6e';};
+    delBtn.onmouseout=function(){this.style.color='#ddd';};
+    delBtn.onclick=(function(id){return function(){delCsShare(id);};})(it.id);
+    acts.appendChild(doneBtn); acts.appendChild(copyBtn); acts.appendChild(delBtn);
+
+    card.appendChild(hdr); card.appendChild(body); card.appendChild(replyRow); card.appendChild(acts);
+    el.appendChild(card);
+  });
 }
 
 function workSync() {
@@ -8997,6 +9187,7 @@ function workSync() {
   // 첫 탭 active 확실히
   document.querySelectorAll('.work-tab').forEach((t,i) => t.classList.toggle('active', i===0));
   document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3').forEach((s,i) => s.classList.toggle('active', i===0));
+  renderCsShare && renderCsShare();
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
   loadDesignCommentBox && loadDesignCommentBox();
