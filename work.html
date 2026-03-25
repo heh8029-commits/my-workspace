@@ -2041,9 +2041,13 @@ function _fbApplyData(all) {
 }
 
 function _fbRender() {
-  const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
-  if (typeof initRender === 'function') initRender(cp);
-  if (typeof updateTodaySchedBar === 'function') updateTodaySchedBar();
+  setTimeout(function() {
+    try { renderCsShare && renderCsShare(); } catch(e) {}
+    try { renderDesignLinks && renderDesignLinks(); } catch(e) {}
+    try { renderDesignCards && renderDesignCards(); } catch(e) {}
+    try { renderProductMgmt && renderProductMgmt(); } catch(e) {}
+    try { renderPhrases && renderPhrases(); } catch(e) {}
+  }, 50);
 }
 
 function startFbStream() {
@@ -2115,8 +2119,6 @@ function _startAutoSync() {
       if (!res.ok) return;
       var all = await res.json();
       _fbApplyData(all);
-      const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
-      if (typeof initRender === 'function') initRender(cp);
     } catch(e) {}
   }, 30000);
 }
@@ -2177,25 +2179,19 @@ async function syncFromSheet() {
     if (typeof flowData !== 'undefined') ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
     if (typeof WEEKDAYS !== 'undefined' && typeof weekData !== 'undefined') {
       const wd = loadObj('week');
-      WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
+      if(Array.isArray(WEEKDAYS)) WEEKDAYS.forEach(function(d){ weekData[d]=wd[d]||[]; });
     }
     if (typeof DBS !== 'undefined') Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
     try { if (recipeDB) recipeDB.data = load('recipe'); } catch(e) {}
-    // 항상 렌더 (F5든 수동이든 동일하게)
-    const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
-    initRender(cp);
-    // work 탭 렌더
+    // work 탭 렌더 (initRender 대신 work 전용 함수만 호출)
     setTimeout(function() {
-      renderCsShare && renderCsShare();
-      renderDesignLinks && renderDesignLinks();
-      renderDesignCards && renderDesignCards();
-      loadDesignCommentBox && loadDesignCommentBox();
-      renderProductMgmt && renderProductMgmt();
-      renderPhrases && renderPhrases();
-      renderCti && renderCti();
-      loadInvMemoBox && loadInvMemoBox();
+      try { renderCsShare && renderCsShare(); } catch(e) {}
+      try { renderDesignLinks && renderDesignLinks(); } catch(e) {}
+      try { renderDesignCards && renderDesignCards(); } catch(e) {}
+      try { loadDesignCommentBox && loadDesignCommentBox(); } catch(e) {}
+      try { renderProductMgmt && renderProductMgmt(); } catch(e) {}
+      try { renderPhrases && renderPhrases(); } catch(e) {}
     }, 100);
-    updateTodaySchedBar && updateTodaySchedBar();
     toast('✅ 동기화 완료!');
   } catch(e) {
     console.log('sync err', e);
@@ -8914,9 +8910,9 @@ function initPage(pageId) { /* 단일파일 - goTab이 처리 */ }
 
 function initRender(pageId) {
   if (pageId === 'home') {
-    ['boss','design'].forEach(renderFlow);
+    if(typeof renderFlow==='function') ['boss','design'].forEach(renderFlow);
     renderWeek();
-    Object.keys(renderCfg).forEach(rerender);
+    if(typeof renderCfg!=='undefined'&&renderCfg) Object.keys(renderCfg).forEach(rerender);
     renderOrder();
     renderExp && renderExp();
     renderFridgeMemo && renderFridgeMemo();
@@ -8925,7 +8921,7 @@ function initRender(pageId) {
     renderFabIcons && renderFabIcons();
     renderCsList && renderCsList();
   } else if (pageId === 'menu1') {
-    TAX_KEYS.forEach(renderTaxList);
+    if(typeof TAX_KEYS!=='undefined'&&TAX_KEYS) TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
     renderSales && renderSales();
     renderHourly && renderHourly();
