@@ -1975,6 +1975,7 @@ function loadObj(k) {
 var _fbStream = null;
 var _fbStreamRetry = 0;
 var _fbLastSyncTs = 0;
+var recipeDB; // TDZ 방지 - 아래에서 초기화
 var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
@@ -2133,7 +2134,7 @@ async function syncFromSheet() {
       WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
     }
     if (typeof DBS !== 'undefined') Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
-    if (typeof recipeDB !== 'undefined') recipeDB.data = load('recipe');
+    try { if (recipeDB) recipeDB.data = load('recipe'); } catch(e) {}
     // 항상 렌더 (F5든 수동이든 동일하게)
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
@@ -7440,7 +7441,7 @@ function switchSub(pageId, num, el) {
 }
 
 // ── 레시피 ──
-const recipeDB = { data: load('recipe') };
+recipeDB = { data: load('recipe') };
 function saveRecipe() { stor('recipe', recipeDB.data); }
 
 let editingRecipeId = null;
