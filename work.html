@@ -1715,20 +1715,24 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:12px">💬 CS 등록</div>
       <div style="display:flex;flex-direction:column;gap:8px">
 
-        <!-- 유형선택 (선택사항) -->
-        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
-          <span style="font-size:.72rem;color:#aaa;flex-shrink:0">유형</span>
-          <div id="cs-type-btns" style="display:flex;gap:4px;flex-wrap:wrap">
-            <button type="button" onclick="setCsType('')" class="cs-type-btn" data-type="" style="padding:3px 10px;border-radius:14px;border:1.5px solid #ccc;background:white;color:#999;font-size:.72rem;font-weight:700;cursor:pointer">없음</button>
+        <!-- 유형선택 + 작성자 한 줄 -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <div id="cs-type-btns" style="display:flex;gap:4px;flex-wrap:wrap;flex:1">
             <button type="button" onclick="setCsType('문의')" class="cs-type-btn" data-type="문의" style="padding:3px 10px;border-radius:14px;border:1.5px solid #4a80d0;background:white;color:#4a80d0;font-size:.72rem;font-weight:700;cursor:pointer">💬 문의</button>
             <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:3px 10px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.72rem;font-weight:700;cursor:pointer">🔄 교환</button>
             <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:3px 10px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.72rem;font-weight:700;cursor:pointer">↩️ 반품</button>
             <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:3px 10px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.72rem;font-weight:700;cursor:pointer">🚚 배송</button>
             <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:3px 10px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.72rem;font-weight:700;cursor:pointer">📌 기타</button>
           </div>
+          <!-- 작성자 -->
+          <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+            <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:32px;height:32px;border-radius:50%;border:2px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">은</button>
+            <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:32px;height:32px;border-radius:50%;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">수</button>
+            <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:32px;height:32px;border-radius:50%;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">슬</button>
+          </div>
         </div>
 
-        <!-- 이미지 + 메모 + 작성자 한 줄 -->
+        <!-- 이미지 + 메모 -->
         <div style="display:flex;gap:8px;align-items:flex-start">
           <!-- 이미지 붙여넣기 -->
           <div id="cs-img-area" onpaste="csHandlePaste(event)" ondragover="event.preventDefault()" ondrop="csHandleDrop(event)"
@@ -1737,19 +1741,10 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
             <div id="cs-img-preview" style="width:100%;height:100%;position:absolute;inset:0;border-radius:8px;overflow:hidden"></div>
             <span id="cs-img-hint" style="font-size:.65rem;color:#b0c0e0;text-align:center;line-height:1.4;pointer-events:none;padding:4px;position:relative;z-index:1">📋<br>Ctrl+V</span>
           </div>
-          <!-- 메모 + 작성자 -->
-          <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-            <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
-              style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
-              onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
-            <!-- 작성자 (오른쪽) -->
-            <div style="display:flex;gap:5px;justify-content:flex-end;align-items:center">
-              <span style="font-size:.72rem;color:#aaa">작성자</span>
-              <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:32px;height:32px;border-radius:50%;border:2px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">은</button>
-              <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:32px;height:32px;border-radius:50%;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">수</button>
-              <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:32px;height:32px;border-radius:50%;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">슬</button>
-            </div>
-          </div>
+          <!-- 메모 -->
+          <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
+            style="flex:1;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff;height:90px"
+            onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
         </div>
 
         <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%">📤 등록</button>
@@ -1771,7 +1766,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div id="cs-share-list"></div>
   </div>
 
-  <div class="subpage" id="work-sub-1" class="subpage active">
+  <div class="subpage" id="work-sub-2" class="subpage active">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f8f4ff,#ddd0f8)">🎨</div>
         <div><div class="subpage-title">디자인관리</div><div class="subpage-desc">타업체 바로가기 &amp; 디자인 카드 관리</div></div>
@@ -1858,7 +1853,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
     </div>
-  <div class="subpage" id="work-sub-4" class="subpage">
+  <div class="subpage" id="work-sub-3" class="subpage">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,#b2f0d0)">🛒</div>
         <div><div class="subpage-title">상품관리</div><div class="subpage-desc">판매 상품 목록 &amp; 상태 관리</div></div>
@@ -9047,12 +9042,12 @@ function initRender(pageId) {
 function workSwitchTab(idx, el) {
   document.querySelectorAll('.work-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3,#work-sub-4').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.subpage').forEach(s => s.classList.remove('active'));
   document.getElementById('work-sub-'+(idx+1)).classList.add('active');
   if (idx===0) setTimeout(function(){ renderCsShare&&renderCsShare(); }, 50);
-  if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); loadDesignCommentBox && loadDesignCommentBox(); }
-  if (idx===1) { renderProductMgmt && renderProductMgmt(); }
-  if (idx===2) { renderPhrases && renderPhrases(); }
+  if (idx===1) setTimeout(function(){ renderDesignLinks&&renderDesignLinks(); renderDesignCards&&renderDesignCards(); loadDesignCommentBox&&loadDesignCommentBox(); }, 50);
+  if (idx===2) setTimeout(function(){ renderProductMgmt&&renderProductMgmt(); }, 50);
+  if (idx===3) setTimeout(function(){ renderPhrases&&renderPhrases(); }, 50);
 }
 
 
@@ -9067,15 +9062,15 @@ var CS_AUTHOR_COLORS = {'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
 var CS_AUTHOR_TEXT = {'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
 
 function loadCsShare() { return loadObj('cs_share').list || []; }
-function saveCsShare(list) { stor('cs_share', {list}); }
+function saveCsShare(list) { stor('cs_share', {list:list}); }
 
 function setCsType(type) {
   _csShareType = type;
   document.querySelectorAll('.cs-type-btn').forEach(function(b) {
     var on = b.dataset.type === type;
-    var c = b.dataset.type === '' ? '#ccc' : (CS_TYPE_COLORS[b.dataset.type]||'#999');
+    var c = CS_TYPE_COLORS[b.dataset.type]||'#999';
     b.style.background = on ? c : 'white';
-    b.style.color = on ? 'white' : (b.dataset.type==='' ? '#999' : c);
+    b.style.color = on ? 'white' : c;
     b.style.borderColor = c;
   });
 }
@@ -9083,13 +9078,13 @@ function setCsAuthor(author) {
   _csShareAuthor = author;
   document.querySelectorAll('.cs-author-btn').forEach(function(b) {
     var on = b.dataset.author === author;
-    var bg = CS_AUTHOR_COLORS[b.dataset.author]||'#ddd';
-    var tc = CS_AUTHOR_TEXT[b.dataset.author]||'#333';
+    var bg = CS_AUTHOR_COLORS[b.dataset.author] || '#ddd';
+    var tc = CS_AUTHOR_TEXT[b.dataset.author] || '#333';
     b.style.background = on ? bg : 'white';
-    b.style.color = on ? tc : tc;
+    b.style.color = tc;
     b.style.borderColor = bg;
-    b.style.fontWeight = on ? '900' : '700';
-    b.style.transform = on ? 'scale(1.15)' : 'scale(1)';
+    b.style.boxShadow = on ? '0 0 0 3px '+bg+'66' : 'none';
+    b.style.transform = on ? 'scale(1.18)' : 'scale(1)';
   });
 }
 function setCsFilter(f, el) {
@@ -9103,7 +9098,26 @@ function setCsFilter(f, el) {
 }
 
 // 이미지 붙여넣기
+function csShowImgModal(src) {
+  var old = document.getElementById('cs-img-modal');
+  if (old) old.remove();
+  var m = document.createElement('div');
+  m.id = 'cs-img-modal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out';
+  m.onclick = function(){ m.remove(); };
+  var img = document.createElement('img');
+  img.src = src;
+  img.style.cssText = 'max-width:100%;max-height:90vh;border-radius:10px;object-fit:contain;cursor:default';
+  img.onclick = function(e){ e.stopPropagation(); };
+  m.appendChild(img);
+  document.body.appendChild(m);
+}
 function csImgClear() { _csShareImg=null; var p=document.getElementById("cs-img-preview"); if(p)p.innerHTML=""; var hint=document.getElementById("cs-img-hint"); if(hint){hint.style.display="";hint.textContent="📋 여기서 Ctrl+V로 이미지 붙여넣기";} }
+function csHandleFile(e) {
+  var f = e.target.files&&e.target.files[0];
+  if (f) csUploadImg(f);
+  e.target.value='';
+}
 function csHandlePaste(e) {
   var items = e.clipboardData&&e.clipboardData.items; if(!items) return;
   for (var i=0;i<items.length;i++) {
@@ -9187,7 +9201,7 @@ function renderCsShare() {
 
   el.innerHTML='';
   list.forEach(function(it) {
-    var tc = CS_TYPE_COLORS[it.type]||'#999';
+    var tc = it.type ? (CS_TYPE_COLORS[it.type]||'#999') : '#ddd';
     var ac = CS_AUTHOR_COLORS[it.author]||'#eee';
     var atc = CS_AUTHOR_TEXT[it.author]||'#333';
     var d = new Date(it.createdAt||it.id);
@@ -9213,10 +9227,13 @@ function renderCsShare() {
     var hdrRow = document.createElement('div');
     hdrRow.style.cssText = 'display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap';
 
-    // 유형 뱃지
-    var typeBadge = document.createElement('span');
-    typeBadge.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:2px 9px;font-size:.72rem;font-weight:800';
-    typeBadge.textContent = it.type||'문의';
+    // 유형 뱃지 (유형 있을 때만)
+    var typeBadge = null;
+    if (it.type) {
+      typeBadge = document.createElement('span');
+      typeBadge.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:2px 9px;font-size:.72rem;font-weight:800';
+      typeBadge.textContent = it.type;
+    }
 
     // 작성자 뱃지
     var authorBadge = document.createElement('span');
@@ -9251,7 +9268,7 @@ function renderCsShare() {
       chkWrap.appendChild(lbl);
     });
 
-    hdrRow.appendChild(typeBadge);
+    if(typeBadge) hdrRow.appendChild(typeBadge);
     hdrRow.appendChild(authorBadge);
     if(it.order){var os=document.createElement('span');os.style.cssText='font-size:.75rem;color:#888;font-weight:600';os.textContent='📦 '+it.order;hdrRow.appendChild(os);}
     hdrRow.appendChild(chkWrap);
@@ -9268,7 +9285,7 @@ function renderCsShare() {
       var imgEl = document.createElement('img');
       imgEl.src = it.img;
       imgEl.style.cssText = 'width:100%;max-height:280px;object-fit:contain;border-radius:8px;border:1.5px solid #e0e8ff;margin-bottom:8px;cursor:pointer;display:block';
-      imgEl.onclick = function(){ if(typeof openImgModal==='function') openImgModal(it.img); else window.open(it.img,'_blank'); };
+      imgEl.onclick = function(){ csShowImgModal(it.img); };
       content.appendChild(imgEl);
     }
 
@@ -9343,6 +9360,7 @@ function workSync() {
   document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3,#work-sub-4').forEach((s,i) => s.classList.toggle('active', i===0));
   renderCsShare && renderCsShare();
   renderCsShare && renderCsShare();
+  setTimeout(function(){ setCsAuthor&&setCsAuthor('은'); }, 100);
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
   loadDesignCommentBox && loadDesignCommentBox();
