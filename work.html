@@ -1715,37 +1715,43 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:12px">💬 CS 등록</div>
       <div style="display:flex;flex-direction:column;gap:8px">
 
-        <!-- 유형 + 작성자 한 줄 -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <div id="cs-type-btns" style="display:flex;gap:5px;flex-wrap:wrap">
-            <button type="button" onclick="setCsType('문의')" class="cs-type-btn" data-type="문의" style="padding:4px 11px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">💬 문의</button>
-            <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:4px 11px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.75rem;font-weight:700;cursor:pointer">🔄 교환</button>
-            <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:4px 11px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">↩️ 반품</button>
-            <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:4px 11px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">🚚 배송</button>
-            <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:4px 11px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.75rem;font-weight:700;cursor:pointer">📌 기타</button>
-          </div>
-          <!-- 작성자 -->
-          <div style="display:flex;gap:4px;margin-left:auto">
-            <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:30px;height:30px;border-radius:50%;border:2px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.78rem;font-weight:800;cursor:pointer">은</button>
-            <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:30px;height:30px;border-radius:50%;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.78rem;font-weight:800;cursor:pointer">수</button>
-            <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:30px;height:30px;border-radius:50%;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.78rem;font-weight:800;cursor:pointer">슬</button>
+        <!-- 유형선택 (선택사항) -->
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:.72rem;color:#aaa;flex-shrink:0">유형</span>
+          <div id="cs-type-btns" style="display:flex;gap:4px;flex-wrap:wrap">
+            <button type="button" onclick="setCsType('')" class="cs-type-btn" data-type="" style="padding:3px 10px;border-radius:14px;border:1.5px solid #ccc;background:white;color:#999;font-size:.72rem;font-weight:700;cursor:pointer">없음</button>
+            <button type="button" onclick="setCsType('문의')" class="cs-type-btn" data-type="문의" style="padding:3px 10px;border-radius:14px;border:1.5px solid #4a80d0;background:white;color:#4a80d0;font-size:.72rem;font-weight:700;cursor:pointer">💬 문의</button>
+            <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:3px 10px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.72rem;font-weight:700;cursor:pointer">🔄 교환</button>
+            <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:3px 10px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.72rem;font-weight:700;cursor:pointer">↩️ 반품</button>
+            <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:3px 10px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.72rem;font-weight:700;cursor:pointer">🚚 배송</button>
+            <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:3px 10px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.72rem;font-weight:700;cursor:pointer">📌 기타</button>
           </div>
         </div>
 
-        <!-- 이미지 붙여넣기 영역 + 미리보기 -->
-        <div id="cs-img-area" onpaste="csHandlePaste(event)" ondragover="event.preventDefault()" ondrop="csHandleDrop(event)"
-          style="border:2px dashed #b0c8f8;border-radius:10px;padding:12px;background:#f8fbff;cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;outline:none"
-          tabindex="0" onclick="this.focus()" title="클릭 후 Ctrl+V로 이미지 붙여넣기">
-          <span id="cs-img-hint" style="font-size:.8rem;color:#b0c0e0;pointer-events:none">📋 여기서 Ctrl+V로 이미지 붙여넣기</span>
-          <div id="cs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <!-- 이미지 + 메모 + 작성자 한 줄 -->
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <!-- 이미지 붙여넣기 -->
+          <div id="cs-img-area" onpaste="csHandlePaste(event)" ondragover="event.preventDefault()" ondrop="csHandleDrop(event)"
+            style="width:90px;min-height:90px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;outline:none;position:relative"
+            tabindex="0" onclick="this.focus()" title="클릭 후 Ctrl+V">
+            <div id="cs-img-preview" style="width:100%;height:100%;position:absolute;inset:0;border-radius:8px;overflow:hidden"></div>
+            <span id="cs-img-hint" style="font-size:.65rem;color:#b0c0e0;text-align:center;line-height:1.4;pointer-events:none;padding:4px;position:relative;z-index:1">📋<br>Ctrl+V</span>
+          </div>
+          <!-- 메모 + 작성자 -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+            <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
+              style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
+              onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
+            <!-- 작성자 (오른쪽) -->
+            <div style="display:flex;gap:5px;justify-content:flex-end;align-items:center">
+              <span style="font-size:.72rem;color:#aaa">작성자</span>
+              <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:32px;height:32px;border-radius:50%;border:2px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">은</button>
+              <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:32px;height:32px;border-radius:50%;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">수</button>
+              <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:32px;height:32px;border-radius:50%;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">슬</button>
+            </div>
+          </div>
         </div>
 
-        <!-- 주문번호 + 메모 -->
-        <input id="cs-share-order" type="text" placeholder="📦 주문번호 (선택)"
-          style="border:2px solid #b0c8f8;border-radius:8px;padding:7px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;width:100%;box-sizing:border-box">
-        <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
-          style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
-          onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
         <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%">📤 등록</button>
       </div>
     </div>
@@ -9051,7 +9057,7 @@ function workSwitchTab(idx, el) {
 
 
 /* ── CS 실시간 공유 ── */
-var _csShareType = '문의';
+var _csShareType = '';
 var _csShareFilter = '전체';
 var _csShareAuthor = '은';
 var _csShareImg = null; // Cloudinary URL
@@ -9067,9 +9073,10 @@ function setCsType(type) {
   _csShareType = type;
   document.querySelectorAll('.cs-type-btn').forEach(function(b) {
     var on = b.dataset.type === type;
-    var c = CS_TYPE_COLORS[b.dataset.type]||'#999';
+    var c = b.dataset.type === '' ? '#ccc' : (CS_TYPE_COLORS[b.dataset.type]||'#999');
     b.style.background = on ? c : 'white';
-    b.style.color = on ? 'white' : c;
+    b.style.color = on ? 'white' : (b.dataset.type==='' ? '#999' : c);
+    b.style.borderColor = c;
   });
 }
 function setCsAuthor(author) {
@@ -9135,7 +9142,7 @@ function csUploadImg(file) {
 function addCsShare() {
   var txt = (document.getElementById('cs-share-inp')||{}).value?.trim()||'';
   var order = (document.getElementById('cs-share-order')||{}).value?.trim()||'';
-  if (!txt && !_csShareImg) { toast('내용 또는 이미지를 입력해요'); return; }
+  if (!txt && !_csShareImg) { toast('내용 또는 이미지를 입력해요 💬'); return; }
   var list = loadCsShare();
   list.unshift({
     id: Date.now(), type:_csShareType, author:_csShareAuthor,
@@ -9230,10 +9237,15 @@ function renderCsShare() {
       chk.checked = confirmed.indexOf(name) !== -1;
       chk.onchange = (function(id, n, c){return function(){
         var lst=loadCsShare(); var item=lst.find(function(x){return x.id===id;});
-        if(item){item.confirmed=item.confirmed||[];var idx=item.confirmed.indexOf(n);
+        if(item){
+          item.confirmed=item.confirmed||[];
+          var idx=item.confirmed.indexOf(n);
           if(c.checked){if(idx===-1)item.confirmed.push(n);}else{if(idx!==-1)item.confirmed.splice(idx,1);}
+          // 작성자 제외 나머지 모두 체크 → 자동 완료
+          var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});
+          item.done = others.length>0 && others.every(function(x){return item.confirmed.indexOf(x)!==-1;});
         }
-        saveCsShare(lst);
+        saveCsShare(lst); renderCsShare();
       };})(it.id, name, chk);
       lbl.appendChild(chk); lbl.appendChild(document.createTextNode(name));
       chkWrap.appendChild(lbl);
