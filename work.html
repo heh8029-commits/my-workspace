@@ -1698,8 +1698,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:0;flex-wrap:wrap">
     <div onclick="workSync()" title="동기화" style="width:32px;height:32px;border-radius:50%;background:white;border:2px solid #b090e8;display:flex;align-items:center;justify-content:center;font-size:.97rem;cursor:pointer;transition:all .15s;box-shadow:0 2px 5px rgba(160,120,240,.2);flex-shrink:0" onmouseover="this.style.background='#f5eeff';this.style.transform='scale(1.1)'" onmouseout="this.style.background='white';this.style.transform='scale(1)'">🔄</div>
     <div class="work-tabs" style="margin-bottom:0;flex:1">
-    <button class="work-tab" onclick="workSwitchTab(0,this)">💬 CS실시간공유</button>
-    <button class="work-tab active" onclick="workSwitchTab(1,this)">🎨 디자인관리</button>
+    <button class="work-tab active" onclick="workSwitchTab(0,this)">💬 CS실시간공유</button>
+    <button class="work-tab" onclick="workSwitchTab(1,this)">🎨 디자인관리</button>
     <button class="work-tab" onclick="workSwitchTab(2,this)">🛒 상품관리</button>
     <button class="work-tab" onclick="workSwitchTab(3,this)">✍️ 문구추천리스트</button>
   </div>
@@ -1708,7 +1708,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
   <!-- 콘텐츠 -->
   <!-- CS실시간공유 -->
-  <div class="subpage" id="work-sub-1">
+  <div class="subpage active" id="work-sub-1">
     <!-- 입력 -->
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
       <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:10px">💬 CS 내용 공유</div>
@@ -1743,7 +1743,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div id="cs-share-list"></div>
   </div>
 
-  <div class="subpage" id="work-sub-2" class="subpage active">
+  <div class="subpage" id="work-sub-1" class="subpage active">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f8f4ff,#ddd0f8)">🎨</div>
         <div><div class="subpage-title">디자인관리</div><div class="subpage-desc">타업체 바로가기 &amp; 디자인 카드 관리</div></div>
@@ -9184,9 +9184,10 @@ function workSync() {
 
 // 초기 렌더
 (function() {
-  // 첫 탭 active 확실히
+  // 첫 탭(CS) active 확실히
   document.querySelectorAll('.work-tab').forEach((t,i) => t.classList.toggle('active', i===0));
-  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3').forEach((s,i) => s.classList.toggle('active', i===0));
+  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3,#work-sub-4').forEach((s,i) => s.classList.toggle('active', i===0));
+  renderCsShare && renderCsShare();
   renderCsShare && renderCsShare();
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
