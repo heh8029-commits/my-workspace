@@ -9069,8 +9069,12 @@ function setCsAuthor(author) {
   var TC_ON  = {'은':'white',   '수':'white',   '슬':'white'};
   var TC_OFF = {'은':'#c04070', '수':'#4a80d0', '슬':'#3dbb8f'};
   var BD     = {'은':'#f7a8c0', '수':'#a0c8f8', '슬':'#b0e8c0'};
-  document.querySelectorAll('.cs-author-btn').forEach(function(b) {
+  // 입력 폼 안에 있는 버튼만 대상 (카드 내부 버튼과 혼동 방지)
+  var container = document.querySelector('#work-sub-1 .card');
+  var btns = container ? container.querySelectorAll('.cs-author-btn') : document.querySelectorAll('.cs-author-btn');
+  btns.forEach(function(b) {
     var a = b.getAttribute('data-author');
+    if (!a || !BG_ON[a]) return; // data-author 없는 버튼 스킵
     var on = a === author;
     b.style.background  = on ? BG_ON[a]  : BG_OFF[a];
     b.style.color       = on ? TC_ON[a]  : TC_OFF[a];
@@ -9271,9 +9275,12 @@ function renderCsShare() {
 
   el.innerHTML='';
   list.forEach(function(it) {
-    var tc = it.type ? (CS_TYPE_COLORS[it.type]||'#999') : '#ddd';
-    var ac = CS_AUTHOR_COLORS[it.author]||'#eee';
-    var atc = CS_AUTHOR_TEXT[it.author]||'#333';
+    var _tCols={'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#999'};
+    var tc = it.type ? (_tCols[it.type]||'#999') : '#ddd';
+    var _aCols={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+    var _aTcols={'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+    var ac = _aCols[it.author]||'#eee';
+    var atc = _aTcols[it.author]||'#333';
     var d = new Date(it.createdAt||it.id);
     var hh = d.getHours(); var mm = d.getMinutes();
     var ampm = hh < 12 ? '오전' : '오후';
@@ -9371,8 +9378,10 @@ function renderCsShare() {
     var replies = it.replies||[];
     replies.forEach(function(r) {
       var rDiv = document.createElement('div');
-      var rac = CS_AUTHOR_COLORS[r.author]||'#eee';
-      var ratc = CS_AUTHOR_TEXT[r.author]||'#333';
+      var _raCols={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+      var _raTcols={'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+      var rac = _raCols[r.author]||'#eee';
+      var ratc = _raTcols[r.author]||'#333';
       rDiv.style.cssText = 'display:flex;gap:7px;align-items:flex-start;padding:6px 8px;background:#f4f8ff;border-radius:8px;margin-bottom:5px';
       var rAuthor = document.createElement('span');
       rAuthor.style.cssText = 'width:22px;height:22px;border-radius:50%;background:'+rac+';color:'+ratc+';font-size:.68rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px';
