@@ -9312,24 +9312,19 @@ function csHandleDrop(e) {
   if (files) Array.from(files).forEach(function(f){ if(f.type.startsWith('image/')) csUploadImg(f); });
 }
 function csUploadImg(file) {
-  var hint = document.getElementById('cs-img-hint');
-  if (hint) hint.textContent = '⬆️ 업로드 중...';
-  var fd = new FormData(); fd.append('file',file); fd.append('upload_preset','hwx2iwfz');
-  fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
-    .then(function(r){return r.json();})
-    .then(function(data){
+  toast('⬆️ 업로드 중...');
+  var fd = new FormData(); fd.append('file', file); fd.append('upload_preset','hwx2iwfz');
+  fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload', {method:'POST', body:fd})
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
       if (data.secure_url) {
-        _csShareImg = data.secure_url;
-        var prev = document.getElementById('cs-img-preview');
-        if (hint) hint.style.display='none';
-        if (prev) prev.innerHTML = '<div style="position:relative;display:inline-block">'
-          +'<img src="'+data.secure_url+'" style="height:80px;width:auto;border-radius:8px;border:2px solid #b0c8f8;object-fit:cover">'
-          +'<button type="button" onclick="csImgClear()" '
-          +'style="position:absolute;top:-6px;right:-6px;background:#e03c6e;border:none;border-radius:50%;width:20px;height:20px;color:white;font-size:.7rem;cursor:pointer;font-weight:700">✕</button>'
-          +'</div>';
-        toast('✅ 이미지 업로드 완료');
+        _csShareImgs.push(data.secure_url);
+        renderCsImgPreview();
+        toast('✅ 이미지 추가 (' + _csShareImgs.length + '장)');
+      } else {
+        toast('❌ 업로드 실패');
       }
-    }).catch(function(){if(hint){hint.textContent='❌ 업로드 실패';hint.style.display='';}});
+    }).catch(function(){ toast('❌ 업로드 오류'); });
 }
 
 function addCsShare() {
@@ -9350,7 +9345,7 @@ function addCsShare() {
   toast('📤 등록됐어요!');
   // 렌더는 별도로 (에러나도 저장은 완료)
   setTimeout(function() {
-    try { renderCsShare(); } catch(e) { console.error('renderCsShare:', e); }
+    try { renderCsShare(); } catch(e) { console.error('renderCsShare:', e); toast('렌더 오류: '+e.message); }
   }, 50);
 }
 function toggleCsShareDone(id) {
@@ -9372,6 +9367,7 @@ function addCsReply(id) {
 }
 
 function renderCsShare() {
+  try {
   var el=document.getElementById('cs-share-list'); if(!el) return;
   var list=loadCsShare();
   var kw=((document.getElementById('cs-share-search')||{}).value||'').trim().toLowerCase();
@@ -9568,6 +9564,7 @@ function renderCsShare() {
     card.appendChild(inner);
     el.appendChild(card);
   });
+  } catch(e) { console.error("renderCsShare 에러:", e.message, e); toast && toast("렌더 오류: "+e.message); }
 }
 
 function workSync() {
