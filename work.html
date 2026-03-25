@@ -2133,6 +2133,11 @@ async function syncFromSheet() {
     // 항상 렌더 (F5든 수동이든 동일하게)
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
+    // work 탭 렌더 (syncFromSheet 수동 호출 시)
+    renderDesignLinks && renderDesignLinks();
+    renderDesignCards && renderDesignCards();
+    renderProductMgmt && renderProductMgmt();
+    renderPhrases && renderPhrases();
     // subpage 복원
     const ls = localStorage.getItem('ws_sub_'+cp);
     if (ls !== null && cp === 'menu5') renderMenu5 && renderMenu5(parseInt(ls));
@@ -8948,6 +8953,11 @@ function initRender(pageId) {
   syncFromSheet().then(function() {
     const lastSub = localStorage.getItem('ws_sub_'+savedTab);
     if (lastSub !== null && savedTab === 'menu5') renderMenu5 && renderMenu5(parseInt(lastSub));
+    // work 탭 렌더
+    renderDesignLinks && renderDesignLinks();
+    renderDesignCards && renderDesignCards();
+    renderProductMgmt && renderProductMgmt();
+    renderPhrases && renderPhrases();
     setTimeout(function() {
       loadDesignCommentBox && loadDesignCommentBox();
       loadInvMemoBox && loadInvMemoBox();
@@ -8980,25 +8990,8 @@ function workSwitchTab(idx, el) {
   if (idx===2) { renderPhrases && renderPhrases(); }
 }
 
-async function workSync() {
-  toast('🔄 동기화 중...');
-  try {
-    const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
-    const all = await res.json();
-    if (!all) { toast('✅ 최신 상태예요!'); return; }
-    const keys = ['design_links','design_cards','design_comments','product_mgmt','phrase_list'];
-    keys.forEach(k => {
-      if (all[k] !== undefined) localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
-    });
-    // 현재 탭 렌더
-    const activeTab = document.querySelector('.work-tab.active');
-    const tabs = [...document.querySelectorAll('.work-tab')];
-    const idx = tabs.indexOf(activeTab);
-    if (idx===0) { renderDesignLinks && renderDesignLinks(); renderDesignCards && renderDesignCards(); loadDesignCommentBox && loadDesignCommentBox(); }
-    if (idx===1) { renderProductMgmt && renderProductMgmt(); }
-    if (idx===2) { renderPhrases && renderPhrases(); }
-    toast('✅ 동기화 완료!');
-  } catch(e) { toast('❌ 동기화 실패: ' + e.message); }
+function workSync() {
+  return syncFromSheet();
 }
 
 // 초기 렌더
