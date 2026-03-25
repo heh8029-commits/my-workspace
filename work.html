@@ -1709,34 +1709,56 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <!-- 콘텐츠 -->
   <!-- CS실시간공유 -->
   <div class="subpage active" id="work-sub-1">
-    <!-- 입력 -->
+
+    <!-- 입력 폼 -->
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
-      <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:10px">💬 CS 내용 공유</div>
+      <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:12px">💬 CS 등록</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <!-- 유형 선택 -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap" id="cs-type-btns">
-          <button type="button" onclick="setCsType('문의')" class="cs-type-btn active" data-type="문의" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.78rem;font-weight:700;cursor:pointer">💬 문의</button>
-          <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:4px 12px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.78rem;font-weight:700;cursor:pointer">🔄 교환</button>
-          <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.78rem;font-weight:700;cursor:pointer">↩️ 반품</button>
-          <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.78rem;font-weight:700;cursor:pointer">🚚 배송</button>
-          <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:4px 12px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.78rem;font-weight:700;cursor:pointer">📌 기타</button>
+
+        <!-- 유형 + 작성자 한 줄 -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <div id="cs-type-btns" style="display:flex;gap:5px;flex-wrap:wrap">
+            <button type="button" onclick="setCsType('문의')" class="cs-type-btn" data-type="문의" style="padding:4px 11px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">💬 문의</button>
+            <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:4px 11px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.75rem;font-weight:700;cursor:pointer">🔄 교환</button>
+            <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:4px 11px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">↩️ 반품</button>
+            <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:4px 11px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">🚚 배송</button>
+            <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:4px 11px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.75rem;font-weight:700;cursor:pointer">📌 기타</button>
+          </div>
+          <!-- 작성자 -->
+          <div style="display:flex;gap:4px;margin-left:auto">
+            <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:30px;height:30px;border-radius:50%;border:2px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.78rem;font-weight:800;cursor:pointer">은</button>
+            <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:30px;height:30px;border-radius:50%;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.78rem;font-weight:800;cursor:pointer">수</button>
+            <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:30px;height:30px;border-radius:50%;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.78rem;font-weight:800;cursor:pointer">슬</button>
+          </div>
         </div>
-        <textarea id="cs-share-inp" rows="4" placeholder="CS 내용을 입력해요... (고객문의, 교환/반품 요청, 배송문의 등)" style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
-        <div style="display:flex;align-items:center;gap:8px">
-          <input id="cs-share-order" type="text" placeholder="주문번호 (선택)" style="flex:1;border:2px solid #b0c8f8;border-radius:8px;padding:7px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none">
-          <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:9px 20px;color:white;font-weight:700;font-size:.88rem;cursor:pointer;flex-shrink:0">📤 공유</button>
+
+        <!-- 이미지 붙여넣기 영역 + 미리보기 -->
+        <div id="cs-img-area" onpaste="csHandlePaste(event)" ondragover="event.preventDefault()" ondrop="csHandleDrop(event)"
+          style="border:2px dashed #b0c8f8;border-radius:10px;padding:12px;background:#f8fbff;cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;outline:none"
+          tabindex="0" onclick="this.focus()" title="클릭 후 Ctrl+V로 이미지 붙여넣기">
+          <span id="cs-img-hint" style="font-size:.8rem;color:#b0c0e0;pointer-events:none">📋 여기서 Ctrl+V로 이미지 붙여넣기</span>
+          <div id="cs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         </div>
+
+        <!-- 주문번호 + 메모 -->
+        <input id="cs-share-order" type="text" placeholder="📦 주문번호 (선택)"
+          style="border:2px solid #b0c8f8;border-radius:8px;padding:7px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;width:100%;box-sizing:border-box">
+        <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
+          style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
+          onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
+        <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%">📤 등록</button>
       </div>
     </div>
 
-    <!-- 검색 + 필터 -->
-    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
-      <input id="cs-share-search" type="text" placeholder="🔍 검색..." oninput="renderCsShare()" style="flex:1;min-width:120px;border:1.5px solid #d0dff8;border-radius:20px;padding:6px 14px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
-      <div style="display:flex;gap:5px;flex-wrap:wrap">
-        <button onclick="setCsFilter('전체',this)" class="cs-filter-btn active" style="padding:3px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
-        <button onclick="setCsFilter('미완료',this)" class="cs-filter-btn" style="padding:3px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
-        <button onclick="setCsFilter('완료',this)" class="cs-filter-btn" style="padding:3px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+    <!-- 필터 + 검색 -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;gap:5px">
+        <button onclick="setCsFilter('전체',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
+        <button onclick="setCsFilter('미완료',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
+        <button onclick="setCsFilter('완료',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
       </div>
+      <input id="cs-share-search" type="text" placeholder="🔍 검색..." oninput="renderCsShare()"
+        style="flex:1;min-width:100px;border:1.5px solid #d0dff8;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
     </div>
 
     <!-- 목록 -->
@@ -9031,6 +9053,12 @@ function workSwitchTab(idx, el) {
 /* ── CS 실시간 공유 ── */
 var _csShareType = '문의';
 var _csShareFilter = '전체';
+var _csShareAuthor = '은';
+var _csShareImg = null; // Cloudinary URL
+
+var CS_TYPE_COLORS = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#999'};
+var CS_AUTHOR_COLORS = {'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+var CS_AUTHOR_TEXT = {'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
 
 function loadCsShare() { return loadObj('cs_share').list || []; }
 function saveCsShare(list) { stor('cs_share', {list}); }
@@ -9039,35 +9067,93 @@ function setCsType(type) {
   _csShareType = type;
   document.querySelectorAll('.cs-type-btn').forEach(function(b) {
     var on = b.dataset.type === type;
-    var colors = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#aaa'};
-    var c = colors[b.dataset.type] || '#aaa';
+    var c = CS_TYPE_COLORS[b.dataset.type]||'#999';
     b.style.background = on ? c : 'white';
     b.style.color = on ? 'white' : c;
   });
 }
+function setCsAuthor(author) {
+  _csShareAuthor = author;
+  document.querySelectorAll('.cs-author-btn').forEach(function(b) {
+    var on = b.dataset.author === author;
+    var bg = CS_AUTHOR_COLORS[b.dataset.author]||'#ddd';
+    var tc = CS_AUTHOR_TEXT[b.dataset.author]||'#333';
+    b.style.background = on ? bg : 'white';
+    b.style.color = on ? tc : tc;
+    b.style.borderColor = bg;
+    b.style.fontWeight = on ? '900' : '700';
+    b.style.transform = on ? 'scale(1.15)' : 'scale(1)';
+  });
+}
 function setCsFilter(f, el) {
   _csShareFilter = f;
-  document.querySelectorAll('.cs-filter-btn').forEach(function(b) { b.classList.remove('active'); b.style.background='white'; });
-  if (el) { el.classList.add('active'); el.style.background=el.style.borderColor||'#4a80d0'; el.style.color='white'; }
+  document.querySelectorAll('.cs-filter-btn').forEach(function(b){
+    b.style.background='white';
+    b.style.color=b.style.borderColor||'#333';
+  });
+  if (el) { el.style.background=el.style.borderColor; el.style.color='white'; }
   renderCsShare();
 }
+
+// 이미지 붙여넣기
+function csImgClear() { _csShareImg=null; var p=document.getElementById("cs-img-preview"); if(p)p.innerHTML=""; var hint=document.getElementById("cs-img-hint"); if(hint){hint.style.display="";hint.textContent="📋 여기서 Ctrl+V로 이미지 붙여넣기";} }
+function csHandlePaste(e) {
+  var items = e.clipboardData&&e.clipboardData.items; if(!items) return;
+  for (var i=0;i<items.length;i++) {
+    if (items[i].type.startsWith('image/')) {
+      e.preventDefault();
+      csUploadImg(items[i].getAsFile()); return;
+    }
+  }
+}
+function csHandleDrop(e) {
+  e.preventDefault();
+  var f = e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) csUploadImg(f);
+}
+function csUploadImg(file) {
+  var hint = document.getElementById('cs-img-hint');
+  if (hint) hint.textContent = '⬆️ 업로드 중...';
+  var fd = new FormData(); fd.append('file',file); fd.append('upload_preset','hwx2iwfz');
+  fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if (data.secure_url) {
+        _csShareImg = data.secure_url;
+        var prev = document.getElementById('cs-img-preview');
+        if (hint) hint.style.display='none';
+        if (prev) prev.innerHTML = '<div style="position:relative;display:inline-block">'
+          +'<img src="'+data.secure_url+'" style="height:80px;width:auto;border-radius:8px;border:2px solid #b0c8f8;object-fit:cover">'
+          +'<button type="button" onclick="csImgClear()" '
+          +'style="position:absolute;top:-6px;right:-6px;background:#e03c6e;border:none;border-radius:50%;width:20px;height:20px;color:white;font-size:.7rem;cursor:pointer;font-weight:700">✕</button>'
+          +'</div>';
+        toast('✅ 이미지 업로드 완료');
+      }
+    }).catch(function(){if(hint){hint.textContent='❌ 업로드 실패';hint.style.display='';}});
+}
+
 function addCsShare() {
   var txt = (document.getElementById('cs-share-inp')||{}).value?.trim()||'';
   var order = (document.getElementById('cs-share-order')||{}).value?.trim()||'';
-  if (!txt) { toast('CS 내용을 입력해요'); return; }
+  if (!txt && !_csShareImg) { toast('내용 또는 이미지를 입력해요'); return; }
   var list = loadCsShare();
-  list.unshift({ id:Date.now(), type:_csShareType, text:txt, order:order, done:false, createdAt:Date.now(), replies:[] });
+  list.unshift({
+    id: Date.now(), type:_csShareType, author:_csShareAuthor,
+    text:txt, order:order, img:_csShareImg||'',
+    done:false, createdAt:Date.now(), replies:[]
+  });
   saveCsShare(list);
-  var inp = document.getElementById('cs-share-inp'); if(inp) inp.value='';
-  var ord = document.getElementById('cs-share-order'); if(ord) ord.value='';
-  renderCsShare();
-  toast('📤 공유됐어요!');
+  // 초기화
+  var inp=document.getElementById('cs-share-inp'); if(inp) inp.value='';
+  var ord=document.getElementById('cs-share-order'); if(ord) ord.value='';
+  var prev=document.getElementById('cs-img-preview'); if(prev) prev.innerHTML='';
+  var hint=document.getElementById('cs-img-hint'); if(hint){hint.style.display='';hint.textContent='📋 여기서 Ctrl+V로 이미지 붙여넣기';}
+  _csShareImg=null;
+  renderCsShare(); toast('📤 등록됐어요!');
 }
 function toggleCsShareDone(id) {
-  var list = loadCsShare();
-  var it = list.find(function(x){return x.id===id;});
-  if (it) it.done = !it.done;
-  saveCsShare(list); renderCsShare();
+  var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
+  if(it) it.done=!it.done; saveCsShare(list); renderCsShare();
 }
 function delCsShare(id) {
   confirmDel('이 CS 항목', function(){
@@ -9076,104 +9162,160 @@ function delCsShare(id) {
   });
 }
 function addCsReply(id) {
-  var inp = document.getElementById('cs-reply-inp-'+id);
-  if (!inp || !inp.value.trim()) return;
-  var list = loadCsShare();
-  var it = list.find(function(x){return x.id===id;});
-  if (it) {
-    it.replies = it.replies || [];
-    it.replies.push({ id:Date.now(), text:inp.value.trim(), createdAt:Date.now() });
-  }
+  var inp=document.getElementById('cs-reply-inp-'+id);
+  if(!inp||!inp.value.trim()) return;
+  var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
+  if(it){it.replies=it.replies||[];it.replies.push({id:Date.now(),text:inp.value.trim(),author:_csShareAuthor,createdAt:Date.now()});}
   saveCsShare(list); inp.value=''; renderCsShare();
 }
 
 function renderCsShare() {
-  var el = document.getElementById('cs-share-list'); if(!el) return;
-  var list = loadCsShare();
-  var kw = ((document.getElementById('cs-share-search')||{}).value||'').trim().toLowerCase();
-  if (kw) list = list.filter(function(it){ return (it.text||'').toLowerCase().includes(kw)||(it.order||'').toLowerCase().includes(kw); });
-  if (_csShareFilter==='미완료') list = list.filter(function(it){return !it.done;});
-  if (_csShareFilter==='완료')   list = list.filter(function(it){return it.done;});
-  if (!list.length) { el.innerHTML='<div style="text-align:center;color:#bbb;padding:30px;font-size:.88rem">CS 내용을 공유해요 💬</div>'; return; }
-
-  var TYPE_COLORS = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#aaa'};
-  var TYPE_BG = {'문의':'#f0f4ff','교환':'#fff8e8','반품':'#fff0f4','배송':'#f0fff8','기타':'#f8f8f8'};
+  var el=document.getElementById('cs-share-list'); if(!el) return;
+  var list=loadCsShare();
+  var kw=((document.getElementById('cs-share-search')||{}).value||'').trim().toLowerCase();
+  if(kw) list=list.filter(function(it){return (it.text||'').toLowerCase().includes(kw)||(it.order||'').toLowerCase().includes(kw);});
+  if(_csShareFilter==='미완료') list=list.filter(function(it){return !it.done;});
+  if(_csShareFilter==='완료')   list=list.filter(function(it){return it.done;});
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;padding:40px;font-size:.88rem">CS 내용을 등록해요 💬</div>';return;}
 
   el.innerHTML='';
   list.forEach(function(it) {
-    var color = TYPE_COLORS[it.type]||'#aaa';
-    var bg = TYPE_BG[it.type]||'#fafafa';
-    var card = document.createElement('div');
-    card.style.cssText = 'background:'+(it.done?'#f8f8f8':'white')+';border:1.5px solid '+(it.done?'#ddd':color)+';border-left:4px solid '+color+';border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:all .15s;opacity:'+(it.done?'0.6':'1');
-
-    // 헤더
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap';
-    // 유형 뱃지
-    var badge = document.createElement('span');
-    badge.style.cssText = 'background:'+color+';color:white;border-radius:10px;padding:2px 9px;font-size:.72rem;font-weight:800;flex-shrink:0';
-    badge.textContent = it.type||'문의';
-    // 주문번호
-    var orderSpan = document.createElement('span');
-    orderSpan.style.cssText = 'font-size:.75rem;color:#888;font-weight:600';
-    orderSpan.textContent = it.order ? '📦 '+it.order : '';
-    // 시간
-    var timeSpan = document.createElement('span');
-    timeSpan.style.cssText = 'font-size:.7rem;color:#bbb;margin-left:auto';
+    var tc = CS_TYPE_COLORS[it.type]||'#999';
+    var ac = CS_AUTHOR_COLORS[it.author]||'#eee';
+    var atc = CS_AUTHOR_TEXT[it.author]||'#333';
     var d = new Date(it.createdAt||it.id);
-    timeSpan.textContent = (d.getMonth()+1)+'/'+d.getDate()+' '+(d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
-    hdr.appendChild(badge); if(it.order) hdr.appendChild(orderSpan); hdr.appendChild(timeSpan);
+    var hh = d.getHours(); var mm = d.getMinutes();
+    var ampm = hh < 12 ? '오전' : '오후';
+    var hh12 = hh%12||12;
+    var timeStr = (d.getMonth()+1)+'/'+d.getDate()+' ('+['일','월','화','수','목','금','토'][d.getDay()]+') '+ampm+' '+hh12+':'+(mm<10?'0':'')+mm;
 
-    // 본문
-    var body = document.createElement('div');
-    body.style.cssText = 'font-size:.88rem;color:'+(it.done?'#aaa':'#222')+';line-height:1.7;white-space:pre-wrap;word-break:break-all;margin-bottom:8px';
-    body.textContent = it.text||'';
+    var card = document.createElement('div');
+    card.style.cssText = 'background:'+(it.done?'#f5f5f5':'white')+';border:1.5px solid '+(it.done?'#e0e0e0':tc)+';border-radius:12px;margin-bottom:10px;overflow:hidden;opacity:'+(it.done?'0.65':'1');
+
+    // ── 왼쪽 사이드바 (유형색) ──
+    var inner = document.createElement('div');
+    inner.style.cssText = 'display:flex;gap:0';
+
+    var sidebar = document.createElement('div');
+    sidebar.style.cssText = 'width:5px;background:'+tc+';flex-shrink:0;border-radius:12px 0 0 12px';
+
+    var content = document.createElement('div');
+    content.style.cssText = 'flex:1;padding:12px 14px;min-width:0';
+
+    // 헤더 행
+    var hdrRow = document.createElement('div');
+    hdrRow.style.cssText = 'display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap';
+
+    // 유형 뱃지
+    var typeBadge = document.createElement('span');
+    typeBadge.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:2px 9px;font-size:.72rem;font-weight:800';
+    typeBadge.textContent = it.type||'문의';
+
+    // 작성자 뱃지
+    var authorBadge = document.createElement('span');
+    authorBadge.style.cssText = 'width:24px;height:24px;border-radius:50%;background:'+ac+';color:'+atc+';font-size:.72rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0';
+    authorBadge.textContent = it.author||'?';
+
+    // 작성자제외 체크박스들
+    var chkWrap = document.createElement('div');
+    chkWrap.style.cssText = 'display:flex;gap:5px;align-items:center;margin-left:auto';
+    ['은','수','슬'].forEach(function(name) {
+      if (name === (it.author||'')) return; // 작성자 제외
+      var lbl = document.createElement('label');
+      lbl.style.cssText = 'display:flex;align-items:center;gap:3px;cursor:pointer;font-size:.72rem;font-weight:700;color:'+CS_AUTHOR_TEXT[name];
+      var chk = document.createElement('input'); chk.type='checkbox';
+      chk.style.cssText = 'width:15px;height:15px;accent-color:'+CS_AUTHOR_COLORS[name]+';cursor:pointer';
+      // 이미 체크된 상태
+      var confirmed = it.confirmed||[];
+      chk.checked = confirmed.indexOf(name) !== -1;
+      chk.onchange = (function(id, n, c){return function(){
+        var lst=loadCsShare(); var item=lst.find(function(x){return x.id===id;});
+        if(item){item.confirmed=item.confirmed||[];var idx=item.confirmed.indexOf(n);
+          if(c.checked){if(idx===-1)item.confirmed.push(n);}else{if(idx!==-1)item.confirmed.splice(idx,1);}
+        }
+        saveCsShare(lst);
+      };})(it.id, name, chk);
+      lbl.appendChild(chk); lbl.appendChild(document.createTextNode(name));
+      chkWrap.appendChild(lbl);
+    });
+
+    hdrRow.appendChild(typeBadge);
+    hdrRow.appendChild(authorBadge);
+    if(it.order){var os=document.createElement('span');os.style.cssText='font-size:.75rem;color:#888;font-weight:600';os.textContent='📦 '+it.order;hdrRow.appendChild(os);}
+    hdrRow.appendChild(chkWrap);
+    content.appendChild(hdrRow);
+
+    // 날짜/시간
+    var timeDiv = document.createElement('div');
+    timeDiv.style.cssText = 'font-size:.7rem;color:#bbb;margin-bottom:8px';
+    timeDiv.textContent = timeStr;
+    content.appendChild(timeDiv);
+
+    // 이미지 (있을 때만)
+    if (it.img) {
+      var imgEl = document.createElement('img');
+      imgEl.src = it.img;
+      imgEl.style.cssText = 'width:100%;max-height:280px;object-fit:contain;border-radius:8px;border:1.5px solid #e0e8ff;margin-bottom:8px;cursor:pointer;display:block';
+      imgEl.onclick = function(){ if(typeof openImgModal==='function') openImgModal(it.img); else window.open(it.img,'_blank'); };
+      content.appendChild(imgEl);
+    }
+
+    // 메모 (있을 때만)
+    if (it.text) {
+      var memo = document.createElement('div');
+      memo.style.cssText = 'font-size:1rem;font-weight:600;color:'+(it.done?'#aaa':'#1a1a2e')+';line-height:1.8;white-space:pre-wrap;word-break:break-all;margin-bottom:10px';
+      memo.textContent = it.text;
+      content.appendChild(memo);
+    }
 
     // 답변들
     var replies = it.replies||[];
-    if (replies.length) {
-      replies.forEach(function(r) {
-        var rDiv = document.createElement('div');
-        rDiv.style.cssText = 'background:#f8f9ff;border-left:3px solid #b0c8f8;border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:.82rem;color:#333;line-height:1.6';
-        rDiv.textContent = '↪ ' + r.text;
-        body.appendChild(rDiv);
-      });
-    }
+    replies.forEach(function(r) {
+      var rDiv = document.createElement('div');
+      var rac = CS_AUTHOR_COLORS[r.author]||'#eee';
+      var ratc = CS_AUTHOR_TEXT[r.author]||'#333';
+      rDiv.style.cssText = 'display:flex;gap:7px;align-items:flex-start;padding:6px 8px;background:#f4f8ff;border-radius:8px;margin-bottom:5px';
+      var rAuthor = document.createElement('span');
+      rAuthor.style.cssText = 'width:22px;height:22px;border-radius:50%;background:'+rac+';color:'+ratc+';font-size:.68rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px';
+      rAuthor.textContent = r.author||'?';
+      var rTxt = document.createElement('span');
+      rTxt.style.cssText = 'font-size:.85rem;color:#333;line-height:1.6;flex:1';
+      rTxt.textContent = r.text;
+      rDiv.appendChild(rAuthor); rDiv.appendChild(rTxt);
+      content.appendChild(rDiv);
+    });
 
     // 답변 입력
     var replyRow = document.createElement('div');
-    replyRow.style.cssText = 'display:flex;gap:6px;margin-bottom:8px';
+    replyRow.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;margin-top:4px';
     var replyInp = document.createElement('input');
-    replyInp.id = 'cs-reply-inp-'+it.id;
-    replyInp.type='text'; replyInp.placeholder='답변 메모 추가...';
-    replyInp.style.cssText = 'flex:1;border:1.5px solid #d0dff8;border-radius:7px;padding:5px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none';
-    replyInp.onkeydown = (function(id){return function(e){if(e.key==='Enter')addCsReply(id);};})(it.id);
-    var replyBtn = document.createElement('button');
-    replyBtn.textContent='↪'; replyBtn.type='button';
+    replyInp.id='cs-reply-inp-'+it.id; replyInp.type='text'; replyInp.placeholder='답변 메모...';
+    replyInp.style.cssText='flex:1;border:1.5px solid #d0dff8;border-radius:7px;padding:5px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none';
+    replyInp.onkeydown=(function(id){return function(e){if(e.key==='Enter')addCsReply(id);};})(it.id);
+    var replyBtn=document.createElement('button'); replyBtn.textContent='↪'; replyBtn.type='button';
     replyBtn.style.cssText='background:linear-gradient(135deg,#b0c8f8,#4a80d0);border:none;border-radius:7px;padding:5px 12px;color:white;font-weight:700;cursor:pointer';
     replyBtn.onclick=(function(id){return function(){addCsReply(id);};})(it.id);
     replyRow.appendChild(replyInp); replyRow.appendChild(replyBtn);
+    content.appendChild(replyRow);
 
-    // 액션 버튼
-    var acts = document.createElement('div');
-    acts.style.cssText = 'display:flex;gap:6px;align-items:center';
-    var doneBtn = document.createElement('button');
-    doneBtn.textContent = it.done ? '↺ 미완료로' : '✅ 완료';
-    doneBtn.style.cssText = 'padding:4px 12px;border-radius:8px;border:1.5px solid '+(it.done?'#bbb':'#3dbb8f')+';background:'+(it.done?'white':'#3dbb8f')+';color:'+(it.done?'#aaa':'white')+';font-size:.78rem;font-weight:700;cursor:pointer';
+    // 액션
+    var acts=document.createElement('div'); acts.style.cssText='display:flex;gap:6px;align-items:center';
+    var doneBtn=document.createElement('button');
+    doneBtn.textContent=it.done?'↺ 미완료':'✅ 완료';
+    doneBtn.style.cssText='padding:4px 12px;border-radius:8px;border:1.5px solid '+(it.done?'#bbb':'#3dbb8f')+';background:'+(it.done?'white':'#3dbb8f')+';color:'+(it.done?'#aaa':'white')+';font-size:.78rem;font-weight:700;cursor:pointer';
     doneBtn.onclick=(function(id){return function(){toggleCsShareDone(id);};})(it.id);
-    var copyBtn = document.createElement('button');
-    copyBtn.textContent='📋 복사'; copyBtn.type='button';
-    copyBtn.style.cssText='padding:4px 10px;border-radius:8px;border:1.5px solid #b0c8f8;background:white;color:#4a80d0;font-size:.78rem;font-weight:700;cursor:pointer';
+    var copyBtn=document.createElement('button'); copyBtn.textContent='📋'; copyBtn.type='button';
+    copyBtn.style.cssText='padding:4px 10px;border-radius:8px;border:1.5px solid #b0c8f8;background:white;color:#4a80d0;font-size:.8rem;cursor:pointer';
     copyBtn.onclick=(function(text){return function(){navigator.clipboard.writeText(text).then(function(){toast('📋 복사됐어요!');});};})(it.text||'');
-    var delBtn = document.createElement('button');
-    delBtn.textContent='🗑️'; delBtn.type='button';
-    delBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;margin-left:auto;font-weight:700';
-    delBtn.onmouseover=function(){this.style.color='#e03c6e';};
-    delBtn.onmouseout=function(){this.style.color='#ddd';};
+    var delBtn=document.createElement('button'); delBtn.textContent='🗑️'; delBtn.type='button';
+    delBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.88rem;margin-left:auto';
+    delBtn.onmouseover=function(){this.style.color='#e03c6e';}; delBtn.onmouseout=function(){this.style.color='#ddd';};
     delBtn.onclick=(function(id){return function(){delCsShare(id);};})(it.id);
     acts.appendChild(doneBtn); acts.appendChild(copyBtn); acts.appendChild(delBtn);
+    content.appendChild(acts);
 
-    card.appendChild(hdr); card.appendChild(body); card.appendChild(replyRow); card.appendChild(acts);
+    inner.appendChild(sidebar); inner.appendChild(content);
+    card.appendChild(inner);
     el.appendChild(card);
   });
 }
