@@ -3980,14 +3980,17 @@ function startFbStream() {
     _fbStream.addEventListener('put', function(e) {
       try {
         var d = JSON.parse(e.data);
-        var data = d.path === '/' ? d.data : null;
-        if (data) {
-          var now = Date.now();
-          // 300ms 쓰로틀 (자기 자신이 방금 저장한 건 무시)
-          if (now - _fbLastSyncTs < 500) return;
-          _fbApplyData(data);
-          clearTimeout(_fbSyncThrottle);
-          _fbSyncThrottle = setTimeout(_fbRender, 200);
+        var now = Date.now();
+        if (now - _fbLastSyncTs < 500) return;
+        if (d.path === '/') {
+          if (d.data) { _fbApplyData(d.data); clearTimeout(_fbSyncThrottle); _fbSyncThrottle = setTimeout(_fbRender, 200); }
+        } else if (d.path && d.path.length > 1 && d.data !== null) {
+          var key = d.path.replace(/^\//, '').split('/')[0];
+          if (key) {
+            localStorage.setItem('ws5_'+key, JSON.stringify(d.data));
+            clearTimeout(_fbSyncThrottle);
+            _fbSyncThrottle = setTimeout(_fbRender, 200);
+          }
         }
       } catch(err) { console.log('SSE parse err', err); }
     });
