@@ -2125,31 +2125,26 @@ async function syncFromSheet() {
       }
     }
     // 메모리 데이터 갱신
-    ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
-    const wd = loadObj('week');
-    WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
-    Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
-    recipeDB.data = load('recipe');
+    if (typeof flowData !== 'undefined') ['boss','basic','design'].forEach(t => { flowData[t] = load(t+'_flow'); });
+    if (typeof WEEKDAYS !== 'undefined' && typeof weekData !== 'undefined') {
+      const wd = loadObj('week');
+      WEEKDAYS.forEach(d => { weekData[d] = wd[d] || []; });
+    }
+    if (typeof DBS !== 'undefined') Object.keys(DBS).forEach(k => { DBS[k].data = load(k); });
+    if (typeof recipeDB !== 'undefined') recipeDB.data = load('recipe');
     // 항상 렌더 (F5든 수동이든 동일하게)
     const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
     initRender(cp);
-    // work 탭 렌더 (syncFromSheet 수동 호출 시)
-    renderDesignLinks && renderDesignLinks();
-    renderDesignCards && renderDesignCards();
-    renderProductMgmt && renderProductMgmt();
-    renderPhrases && renderPhrases();
-    // subpage 복원
-    const ls = localStorage.getItem('ws_sub_'+cp);
-    if (ls !== null && cp === 'menu5') renderMenu5 && renderMenu5(parseInt(ls));
-    // 메모박스 강제 로드 (textarea는 initRender 후 DOM에 있음)
+    // work 탭 렌더
     setTimeout(function() {
+      renderDesignLinks && renderDesignLinks();
+      renderDesignCards && renderDesignCards();
       loadDesignCommentBox && loadDesignCommentBox();
+      renderProductMgmt && renderProductMgmt();
+      renderPhrases && renderPhrases();
+      renderCti && renderCti();
       loadInvMemoBox && loadInvMemoBox();
-      loadAssetPlan && loadAssetPlan();
-      loadAssetLoan && loadAssetLoan();
-      loadAutotxMemoBox && loadAutotxMemoBox();
-      loadInvestMemoBox && loadInvestMemoBox();
-    }, 50);
+    }, 100);
     updateTodaySchedBar && updateTodaySchedBar();
     toast('✅ 동기화 완료!');
   } catch(e) {
