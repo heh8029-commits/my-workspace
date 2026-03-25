@@ -1892,6 +1892,69 @@ function confirmDel(msg, onConfirm) {
   setTimeout(function(){ okBtn.focus(); }, 50);
 }
 
+function _cleanLocalStorageBase64() {
+  var cleaned = 0;
+  for (var i = localStorage.length - 1; i >= 0; i--) {
+    var key = localStorage.key(i);
+    if (!key || !key.startsWith('ws5_')) continue;
+    try {
+      var val = localStorage.getItem(key);
+      if (!val || val.indexOf('data:image') === -1) continue;
+      var obj = JSON.parse(val);
+      var changed = false;
+      function cleanObj(item) {
+        if (!item || typeof item !== 'object') return;
+        ['img','mainImg','imgs','refImgs'].forEach(function(f) {
+          if (typeof item[f] === 'string' && item[f].startsWith('data:image')) { item[f]=''; changed=true; }
+          if (Array.isArray(item[f])) { item[f]=item[f].filter(function(u){return u&&!u.startsWith('data:image');}); changed=true; }
+        });
+      }
+      if (Array.isArray(obj)) obj.forEach(cleanObj);
+      if (obj && obj.list) obj.list.forEach(cleanObj);
+      if (changed) { localStorage.setItem(key, JSON.stringify(obj)); cleaned++; }
+    } catch(err) {}
+  }
+  if (cleaned > 0) { console.log('🧹 base64 자동 정리:', cleaned+'개 키'); }
+}
+
+function _cleanFirebaseBase64(all, keys) {
+  // Firebase 데이터에서 base64 발견 시 Cloudinary 없이 그냥 제거 후 재업로드
+  if (!all || !keys) return;
+  keys.forEach(function(k) {
+    var val = all[k];
+    if (!val) return;
+    var str = JSON.stringify(val);
+    if (str.indexOf('data:image') === -1) return; // base64 없으면 스킵
+    // base64 제거
+    function cleanItem(item) {
+      if (!item || typeof item !== 'object') return false;
+      var changed = false;
+      ['img','mainImg','imgs','refImgs'].forEach(function(f) {
+        if (typeof item[f] === 'string' && item[f].startsWith('data:image')) { item[f]=''; changed=true; }
+        if (Array.isArray(item[f])) {
+          var before = item[f].length;
+          item[f] = item[f].filter(function(u){ return u && !u.startsWith('data:image'); });
+          if (item[f].length !== before) changed = true;
+        }
+      });
+      return changed;
+    }
+    var changed = false;
+    if (Array.isArray(val)) val.forEach(function(it){ if(cleanItem(it)) changed=true; });
+    if (val && val.list) val.list.forEach(function(it){ if(cleanItem(it)) changed=true; });
+    if (changed) {
+      // Firebase에 정리된 버전 재업로드
+      fetch(FB_URL + '/' + k + '.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(val)
+      }).then(function(){ console.log('🧹 Firebase base64 정리:', k); })
+        .catch(function(){});
+      localStorage.setItem('ws5_'+k, JSON.stringify(val));
+    }
+  });
+}
+
 function load(k) {
   try {
     const v = localStorage.getItem('ws5_'+k);
@@ -1914,7 +1977,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -1976,16 +2039,15 @@ function startFbStream() {
   }
 }
 
-// stor에 타임스탬프 기록 (자기 저장 후 SSE 무시용)
-var _origStor = stor;
 function stor(k, v) {
   _fbLastSyncTs = Date.now();
   try {
     localStorage.setItem('ws5_'+k, JSON.stringify(v));
   } catch(e) {
-    if (e.name === 'QuotaExceededError') {
-      toast('⚠️ 저장공간이 부족해요! 이미지를 줄여주세요');
-      console.warn('QuotaExceeded:', k);
+    if (e.name === 'QuotaExceededError' || (e.message && e.message.includes('quota'))) {
+      _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
+      try { localStorage.setItem('ws5_'+k, JSON.stringify(v)); }
+      catch(e2) { console.warn('stor quota 초과:', k); }
     }
   }
   fetch(FB_URL + '/' + k + '.json', {
@@ -1999,11 +2061,11 @@ function stor(k, v) {
 function _startAutoSync() {
   setInterval(async function() {
     try {
+      _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
       var res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) return;
       var all = await res.json();
       _fbApplyData(all);
-      // 현재 페이지만 조용히 리렌더 (토스트 없이)
       const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
       if (typeof initRender === 'function') initRender(cp);
     } catch(e) {}
@@ -2014,7 +2076,7 @@ function _startAutoSync() {
 
 
 // Firebase에서 전체 데이터 불러오기
-async function _fixHeaderOffset() {
+function _fixHeaderOffset() {
   var hdr = document.getElementById('sticky-header');
   if (!hdr) return;
   function apply() {
@@ -2038,7 +2100,7 @@ async function _fixHeaderOffset() {
   apply();
 }
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','shop_list','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2052,9 +2114,14 @@ async function syncFromSheet() {
     if (!all) { toast('🎀 최신 데이터예요!'); return; }
     // 고정 키 + sales_ 로 시작하는 키 모두 저장
     const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
+    _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
     for (const k of allKeys) {
       if (all[k] !== undefined && all[k] !== null) {
-        localStorage.setItem('ws5_'+k, JSON.stringify(all[k]));
+        try { localStorage.setItem('ws5_'+k, JSON.stringify(all[k])); }
+        catch(qe) {
+          _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
+          try { localStorage.setItem('ws5_'+k, JSON.stringify(all[k])); } catch(e2) {}
+        }
       }
     }
     // 메모리 데이터 갱신
@@ -8874,6 +8941,7 @@ function initRender(pageId) {
   const mn = document.getElementById('msubnav-'+savedTab);
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
+  _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
