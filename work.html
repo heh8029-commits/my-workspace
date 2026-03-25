@@ -1692,17 +1692,18 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
     <div style="font-size:1.3rem;font-weight:800;color:#7040c0">🎀 미리제작소</div>
     <div style="font-size:.8rem;color:#aaa">디자인관리 · 상품관리 · 문구추천리스트</div>
-    <div style="margin-left:auto;display:flex;gap:6px">
-      <button onclick="workSync()" style="background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:10px;padding:7px 16px;color:white;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif">🔄 동기화</button>
-    </div>
   </div>
 
-  <!-- 탭 -->
-  <div class="work-tabs">
+  <!-- 탭 + 동기화 버튼 -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:0;flex-wrap:wrap">
+    <div onclick="workSync()" title="동기화" style="width:32px;height:32px;border-radius:50%;background:white;border:2px solid #b090e8;display:flex;align-items:center;justify-content:center;font-size:.97rem;cursor:pointer;transition:all .15s;box-shadow:0 2px 5px rgba(160,120,240,.2);flex-shrink:0" onmouseover="this.style.background='#f5eeff';this.style.transform='scale(1.1)'" onmouseout="this.style.background='white';this.style.transform='scale(1)'">🔄</div>
+    <div class="work-tabs" style="margin-bottom:0;flex:1">
     <button class="work-tab active" onclick="workSwitchTab(0,this)">🎨 디자인관리</button>
     <button class="work-tab" onclick="workSwitchTab(1,this)">🛒 상품관리</button>
     <button class="work-tab" onclick="workSwitchTab(2,this)">✍️ 문구추천리스트</button>
   </div>
+  </div>
+  <div style="margin-bottom:16px"></div>
 
   <!-- 콘텐츠 -->
   <div class="subpage" id="work-sub-1" class="subpage active">
