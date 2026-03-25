@@ -2226,7 +2226,7 @@ function compressImg(dataUrl, cb) {
 
 // ── FLOW 데이터 ──
 // 기본업무순서 시간 슬롯 (오전10시~오후9시)
-const FLOW_TIME_SLOTS = [
+var FLOW_TIME_SLOTS = [
   {val:'10:00',label:'오전10시~11시'},{val:'11:00',label:'오전11시~12시'},
   {val:'12:00',label:'오후12시~1시'},{val:'13:00',label:'오후1시~2시'},
   {val:'14:00',label:'오후2시~3시'},{val:'15:00',label:'오후3시~4시'},
@@ -2242,7 +2242,7 @@ function isFlowTimeNow(val) {
   const startH = parseInt(val.split(':')[0]);
   return nowMin >= startH*60 && nowMin < (startH+1)*60;
 }
-const flowData = {
+var flowData = {
   boss:   load('boss_flow'),
   basic:  load('basic_flow'),
   design: load('design_flow'),
@@ -2394,7 +2394,7 @@ function flowDrop(e, type, targetId) {
 }
 
 // ── 요일 박스 ──
-const WEEKDAYS = ['월','화','수','목','금'];
+var WEEKDAYS = ['월','화','수','목','금'];
 const weekData = loadObj('week');
 // weekData 구조: { 월:[{id,text,done},...], 화:... }
 WEEKDAYS.forEach(d => { if (!weekData[d]) weekData[d] = []; });
@@ -2461,7 +2461,7 @@ function makeListDB(key) {
   };
 }
 
-const DBS = {
+var DBS = {
   todo:  makeListDB('todo'),
   sched: makeListDB('sched'),
   memo:  makeListDB('memo'),
@@ -2703,7 +2703,7 @@ function initDrag(container, key) {
   window[key+'Edit']   = (id,v) => { DBS[key].edit(id,v); rerender(key); };
 });
 
-const renderCfg = {
+var renderCfg = {
   todo:  ['todo-list',  '',        '할 일을 추가해요 🌸'],
   sched: ['sched-list', 'mint-it', '일정을 추가해요 🗓️'],
   memo:  ['memo-list',  'ylw-it',  '메모를 추가해요 📝'],
@@ -3074,9 +3074,9 @@ function renderShortcuts(data) {
 
 let orderFilter = -1; // -1=전체
 
-const ORDER_STATUS_LABELS = ['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'];
-const ORDER_STATUS_COLORS = ['#8060e0','#4da6e8','#3dbb8f','#e8648a'];
-const ORDER_STATUS_BG    = ['#f0eeff','#e8f4ff','#e8fff6','#fff0f5'];
+var ORDER_STATUS_LABELS = ['🎨 디자인예정','👀 시안보여줌','✅ 승인출고작업','🎉 완료'];
+var ORDER_STATUS_COLORS = ['#8060e0','#4da6e8','#3dbb8f','#e8648a'];
+var ORDER_STATUS_BG    = ['#f0eeff','#e8f4ff','#e8fff6','#fff0f5'];
 
 function renderOrderCountBar() {
   const data = loadOrder();
@@ -3441,7 +3441,7 @@ renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb
 // ══════════════════════════════════════════
 
 // 탭: 2024년 12월 ~ 현재월 (매 실행 시 동적 생성)
-const PNL_PERIODS = (function() {
+var PNL_PERIODS = (function() {
   const list = [];
   let y = 2026, m = 3;
   while (y < 2027 || (y === 2027 && m <= 12)) {
@@ -3764,7 +3764,7 @@ function pnlNoteAdd() {
 
 // 월급 기간: 매월 11일~다음달 10일
 // 탭 라벨: 2025년2월(25.2.11~3.10) ... 2026년4월(26.4.11~5.10)
-const STAFF_PERIODS = (function() {
+var STAFF_PERIODS = (function() {
   const list = [];
   // 2025년 2월 ~ 2026년 4월 (15개)
   const months = [
@@ -4102,13 +4102,13 @@ function updateTodaySchedBar() {
 
 
 // ── 중요체크리스트 3열 메모 ──
-const IMP_LISTS = {
+var IMP_LISTS = {
   offline: { key:'imp_offline', listId:'offline-list', inpId:'offline-inp', catId:'offline-cat', empty:'구매 항목을 추가해요 🛒' },
   online:  { key:'imp_online',  listId:'online-list',  inpId:'online-inp',  catId:null,           empty:'납부 항목을 추가해요 💸' },
   mino:    { key:'imp_mino',    listId:'mino-list',    inpId:'mino-inp',    catId:null,           empty:'할 일을 추가해요 🐱' },
   check:   { key:'imp_check2',  listId:'check-list',   inpId:'check-inp',   catId:null,           empty:'체크할 것을 추가해요 ✅' },
 };
-const CAT_STYLES = {
+var CAT_STYLES = {
   daiso:   { label:'다이소',  border:'#e03030', bg:'#fff0f0', text:'#c02020' },
   coupang: { label:'쿠팡',    border:'#2060e0', bg:'#f0f4ff', text:'#1040c0' },
   naver:   { label:'네이버',  border:'#1a9a40', bg:'#f0fff4', text:'#0a7030' },
@@ -7981,7 +7981,7 @@ function initTaxMemoDrag(container) {
   });
 }
 
-const TAX_KEYS = ['tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income'];
+var TAX_KEYS = ['tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income'];
 
 function loadTaxList(key) {
   try { return JSON.parse(localStorage.getItem('ws5_'+key)||'[]'); } catch { return []; }
@@ -8294,9 +8294,9 @@ document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classLi
 
 // ── PWA 서비스워커 등록 ──
 // ── 매출/광고비 ──
-const SALES_MONTHS = ['3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','1월','2월'];
-const SALES_MONTH_NUMS = [3,4,5,6,7,8,9,10,11,12,1,2];
-const WEEK_KO = ['일','월','화','수','목','금','토'];
+var SALES_MONTHS = ['3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','1월','2월'];
+var SALES_MONTH_NUMS = [3,4,5,6,7,8,9,10,11,12,1,2];
+var WEEK_KO = ['일','월','화','수','목','금','토'];
 let salesCurrentMonth = 3;
 let salesCurrentYear = 2026;
 
@@ -8606,7 +8606,7 @@ function renderSales() {
 // ══════════════════════════════════════════
 // ⏰ 그로스 시간별 매출
 // ══════════════════════════════════════════
-const HOURLY_SLOTS = [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
+var HOURLY_SLOTS = [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
 const HOURLY_SLOT_LABELS = HOURLY_SLOTS.map(h => {
   if (h < 12) return `오전${h}시`;
   if (h === 12) return `오후12시`;
@@ -9056,7 +9056,8 @@ function setCsType(type) {
   _csShareType = type;
   document.querySelectorAll('.cs-type-btn').forEach(function(b) {
     var on = b.dataset.type === type;
-    var c = CS_TYPE_COLORS[b.dataset.type]||'#999';
+    var _tc2={'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#999'};
+    var c = _tc2[b.dataset.type]||'#999';
     b.style.background = on ? c : 'white';
     b.style.color = on ? 'white' : c;
     b.style.borderColor = c;
@@ -9223,28 +9224,27 @@ function csUploadImg(file) {
 }
 
 function addCsShare() {
-  try {
-    var inpEl = document.getElementById('cs-share-inp');
-    var txt = inpEl ? inpEl.value.trim() : '';
-    if (!txt && !_csShareImg) { toast('내용 또는 이미지를 입력해요 💬'); return; }
-    var list = loadCsShare();
-    list.unshift({
-      id: Date.now(), type: _csShareType||'', author: _csShareAuthor||'은',
-      text: txt, img: _csShareImg||'',
-      done: false, createdAt: Date.now(), replies: [], confirmed: []
-    });
-    saveCsShare(list);
-    if (inpEl) inpEl.value = '';
-    var prev = document.getElementById('cs-img-preview'); if (prev) prev.innerHTML = '';
-    var hint = document.getElementById('cs-img-hint');
-    if (hint) { hint.style.display = ''; hint.textContent = '🖼️ 이미지'; }
-    _csShareImg = null;
-    renderCsShare();
-    toast('📤 등록됐어요!');
-  } catch(e) {
-    toast('❌ 오류: ' + e.message);
-    console.error('addCsShare 에러:', e);
-  }
+  var inpEl = document.getElementById('cs-share-inp');
+  var txt = inpEl ? inpEl.value.trim() : '';
+  if (!txt && !_csShareImg) { toast('내용 또는 이미지를 입력해요 💬'); return; }
+  var list = loadCsShare();
+  list.unshift({
+    id: Date.now(), type: _csShareType||'', author: _csShareAuthor||'은',
+    text: txt, img: _csShareImg||'',
+    done: false, createdAt: Date.now(), replies: [], confirmed: []
+  });
+  saveCsShare(list);
+  // 입력 초기화
+  if (inpEl) inpEl.value = '';
+  var prev = document.getElementById('cs-img-preview'); if (prev) prev.innerHTML = '';
+  var hint = document.getElementById('cs-img-hint');
+  if (hint) { hint.style.display = ''; hint.textContent = '🖼️ 이미지'; }
+  _csShareImg = null;
+  toast('📤 등록됐어요!');
+  // 렌더는 별도로 (에러나도 저장은 완료)
+  setTimeout(function() {
+    try { renderCsShare(); } catch(e) { console.error('renderCsShare:', e); }
+  }, 50);
 }
 function toggleCsShareDone(id) {
   var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
@@ -9320,12 +9320,14 @@ function renderCsShare() {
     // 작성자제외 체크박스들
     var chkWrap = document.createElement('div');
     chkWrap.style.cssText = 'display:flex;gap:5px;align-items:center;margin-left:auto';
+    var _chkTC={'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+    var _chkAC={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
     ['은','수','슬'].forEach(function(name) {
       if (name === (it.author||'')) return; // 작성자 제외
       var lbl = document.createElement('label');
-      lbl.style.cssText = 'display:flex;align-items:center;gap:3px;cursor:pointer;font-size:.72rem;font-weight:700;color:'+CS_AUTHOR_TEXT[name];
+      lbl.style.cssText = 'display:flex;align-items:center;gap:3px;cursor:pointer;font-size:.72rem;font-weight:700;color:'+(_chkTC[name]||'#333');
       var chk = document.createElement('input'); chk.type='checkbox';
-      chk.style.cssText = 'width:15px;height:15px;accent-color:'+CS_AUTHOR_COLORS[name]+';cursor:pointer';
+      chk.style.cssText = 'width:15px;height:15px;accent-color:'+(_chkAC[name]||'#ccc')+';cursor:pointer';
       // 이미 체크된 상태
       var confirmed = it.confirmed||[];
       chk.checked = confirmed.indexOf(name) !== -1;
