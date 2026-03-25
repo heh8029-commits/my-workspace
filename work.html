@@ -1712,43 +1712,29 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
     <!-- 입력 폼 -->
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
-      <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:12px">💬 CS 등록</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-
-        <!-- 유형선택 + 작성자 한 줄 -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <div id="cs-type-btns" style="display:flex;gap:4px;flex-wrap:wrap;flex:1">
-            <button type="button" onclick="setCsType('문의')" class="cs-type-btn" data-type="문의" style="padding:3px 10px;border-radius:14px;border:1.5px solid #4a80d0;background:white;color:#4a80d0;font-size:.72rem;font-weight:700;cursor:pointer">💬 문의</button>
-            <button type="button" onclick="setCsType('교환')" class="cs-type-btn" data-type="교환" style="padding:3px 10px;border-radius:14px;border:1.5px solid #f0a000;background:white;color:#f0a000;font-size:.72rem;font-weight:700;cursor:pointer">🔄 교환</button>
-            <button type="button" onclick="setCsType('반품')" class="cs-type-btn" data-type="반품" style="padding:3px 10px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.72rem;font-weight:700;cursor:pointer">↩️ 반품</button>
-            <button type="button" onclick="setCsType('배송')" class="cs-type-btn" data-type="배송" style="padding:3px 10px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.72rem;font-weight:700;cursor:pointer">🚚 배송</button>
-            <button type="button" onclick="setCsType('기타')" class="cs-type-btn" data-type="기타" style="padding:3px 10px;border-radius:14px;border:1.5px solid #aaa;background:white;color:#888;font-size:.72rem;font-weight:700;cursor:pointer">📌 기타</button>
-          </div>
-          <!-- 작성자 -->
-          <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-            <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:32px;height:32px;border-radius:50%;border:2px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">은</button>
-            <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:32px;height:32px;border-radius:50%;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">수</button>
-            <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:32px;height:32px;border-radius:50%;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .1s">슬</button>
-          </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
+        <!-- 은수슬 왼쪽 상단 -->
+        <div style="display:flex;gap:5px;align-items:center;margin-left:8px">
+          <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(247,168,192,.4)">은</button>
+          <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:white;color:#4a80d0;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
+          <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
         </div>
-
-        <!-- 이미지 + 메모 -->
-        <div style="display:flex;gap:8px;align-items:flex-start">
-          <!-- 이미지 붙여넣기 -->
-          <div id="cs-img-area" onpaste="csHandlePaste(event)" ondragover="event.preventDefault()" ondrop="csHandleDrop(event)"
-            style="width:90px;min-height:90px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;outline:none;position:relative"
-            tabindex="0" onclick="this.focus()" title="클릭 후 Ctrl+V">
-            <div id="cs-img-preview" style="width:100%;height:100%;position:absolute;inset:0;border-radius:8px;overflow:hidden"></div>
-            <span id="cs-img-hint" style="font-size:.65rem;color:#b0c0e0;text-align:center;line-height:1.4;pointer-events:none;padding:4px;position:relative;z-index:1">📋<br>Ctrl+V</span>
-          </div>
-          <!-- 메모 -->
-          <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
-            style="flex:1;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff;height:90px"
-            onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
-        </div>
-
-        <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%">📤 등록</button>
       </div>
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <!-- 이미지: 클릭하면 선택 모달 -->
+        <input type="file" id="cs-file-inp" accept="image/*" style="display:none" onchange="csHandleFile(event)">
+        <div id="cs-img-area" onclick="csImgModalOpen()" onpaste="csHandlePaste(event)" tabindex="0"
+          style="width:90px;height:90px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none;position:relative;overflow:hidden">
+          <div id="cs-img-preview" style="position:absolute;inset:0;border-radius:8px;overflow:hidden;pointer-events:none"></div>
+          <span id="cs-img-hint" style="font-size:.65rem;color:#b0c0e0;text-align:center;line-height:1.6;padding:4px;position:relative;z-index:1">🖼️<br>이미지</span>
+        </div>
+        <!-- 메모 -->
+        <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
+          style="flex:1;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff;height:90px"
+          onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
+      </div>
+      <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
     </div>
 
     <!-- 필터 + 검색 -->
@@ -4105,7 +4091,7 @@ function updateTodaySchedBar() {
 
   const expData = loadExp ? (loadExp() || []) : [];
   const todayExps = expData.filter(function(r){
-    return parseInt((r.day||'').match(/\d+/)?.[0]||'0') === d;
+    return parseInt(((r.day||'').match(/\d+/)||['0'])[0]) === d;
   });
 
   const parts = [];
@@ -7175,7 +7161,7 @@ function renderCal() {
   // 날짜별 맵 (item 필드 사용)
   const expMap = {};
   expData.forEach(function(r) {
-    const d = parseInt((r.day || '').match(/\d+/)?.[0] || '0');
+    const d = parseInt(((r.day||'').match(/\d+/)||['0'])[0]);
     if (d > 0 && d <= 31) {
       if (!expMap[d]) expMap[d] = [];
       expMap[d].push(r);
@@ -7296,7 +7282,7 @@ function calRenderDayDetail() {
     return sy===calYear && sm===calMonth && sd===d;
   });
   const dayExps = expData.filter(function(r) {
-    return parseInt((r.day||'').match(/\d+/)?.[0]||'0') === d;
+    return parseInt(((r.day||'').match(/\d+/)||['0'])[0]) === d;
   });
 
   let html = '<div style="font-size:.88rem;font-weight:700;color:#c0205a;margin-bottom:10px">'
@@ -8115,8 +8101,8 @@ function renderExp() {
   let data = loadExp();
   // 날짜 오름차순 정렬 — "10일", "2일", "10" 등 숫자만 추출해서 정수 비교
   data = [...data].sort((a,b) => {
-    const na = parseInt((a.day||'').match(/\d+/)?.[0] || '0');
-    const nb = parseInt((b.day||'').match(/\d+/)?.[0] || '0');
+    const na = parseInt(((a.day||'').match(/\d+/)||['0'])[0]);
+    const nb = parseInt(((b.day||'').match(/\d+/)||['0'])[0]);
     return na - nb;
   });
   const filtered = currentBankFilter !== '전체'
@@ -8873,8 +8859,10 @@ function updateFabVisibility() {
   const sc1 = load('shortcuts');
   const sc2 = load('shortcuts2');
   const hasAny = (sc1 && sc1.length) || (sc2 && sc2.length);
-  const isHome = document.getElementById('home-tab')?.classList.contains('active')
-    || document.querySelector('.tab.active')?.getAttribute('onclick')?.includes('home');
+  var homeTabEl = document.getElementById('home-tab');
+  var activeTabEl = document.querySelector('.tab.active');
+  const isHome = (homeTabEl && homeTabEl.classList.contains('active'))
+    || (activeTabEl && activeTabEl.getAttribute('onclick') && activeTabEl.getAttribute('onclick').includes('home'));
   // 홈탭이면 숨기기 (이미 홈에 있으니까), 바로가기 없으면 숨기기
   btn.style.display = (!hasAny) ? 'none' : 'flex';
   btn.style.alignItems = 'center';
@@ -9076,15 +9064,18 @@ function setCsType(type) {
 }
 function setCsAuthor(author) {
   _csShareAuthor = author;
+  var COLS = {'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var TCOLS = {'은':'white','수':'#4a80d0','슬':'#3dbb8f'};
   document.querySelectorAll('.cs-author-btn').forEach(function(b) {
-    var on = b.dataset.author === author;
-    var bg = CS_AUTHOR_COLORS[b.dataset.author] || '#ddd';
-    var tc = CS_AUTHOR_TEXT[b.dataset.author] || '#333';
+    var a = b.getAttribute('data-author');
+    var on = a === author;
+    var bg = COLS[a] || '#ddd';
+    b.style.cssText = b.style.cssText.replace(/background:[^;]+;/,'');
     b.style.background = on ? bg : 'white';
-    b.style.color = tc;
+    b.style.color = on ? (TCOLS[a]||'white') : (TCOLS[a]||'#333');
     b.style.borderColor = bg;
-    b.style.boxShadow = on ? '0 0 0 3px '+bg+'66' : 'none';
-    b.style.transform = on ? 'scale(1.18)' : 'scale(1)';
+    b.style.boxShadow = on ? '0 0 0 4px '+bg+'55' : 'none';
+    b.style.transform = on ? 'scale(1.2)' : 'scale(1)';
   });
 }
 function setCsFilter(f, el) {
@@ -9098,18 +9089,84 @@ function setCsFilter(f, el) {
 }
 
 // 이미지 붙여넣기
+// 이미지 선택 모달 (취소 / 이미지첨부 / 클립보드)
+function csImgModalOpen() {
+  if (_csShareImg) { csShowImgModal(_csShareImg); return; } // 이미지 있으면 크게 보기
+  var old = document.getElementById('cs-img-pick-modal');
+  if (old) old.remove();
+  var m = document.createElement('div');
+  m.id = 'cs-img-pick-modal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+  m.onclick = function(e){ if(e.target===m) m.remove(); };
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:18px;padding:24px 20px;width:100%;max-width:280px;font-family:Pretendard,sans-serif;display:flex;flex-direction:column;gap:10px';
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:.95rem;font-weight:800;color:#1050a0;margin-bottom:4px;text-align:center';
+  title.textContent = '🖼️ 이미지 추가';
+
+  // 클립보드 붙이기
+  var clipBtn = document.createElement('button');
+  clipBtn.textContent = '📋 클립보드 붙이기 (Ctrl+V)';
+  clipBtn.style.cssText = 'padding:12px;background:linear-gradient(135deg,#e8f0ff,#b0c8f8);border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:#1050a0;cursor:pointer;font-family:Pretendard,sans-serif;text-align:left';
+  clipBtn.onclick = function() {
+    m.remove();
+    // clipboard API
+    if (navigator.clipboard && navigator.clipboard.read) {
+      navigator.clipboard.read().then(function(items) {
+        for (var i=0; i<items.length; i++) {
+          for (var j=0; j<items[i].types.length; j++) {
+            if (items[i].types[j].startsWith('image/')) {
+              items[i].getType(items[i].types[j]).then(function(blob){csUploadImg(blob);});
+              return;
+            }
+          }
+        }
+        toast('클립보드에 이미지가 없어요');
+      }).catch(function(){ toast('클립보드 접근 실패 — Ctrl+V로 직접 붙여넣어요'); });
+    } else {
+      // 폴백: 이미지 영역 focus 후 Ctrl+V 유도
+      var area = document.getElementById('cs-img-area');
+      if (area) area.focus();
+      toast('이미지 영역을 클릭 후 Ctrl+V로 붙여넣어요');
+    }
+  };
+
+  // 파일 첨부
+  var fileBtn = document.createElement('button');
+  fileBtn.textContent = '📁 이미지 파일 첨부';
+  fileBtn.style.cssText = 'padding:12px;background:linear-gradient(135deg,#f0fff8,#b2e8d4);border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:#1a7a50;cursor:pointer;font-family:Pretendard,sans-serif;text-align:left';
+  fileBtn.onclick = function() { m.remove(); document.getElementById('cs-file-inp').click(); };
+
+  // 취소
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '취소';
+  cancelBtn.style.cssText = 'padding:10px;background:#f0f0f0;border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif';
+  cancelBtn.onclick = function() { m.remove(); };
+
+  box.appendChild(title); box.appendChild(clipBtn); box.appendChild(fileBtn); box.appendChild(cancelBtn);
+  m.appendChild(box);
+  document.body.appendChild(m);
+}
+
 function csShowImgModal(src) {
   var old = document.getElementById('cs-img-modal');
   if (old) old.remove();
   var m = document.createElement('div');
   m.id = 'cs-img-modal';
-  m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out';
+  m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out';
   m.onclick = function(){ m.remove(); };
   var img = document.createElement('img');
   img.src = src;
   img.style.cssText = 'max-width:100%;max-height:90vh;border-radius:10px;object-fit:contain;cursor:default';
   img.onclick = function(e){ e.stopPropagation(); };
-  m.appendChild(img);
+  // 삭제 버튼
+  var del = document.createElement('button');
+  del.textContent = '🗑️ 이미지 삭제';
+  del.style.cssText = 'position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(220,60,80,.9);border:none;border-radius:10px;padding:8px 20px;color:white;font-weight:700;cursor:pointer;font-size:.88rem';
+  del.onclick = function(e){ e.stopPropagation(); m.remove(); csImgClear(); };
+  m.appendChild(img); m.appendChild(del);
   document.body.appendChild(m);
 }
 function csImgClear() { _csShareImg=null; var p=document.getElementById("cs-img-preview"); if(p)p.innerHTML=""; var hint=document.getElementById("cs-img-hint"); if(hint){hint.style.display="";hint.textContent="📋 여기서 Ctrl+V로 이미지 붙여넣기";} }
@@ -9154,23 +9211,24 @@ function csUploadImg(file) {
 }
 
 function addCsShare() {
-  var txt = (document.getElementById('cs-share-inp')||{}).value?.trim()||'';
-  var order = (document.getElementById('cs-share-order')||{}).value?.trim()||'';
+  var inpEl = document.getElementById('cs-share-inp');
+  var txt = inpEl ? inpEl.value.trim() : '';
   if (!txt && !_csShareImg) { toast('내용 또는 이미지를 입력해요 💬'); return; }
   var list = loadCsShare();
   list.unshift({
-    id: Date.now(), type:_csShareType, author:_csShareAuthor,
-    text:txt, order:order, img:_csShareImg||'',
-    done:false, createdAt:Date.now(), replies:[]
+    id: Date.now(), type: _csShareType||'', author: _csShareAuthor||'은',
+    text: txt, img: _csShareImg||'',
+    done: false, createdAt: Date.now(), replies: [], confirmed: []
   });
   saveCsShare(list);
   // 초기화
-  var inp=document.getElementById('cs-share-inp'); if(inp) inp.value='';
-  var ord=document.getElementById('cs-share-order'); if(ord) ord.value='';
-  var prev=document.getElementById('cs-img-preview'); if(prev) prev.innerHTML='';
-  var hint=document.getElementById('cs-img-hint'); if(hint){hint.style.display='';hint.textContent='📋 여기서 Ctrl+V로 이미지 붙여넣기';}
-  _csShareImg=null;
-  renderCsShare(); toast('📤 등록됐어요!');
+  if (inpEl) inpEl.value = '';
+  var prev = document.getElementById('cs-img-preview'); if (prev) prev.innerHTML = '';
+  var hint = document.getElementById('cs-img-hint');
+  if (hint) { hint.style.display = ''; hint.textContent = '🖼️ 이미지'; }
+  _csShareImg = null;
+  renderCsShare();
+  toast('📤 등록됐어요!');
 }
 function toggleCsShareDone(id) {
   var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
