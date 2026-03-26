@@ -2025,8 +2025,8 @@ function hCsRender() {
     // 분류 뱃지
     var isCat=it.category||'CS';
     var catBadge=document.createElement('span');
-    catBadge.style.cssText='border-radius:10px;padding:3px 10px;font-size:.78rem;font-weight:800;margin-left:auto;'+(isCat==='그로스'?'background:#e0a000;color:white':'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
-    catBadge.textContent=isCat==='그로스'?'📋 그로스':'💬 CS';
+    catBadge.style.cssText='border-radius:12px;padding:5px 14px;font-size:.9rem;font-weight:900;margin-left:auto;'+(isCat==='그로스'?'background:#e0a000;color:white':'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
+    catBadge.textContent=isCat==='그로스'?'📋 그로스리스트':'💬 CS';
     hdr.appendChild(catBadge);
     // 그로스 새창 버튼
     if(isCat==='그로스'){
@@ -3021,8 +3021,8 @@ function _hCsSendAlarm(item) {
           </div>
           <!-- 분류 -->
           <div style="display:flex;gap:5px;margin-left:4px">
-            <button type="button" onclick="hCsSetCategory('CS')" id="hcs-cat-cs" style="padding:7px 20px;border-radius:16px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.95rem;font-weight:900;cursor:pointer">💬 CS</button>
-            <button type="button" onclick="hCsSetCategory('그로스')" id="hcs-cat-gross" style="padding:7px 20px;border-radius:16px;border:2.5px solid #e0a000;background:white;color:#e0a000;font-size:.95rem;font-weight:900;cursor:pointer">📋 그로스리스트</button>
+            <button type="button" onclick="hCsSetCategory('CS')" id="hcs-cat-cs" style="padding:8px 22px;border-radius:18px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:1rem;font-weight:900;cursor:pointer;transition:all .15s">💬 CS</button>
+            <button type="button" onclick="hCsSetCategory('그로스')" id="hcs-cat-gross" style="padding:8px 22px;border-radius:18px;border:2.5px solid #e0a000;background:white;color:#e0a000;font-size:1rem;font-weight:900;cursor:pointer;transition:all .15s">📋 그로스리스트</button>
           </div>
         </div>
         <!-- 이미지 + 메모 -->
