@@ -1755,7 +1755,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div id="cs-share-list"></div>
   </div>
 
-  <div class="subpage" id="work-sub-2" class="subpage active">
+  <div class="subpage" id="work-sub-2">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f8f4ff,#ddd0f8)">🎨</div>
         <div><div class="subpage-title">디자인관리</div><div class="subpage-desc">타업체 바로가기 &amp; 디자인 카드 관리</div></div>
@@ -9328,25 +9328,35 @@ function csUploadImg(file) {
 }
 
 function addCsShare() {
+  console.log("addCsShare 호출됨");
   var inpEl = document.getElementById('cs-share-inp');
   var txt = inpEl ? inpEl.value.trim() : '';
-  if (!txt && _csShareImgs.length===0) { toast('내용 또는 이미지를 입력해요 💬'); return; }
+  var imgs = Array.isArray(_csShareImgs) ? _csShareImgs.slice() : [];
+  if (!txt && imgs.length === 0) {
+    toast('내용 또는 이미지를 입력해요 💬');
+    return;
+  }
+  var newItem = {
+    id: Date.now(),
+    type: _csShareType || '',
+    author: _csShareAuthor || '은',
+    text: txt,
+    imgs: imgs,
+    img: imgs[0] || '',
+    done: false,
+    createdAt: Date.now(),
+    replies: [],
+    confirmed: []
+  };
   var list = loadCsShare();
-  list.unshift({
-    id: Date.now(), type: _csShareType||'', author: _csShareAuthor||'은',
-    text: txt, imgs: _csShareImgs.slice(), img: _csShareImgs[0]||'',
-    done: false, createdAt: Date.now(), replies: [], confirmed: []
-  });
+  list.unshift(newItem);
   saveCsShare(list);
-  // 입력 초기화
+  // 초기화
   if (inpEl) inpEl.value = '';
   _csShareImgs = [];
   renderCsImgPreview();
   toast('📤 등록됐어요!');
-  // 렌더는 별도로 (에러나도 저장은 완료)
-  setTimeout(function() {
-    try { renderCsShare(); } catch(e) { console.error('renderCsShare:', e); toast('렌더 오류: '+e.message); }
-  }, 50);
+  setTimeout(function(){ renderCsShare(); }, 100);
 }
 function toggleCsShareDone(id) {
   var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
@@ -9535,7 +9545,12 @@ function workSync() {
 (function() {
   // 첫 탭(CS) active 확실히
   document.querySelectorAll('.work-tab').forEach((t,i) => t.classList.toggle('active', i===0));
-  document.querySelectorAll('#work-sub-1,#work-sub-2,#work-sub-3,#work-sub-4').forEach((s,i) => s.classList.toggle('active', i===0));
+  // subpage 초기화 - CS탭(work-sub-1)만 active
+  document.querySelectorAll('.subpage').forEach(function(s){ s.classList.remove('active'); });
+  var firstSub = document.getElementById('work-sub-1');
+  if (firstSub) firstSub.classList.add('active');
+  // 탭 버튼 초기화
+  document.querySelectorAll('.work-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
   renderCsShare && renderCsShare();
   renderCsShare && renderCsShare();
   setTimeout(function(){ setCsAuthor&&setCsAuthor('은'); }, 100);
