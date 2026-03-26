@@ -1699,6 +1699,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div style="font-size:1.3rem;font-weight:800;color:#7040c0">🎀 미리제작소</div>
     <div style="font-size:.8rem;color:#aaa">디자인관리 · 상품관리 · 문구추천리스트</div>
     <button id="notif-req-btn" onclick="csRequestNotif()" style="margin-left:auto;background:linear-gradient(135deg,#fff0f5,#f7a8c0);border:1.5px solid #f7a8c0;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#c04070;cursor:pointer;font-family:Pretendard,sans-serif">🔔 알림허용</button>
+    <button onclick="csTestNotif()" style="background:linear-gradient(135deg,#e8f0ff,#b0c8f8);border:1.5px solid #b0c8f8;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#1050a0;cursor:pointer;font-family:Pretendard,sans-serif">🧪 알림테스트</button>
   </div>
 
   <!-- 탭 + 동기화 버튼 -->
@@ -9423,6 +9424,29 @@ function csUploadImg(file, retry) {
 /* ── CS 새 글 알림 ── */
 var _csLastCount = -1; // 처음엔 비교 안 함
 
+
+
+function csTestNotif() {
+  if (!('Notification' in window)) {
+    toast('❌ 이 브라우저는 알림 지원 안해요');
+    return;
+  }
+  toast('현재 알림 권한: ' + Notification.permission);
+  if (Notification.permission !== 'granted') {
+    toast('🔔 알림허용 버튼을 먼저 눌러주세요! (현재: ' + Notification.permission + ')');
+    return;
+  }
+  try {
+    new Notification('🧪 알림 테스트', {
+      body: '알림이 정상 작동해요! CS 새 글 등록 시 이렇게 와요 ✅',
+      icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
+      tag: 'test-' + Date.now()
+    });
+    toast('✅ 테스트 알림 전송! 우상단/우하단 확인해요');
+  } catch(e) {
+    toast('❌ 알림 오류: ' + e.message);
+  }
+}
 
 function csRequestNotif() {
   if (!('Notification' in window)) {
