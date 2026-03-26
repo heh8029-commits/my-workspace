@@ -1720,13 +1720,18 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
     <!-- 입력 폼 -->
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
-        <!-- 은수슬 왼쪽 상단 -->
-        <div style="display:flex;gap:5px;align-items:center;margin-left:8px">
-          <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:#fff0f5;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-          <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:white;color:#4a80d0;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 등록</div>
+        <!-- 수→은→슬 순서 -->
+        <div style="display:flex;gap:5px;align-items:center">
+          <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
+          <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
           <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
+        </div>
+        <!-- 분류 -->
+        <div style="display:flex;gap:5px;margin-left:4px">
+          <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:4px 14px;border-radius:14px;border:2px solid #4a80d0;background:#4a80d0;color:white;font-size:.8rem;font-weight:800;cursor:pointer">💬 CS</button>
+          <button type="button" onclick="setCsCategory('그로스')" id="cs-cat-gross" style="padding:4px 14px;border-radius:14px;border:2px solid #e0a000;background:white;color:#e0a000;font-size:.8rem;font-weight:800;cursor:pointer">📋 그로스</button>
         </div>
       </div>
       <!-- 이미지 미리보기 (여러개) + 추가 버튼 -->
@@ -9153,7 +9158,8 @@ function workSwitchTab(idx, el) {
 /* ── CS 실시간 공유 ── */
 var _csShareType = '';
 var _csShareFilter = '전체';
-var _csShareAuthor = '은';
+var _csShareAuthor = '수';
+var _csShareCategory = 'CS'; // CS or 그로스
 var _csShareImgs = []; // Cloudinary URL 배열 (여러 이미지)
 
 var CS_TYPE_COLORS = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#999'};
@@ -9174,6 +9180,70 @@ function setCsType(type) {
     b.style.borderColor = c;
   });
 }
+
+
+function csOpenGrossWindow(item) {
+  var imgs = (item.imgs && item.imgs.length) ? item.imgs : (item.img ? [item.img] : []);
+  var txt = item.text || '';
+  var author = item.author || '';
+  var d = new Date(item.createdAt || item.id);
+  var dateStr = (d.getMonth()+1)+'/'+(d.getDate())+' '+(d.getHours()<12?'오전':'오후')+' '+(d.getHours()%12||12)+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+
+  var imgHtml = imgs.map(function(src){
+    return '<img src="'+src+'" style="width:100%;display:block;margin-bottom:8px;border-radius:6px">';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head>'
+    + '<meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>그로스리스트</title>'
+    + '<style>'
+    + 'body{margin:0;padding:0;font-family:Pretendard,sans-serif;font-size:14px;width:312px;box-sizing:border-box;background:white}'
+    + '.topbar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#fff8e0;border-bottom:2px solid #e0c060;position:sticky;top:0;z-index:99}'
+    + 'label{display:flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;color:#a07800;cursor:pointer}'
+    + 'input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#e0a000}'
+    + '.content{padding:12px}'
+    + '.header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e0a000}'
+    + '.author{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}'
+    + '.memo{font-size:1rem;font-weight:700;line-height:1.7;white-space:pre-wrap;word-break:break-all;text-align:center;padding:8px 0 10px}'
+    + '</style></head><body>'
+    + '<div class="topbar"><label><input type="checkbox" id="top-chk"> 📌 항상 위에</label></div>'
+    + '<div class="content">'
+    + '<div class="header">'
+    + '<span class="author" style="background:'+(author==='수'?'#a0c8f8':author==='은'?'#f7a8c0':'#b0e8c0')+';color:'+(author==='수'?'#1050a0':author==='은'?'#c04070':'#1a7a50')+'">'+author+'</span>'
+    + '<div><div style="font-weight:800;font-size:.9rem">📋 그로스리스트</div><div style="font-size:.8rem;color:#888">'+dateStr+'</div></div>'
+    + '</div>'
+    + (txt ? '<div class="memo">'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : '')
+    + (imgHtml ? '<div>'+imgHtml+'</div>' : '')
+    + '</div>'
+    + '</body></html>';
+
+  var w = window.open('', '_blank', 'width=336,height=600,top=100,left=100,resizable=yes,scrollbars=yes');
+  if (w) {
+    w.document.write(html);
+    w.document.close();
+    // 항상위에 체크박스 - 윈도우 포커스 유지
+    w.document.getElementById('top-chk').addEventListener('change', function() {
+      if (this.checked) { w.focus(); }
+    });
+  }
+  else toast('팝업이 차단됐어요. 팝업 허용해주세요!');
+}
+
+function setCsCategory(cat) {
+  _csShareCategory = cat;
+  var csBtn = document.getElementById('cs-cat-cs');
+  var grBtn = document.getElementById('cs-cat-gross');
+  if (!csBtn || !grBtn) return;
+  if (cat === 'CS') {
+    csBtn.style.background = '#4a80d0'; csBtn.style.color = 'white';
+    grBtn.style.background = 'white'; grBtn.style.color = '#e0a000';
+  } else {
+    grBtn.style.background = '#e0a000'; grBtn.style.color = 'white';
+    csBtn.style.background = 'white'; csBtn.style.color = '#4a80d0';
+  }
+}
+
 function setCsAuthor(author) {
   _csShareAuthor = author;
   var BG_ON  = {'은':'#f7a8c0', '수':'#a0c8f8', '슬':'#b0e8c0'};
@@ -9689,9 +9759,30 @@ function renderCsShare() {
     dtWrap.appendChild(dateEl); dtWrap.appendChild(timeEl);
     hdr.appendChild(dtWrap);
 
+    // 분류 뱃지 (CS / 그로스)
+    var catBadge = document.createElement('span');
+    var isCat = it.category || 'CS';
+    catBadge.style.cssText = 'border-radius:10px;padding:3px 10px;font-size:.78rem;font-weight:800;margin-left:auto;'
+      + (isCat==='그로스' ? 'background:#e0a000;color:white' : 'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
+    catBadge.textContent = isCat==='그로스' ? '📋 그로스' : '💬 CS';
+    hdr.appendChild(catBadge);
+
+    // 그로스 새창 버튼
+    if (isCat === '그로스') {
+      var newWinBtn = document.createElement('button');
+      newWinBtn.textContent = '🖨️';
+      newWinBtn.title = '새창으로 보기 (인쇄용)';
+      newWinBtn.style.cssText = 'background:#fff8e0;border:1.5px solid #e0a000;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:.85rem;flex-shrink:0';
+      newWinBtn.onclick = (function(item){ return function(e) {
+        e.stopPropagation();
+        csOpenGrossWindow(item);
+      }; })(it);
+      hdr.appendChild(newWinBtn);
+    }
+
     if (it.type) {
       var tb = document.createElement('span');
-      tb.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:800;margin-left:auto';
+      tb.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:800';
       tb.textContent = it.type;
       hdr.appendChild(tb);
     }
@@ -9836,7 +9927,7 @@ function workSync() {
   // 탭 버튼 초기화
   document.querySelectorAll('.work-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
   renderCsShare && renderCsShare();
-  setTimeout(function(){ setCsAuthor&&setCsAuthor('은'); }, 100);
+  setTimeout(function(){ setCsAuthor&&setCsAuthor('수'); setCsCategory&&setCsCategory('CS'); }, 100);
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
   loadDesignCommentBox && loadDesignCommentBox();
