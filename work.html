@@ -1692,6 +1692,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
     <div style="font-size:1.3rem;font-weight:800;color:#7040c0">🎀 미리제작소</div>
     <div style="font-size:.8rem;color:#aaa">디자인관리 · 상품관리 · 문구추천리스트</div>
+    <button id="notif-req-btn" onclick="csRequestNotif()" style="margin-left:auto;background:linear-gradient(135deg,#fff0f5,#f7a8c0);border:1.5px solid #f7a8c0;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#c04070;cursor:pointer;font-family:Pretendard,sans-serif">🔔 알림허용</button>
   </div>
 
   <!-- 탭 + 동기화 버튼 -->
@@ -8999,12 +9000,8 @@ function initRender(pageId) {
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
   _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
-  // 알림 권한 요청 (클릭 이벤트 없이도 최초 1회 시도)
-  if (typeof Notification !== "undefined" && Notification.permission === "default") {
-    Notification.requestPermission().then(function(p){
-      if (p === 'granted') toast('🔔 알림 허용됐어요!');
-    });
-  }
+  // 알림 버튼 상태 초기화
+  setTimeout(function(){ csUpdateNotifBtn && csUpdateNotifBtn(); }, 500);
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
@@ -9367,6 +9364,59 @@ function csUploadImg(file, retry) {
 
 /* ── CS 새 글 알림 ── */
 var _csLastCount = -1; // 처음엔 비교 안 함
+
+
+function csRequestNotif() {
+  if (!('Notification' in window)) {
+    toast('이 브라우저는 알림을 지원하지 않아요');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    toast('✅ 알림이 이미 허용됐어요!');
+    csUpdateNotifBtn();
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    toast('🚫 알림이 차단됐어요. 브라우저 주소창 왼쪽 🔒 아이콘 → 알림 → 허용으로 변경해주세요');
+    return;
+  }
+  Notification.requestPermission().then(function(p) {
+    if (p === 'granted') {
+      toast('🔔 알림 허용됐어요! 새 CS 등록 시 알림이 와요');
+      // 테스트 알림
+      setTimeout(function(){
+        try { new Notification('🔔 알림 테스트', { body: '알림이 정상 작동해요 ✅' }); } catch(e){}
+      }, 500);
+    } else {
+      toast('알림을 허용하지 않으셨어요');
+    }
+    csUpdateNotifBtn();
+  });
+}
+
+function csUpdateNotifBtn() {
+  var btn = document.getElementById('notif-req-btn');
+  if (!btn) return;
+  if (!('Notification' in window)) { btn.style.display='none'; return; }
+  if (Notification.permission === 'granted') {
+    btn.textContent = '🔔 알림 ON';
+    btn.style.background = 'linear-gradient(135deg,#e8fff4,#3dbb8f)';
+    btn.style.borderColor = '#3dbb8f';
+    btn.style.color = 'white';
+    btn.onclick = function(){ toast('✅ 알림이 켜져있어요!'); };
+  } else if (Notification.permission === 'denied') {
+    btn.textContent = '🔕 알림 차단됨';
+    btn.style.background = '#f5f5f5';
+    btn.style.borderColor = '#ccc';
+    btn.style.color = '#999';
+  } else {
+    btn.textContent = '🔔 알림허용';
+    btn.style.background = 'linear-gradient(135deg,#fff0f5,#f7a8c0)';
+    btn.style.borderColor = '#f7a8c0';
+    btn.style.color = '#c04070';
+    btn.onclick = function(){ csRequestNotif(); };
+  }
+}
 
 function csNotify(item) {
   if (Notification.permission !== 'granted') return;
