@@ -1829,11 +1829,13 @@ function hCsOpenGrossWindow(item) {
     +'<div><div style="font-weight:800;font-size:.9rem">📋 그로스리스트</div><div style="font-size:.8rem;color:#888">'+dateStr+'</div></div></div>'
     +(txt?'<div class="memo">'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')
     +(imgHtml?'<div>'+imgHtml+'</div>':'')
-    +'<script>window.onload=function(){window.print?window.print():null};<\/script>'
+    +'<div class="topbar"><label><input type="checkbox" id="tc"> 📌 항상 위에</label></div>'
     +'</body></html>';
-  var w=window.open('','_blank','width=336,height=600,top=100,left=100,resizable=yes,scrollbars=yes,alwaysOnTop=yes');
-  if(w){w.document.write(html);w.document.close();}
-  else toast('팝업이 차단됐어요. 팝업 허용해주세요!');
+  var w=window.open('','_blank','width=336,height=600,top=100,left=100,resizable=yes,scrollbars=yes');
+  if(w){
+    w.document.write(html); w.document.close();
+    w.document.getElementById('tc').addEventListener('change',function(){if(this.checked)w.focus();});
+  } else toast('팝업이 차단됐어요. 팝업 허용해주세요!');
 }
 
 function hCsSetCategory(cat) {
