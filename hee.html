@@ -10683,6 +10683,9 @@ function switchSub(pageId, num, el) {
   if (pageId === 'menu1' && num === 5) {
     setTimeout(function(){ renderStaff && renderStaff(); }, 0);
   }
+  if (pageId === 'menu1' && num === 23) {
+    setTimeout(function(){ hCsRender && hCsRender(); hCsSetAuthor && hCsSetAuthor(_hCsAuthor||'은'); }, 0);
+  }
   if (pageId === 'menu2' && num === 18) {
     setTimeout(function(){ renderCardMgmt && renderCardMgmt(); renderCmNotes && renderCmNotes(); }, 0);
   }
