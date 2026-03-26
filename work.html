@@ -2045,6 +2045,7 @@ function _fbApplyData(all) {
 
 function _fbRender() {
   setTimeout(function() {
+    try { csCheckNewItems && csCheckNewItems(); } catch(e) {}
     try { renderCsShare && renderCsShare(); } catch(e) {}
     try { renderDesignLinks && renderDesignLinks(); } catch(e) {}
     try { renderDesignCards && renderDesignCards(); } catch(e) {}
@@ -8998,6 +8999,10 @@ function initRender(pageId) {
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
   _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
+  // 알림 권한 요청
+  if (typeof Notification !== "undefined" && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
@@ -9355,6 +9360,64 @@ function csUploadImg(file, retry) {
   };
   reader.onerror = function(){ toast('❌ 파일 읽기 실패'); };
   reader.readAsDataURL(file);
+}
+
+
+/* ── CS 새 글 알림 ── */
+var _csLastCount = -1; // 처음엔 비교 안 함
+
+function csNotify(item) {
+  // 브라우저 알림 권한 요청
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
+    return;
+  }
+  if (Notification.permission !== 'granted') return;
+
+  var author = item.author || '?';
+  var txt = item.text ? item.text.slice(0, 50) : (item.imgs && item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS');
+  var title = '💬 CS 새 글 - ' + author;
+
+  // 3번 연속 알림 (0.8초 간격)
+  for (var i = 0; i < 3; i++) {
+    (function(delay) {
+      setTimeout(function() {
+        try {
+          new Notification(title, {
+            body: txt,
+            icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
+            tag: 'cs-new-' + Date.now() + '-' + delay,
+            requireInteraction: false
+          });
+        } catch(e) {}
+      }, delay);
+    })(i * 800);
+  }
+
+  // 토스트도 같이
+  toast('🔔 새 CS: ' + author + ' - ' + txt.slice(0, 20));
+}
+
+function csCheckNewItems() {
+  var list = loadCsShare();
+  var count = list.length;
+  if (_csLastCount === -1) {
+    _csLastCount = count;
+    return;
+  }
+  if (count > _csLastCount) {
+    // 새로 추가된 항목들
+    var newItems = list.slice(0, count - _csLastCount);
+    newItems.forEach(function(item) {
+      // 내가 작성한 건 알림 안 보냄
+      if (item.author !== _csShareAuthor) {
+        csNotify(item);
+      }
+    });
+    _csLastCount = count;
+  } else {
+    _csLastCount = count;
+  }
 }
 
 function addCsShare() {
