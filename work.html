@@ -2057,9 +2057,8 @@ var _csLastSeenId = 0; // 마지막으로 본 글의 id
 var _csAlarmInterval = null;
 
 function _csAlarmStart() {
-  if (_csAlarmInterval) return; // 이미 실행중이면 스킵
+  if (_csAlarmInterval) { toast('CS알림: 이미 실행중'); return; }
   
-  // 현재 최신 글 id 기억 (알림 기준점)
   try {
     var cur = loadObj('cs_share');
     if (cur && cur.list && cur.list.length > 0) {
@@ -2067,33 +2066,23 @@ function _csAlarmStart() {
     }
   } catch(e) {}
   
-  console.log('CS 알림 시작, 기준 id:', _csLastSeenId);
+  toast('CS알림 시작! 기준id:' + _csLastSeenId);
 
-  // 5초마다 Firebase 직접 조회
   _csAlarmInterval = setInterval(function() {
     fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data || !data.list || !data.list.length) return;
-        // 최신 글이 기준점보다 id가 크면 새 글
         var newest = data.list[0];
+        toast('체크중: newest.id=' + newest.id + ' / 기준=' + _csLastSeenId);
         if (newest && newest.id && newest.id > _csLastSeenId) {
-          // 새 글들 모아서 알림
-          var newItems = data.list.filter(function(it) {
-            return it.id > _csLastSeenId;
-          });
-          // 기준점 업데이트
+          var newItems = data.list.filter(function(it) { return it.id > _csLastSeenId; });
           _csLastSeenId = data.list[0].id;
-          // localStorage도 업데이트
           localStorage.setItem('ws5_cs_share', JSON.stringify(data));
-          // 렌더
           try { renderCsShare(); } catch(e) {}
-          // 알림 발송
-          newItems.forEach(function(item) {
-            _csSendAlarm(item);
-          });
+          newItems.forEach(function(item) { _csSendAlarm(item); });
         }
-      }).catch(function(e) { console.log('CS알림 fetch 실패:', e); });
+      }).catch(function(e) { toast('fetch실패:' + e.message); });
   }, 5000);
 }
 
