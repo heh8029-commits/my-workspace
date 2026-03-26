@@ -9762,17 +9762,17 @@ function renderCsShare() {
     // 분류 뱃지 (CS / 그로스)
     var catBadge = document.createElement('span');
     var isCat = it.category || 'CS';
-    catBadge.style.cssText = 'border-radius:10px;padding:3px 10px;font-size:.78rem;font-weight:800;margin-left:auto;'
+    catBadge.style.cssText = 'border-radius:12px;padding:5px 14px;font-size:.9rem;font-weight:900;margin-left:auto;'
       + (isCat==='그로스' ? 'background:#e0a000;color:white' : 'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
-    catBadge.textContent = isCat==='그로스' ? '📋 그로스' : '💬 CS';
+    catBadge.textContent = isCat==='그로스' ? '📋 그로스리스트' : '💬 CS';
     hdr.appendChild(catBadge);
 
     // 그로스 새창 버튼
     if (isCat === '그로스') {
       var newWinBtn = document.createElement('button');
-      newWinBtn.textContent = '🔲 새창';
+      newWinBtn.textContent = '🔲 새창으로';
       newWinBtn.title = '새창으로 보기';
-      newWinBtn.style.cssText = 'background:#e0a000;border:none;border-radius:10px;padding:6px 14px;cursor:pointer;font-size:.88rem;font-weight:800;color:white;flex-shrink:0';
+      newWinBtn.style.cssText = 'background:#e0a000;border:none;border-radius:12px;padding:7px 16px;cursor:pointer;font-size:.9rem;font-weight:900;color:white;flex-shrink:0';
       newWinBtn.onclick = (function(item){ return function(e) {
         e.stopPropagation();
         csOpenGrossWindow(item);
