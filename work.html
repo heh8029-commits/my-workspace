@@ -9848,8 +9848,12 @@ function workSync() {
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
   loadDesignCommentBox && loadDesignCommentBox();
-  // 자동 동기화
-  workSync();
+  // 자동 동기화 + 완료 후 CS 알림 시작
+  workSync().then(function(){
+    setTimeout(function(){ _csAlarmStart && _csAlarmStart(); }, 500);
+  }).catch(function(){
+    setTimeout(function(){ _csAlarmStart && _csAlarmStart(); }, 500);
+  });
 })();
 </script>
 <div class="toast" id="toast"></div>
