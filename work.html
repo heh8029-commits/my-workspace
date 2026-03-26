@@ -2032,7 +2032,6 @@ function loadObj(k) {
 var _fbStream = null;
 var _fbStreamRetry = 0;
 var _fbLastSyncTs = 0;
-var _csLastNotifyCount = -1; // CS 알림용 카운터
 var recipeDB; // TDZ 방지 - 아래에서 초기화
 var _fbSyncThrottle = null;
 
@@ -2053,65 +2052,95 @@ function _fbApplyData(all) {
 }
 
 
-function _checkCsNotify() {
+/* ══ CS 실시간 알림 (완전 새 버전) ══ */
+var _csLastSeenId = 0; // 마지막으로 본 글의 id
+var _csAlarmInterval = null;
+
+function _csAlarmStart() {
+  if (_csAlarmInterval) return; // 이미 실행중이면 스킵
+  
+  // 현재 최신 글 id 기억 (알림 기준점)
   try {
-    var data = loadObj('cs_share');
-    var list = (data && data.list) ? data.list : [];
-    var count = list.length;
-    if (_csLastNotifyCount === -1) {
-      _csLastNotifyCount = count;
-      return;
+    var cur = loadObj('cs_share');
+    if (cur && cur.list && cur.list.length > 0) {
+      _csLastSeenId = cur.list[0].id || 0;
     }
-    if (count > _csLastNotifyCount) {
-      var newItems = list.slice(0, count - _csLastNotifyCount);
-      newItems.forEach(function(item) {
-        _sendCsNotif(item); // 작성자 구분 없이 무조건 알림
-      });
-      _csLastNotifyCount = count;
-    } else {
-      _csLastNotifyCount = count;
-    }
-  } catch(e) { console.log('_checkCsNotify 에러:', e); }
+  } catch(e) {}
+  
+  console.log('CS 알림 시작, 기준 id:', _csLastSeenId);
+
+  // 5초마다 Firebase 직접 조회
+  _csAlarmInterval = setInterval(function() {
+    fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || !data.list || !data.list.length) return;
+        // 최신 글이 기준점보다 id가 크면 새 글
+        var newest = data.list[0];
+        if (newest && newest.id && newest.id > _csLastSeenId) {
+          // 새 글들 모아서 알림
+          var newItems = data.list.filter(function(it) {
+            return it.id > _csLastSeenId;
+          });
+          // 기준점 업데이트
+          _csLastSeenId = data.list[0].id;
+          // localStorage도 업데이트
+          localStorage.setItem('ws5_cs_share', JSON.stringify(data));
+          // 렌더
+          try { renderCsShare(); } catch(e) {}
+          // 알림 발송
+          newItems.forEach(function(item) {
+            _csSendAlarm(item);
+          });
+        }
+      }).catch(function(e) { console.log('CS알림 fetch 실패:', e); });
+  }, 5000);
 }
 
-
-function _playCsSound() {
+function _csSendAlarm(item) {
+  var author = item.author || '?';
+  var txt = item.text ? item.text.slice(0, 50) : (item.imgs && item.imgs.length ? '이미지 ' + item.imgs.length + '장' : '새 CS');
+  
+  // 소리
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // 띵~ 소리 3번
-    [0, 0.3, 0.6].forEach(function(delay) {
+    [0, 0.4].forEach(function(delay) {
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
       osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + delay + 0.3);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime + delay);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
-      osc.start(ctx.currentTime + delay);
-      osc.stop(ctx.currentTime + delay + 0.4);
+      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.5);
     });
   } catch(e) {}
-}
 
-function _sendCsNotif(item) {
-  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
-    toast('⚠️ 알림권한: ' + (typeof Notification !== 'undefined' ? Notification.permission : '없음'));
-    return;
+  // 토스트
+  toast('🔔 새CS - ' + author + ': ' + txt.slice(0, 20));
+
+  // 브라우저 알림
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    var uid = Date.now();
+    try {
+      new Notification('💬 새 CS - ' + author, {
+        body: txt,
+        icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
+        tag: 'cs-' + uid
+      });
+    } catch(e) {}
+    // 10초 후 재알림
+    setTimeout(function() {
+      try {
+        new Notification('💬 새 CS - ' + author, {
+          body: '📌 확인 안 됐어요! ' + txt,
+          icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
+          tag: 'cs-re-' + uid
+        });
+      } catch(e) {}
+    }, 10000);
   }
-  var author = item.author || '?';
-  var txt = item.text ? item.text.slice(0, 60) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS 등록');
-  var title = '💬 새 CS - ' + author;
-  _playCsSound();
-  var uid = Date.now();
-  // 즉시 알림 (tag를 unique하게)
-  try { new Notification(title, { body: txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-'+uid }); } catch(e){ toast('알림오류:'+e.message); }
-  // 10초 후 재알림
-  setTimeout(function(){
-    try { new Notification(title, { body: '📌 아직 확인 안 됐어요! ' + txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-re-'+uid }); } catch(e){}
-  }, 10000);
-  toast('🔔 새CS: ' + author + ' - ' + txt.slice(0, 15));
 }
 
 function _fbRender() {
@@ -2143,9 +2172,6 @@ function startFbStream() {
           if (key) {
             localStorage.setItem('ws5_'+key, JSON.stringify(d.data));
             // cs_share 변경 시 알림 체크
-            if (key === 'cs_share') {
-              setTimeout(function(){ _checkCsNotify(); }, 100);
-            }
             clearTimeout(_fbSyncThrottle);
             _fbSyncThrottle = setTimeout(_fbRender, 200);
           }
@@ -2161,7 +2187,6 @@ function startFbStream() {
             if (d.data[k] !== null) localStorage.setItem('ws5_'+k, JSON.stringify(d.data[k]));
             if (k === 'cs_share') hasCsShare = true;
           });
-          if (hasCsShare) setTimeout(function(){ _checkCsNotify(); }, 100);
           clearTimeout(_fbSyncThrottle);
           _fbSyncThrottle = setTimeout(_fbRender, 200);
         }
@@ -9100,20 +9125,7 @@ function initRender(pageId) {
       loadInvestMemoBox && loadInvestMemoBox();
     }, 50);
     updateTodaySchedBar && updateTodaySchedBar();
-    // ✅ 동기화 완료 후 CS 알림 카운터 초기화 + 5초마다 체크
-    try {
-      var csData = loadObj('cs_share');
-      _csLastNotifyCount = (csData && csData.list) ? csData.list.length : 0;
-    } catch(e) { _csLastNotifyCount = 0; }
-    setInterval(function(){
-      fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
-        .then(function(r){ return r.json(); })
-        .then(function(data) {
-          if (!data || !data.list) return;
-          localStorage.setItem('ws5_cs_share', JSON.stringify(data));
-          _checkCsNotify();
-        }).catch(function(){});
-    }, 5000);
+    
   }).catch(function() {
     initRender(savedTab);
     updateTodaySchedBar && updateTodaySchedBar();
@@ -9454,11 +9466,6 @@ function csUploadImg(file, retry) {
 }
 
 
-/* ── CS 새 글 알림 ── */
-var _csLastCount = -1; // 처음엔 비교 안 함
-
-
-
 function csTestNotif() {
   if (!('Notification' in window)) {
     toast('❌ 이 브라우저는 알림 지원 안해요');
@@ -9531,37 +9538,6 @@ function csUpdateNotifBtn() {
     btn.style.borderColor = '#f7a8c0';
     btn.style.color = '#c04070';
     btn.onclick = function(){ csRequestNotif(); };
-  }
-}
-
-function csNotify(item) {
-  if (Notification.permission !== 'granted') return;
-  var author = item.author || '?';
-  var txt = item.text ? item.text.slice(0, 60) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS 등록');
-  var title = '💬 새 CS - ' + author;
-
-  // 즉시 1번
-  try { new Notification(title, { body: txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-1' }); } catch(e){}
-  // 10초 후 2번째
-  setTimeout(function(){
-    try { new Notification(title, { body: '📌 확인 안 됐어요! ' + txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-2' }); } catch(e){}
-  }, 10000);
-
-  toast('🔔 새 CS: ' + author + ' — ' + txt.slice(0, 25));
-}
-
-function csCheckNewItems() {
-  var list = loadCsShare();
-  var count = list.length;
-  if (_csLastCount === -1) { _csLastCount = count; return; }
-  if (count > _csLastCount) {
-    var newItems = list.slice(0, count - _csLastCount);
-    newItems.forEach(function(item) {
-      if (item.author !== _csShareAuthor) csNotify(item);
-    });
-    _csLastCount = count;
-  } else {
-    _csLastCount = count;
   }
 }
 
