@@ -2074,6 +2074,27 @@ function _checkCsNotify() {
   } catch(e) { console.log('_checkCsNotify 에러:', e); }
 }
 
+
+function _playCsSound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // 띵~ 소리 3번
+    [0, 0.3, 0.6].forEach(function(delay) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + delay + 0.3);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.4);
+    });
+  } catch(e) {}
+}
+
 function _sendCsNotif(item) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
     toast('⚠️ 알림권한: ' + (typeof Notification !== 'undefined' ? Notification.permission : '없음'));
@@ -2082,6 +2103,7 @@ function _sendCsNotif(item) {
   var author = item.author || '?';
   var txt = item.text ? item.text.slice(0, 60) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS 등록');
   var title = '💬 새 CS - ' + author;
+  _playCsSound();
   var uid = Date.now();
   // 즉시 알림 (tag를 unique하게)
   try { new Notification(title, { body: txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-'+uid }); } catch(e){ toast('알림오류:'+e.message); }
