@@ -1801,7 +1801,8 @@ function pwaInstall() {
 /* ════════════════════════════
    HEE.HTML CS 실시간공유
 ════════════════════════════ */
-var _hCsAuthor = '은';
+var _hCsAuthor = '수';
+var _hCsCategory = 'CS';
 var _hCsFilter = '전체';
 var _hCsImgs = [];
 var _hCsLastSeenId = 0;
@@ -1809,6 +1810,45 @@ var _hCsAlarmInterval = null;
 
 function hLoadCs() { return (loadObj('cs_share').list) || []; }
 function hSaveCs(list) { stor('cs_share', {list:list}); }
+
+
+
+function hCsOpenGrossWindow(item) {
+  var imgs=(item.imgs&&item.imgs.length)?item.imgs:(item.img?[item.img]:[]);
+  var txt=item.text||'', author=item.author||'';
+  var d=new Date(item.createdAt||item.id);
+  var dateStr=(d.getMonth()+1)+'/'+(d.getDate())+' '+(d.getHours()<12?'오전':'오후')+' '+(d.getHours()%12||12)+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+  var imgHtml=imgs.map(function(src){return '<img src="'+src+'" style="width:100%;display:block;margin-bottom:8px;border-radius:6px">';}).join('');
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>그로스리스트</title>'
+    +'<style>body{margin:0;padding:12px;font-family:Pretendard,sans-serif;font-size:14px;width:312px;box-sizing:border-box;background:white}'
+    +'.header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e0a000}'
+    +'.author{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}'
+    +'.memo{font-size:1rem;font-weight:700;line-height:1.7;white-space:pre-wrap;word-break:break-all;text-align:center;padding:8px 0 10px}'
+    +'@media print{body{width:100%}}</style></head><body>'
+    +'<div class="header"><span class="author" style="background:'+(author==='수'?'#a0c8f8':author==='은'?'#f7a8c0':'#b0e8c0')+';color:'+(author==='수'?'#1050a0':author==='은'?'#c04070':'#1a7a50')+'">'+author+'</span>'
+    +'<div><div style="font-weight:800;font-size:.9rem">📋 그로스리스트</div><div style="font-size:.8rem;color:#888">'+dateStr+'</div></div></div>'
+    +(txt?'<div class="memo">'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')
+    +(imgHtml?'<div>'+imgHtml+'</div>':'')
+    +'<script>window.onload=function(){window.print?window.print():null};<\/script>'
+    +'</body></html>';
+  var w=window.open('','_blank','width=336,height=600,top=100,left=100,resizable=yes,scrollbars=yes,alwaysOnTop=yes');
+  if(w){w.document.write(html);w.document.close();}
+  else toast('팝업이 차단됐어요. 팝업 허용해주세요!');
+}
+
+function hCsSetCategory(cat) {
+  _hCsCategory = cat;
+  var csBtn = document.getElementById('hcs-cat-cs');
+  var grBtn = document.getElementById('hcs-cat-gross');
+  if (!csBtn || !grBtn) return;
+  if (cat === 'CS') {
+    csBtn.style.background='#4a80d0'; csBtn.style.color='white';
+    grBtn.style.background='white'; grBtn.style.color='#e0a000';
+  } else {
+    grBtn.style.background='#e0a000'; grBtn.style.color='white';
+    csBtn.style.background='white'; csBtn.style.color='#4a80d0';
+  }
+}
 
 function hCsSetAuthor(a) {
   _hCsAuthor = a;
@@ -1915,7 +1955,7 @@ function hCsAdd() {
   var inpEl=document.getElementById('hcs-inp');
   var txt=inpEl?inpEl.value.trim():'';
   if(!txt&&_hCsImgs.length===0){toast('내용 또는 이미지를 입력해요 💬');return;}
-  var newItem={id:Date.now(),type:'',author:_hCsAuthor,text:txt,imgs:_hCsImgs.slice(),img:_hCsImgs[0]||'',done:false,createdAt:Date.now(),replies:[],confirmed:[]};
+  var newItem={id:Date.now(),type:'',category:_hCsCategory||'CS',author:_hCsAuthor,text:txt,imgs:_hCsImgs.slice(),img:_hCsImgs[0]||'',done:false,createdAt:Date.now(),replies:[],confirmed:[]};
   var list=hLoadCs(); list.unshift(newItem); hSaveCs(list);
   _hCsLastSeenId=newItem.id;
   if(inpEl)inpEl.value=''; _hCsImgs=[]; hCsRenderImgPreview();
@@ -1979,7 +2019,21 @@ function hCsRender() {
     var dateEl=document.createElement('div'); dateEl.style.cssText='font-size:.95rem;font-weight:900;color:#222'; dateEl.textContent=dateStr;
     var timeEl=document.createElement('div'); timeEl.style.cssText='font-size:1.05rem;font-weight:900;color:#1050a0'; timeEl.textContent=timeStr;
     dtWrap.appendChild(dateEl); dtWrap.appendChild(timeEl);
-    hdr.appendChild(ab); hdr.appendChild(dtWrap); card.appendChild(hdr);
+    hdr.appendChild(ab); hdr.appendChild(dtWrap);
+    // 분류 뱃지
+    var isCat=it.category||'CS';
+    var catBadge=document.createElement('span');
+    catBadge.style.cssText='border-radius:10px;padding:3px 10px;font-size:.78rem;font-weight:800;margin-left:auto;'+(isCat==='그로스'?'background:#e0a000;color:white':'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
+    catBadge.textContent=isCat==='그로스'?'📋 그로스':'💬 CS';
+    hdr.appendChild(catBadge);
+    // 그로스 새창 버튼
+    if(isCat==='그로스'){
+      var nwBtn=document.createElement('button'); nwBtn.textContent='🖨️'; nwBtn.title='새창 (인쇄용)';
+      nwBtn.style.cssText='background:#fff8e0;border:1.5px solid #e0a000;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:.85rem;flex-shrink:0';
+      nwBtn.onclick=(function(item){return function(e){e.stopPropagation();hCsOpenGrossWindow(item);};})(it);
+      hdr.appendChild(nwBtn);
+    }
+    card.appendChild(hdr);
     // 체크박스
     var chkWrap=document.createElement('div'); chkWrap.style.cssText='display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
     var confirmed=it.confirmed||[];
@@ -2959,9 +3013,14 @@ function _hCsSendAlarm(item) {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
           <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
           <div style="display:flex;gap:5px;align-items:center;margin-left:8px">
-            <button type="button" onclick="hCsSetAuthor('은')" class="hcs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-            <button type="button" onclick="hCsSetAuthor('수')" class="hcs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:white;color:#4a80d0;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
+            <button type="button" onclick="hCsSetAuthor('수')" class="hcs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
+            <button type="button" onclick="hCsSetAuthor('은')" class="hcs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
             <button type="button" onclick="hCsSetAuthor('슬')" class="hcs-author-btn" data-author="슬" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
+          </div>
+          <!-- 분류 -->
+          <div style="display:flex;gap:5px;margin-left:4px">
+            <button type="button" onclick="hCsSetCategory('CS')" id="hcs-cat-cs" style="padding:4px 14px;border-radius:14px;border:2px solid #4a80d0;background:#4a80d0;color:white;font-size:.8rem;font-weight:800;cursor:pointer">💬 CS</button>
+            <button type="button" onclick="hCsSetCategory('그로스')" id="hcs-cat-gross" style="padding:4px 14px;border-radius:14px;border:2px solid #e0a000;background:white;color:#e0a000;font-size:.8rem;font-weight:800;cursor:pointer">📋 그로스</button>
           </div>
         </div>
         <!-- 이미지 + 메모 -->
@@ -10684,7 +10743,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderStaff && renderStaff(); }, 0);
   }
   if (pageId === 'menu1' && num === 23) {
-    setTimeout(function(){ hCsRender && hCsRender(); hCsSetAuthor && hCsSetAuthor(_hCsAuthor||'은'); }, 0);
+    setTimeout(function(){ hCsRender && hCsRender(); hCsSetAuthor && hCsSetAuthor('수'); hCsSetCategory && hCsSetCategory('CS'); }, 0);
   }
   if (pageId === 'menu2' && num === 18) {
     setTimeout(function(){ renderCardMgmt && renderCardMgmt(); renderCmNotes && renderCmNotes(); }, 0);
