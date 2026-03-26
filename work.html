@@ -2086,50 +2086,60 @@ function _csAlarmStart() {
   }, 5000);
 }
 
+
+// 알림 발송 - 모바일(SW) / PC(Notification) 자동 분기
+function _showNotif(title, body, tag) {
+  if (Notification.permission !== 'granted') return;
+  tag = tag || ('cs-' + Date.now());
+  // ServiceWorker 방식 (모바일 포함)
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SHOW_NOTIFICATION', title: title, body: body, tag: tag
+    });
+  } else {
+    // 폴백: 직접 Notification (PC)
+    try { new Notification(title, { body: body, tag: tag }); } catch(e) {}
+  }
+}
+
 function _csSendAlarm(item) {
   var author = item.author || '?';
-  var txt = item.text ? item.text.slice(0, 50) : (item.imgs && item.imgs.length ? '이미지 ' + item.imgs.length + '장' : '새 CS');
-  
+  var txt = item.text ? item.text.slice(0, 50) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS');
+
   // 소리
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.4].forEach(function(delay) {
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
+    [0, 0.4, 0.8].forEach(function(delay) {
+      var osc = ctx.createOscillator(); var gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
       osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + delay + 0.3);
-      gain.gain.setValueAtTime(0.5, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(0.6, ctx.currentTime + delay);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
       osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.5);
     });
   } catch(e) {}
 
-  // 토스트
-  toast('🔔 새CS - ' + author + ': ' + txt.slice(0, 20));
+  // 토스트 3번
+  toast('🔔 새CS! ' + author + ' - ' + txt.slice(0, 15));
+  setTimeout(function(){ toast('🔔 새CS! ' + author + ' - ' + txt.slice(0, 15)); }, 3000);
+  setTimeout(function(){ toast('🔔 새CS! ' + author + ' - ' + txt.slice(0, 15)); }, 6000);
 
-  // 브라우저 알림
-  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    var uid = Date.now();
-    try {
-      new Notification('💬 새 CS - ' + author, {
-        body: txt,
-        icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
-        tag: 'cs-' + uid
-      });
-    } catch(e) {}
-    // 10초 후 재알림
-    setTimeout(function() {
-      try {
-        new Notification('💬 새 CS - ' + author, {
-          body: '📌 확인 안 됐어요! ' + txt,
-          icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
-          tag: 'cs-re-' + uid
-        });
-      } catch(e) {}
-    }, 10000);
-  }
+  // 타이틀 깜박임
+  var origTitle = document.title;
+  var blink = 0;
+  var ti = setInterval(function(){
+    document.title = blink%2===0 ? '🔔 새 CS!' : origTitle;
+    if (++blink > 12) { clearInterval(ti); document.title = origTitle; }
+  }, 500);
+
+  // 알림 (SW 경유 - 모바일/PC 통합)
+  var uid = Date.now();
+  _showNotif('💬 새 CS - '+author, txt, 'cs-'+uid);
+  setTimeout(function(){
+    _showNotif('💬 새 CS - '+author, '📌 확인 안 됐어요! '+txt, 'cs-re-'+uid);
+  }, 10000);
 }
 
 function _fbRender() {
@@ -9465,16 +9475,8 @@ function csTestNotif() {
     toast('🔔 알림허용 버튼을 먼저 눌러주세요! (현재: ' + Notification.permission + ')');
     return;
   }
-  try {
-    new Notification('🧪 알림 테스트', {
-      body: '알림이 정상 작동해요! CS 새 글 등록 시 이렇게 와요 ✅',
-      icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png',
-      tag: 'test-' + Date.now()
-    });
-    toast('✅ 테스트 알림 전송! 우상단/우하단 확인해요');
-  } catch(e) {
-    toast('❌ 알림 오류: ' + e.message);
-  }
+  _showNotif('🧪 알림 테스트', '알림이 정상 작동해요! CS 새 글 등록 시 이렇게 와요 ✅', 'test-'+Date.now());
+  toast('✅ 테스트 알림 전송!');
 }
 
 function csRequestNotif() {
@@ -9496,7 +9498,7 @@ function csRequestNotif() {
       toast('🔔 알림 허용됐어요! 새 CS 등록 시 알림이 와요');
       // 테스트 알림
       setTimeout(function(){
-        try { new Notification('🔔 알림 테스트', { body: '알림이 정상 작동해요 ✅' }); } catch(e){}
+        _showNotif('🔔 알림 테스트', '알림이 정상 작동해요 ✅', 'req-test');
       }, 500);
     } else {
       toast('알림을 허용하지 않으셨어요');
@@ -9555,6 +9557,8 @@ function addCsShare() {
   var list = loadCsShare();
   list.unshift(newItem);
   saveCsShare(list);
+  // 기준 id 업데이트 (내 글은 알림 안 보냄)
+  _csLastSeenId = newItem.id;
   // 초기화
   if (inpEl) inpEl.value = '';
   _csShareImgs = [];
