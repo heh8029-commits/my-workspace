@@ -2065,8 +2065,7 @@ function _checkCsNotify() {
     if (count > _csLastNotifyCount) {
       var newItems = list.slice(0, count - _csLastNotifyCount);
       newItems.forEach(function(item) {
-        // 내가 쓴 글은 알림 안 보냄 (500ms 이내 저장한 것)
-        _sendCsNotif(item);
+        _sendCsNotif(item); // 작성자 구분 없이 무조건 알림
       });
       _csLastNotifyCount = count;
     } else {
@@ -2076,17 +2075,21 @@ function _checkCsNotify() {
 }
 
 function _sendCsNotif(item) {
-  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+    toast('⚠️ 알림권한: ' + (typeof Notification !== 'undefined' ? Notification.permission : '없음'));
+    return;
+  }
   var author = item.author || '?';
   var txt = item.text ? item.text.slice(0, 60) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS 등록');
   var title = '💬 새 CS - ' + author;
-  // 즉시 알림
-  try { new Notification(title, { body: txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-notif-1' }); } catch(e){}
+  var uid = Date.now();
+  // 즉시 알림 (tag를 unique하게)
+  try { new Notification(title, { body: txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-'+uid }); } catch(e){ toast('알림오류:'+e.message); }
   // 10초 후 재알림
   setTimeout(function(){
-    try { new Notification(title, { body: '📌 아직 확인 안 됐어요! ' + txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-notif-2' }); } catch(e){}
+    try { new Notification(title, { body: '📌 아직 확인 안 됐어요! ' + txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-re-'+uid }); } catch(e){}
   }, 10000);
-  toast('🔔 ' + author + ': ' + txt.slice(0, 20));
+  toast('🔔 새CS: ' + author + ' - ' + txt.slice(0, 15));
 }
 
 function _fbRender() {
@@ -9058,7 +9061,9 @@ function initRender(pageId) {
     try { var d=loadObj('cs_share'); _csLastNotifyCount=(d&&d.list)?d.list.length:0; } catch(e){}
     // 5초마다 CS 새 글 체크 (hee.html 물알림과 동일 방식)
     setInterval(function(){
-      try { _checkCsNotify(); } catch(e){}
+      try {
+        _checkCsNotify();
+      } catch(e){ console.log('CS체크오류:', e); }
     }, 5000);
   }, 2000);
   // Firebase 실시간 스트림 + 자동싱크 시작
