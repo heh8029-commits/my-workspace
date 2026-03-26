@@ -2059,6 +2059,7 @@ function _fbApplyData(all) {
 
 /* ══ CS 실시간 알림 (완전 새 버전) ══ */
 var _csLastSeenId = 0; // 마지막으로 본 글의 id
+var _audioCtx = null; // 전역 AudioContext (사용자 클릭 후 초기화)
 var _csAlarmInterval = null;
 
 function _csAlarmStart() {
@@ -2071,7 +2072,7 @@ function _csAlarmStart() {
     }
   } catch(e) {}
   
-  toast('CS알림 시작! 기준id:' + _csLastSeenId);
+  console.log('CS알림 시작, 기준id:', _csLastSeenId);
 
   _csAlarmInterval = setInterval(function() {
     fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
@@ -2092,17 +2093,20 @@ function _csAlarmStart() {
 }
 
 
-// 알림 발송 - 모바일(SW) / PC(Notification) 자동 분기
+// 알림 발송 - SW + 직접 둘 다 시도
 function _showNotif(title, body, tag) {
   if (Notification.permission !== 'granted') return;
   tag = tag || ('cs-' + Date.now());
-  // ServiceWorker 방식 (모바일 포함)
+  var sent = false;
+  // SW 경유 (모바일)
   if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: 'SHOW_NOTIFICATION', title: title, body: body, tag: tag
-    });
-  } else {
-    // 폴백: 직접 Notification (PC)
+    try {
+      navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title: title, body: body, tag: tag });
+      sent = true;
+    } catch(e) {}
+  }
+  // 직접 Notification (PC - SW 실패해도 시도)
+  if (!sent || !navigator.serviceWorker || !navigator.serviceWorker.controller) {
     try { new Notification(title, { body: body, tag: tag }); } catch(e) {}
   }
 }
@@ -2111,9 +2115,10 @@ function _csSendAlarm(item) {
   var author = item.author || '?';
   var txt = item.text ? item.text.slice(0, 50) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS');
 
-  // 소리
+  // 소리 (전역 AudioContext 재사용 - 사용자 클릭 후 활성화된 것)
   try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var ctx = _audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
     [0, 0.4, 0.8].forEach(function(delay) {
       var osc = ctx.createOscillator(); var gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
@@ -9540,13 +9545,17 @@ function csTestNotif() {
     toast('❌ 이 브라우저는 알림 지원 안해요');
     return;
   }
-  toast('현재 알림 권한: ' + Notification.permission);
   if (Notification.permission !== 'granted') {
     toast('🔔 알림허용 버튼을 먼저 눌러주세요! (현재: ' + Notification.permission + ')');
     return;
   }
+  // 클릭 제스처로 AudioContext 활성화
+  try {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  } catch(e) {}
   _showNotif('🧪 알림 테스트', '알림이 정상 작동해요! CS 새 글 등록 시 이렇게 와요 ✅', 'test-'+Date.now());
-  toast('✅ 테스트 알림 전송!');
+  toast('✅ 테스트 알림 전송! (소리도 활성화됐어요)');
 }
 
 function csRequestNotif() {
