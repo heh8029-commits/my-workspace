@@ -9465,7 +9465,7 @@ function renderCsShare() {
     if(imgs.length){
       var mi=document.createElement('img');
       mi.src=imgs[0];
-      mi.style.cssText='width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1.5px solid #e0e8ff;cursor:zoom-in;display:block;background:#f8f9ff;margin-bottom:6px';
+      mi.style.cssText='width:100%;object-fit:contain;border-radius:8px;border:1.5px solid #e0e8ff;cursor:zoom-in;display:block;background:#f8f9ff;margin-bottom:6px';
       mi.onclick=(function(a,i){return function(){_csGallery=a;_csGalleryIdx=i;csShowGallery();};})(imgs,0);
       body.appendChild(mi);
       if(imgs.length>1){
