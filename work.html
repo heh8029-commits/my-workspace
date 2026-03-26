@@ -2059,10 +2059,7 @@ function _checkCsNotify() {
       var newItems = list.slice(0, count - _csLastNotifyCount);
       newItems.forEach(function(item) {
         // 내가 쓴 글은 알림 안 보냄 (500ms 이내 저장한 것)
-        var age = Date.now() - (item.createdAt || item.id || 0);
-        if (age > 2000) { // 2초 이상 된 글 (다른 사람이 쓴 것)
-          _sendCsNotif(item);
-        }
+        _sendCsNotif(item);
       });
       _csLastNotifyCount = count;
     } else {
@@ -9052,7 +9049,11 @@ function initRender(pageId) {
     csUpdateNotifBtn && csUpdateNotifBtn();
     // CS 알림 카운터 초기화 (현재 개수 기억)
     try { var d=loadObj('cs_share'); _csLastNotifyCount=(d&&d.list)?d.list.length:0; } catch(e){}
-  }, 1000);
+    // 5초마다 CS 새 글 체크 (hee.html 물알림과 동일 방식)
+    setInterval(function(){
+      try { _checkCsNotify(); } catch(e){}
+    }, 5000);
+  }, 2000);
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
@@ -9450,17 +9451,18 @@ function csUpdateNotifBtn() {
   if (!btn) return;
   if (!('Notification' in window)) { btn.style.display='none'; return; }
   if (Notification.permission === 'granted') {
-    btn.textContent = '🔔 알림 ON';
-    btn.style.background = 'linear-gradient(135deg,#e8fff4,#3dbb8f)';
-    btn.style.borderColor = '#3dbb8f';
-    btn.style.color = 'white';
-    btn.onclick = function(){ toast('✅ 알림이 켜져있어요!'); };
+    // 이미 허용 → 버튼 숨김 (매번 누를 필요 없음)
+    btn.style.display = 'none';
   } else if (Notification.permission === 'denied') {
+    btn.style.display = '';
     btn.textContent = '🔕 알림 차단됨';
     btn.style.background = '#f5f5f5';
     btn.style.borderColor = '#ccc';
     btn.style.color = '#999';
+    btn.title = '브라우저 설정에서 알림을 허용해주세요';
   } else {
+    // default - 아직 선택 안 함 → 버튼 표시
+    btn.style.display = '';
     btn.textContent = '🔔 알림허용';
     btn.style.background = 'linear-gradient(135deg,#fff0f5,#f7a8c0)';
     btn.style.borderColor = '#f7a8c0';
