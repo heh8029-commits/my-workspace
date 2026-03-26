@@ -2025,6 +2025,7 @@ function loadObj(k) {
 var _fbStream = null;
 var _fbStreamRetry = 0;
 var _fbLastSyncTs = 0;
+var _csLastNotifyCount = -1; // CS 알림용 카운터
 var recipeDB; // TDZ 방지 - 아래에서 초기화
 var _fbSyncThrottle = null;
 
@@ -2044,9 +2045,48 @@ function _fbApplyData(all) {
   if (typeof recipeDB !== 'undefined') recipeDB.data = load('recipe');
 }
 
+
+function _checkCsNotify() {
+  try {
+    var data = loadObj('cs_share');
+    var list = (data && data.list) ? data.list : [];
+    var count = list.length;
+    if (_csLastNotifyCount === -1) {
+      _csLastNotifyCount = count;
+      return;
+    }
+    if (count > _csLastNotifyCount) {
+      var newItems = list.slice(0, count - _csLastNotifyCount);
+      newItems.forEach(function(item) {
+        // 내가 쓴 글은 알림 안 보냄 (500ms 이내 저장한 것)
+        var age = Date.now() - (item.createdAt || item.id || 0);
+        if (age > 2000) { // 2초 이상 된 글 (다른 사람이 쓴 것)
+          _sendCsNotif(item);
+        }
+      });
+      _csLastNotifyCount = count;
+    } else {
+      _csLastNotifyCount = count;
+    }
+  } catch(e) { console.log('_checkCsNotify 에러:', e); }
+}
+
+function _sendCsNotif(item) {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  var author = item.author || '?';
+  var txt = item.text ? item.text.slice(0, 60) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS 등록');
+  var title = '💬 새 CS - ' + author;
+  // 즉시 알림
+  try { new Notification(title, { body: txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-notif-1' }); } catch(e){}
+  // 10초 후 재알림
+  setTimeout(function(){
+    try { new Notification(title, { body: '📌 아직 확인 안 됐어요! ' + txt, icon: 'https://raw.githubusercontent.com/heh8029-commits/my-workspace/main/icon-192.png', tag: 'cs-notif-2' }); } catch(e){}
+  }, 10000);
+  toast('🔔 ' + author + ': ' + txt.slice(0, 20));
+}
+
 function _fbRender() {
   setTimeout(function() {
-    try { csCheckNewItems && csCheckNewItems(); } catch(e) {}
     try { renderCsShare && renderCsShare(); } catch(e) {}
     try { renderDesignLinks && renderDesignLinks(); } catch(e) {}
     try { renderDesignCards && renderDesignCards(); } catch(e) {}
@@ -2073,6 +2113,10 @@ function startFbStream() {
           var key = d.path.replace(/^\//, '').split('/')[0];
           if (key) {
             localStorage.setItem('ws5_'+key, JSON.stringify(d.data));
+            // cs_share 변경 시 알림 체크
+            if (key === 'cs_share') {
+              setTimeout(function(){ _checkCsNotify(); }, 100);
+            }
             clearTimeout(_fbSyncThrottle);
             _fbSyncThrottle = setTimeout(_fbRender, 200);
           }
@@ -2083,9 +2127,12 @@ function startFbStream() {
       try {
         var d = JSON.parse(e.data);
         if (d.data) {
+          var hasCsShare = false;
           Object.keys(d.data).forEach(function(k) {
             if (d.data[k] !== null) localStorage.setItem('ws5_'+k, JSON.stringify(d.data[k]));
+            if (k === 'cs_share') hasCsShare = true;
           });
+          if (hasCsShare) setTimeout(function(){ _checkCsNotify(); }, 100);
           clearTimeout(_fbSyncThrottle);
           _fbSyncThrottle = setTimeout(_fbRender, 200);
         }
@@ -9001,7 +9048,11 @@ function initRender(pageId) {
   updateTodaySchedBar();
   _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
   // 알림 버튼 상태 초기화
-  setTimeout(function(){ csUpdateNotifBtn && csUpdateNotifBtn(); }, 500);
+  setTimeout(function(){
+    csUpdateNotifBtn && csUpdateNotifBtn();
+    // CS 알림 카운터 초기화 (현재 개수 기억)
+    try { var d=loadObj('cs_share'); _csLastNotifyCount=(d&&d.list)?d.list.length:0; } catch(e){}
+  }, 1000);
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
