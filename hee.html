@@ -2036,23 +2036,36 @@ function hCsRender() {
       hdr.appendChild(nwBtn);
     }
     card.appendChild(hdr);
-    // 체크박스
+    // 체크박스 - 그로스: 단일 / CS: 수슬
     var chkWrap=document.createElement('div'); chkWrap.style.cssText='display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
     var confirmed=it.confirmed||[];
-    ['은','수','슬'].forEach(function(name){
-      if(name===(it.author||''))return;
-      var lbl=document.createElement('label'); lbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
-      var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=confirmed.indexOf(name)!==-1;
-      chk.style.cssText='width:30px;height:30px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
-      chk.onchange=(function(id,n,c){return function(){
+    if(isCat==='그로스'){
+      var lbl=document.createElement('label'); lbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer';
+      var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=it.done||false;
+      chk.style.cssText='width:36px;height:36px;accent-color:#e0a000;cursor:pointer';
+      chk.onchange=(function(id,c){return function(){
         var lst=hLoadCs(); var item=lst.find(function(x){return x.id===id;});
-        if(item){item.confirmed=item.confirmed||[];var idx=item.confirmed.indexOf(n);if(c.checked){if(idx===-1)item.confirmed.push(n);}else{if(idx!==-1)item.confirmed.splice(idx,1);}
-        var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});}
+        if(item){item.done=c.checked;}
         hSaveCs(lst); hCsRender();
-      };})(it.id,name,chk);
-      var nameEl=document.createElement('span'); nameEl.style.cssText='font-size:1rem;font-weight:900;color:'+(AT[name]||'#333'); nameEl.textContent=name;
-      lbl.appendChild(chk); lbl.appendChild(nameEl); chkWrap.appendChild(lbl);
-    });
+      };})(it.id,chk);
+      var doneEl=document.createElement('span'); doneEl.style.cssText='font-size:.9rem;font-weight:800;color:#e0a000'; doneEl.textContent='확인완료';
+      lbl.appendChild(chk); lbl.appendChild(doneEl); chkWrap.appendChild(lbl);
+    } else {
+      ['은','수','슬'].forEach(function(name){
+        if(name===(it.author||''))return;
+        var lbl=document.createElement('label'); lbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
+        var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=confirmed.indexOf(name)!==-1;
+        chk.style.cssText='width:30px;height:30px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
+        chk.onchange=(function(id,n,c){return function(){
+          var lst=hLoadCs(); var item=lst.find(function(x){return x.id===id;});
+          if(item){item.confirmed=item.confirmed||[];var idx=item.confirmed.indexOf(n);if(c.checked){if(idx===-1)item.confirmed.push(n);}else{if(idx!==-1)item.confirmed.splice(idx,1);}
+          var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});}
+          hSaveCs(lst); hCsRender();
+        };})(it.id,name,chk);
+        var nameEl=document.createElement('span'); nameEl.style.cssText='font-size:1rem;font-weight:900;color:'+(AT[name]||'#333'); nameEl.textContent=name;
+        lbl.appendChild(chk); lbl.appendChild(nameEl); chkWrap.appendChild(lbl);
+      });
+    }
     card.appendChild(chkWrap);
     // 바디
     var body=document.createElement('div'); body.style.cssText='padding:0 16px 14px';
