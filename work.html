@@ -9832,17 +9832,17 @@ function workSync() {
   // 탭 버튼 초기화
   document.querySelectorAll('.work-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
   renderCsShare && renderCsShare();
-  renderCsShare && renderCsShare();
   setTimeout(function(){ setCsAuthor&&setCsAuthor('은'); }, 100);
   renderDesignLinks && renderDesignLinks();
   renderDesignCards && renderDesignCards();
   loadDesignCommentBox && loadDesignCommentBox();
-  // 자동 동기화 + 완료 후 CS 알림 시작
-  workSync().then(function(){
-    setTimeout(function(){ _csAlarmStart && _csAlarmStart(); }, 500);
-  }).catch(function(){
-    setTimeout(function(){ _csAlarmStart && _csAlarmStart(); }, 500);
-  });
+  // CS 알림 - 페이지 열자마자 시작 (3초 후)
+  setTimeout(function(){ 
+    toast('🔔 CS알림 초기화 시도');
+    _csAlarmStart && _csAlarmStart(); 
+  }, 3000);
+  // 자동 동기화
+  workSync();
 })();
 </script>
 <div class="toast" id="toast"></div>
