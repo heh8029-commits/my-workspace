@@ -1797,6 +1797,285 @@ window.addEventListener('beforeinstallprompt', e => {
 function pwaInstall() {
   if (_pwaPrompt) { _pwaPrompt.prompt(); _pwaPrompt.userChoice.then(()=>{ _pwaPrompt=null; }); }
 }
+
+/* ════════════════════════════
+   HEE.HTML CS 실시간공유
+════════════════════════════ */
+var _hCsAuthor = '은';
+var _hCsFilter = '전체';
+var _hCsImgs = [];
+var _hCsLastSeenId = 0;
+var _hCsAlarmInterval = null;
+
+function hLoadCs() { return (loadObj('cs_share').list) || []; }
+function hSaveCs(list) { stor('cs_share', {list:list}); }
+
+function hCsSetAuthor(a) {
+  _hCsAuthor = a;
+  var AC={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var AT={'은':'white','수':'#4a80d0','슬':'#3dbb8f'};
+  var BG={'은':'#fff0f5','수':'#f0f8ff','슬':'#f0fff8'};
+  var TC={'은':'#c04070','수':'#4a80d0','슬':'#3dbb8f'};
+  document.querySelectorAll('.hcs-author-btn').forEach(function(b){
+    var n=b.getAttribute('data-author'), on=n===a;
+    b.style.background=on?AC[n]:BG[n]; b.style.color=on?AT[n]:TC[n];
+    b.style.borderColor=AC[n]; b.style.boxShadow=on?'0 0 0 4px '+AC[n]+'55':'none';
+    b.style.transform=on?'scale(1.18)':'scale(1)';
+  });
+}
+
+function hCsSetFilter(f, el) {
+  _hCsFilter = f;
+  document.querySelectorAll('.hcs-filter-btn').forEach(function(b){
+    b.style.background='white'; b.style.color=b.style.borderColor||'#333';
+  });
+  if(el){ el.style.background=el.style.borderColor; el.style.color='white'; }
+  hCsRender();
+}
+
+function hCsImgModalOpen() {
+  var old=document.getElementById('hcs-img-modal'); if(old)old.remove();
+  var m=document.createElement('div'); m.id='hcs-img-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:white;border-radius:20px;padding:22px 20px 18px;width:100%;max-width:300px;font-family:Pretendard,sans-serif';
+  var ttl=document.createElement('div'); ttl.style.cssText='font-size:.88rem;font-weight:800;color:#333;margin-bottom:14px';
+  ttl.textContent='📎 이미지 추가';
+  var pasteArea=document.createElement('div'); pasteArea.tabIndex=0;
+  pasteArea.style.cssText='border:2px dashed #c0b8f0;border-radius:14px;padding:28px 20px;text-align:center;cursor:pointer;background:#faf8ff;margin-bottom:12px;outline:none';
+  pasteArea.innerHTML='<div style="font-size:2rem;margin-bottom:8px">📋</div><div style="font-size:.85rem;font-weight:700;color:#7040c0">여기 클릭 후 Ctrl+V</div><div style="font-size:.75rem;color:#bbb">또는 이미지 드래그</div>';
+  pasteArea.onpaste=function(e){
+    var items=e.clipboardData&&e.clipboardData.items; if(!items)return;
+    for(var i=0;i<items.length;i++){if(items[i].type.startsWith('image/')){e.preventDefault();m.remove();hCsUploadImg(items[i].getAsFile());return;}}
+  };
+  pasteArea.ondrop=function(e){e.preventDefault();m.remove();var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))hCsUploadImg(f);};
+  pasteArea.ondragover=function(e){e.preventDefault();};
+  pasteArea.onclick=function(){pasteArea.focus();};
+  setTimeout(function(){pasteArea.focus();},100);
+  var btnRow=document.createElement('div'); btnRow.style.cssText='display:flex;gap:8px';
+  var cancelBtn=document.createElement('button'); cancelBtn.textContent='취소';
+  cancelBtn.style.cssText='flex:1;padding:11px;background:#f0f0f0;border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer;font-family:Pretendard,sans-serif';
+  cancelBtn.onclick=function(){m.remove();};
+  var fileBtn=document.createElement('button'); fileBtn.textContent='이미지 첨부';
+  fileBtn.style.cssText='flex:1.5;padding:11px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:white;cursor:pointer;font-family:Pretendard,sans-serif';
+  fileBtn.onclick=function(){m.remove();document.getElementById('hcs-file-inp').click();};
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(fileBtn);
+  box.appendChild(ttl); box.appendChild(pasteArea); box.appendChild(btnRow);
+  m.appendChild(box); document.body.appendChild(m);
+}
+
+function hCsHandleFile(e) {
+  var files=e.target.files;
+  if(files) Array.from(files).forEach(function(f){hCsUploadImg(f);});
+  e.target.value='';
+}
+
+function hCsUploadImg(file) {
+  toast('⬆️ 업로드 중...');
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1200,maxH=1200,w=img.width,h=img.height;
+      var ratio=Math.min(1,maxW/w,maxH/h);
+      var canvas=document.createElement('canvas');
+      canvas.width=Math.round(w*ratio); canvas.height=Math.round(h*ratio);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      canvas.toBlob(function(blob){
+        var fd=new FormData(); fd.append('file',blob,'img.jpg'); fd.append('upload_preset','hwx2iwfz');
+        fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+          .then(function(r){return r.json();})
+          .then(function(data){
+            if(data.secure_url){_hCsImgs.push(data.secure_url);hCsRenderImgPreview();toast('✅ 이미지 추가 ('+_hCsImgs.length+'장)');}
+            else toast('❌ 업로드 실패');
+          }).catch(function(){toast('❌ 업로드 오류');});
+      },'image/jpeg',0.85);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function hCsRenderImgPreview() {
+  var prev=document.getElementById('hcs-img-preview'); if(!prev)return;
+  prev.innerHTML='';
+  _hCsImgs.forEach(function(url,i){
+    var wrap=document.createElement('div'); wrap.style.cssText='position:relative;display:inline-block;width:60px;height:60px;flex-shrink:0';
+    var img=document.createElement('img'); img.src=url;
+    img.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #b0c8f8;cursor:pointer';
+    var del=document.createElement('button'); del.textContent='✕'; del.type='button';
+    del.style.cssText='position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:#e03c6e;border:none;border-radius:50%;color:white;font-size:.6rem;cursor:pointer;font-weight:700;z-index:2';
+    del.onclick=(function(idx){return function(e){e.stopPropagation();_hCsImgs.splice(idx,1);hCsRenderImgPreview();};})(i);
+    wrap.appendChild(img); wrap.appendChild(del); prev.appendChild(wrap);
+  });
+}
+
+function hCsAdd() {
+  var inpEl=document.getElementById('hcs-inp');
+  var txt=inpEl?inpEl.value.trim():'';
+  if(!txt&&_hCsImgs.length===0){toast('내용 또는 이미지를 입력해요 💬');return;}
+  var newItem={id:Date.now(),type:'',author:_hCsAuthor,text:txt,imgs:_hCsImgs.slice(),img:_hCsImgs[0]||'',done:false,createdAt:Date.now(),replies:[],confirmed:[]};
+  var list=hLoadCs(); list.unshift(newItem); hSaveCs(list);
+  _hCsLastSeenId=newItem.id;
+  if(inpEl)inpEl.value=''; _hCsImgs=[]; hCsRenderImgPreview();
+  toast('📤 등록됐어요!');
+  setTimeout(function(){hCsRender();},100);
+}
+
+function hCsToggleDone(id) {
+  var list=hLoadCs(); var it=list.find(function(x){return x.id===id;});
+  if(it)it.done=!it.done; hSaveCs(list); hCsRender();
+}
+function hCsDelete(id) {
+  confirmDel('이 CS 항목',function(){hSaveCs(hLoadCs().filter(function(x){return x.id!==id;}));hCsRender();toast('🗑️ 삭제됐어요');});
+}
+function hCsEditOpen(id) {
+  var list=hLoadCs(); var item=list.find(function(x){return x.id===id;}); if(!item)return;
+  var old=document.getElementById('hcs-edit-modal'); if(old)old.remove();
+  var m=document.createElement('div'); m.id='hcs-edit-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  var box=document.createElement('div'); box.style.cssText='background:white;border-radius:18px;padding:22px 20px;width:100%;max-width:420px;font-family:Pretendard,sans-serif;display:flex;flex-direction:column;gap:10px';
+  var ttl=document.createElement('div'); ttl.style.cssText='font-size:.95rem;font-weight:800;color:#1050a0'; ttl.textContent='✏️ CS 수정';
+  var ta=document.createElement('textarea'); ta.value=item.text||''; ta.rows=4;
+  ta.style.cssText='width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7';
+  var btnRow=document.createElement('div'); btnRow.style.cssText='display:flex;gap:8px';
+  var cancelBtn=document.createElement('button'); cancelBtn.textContent='취소';
+  cancelBtn.style.cssText='flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer';
+  cancelBtn.onclick=function(){m.remove();};
+  var saveBtn=document.createElement('button'); saveBtn.textContent='💾 저장';
+  saveBtn.style.cssText='flex:1.5;padding:10px;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
+  saveBtn.onclick=function(){var idx=list.findIndex(function(x){return x.id===id;});if(idx!==-1){list[idx].text=ta.value.trim();hSaveCs(list);}m.remove();hCsRender();toast('✅ 수정됐어요!');};
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
+  box.appendChild(ttl); box.appendChild(ta); box.appendChild(btnRow);
+  m.appendChild(box); document.body.appendChild(m);
+  setTimeout(function(){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);},50);
+}
+
+function hCsRender() {
+  var el=document.getElementById('hcs-list'); if(!el)return;
+  var list=hLoadCs();
+  var kw=((document.getElementById('hcs-search')||{}).value||'').trim().toLowerCase();
+  if(kw)list=list.filter(function(it){return(it.text||'').toLowerCase().indexOf(kw)!==-1;});
+  if(_hCsFilter==='미완료')list=list.filter(function(it){return!it.done;});
+  if(_hCsFilter==='완료')list=list.filter(function(it){return it.done;});
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;padding:40px;font-size:.95rem">CS 내용을 등록해요 💬</div>';return;}
+  var AC={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var AT={'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+  el.innerHTML='';
+  list.forEach(function(it){
+    var ac=AC[it.author]||'#eee', atc=AT[it.author]||'#333';
+    var d=new Date(it.createdAt||it.id), hh=d.getHours(), mm=d.getMinutes();
+    var ampm=hh<12?'오전':'오후', hh12=hh%12||12;
+    var dateStr=(d.getMonth()+1)+'/'+(d.getDate())+'('+['일','월','화','수','목','금','토'][d.getDay()]+')';
+    var timeStr=ampm+' '+hh12+':'+(mm<10?'0':'')+mm;
+    var card=document.createElement('div');
+    card.style.cssText='background:'+(it.done?'#f5f5f5':'white')+';border:2px solid '+(it.done?'#ddd':'#b0c8f8')+';border-radius:14px;margin-bottom:14px;overflow:hidden;opacity:'+(it.done?'0.55':'1');
+    // 헤더
+    var hdr=document.createElement('div'); hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px 0;flex-wrap:wrap';
+    var ab=document.createElement('span'); ab.style.cssText='width:38px;height:38px;border-radius:50%;background:'+ac+';color:'+atc+';font-size:1.05rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc; ab.textContent=it.author||'?';
+    var dtWrap=document.createElement('div'); dtWrap.style.cssText='display:flex;flex-direction:column;gap:1px';
+    var dateEl=document.createElement('div'); dateEl.style.cssText='font-size:.95rem;font-weight:900;color:#222'; dateEl.textContent=dateStr;
+    var timeEl=document.createElement('div'); timeEl.style.cssText='font-size:1.05rem;font-weight:900;color:#1050a0'; timeEl.textContent=timeStr;
+    dtWrap.appendChild(dateEl); dtWrap.appendChild(timeEl);
+    hdr.appendChild(ab); hdr.appendChild(dtWrap); card.appendChild(hdr);
+    // 체크박스
+    var chkWrap=document.createElement('div'); chkWrap.style.cssText='display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
+    var confirmed=it.confirmed||[];
+    ['은','수','슬'].forEach(function(name){
+      if(name===(it.author||''))return;
+      var lbl=document.createElement('label'); lbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
+      var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=confirmed.indexOf(name)!==-1;
+      chk.style.cssText='width:30px;height:30px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
+      chk.onchange=(function(id,n,c){return function(){
+        var lst=hLoadCs(); var item=lst.find(function(x){return x.id===id;});
+        if(item){item.confirmed=item.confirmed||[];var idx=item.confirmed.indexOf(n);if(c.checked){if(idx===-1)item.confirmed.push(n);}else{if(idx!==-1)item.confirmed.splice(idx,1);}
+        var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});}
+        hSaveCs(lst); hCsRender();
+      };})(it.id,name,chk);
+      var nameEl=document.createElement('span'); nameEl.style.cssText='font-size:1rem;font-weight:900;color:'+(AT[name]||'#333'); nameEl.textContent=name;
+      lbl.appendChild(chk); lbl.appendChild(nameEl); chkWrap.appendChild(lbl);
+    });
+    card.appendChild(chkWrap);
+    // 바디
+    var body=document.createElement('div'); body.style.cssText='padding:0 16px 14px';
+    if(it.text){var memo=document.createElement('div');memo.style.cssText='text-align:center;font-size:1.1rem;font-weight:900;color:'+(it.done?'#aaa':'#1a1a2e')+';line-height:1.8;white-space:pre-wrap;word-break:break-all;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';memo.textContent=it.text;body.appendChild(memo);}
+    var imgs=(it.imgs&&it.imgs.length)?it.imgs:(it.img?[it.img]:[]);
+    if(imgs.length){
+      var mi=document.createElement('img'); mi.src=imgs[0];
+      mi.style.cssText='width:100%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff';
+      mi.onclick=(function(a,i){return function(){if(typeof csShowGallery==='function'){_csGallery=a;_csGalleryIdx=i;csShowGallery();}else{var w=window.open();w.document.write('<img src="'+a[i]+'" style="max-width:100%">');}}})(imgs,0);
+      body.appendChild(mi);
+      if(imgs.length>1){var tr=document.createElement('div');tr.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px';imgs.forEach(function(src,i){var th=document.createElement('img');th.src=src;th.style.cssText='width:56px;height:56px;object-fit:cover;border-radius:7px;cursor:pointer;border:2.5px solid '+(i===0?'#4a80d0':'#e0e8ff');th.onclick=(function(mel,imgs2,src2,idx){return function(){mel.src=src2;th.style.borderColor='#4a80d0';};})(mi,imgs,src,i);tr.appendChild(th);});body.appendChild(tr);}
+    }
+    // 액션
+    var acts=document.createElement('div'); acts.style.cssText='display:flex;gap:8px;align-items:center;margin-top:8px';
+    var doneBtn=document.createElement('button'); doneBtn.textContent=it.done?'↺ 미완료':'✅ 완료';
+    doneBtn.style.cssText='padding:6px 16px;border-radius:9px;border:1.5px solid '+(it.done?'#bbb':'#3dbb8f')+';background:'+(it.done?'white':'#3dbb8f')+';color:'+(it.done?'#aaa':'white')+';font-size:.85rem;font-weight:700;cursor:pointer';
+    doneBtn.onclick=(function(id){return function(){hCsToggleDone(id);};})(it.id);
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️'; editBtn.type='button';
+    editBtn.style.cssText='padding:6px 12px;border-radius:9px;border:1.5px solid #ffe080;background:white;color:#a07800;font-size:.85rem;cursor:pointer';
+    editBtn.onclick=(function(id){return function(){hCsEditOpen(id);};})(it.id);
+    var dlBtn=document.createElement('button'); dlBtn.textContent='🗑️'; dlBtn.type='button';
+    dlBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;margin-left:auto';
+    dlBtn.onmouseover=function(){this.style.color='#e03c6e';}; dlBtn.onmouseout=function(){this.style.color='#ddd';};
+    dlBtn.onclick=(function(id){return function(){hCsDelete(id);};})(it.id);
+    acts.appendChild(doneBtn); acts.appendChild(editBtn); acts.appendChild(dlBtn);
+    body.appendChild(acts); card.appendChild(body); el.appendChild(card);
+  });
+}
+
+// CS 알림 (hee.html용)
+function _hCsAlarmStart() {
+  if(_hCsAlarmInterval) return;
+  try { var cur=loadObj('cs_share'); if(cur&&cur.list&&cur.list.length>0)_hCsLastSeenId=cur.list[0].id||0; } catch(e){}
+  _hCsAlarmInterval=setInterval(function(){
+    fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json?t='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(!data||!data.list||!data.list.length)return;
+        var newest=data.list[0];
+        if(newest&&newest.id&&newest.id>_hCsLastSeenId){
+          var newItems=data.list.filter(function(it){return it.id>_hCsLastSeenId;});
+          _hCsLastSeenId=data.list[0].id;
+          localStorage.setItem('ws5_cs_share',JSON.stringify(data));
+          try{hCsRender();}catch(e){}
+          newItems.forEach(function(item){_hCsSendAlarm(item);});
+        }
+      }).catch(function(){});
+  },5000);
+}
+
+function _hCsSendAlarm(item) {
+  var author=item.author||'?';
+  var txt=item.text?item.text.slice(0,50):(item.imgs&&item.imgs.length?'이미지 '+item.imgs.length+'장':'새 CS');
+  try {
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,0.4,0.8].forEach(function(delay){
+      var osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';
+      osc.frequency.setValueAtTime(880,ctx.currentTime+delay);
+      osc.frequency.exponentialRampToValueAtTime(440,ctx.currentTime+delay+0.3);
+      gain.gain.setValueAtTime(0.6,ctx.currentTime+delay);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.4);
+      osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+0.5);
+    });
+  }catch(e){}
+  toast('🔔 새CS! '+author+' - '+txt.slice(0,15));
+  setTimeout(function(){toast('🔔 새CS! '+author+' - '+txt.slice(0,15));},3000);
+  if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+    var uid=Date.now();
+    if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+      navigator.serviceWorker.controller.postMessage({type:'SHOW_NOTIFICATION',title:'💬 새 CS - '+author,body:txt,tag:'cs-'+uid});
+    } else {
+      try{new Notification('💬 새 CS - '+author,{body:txt,tag:'cs-'+uid});}catch(e){}
+    }
+  }
+}
+
+// _fbRender에 hCsRender 추가
+
 </script>
 
 <!-- 상단 탭바 (고정) -->
@@ -1842,6 +2121,7 @@ function pwaInstall() {
   <button class="msub-btn" onclick="switchSub('menu1',4,null);setMobileSubActive(this)">📦 재고관리(단가)</button>
   <button class="msub-btn" onclick="switchSub('menu1',22,null);setMobileSubActive(this)">🧮 원가계산</button>
   <button class="msub-btn" onclick="switchSub('menu1',5,null);setMobileSubActive(this)">👥 직원관리</button>
+  <button class="msub-btn" onclick="switchSub('menu1',23,null);setMobileSubActive(this)">💬 CS실시간공유</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu2">
   <button class="msub-btn" onclick="switchSub('menu2',14,null);setMobileSubActive(this)">📅 달력/일정</button>
@@ -1889,6 +2169,7 @@ function pwaInstall() {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',4,null)">📦 재고관리(단가)</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',22,null)">🧮 원가계산</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',5,null)">👥 직원관리</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu1]'),'menu1');switchSub('menu1',23,null)">💬 CS실시간공유</div>
   </div>
   <div class="gnav-main" id="gnav-menu2" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');gnavActivate('menu2')">
     <span class="gnav-main-icon">🏠</span> 우리집
@@ -2670,6 +2951,45 @@ function pwaInstall() {
         <div id="staff-month-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
         <div id="staff-month-content"></div>
       </div>
+    </div>
+
+    <!-- CS 실시간공유 (menu1-sub-23) -->
+    <div class="subpage" id="menu1-sub-23">
+      <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
+          <div style="display:flex;gap:5px;align-items:center;margin-left:8px">
+            <button type="button" onclick="hCsSetAuthor('은')" class="hcs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:#f7a8c0;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
+            <button type="button" onclick="hCsSetAuthor('수')" class="hcs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:white;color:#4a80d0;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
+            <button type="button" onclick="hCsSetAuthor('슬')" class="hcs-author-btn" data-author="슬" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
+          </div>
+        </div>
+        <!-- 이미지 + 메모 -->
+        <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;min-height:36px;margin-bottom:6px">
+          <div id="hcs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          <div onclick="hCsImgModalOpen()" tabindex="0"
+            style="width:60px;height:60px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none">
+            <span style="font-size:1.2rem;color:#b0c0e0;line-height:1">+</span>
+            <span style="font-size:.58rem;color:#b0c0e0">이미지</span>
+          </div>
+          <input type="file" id="hcs-file-inp" accept="image/*" multiple style="display:none" onchange="hCsHandleFile(event)">
+        </div>
+        <textarea id="hcs-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
+          style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
+          onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();hCsAdd()}"></textarea>
+        <button onclick="hCsAdd()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
+      </div>
+      <!-- 필터 + 검색 -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;gap:5px">
+          <button onclick="hCsSetFilter('전체',this)" class="hcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
+          <button onclick="hCsSetFilter('미완료',this)" class="hcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
+          <button onclick="hCsSetFilter('완료',this)" class="hcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+        </div>
+        <input id="hcs-search" type="text" placeholder="🔍 검색..." oninput="hCsRender()"
+          style="flex:1;min-width:120px;border:1.5px solid #d0e0f8;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
+      </div>
+      <div id="hcs-list"></div>
     </div>
     <div class="subpage" id="menu1-sub-8">
       <div class="subpage-header">
@@ -3952,7 +4272,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -3967,6 +4287,7 @@ function _fbApplyData(all) {
 }
 
 function _fbRender() {
+  try { hCsRender && hCsRender(); } catch(e) {}
   const cp = window._currentPage || localStorage.getItem('ws5_curtab') || 'home';
   if (typeof initRender === 'function') initRender(cp);
   if (typeof updateTodaySchedBar === 'function') updateTodaySchedBar();
@@ -4081,7 +4402,7 @@ function _fixHeaderOffset() {
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
