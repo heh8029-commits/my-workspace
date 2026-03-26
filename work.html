@@ -9441,6 +9441,60 @@ function delCsShare(id) {
     renderCsShare(); toast('🗑️ 삭제됐어요');
   });
 }
+
+function csEditOpen(id) {
+  var list = loadCsShare();
+  var item = list.find(function(x){ return x.id===id; });
+  if (!item) return;
+
+  var old = document.getElementById('cs-edit-modal'); if(old) old.remove();
+  var m = document.createElement('div');
+  m.id = 'cs-edit-modal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+  m.onclick = function(e){ if(e.target===m) m.remove(); };
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:18px;padding:22px 20px;width:100%;max-width:420px;font-family:Pretendard,sans-serif;display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow-y:auto';
+
+  var ttl = document.createElement('div');
+  ttl.style.cssText = 'font-size:.95rem;font-weight:800;color:#1050a0;margin-bottom:2px';
+  ttl.textContent = '✏️ CS 수정';
+
+  // 메모 수정
+  var ta = document.createElement('textarea');
+  ta.value = item.text || '';
+  ta.placeholder = 'CS 내용 메모...';
+  ta.rows = 4;
+  ta.style.cssText = 'width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7';
+
+  // 버튼 행
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:4px';
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '취소';
+  cancelBtn.style.cssText = 'flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer';
+  cancelBtn.onclick = function(){ m.remove(); };
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent = '💾 저장';
+  saveBtn.style.cssText = 'flex:1.5;padding:10px;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
+  saveBtn.onclick = function() {
+    var idx = list.findIndex(function(x){ return x.id===id; });
+    if (idx!==-1) {
+      list[idx].text = ta.value.trim();
+      saveCsShare(list);
+    }
+    m.remove();
+    renderCsShare();
+    toast('✅ 수정됐어요!');
+  };
+
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
+  box.appendChild(ttl); box.appendChild(ta); box.appendChild(btnRow);
+  m.appendChild(box);
+  document.body.appendChild(m);
+  setTimeout(function(){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 50);
+}
+
 function addCsReply(id) {
   var inp=document.getElementById('cs-reply-inp-'+id);
   if(!inp||!inp.value.trim()) return;
@@ -9614,6 +9668,9 @@ function renderCsShare() {
     doneBtn.textContent = it.done?'↺ 미완료':'✅ 완료';
     doneBtn.style.cssText = 'padding:6px 16px;border-radius:9px;border:1.5px solid '+(it.done?'#bbb':'#3dbb8f')+';background:'+(it.done?'white':'#3dbb8f')+';color:'+(it.done?'#aaa':'white')+';font-size:.85rem;font-weight:700;cursor:pointer';
     doneBtn.onclick=(function(id){return function(){toggleCsShareDone(id);};})(it.id);
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️'; editBtn.type='button';
+    editBtn.style.cssText='padding:6px 12px;border-radius:9px;border:1.5px solid #ffe080;background:white;color:#a07800;font-size:.85rem;cursor:pointer';
+    editBtn.onclick=(function(id){return function(){csEditOpen(id);};})(it.id);
     var cpBtn=document.createElement('button'); cpBtn.textContent='📋'; cpBtn.type='button';
     cpBtn.style.cssText='padding:6px 12px;border-radius:9px;border:1.5px solid #b0c8f8;background:white;color:#4a80d0;font-size:.85rem;cursor:pointer';
     cpBtn.onclick=(function(t){return function(){navigator.clipboard.writeText(t).then(function(){toast('📋 복사됐어요!');});};})(it.text||'');
@@ -9621,7 +9678,7 @@ function renderCsShare() {
     dlBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;margin-left:auto';
     dlBtn.onmouseover=function(){this.style.color='#e03c6e';}; dlBtn.onmouseout=function(){this.style.color='#ddd';};
     dlBtn.onclick=(function(id){return function(){delCsShare(id);};})(it.id);
-    acts.appendChild(doneBtn); acts.appendChild(cpBtn); acts.appendChild(dlBtn);
+    acts.appendChild(doneBtn); acts.appendChild(editBtn); acts.appendChild(cpBtn); acts.appendChild(dlBtn);
     body.appendChild(acts);
 
     card.appendChild(body);
