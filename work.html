@@ -1733,7 +1733,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <input type="file" id="cs-file-inp" accept="image/*" multiple style="display:none" onchange="csHandleFile(event)">
       </div>
       <!-- 메모 -->
-      <textarea id="cs-share-inp" rows="3" placeholder="CS 내용 메모..."
+      <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
         style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
         onpaste="csHandlePaste(event)"
         onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
@@ -9490,10 +9490,9 @@ function renderCsShare() {
     var ac = AC[it.author]||'#eee';
     var atc = AT[it.author]||'#333';
 
-    // 날짜/시간 포맷
     var d = new Date(it.createdAt||it.id);
     var hh=d.getHours(), mm=d.getMinutes();
-    var ampm = hh<12 ? '오전' : '오후';
+    var ampm = hh<12?'오전':'오후';
     var hh12 = hh%12||12;
     var dateStr = (d.getMonth()+1)+'/'+(d.getDate())+'('+['일','월','화','수','목','금','토'][d.getDay()]+')';
     var timeStr = ampm+' '+hh12+':'+(mm<10?'0':'')+mm;
@@ -9501,17 +9500,15 @@ function renderCsShare() {
     var card = document.createElement('div');
     card.style.cssText = 'background:'+(it.done?'#f5f5f5':'white')+';border:2px solid '+(it.done?'#ddd':tc)+';border-radius:14px;margin-bottom:14px;overflow:hidden;opacity:'+(it.done?'0.55':'1');
 
-    // 상단 헤더 - 작성자 + 날짜시간 + 유형
+    // ── 상단 헤더: 작성자 + 날짜시간 + 유형 ──
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px 10px;border-bottom:1px solid #f0f0f0;flex-wrap:wrap';
+    hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px 0;flex-wrap:wrap';
 
-    // 작성자 원형
     var ab = document.createElement('span');
-    ab.style.cssText = 'width:36px;height:36px;border-radius:50%;background:'+ac+';color:'+atc+';font-size:1rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc;
+    ab.style.cssText = 'width:38px;height:38px;border-radius:50%;background:'+ac+';color:'+atc+';font-size:1.05rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc;
     ab.textContent = it.author||'?';
     hdr.appendChild(ab);
 
-    // 날짜+시간 (두껍고 크게)
     var dtWrap = document.createElement('div');
     dtWrap.style.cssText = 'display:flex;flex-direction:column;gap:1px';
     var dateEl = document.createElement('div');
@@ -9523,89 +9520,27 @@ function renderCsShare() {
     dtWrap.appendChild(dateEl); dtWrap.appendChild(timeEl);
     hdr.appendChild(dtWrap);
 
-    // 유형 뱃지
     if (it.type) {
       var tb = document.createElement('span');
       tb.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:800;margin-left:auto';
       tb.textContent = it.type;
       hdr.appendChild(tb);
     }
-
     card.appendChild(hdr);
 
-    // 바디
-    var body = document.createElement('div');
-    body.style.cssText = 'padding:14px 16px';
-
-    // 이미지
-    var imgs = (it.imgs&&it.imgs.length)?it.imgs:(it.img?[it.img]:[]);
-    if (imgs.length) {
-      var imgWrap = document.createElement('div');
-      imgWrap.style.cssText = 'position:relative;margin-bottom:10px;border-radius:10px;overflow:hidden;background:#f8f9ff';
-
-      // 메인 이미지
-      var mi = document.createElement('img');
-      mi.src = imgs[0];
-      mi.style.cssText = 'width:100%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px';
-      mi.onclick = (function(a,i){ return function(){ _csGallery=a; _csGalleryIdx=i; csShowGallery(); }; })(imgs,0);
-      imgWrap.appendChild(mi);
-
-      // 메모 오버레이 (이미지 위 중앙)
-      if (it.text) {
-        var overlay = document.createElement('div');
-        overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:none';
-        var memoBox = document.createElement('div');
-        memoBox.style.cssText = 'background:rgba(0,0,0,.55);border-radius:12px;padding:12px 18px;text-align:center;max-width:90%;backdrop-filter:blur(2px)';
-        var memoTxt = document.createElement('div');
-        memoTxt.style.cssText = 'font-size:1.15rem;font-weight:900;color:white;line-height:1.7;white-space:pre-wrap;word-break:break-all;text-shadow:0 1px 4px rgba(0,0,0,.6);letter-spacing:.02em';
-        memoTxt.textContent = it.text;
-        memoBox.appendChild(memoTxt);
-        overlay.appendChild(memoBox);
-        imgWrap.appendChild(overlay);
-      }
-
-      body.appendChild(imgWrap);
-
-      // 썸네일 (여러장)
-      if (imgs.length > 1) {
-        var tr = document.createElement('div');
-        tr.id = 'cs-thumb-'+it.id;
-        tr.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px';
-        imgs.forEach(function(src,i){
-          var th = document.createElement('img');
-          th.src = src;
-          th.style.cssText = 'width:56px;height:56px;object-fit:cover;border-radius:7px;cursor:pointer;border:2.5px solid '+(i===0?'#4a80d0':'#e0e8ff');
-          th.onclick = (function(mel,imgs2,src2,idx,tid){ return function(){
-            mel.src=src2;
-            mel.onclick=(function(a,i){ return function(){ _csGallery=a; _csGalleryIdx=i; csShowGallery(); }; })(imgs2,idx);
-            var trow=document.getElementById(tid);
-            if(trow) trow.querySelectorAll('img').forEach(function(t,ti){ t.style.borderColor=ti===idx?'#4a80d0':'#e0e8ff'; });
-          }; })(mi,imgs,src,i,'cs-thumb-'+it.id);
-          tr.appendChild(th);
-        });
-        body.appendChild(tr);
-      }
-    } else if (it.text) {
-      // 이미지 없으면 메모만 크게 중앙
-      var memoOnly = document.createElement('div');
-      memoOnly.style.cssText = 'text-align:center;padding:10px 0 14px;font-size:1.15rem;font-weight:900;color:#1a1a2e;line-height:1.8;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em';
-      memoOnly.textContent = it.text;
-      body.appendChild(memoOnly);
-    }
-
-    // 체크박스 - 크게 중앙 배치
+    // ── 3. 체크박스 - 날짜시간 바로 밑 중앙 ──
     var chkWrap = document.createElement('div');
-    chkWrap.style.cssText = 'display:flex;gap:20px;justify-content:center;align-items:center;padding:12px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;margin-bottom:10px';
+    chkWrap.style.cssText = 'display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
     var confirmed = it.confirmed||[];
     ['은','수','슬'].forEach(function(name){
       if (name===(it.author||'')) return;
       var lbl = document.createElement('label');
-      lbl.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer';
+      lbl.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
       var chk = document.createElement('input'); chk.type='checkbox';
       chk.checked = confirmed.indexOf(name)!==-1;
-      chk.style.cssText = 'width:28px;height:28px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
+      chk.style.cssText = 'width:30px;height:30px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
       var nameEl = document.createElement('span');
-      nameEl.style.cssText = 'font-size:.95rem;font-weight:900;color:'+(AT[name]||'#333');
+      nameEl.style.cssText = 'font-size:1rem;font-weight:900;color:'+(AT[name]||'#333');
       nameEl.textContent = name;
       chk.onchange = (function(id,n,c){ return function(){
         var lst=loadCsShare(); var item=lst.find(function(x){return x.id===id;});
@@ -9622,7 +9557,48 @@ function renderCsShare() {
       lbl.appendChild(chk); lbl.appendChild(nameEl);
       chkWrap.appendChild(lbl);
     });
-    body.appendChild(chkWrap);
+    card.appendChild(chkWrap);
+
+    // ── 바디 ──
+    var body = document.createElement('div');
+    body.style.cssText = 'padding:0 16px 14px';
+
+    // 2. 메모 먼저 (이미지 위에)
+    if (it.text) {
+      var memoEl = document.createElement('div');
+      memoEl.style.cssText = 'text-align:center;font-size:1.15rem;font-weight:900;color:#1a1a2e;line-height:1.8;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+      memoEl.textContent = it.text;
+      body.appendChild(memoEl);
+    }
+
+    // 이미지 (메모 아래)
+    var imgs = (it.imgs&&it.imgs.length)?it.imgs:(it.img?[it.img]:[]);
+    if (imgs.length) {
+      var mi = document.createElement('img');
+      mi.src = imgs[0];
+      mi.style.cssText = 'width:100%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff';
+      mi.onclick = (function(a,i){ return function(){ _csGallery=a; _csGalleryIdx=i; csShowGallery(); }; })(imgs,0);
+      body.appendChild(mi);
+
+      if (imgs.length > 1) {
+        var tr = document.createElement('div');
+        tr.id = 'cs-thumb-'+it.id;
+        tr.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px';
+        imgs.forEach(function(src,i){
+          var th = document.createElement('img');
+          th.src = src;
+          th.style.cssText = 'width:56px;height:56px;object-fit:cover;border-radius:7px;cursor:pointer;border:2.5px solid '+(i===0?'#4a80d0':'#e0e8ff');
+          th.onclick = (function(mel,imgs2,src2,idx,tid){ return function(){
+            mel.src=src2;
+            mel.onclick=(function(a,ii){ return function(){ _csGallery=a; _csGalleryIdx=ii; csShowGallery(); }; })(imgs2,idx);
+            var trow=document.getElementById(tid);
+            if(trow) trow.querySelectorAll('img').forEach(function(t,ti){ t.style.borderColor=ti===idx?'#4a80d0':'#e0e8ff'; });
+          }; })(mi,imgs,src,i,'cs-thumb-'+it.id);
+          tr.appendChild(th);
+        });
+        body.appendChild(tr);
+      }
+    }
 
     // 답변들
     var replies = it.replies||[];
@@ -9641,7 +9617,7 @@ function renderCsShare() {
 
     // 답변 입력
     var riRow = document.createElement('div');
-    riRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;margin-top:4px';
+    riRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;margin-top:6px';
     var ri = document.createElement('input'); ri.type='text'; ri.id='cs-reply-inp-'+it.id; ri.placeholder='답변 메모...';
     ri.style.cssText = 'flex:1;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 12px;font-size:.9rem;font-family:Pretendard,sans-serif;outline:none';
     ri.onkeydown = (function(id){ return function(e){ if(e.key==='Enter') addCsReply(id); }; })(it.id);
