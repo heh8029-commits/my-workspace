@@ -9081,11 +9081,17 @@ function initRender(pageId) {
     csUpdateNotifBtn && csUpdateNotifBtn();
     // CS 알림 카운터 초기화 (현재 개수 기억)
     try { var d=loadObj('cs_share'); _csLastNotifyCount=(d&&d.list)?d.list.length:0; } catch(e){}
-    // 5초마다 CS 새 글 체크 (hee.html 물알림과 동일 방식)
+    // 5초마다 Firebase에서 직접 CS 새 글 체크
     setInterval(function(){
-      try {
-        _checkCsNotify();
-      } catch(e){ console.log('CS체크오류:', e); }
+      fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+          if (!data || !data.list) return;
+          // localStorage 업데이트
+          localStorage.setItem('ws5_cs_share', JSON.stringify(data));
+          // 알림 체크
+          try { _checkCsNotify(); } catch(e){}
+        }).catch(function(){});
     }, 5000);
   }, 2000);
   // Firebase 실시간 스트림 + 자동싱크 시작
