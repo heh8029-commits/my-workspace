@@ -2769,6 +2769,13 @@ function _hCsSendAlarm(item) {
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,#b2f0d0)">🛒</div>
         <div><div class="subpage-title">상품관리</div><div class="subpage-desc">판매 상품 목록 &amp; 상태 관리</div></div>
       </div>
+      <!-- 상품관리 메모 -->
+      <div class="card" style="border-top:3px solid #3dbb8f;margin-bottom:18px">
+        <div style="font-size:.88rem;font-weight:700;color:#1a7a50;margin-bottom:8px">💬 메모</div>
+        <textarea id="product-memo-box" rows="5" placeholder="자유롭게 메모해요..."
+          style="width:100%;box-sizing:border-box;border:1.5px solid #a0e8c8;border-radius:10px;padding:10px 12px;font-size:.88rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.8;background:#f5fffb;color:#0a3020;font-weight:500"
+          oninput="productMemoBoxSave()"></textarea>
+      </div>
       <div id="product-mgmt-wrap"></div>
     </div>
 
@@ -4346,7 +4353,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -4476,7 +4483,7 @@ function _fixHeaderOffset() {
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -7891,6 +7898,15 @@ function loadDesignCommentBox() {
   if (el) el.value = loadObj('design_comments').text || '';
 }
 
+function productMemoBoxSave() {
+  var el = document.getElementById('product-memo-box');
+  if (el) stor('product_memo_box', {text: el.value});
+}
+function loadProductMemoBox() {
+  var el = document.getElementById('product-memo-box');
+  if (el) el.value = loadObj('product_memo_box').text || '';
+}
+
 function renderDesignComments() {
   var el = document.getElementById('design-comment-list');
   if (!el) return;
@@ -10783,7 +10799,7 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderPnlPage && renderPnlPage(); }, 0);
   }
   if (pageId === 'menu1' && num === 18) {
-    setTimeout(function(){ renderProductMgmt && renderProductMgmt(); }, 0);
+    setTimeout(function(){ renderProductMgmt && renderProductMgmt(); loadProductMemoBox && loadProductMemoBox(); }, 0);
   }
   if (pageId === 'menu1' && num === 19) {
     setTimeout(function(){ renderPhrases && renderPhrases(); }, 0);
