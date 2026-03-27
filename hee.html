@@ -9967,9 +9967,30 @@ function _cmImgModal(title, onSave) {
   document.getElementById('cm-nimg-cancel').onclick = function(){ modal.remove(); };
   document.getElementById('cm-nimg-ok').onclick = function(){
     if (!_pending) { toast('이미지를 먼저 추가해주세요 📷'); return; }
-    onSave(_pending);
-    modal.remove();
-    toast('📷 이미지 등록됐어요!');
+    // Cloudinary 업로드
+    var okBtn = document.getElementById('cm-nimg-ok');
+    if (okBtn) { okBtn.textContent = '⬆️ 업로드 중...'; okBtn.disabled = true; }
+    // base64 → Blob → FormData
+    fetch(_pending)
+      .then(function(r){ return r.blob(); })
+      .then(function(blob){
+        var fd = new FormData(); fd.append('file', blob, 'card.jpg'); fd.append('upload_preset','hwx2iwfz');
+        return fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd});
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data.secure_url) {
+          onSave(data.secure_url);
+          modal.remove();
+          toast('📷 이미지 등록됐어요!');
+        } else {
+          toast('❌ 업로드 실패');
+          if (okBtn) { okBtn.textContent = '✅ 적용'; okBtn.disabled = false; }
+        }
+      }).catch(function(){
+        toast('❌ 업로드 오류');
+        if (okBtn) { okBtn.textContent = '✅ 적용'; okBtn.disabled = false; }
+      });
   };
   modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
 }
