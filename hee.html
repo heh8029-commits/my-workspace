@@ -9375,6 +9375,16 @@ var _cmEditId = null;
 var _cmMainImgPending = null;
 var _cmRefImgPending  = null;
 
+
+function fmtComma(el) {
+  var raw = el.value.replace(/[^0-9]/g, '');
+  if (raw === '') { el.value = ''; return; }
+  el.value = parseInt(raw, 10).toLocaleString() + '원';
+  // 커서를 '원' 앞으로
+  var pos = el.value.length - 1;
+  setTimeout(function(){ el.setSelectionRange(pos, pos); }, 0);
+}
+
 function loadCards()     { return loadObj('card_mgmt').list || []; }
 function saveCards(list) { stor('card_mgmt', {list}); }
 
@@ -9736,7 +9746,7 @@ function _cmMakeCard(c) {
     eMain.onclick=(function(id){return function(){cmMainImgOpen(id);};})(c.id);
     var eSmall=document.createElement('div'); eSmall.style.cssText='display:flex;gap:4px';
     var eImgs=c.imgs||[];
-    for(var i=0;i<3;i++){
+    for(var i=0;i<6;i++){
       var es=document.createElement('div');
       es.style.cssText='width:30px;height:30px;border:1.5px dashed #b2d8f8;background:#f0f8ff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative';
       if(eImgs[i]){
@@ -9766,8 +9776,10 @@ function _cmMakeCard(c) {
       +'</div>'
       +'<input id="cme-issuer-'+c.id+'" type="text" value="'+escHtml(c.issuer||'')+'" placeholder="카드사 (예: 신한, 삼성)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
       +'<input id="cme-number-'+c.id+'" type="text" value="'+escHtml(c.number||'')+'" placeholder="카드번호 (예: 1234-****-****-5678)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
-      +'<input id="cme-fee-'+c.id+'" type="text" value="'+escHtml(c.fee||'')+'" placeholder="연회비 (예: 15,000원)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
-      +'<input id="cme-bank-'+c.id+'" type="text" value="'+escHtml(c.bank||'')+'" placeholder="납부 은행 (예: 국민은행)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">';
+      +'<input id="cme-fee-'+c.id+'" type="text" value="'+escHtml(c.fee||'')+'" placeholder="연회비 (예: 15,000원)" oninput="fmtComma(this)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
+      +'<input id="cme-perf-'+c.id+'" type="text" value="'+escHtml(c.performance||'')+'" placeholder="실적금액 (예: 300,000원)" oninput="fmtComma(this)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
+      +'<input id="cme-bank-'+c.id+'" type="text" value="'+escHtml(c.bank||'')+'" placeholder="납부 은행 (예: 국민은행)" style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px">'
+      +'<textarea id="cme-memo-'+c.id+'" rows="2" placeholder="메모..." style="width:100%;box-sizing:border-box;border:1.5px solid #b2d8f8;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;border-radius:6px;resize:none;line-height:1.6">'+escHtml(c.memo||'')+'</textarea>';
     eWrap.appendChild(eLeft); eWrap.appendChild(eRight);
     card.appendChild(eWrap);
     return card;
@@ -9797,11 +9809,11 @@ function _cmMakeCard(c) {
   imgCol.appendChild(mainSlot);
 
   var smallRow = document.createElement('div');
-  smallRow.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);height:46px;border-top:1px solid #b2d8f8';
+  smallRow.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #b2d8f8';
   var imgs = c.imgs||[];
-  for (var si=0; si<3; si++) {
+  for (var si=0; si<6; si++) {
     var ss=document.createElement('div');
-    ss.style.cssText='position:relative;overflow:hidden;background:#f0f8ff;cursor:pointer'+(si<2?';border-right:1px solid #b2d8f8':'');
+    ss.style.cssText='position:relative;overflow:hidden;background:#f0f8ff;cursor:pointer;height:40px;border-bottom:1px solid #e8f4ff'+(si%3<2?';border-right:1px solid #b2d8f8':'');
     if (imgs[si]) {
       var sm=document.createElement('img'); sm.src=imgs[si]; sm.loading='lazy';
       sm.style.cssText='width:100%;height:100%;object-fit:cover;display:block';
@@ -9833,9 +9845,10 @@ function _cmMakeCard(c) {
   infoCol.appendChild(row1);
 
   var fields=[
-    {label:'카드번호', val:c.number, icon:'💳'},
-    {label:'연회비',   val:c.fee,    icon:'💰'},
-    {label:'납부은행', val:c.bank,   icon:'🏦'},
+    {label:'카드번호', val:c.number,      icon:'💳'},
+    {label:'연회비',   val:c.fee,         icon:'💰'},
+    {label:'실적금액', val:c.performance,  icon:'📊'},
+    {label:'납부은행', val:c.bank,         icon:'🏦'},
   ];
   fields.forEach(function(f){
     if(!f.val) return;
@@ -9845,6 +9858,13 @@ function _cmMakeCard(c) {
       +'<span style="font-size:.8rem;color:#2a4a6a;font-weight:600;word-break:break-all">'+escHtml(f.val)+'</span>';
     infoCol.appendChild(row);
   });
+  if(c.memo){
+    var memoRow=document.createElement('div');
+    memoRow.style.cssText='margin-top:5px;border-top:1px solid #eef4ff;padding-top:5px';
+    memoRow.innerHTML='<span style="font-size:.65rem;color:#90b8e8;font-weight:700;display:block;margin-bottom:3px">📝 메모</span>'
+      +'<div style="font-size:.8rem;color:#2a4a6a;font-weight:600;white-space:pre-wrap;word-break:break-all;line-height:1.6">'+escHtml(c.memo)+'</div>';
+    infoCol.appendChild(memoRow);
+  }
 
   body.appendChild(infoCol);
   card.appendChild(body);
@@ -9853,7 +9873,7 @@ function _cmMakeCard(c) {
 
 function cmCardAdd() {
   var list=loadCards();
-  var nc={id:Date.now(),issuer:'',number:'',fee:'',bank:'',mainImg:'',imgs:[],_editing:true};
+  var nc={id:Date.now(),issuer:'',number:'',fee:'',performance:'',bank:'',memo:'',mainImg:'',imgs:[],_editing:true};
   list.unshift(nc); saveCards(list); renderCardMgmt();
   var inp=document.getElementById('cme-issuer-'+nc.id);
   if(inp) inp.focus();
@@ -9871,10 +9891,12 @@ function cmEditCancel(id) {
 }
 function cmEditSave(id) {
   var list=loadCards(); var idx=list.findIndex(function(x){return x.id===id;}); if(idx===-1)return;
-  list[idx].issuer = document.getElementById('cme-issuer-'+id).value.trim();
-  list[idx].number = document.getElementById('cme-number-'+id).value.trim();
-  list[idx].fee    = document.getElementById('cme-fee-'+id).value.trim();
-  list[idx].bank   = document.getElementById('cme-bank-'+id).value.trim();
+  list[idx].issuer      = document.getElementById('cme-issuer-'+id).value.trim();
+  list[idx].number      = document.getElementById('cme-number-'+id).value.trim();
+  list[idx].fee         = document.getElementById('cme-fee-'+id).value.trim();
+  list[idx].performance = document.getElementById('cme-perf-'+id).value.trim();
+  list[idx].bank        = document.getElementById('cme-bank-'+id).value.trim();
+  list[idx].memo        = document.getElementById('cme-memo-'+id).value.trim();
   delete list[idx]._editing;
   saveCards(list); renderCardMgmt(); toast('💳 저장됐어요!');
 }
