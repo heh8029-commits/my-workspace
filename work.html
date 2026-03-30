@@ -9182,13 +9182,12 @@ function csUpdateItem(id, updater, cb) {
       var item = list.find(function(x){ return x.id === id; });
       if (!item) { if(cb) cb(); return; }
       updater(item, list);
-      // localStorage 업데이트 (SSE가 올 때 최신 상태로)
       localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
-      // Firebase에 저장 (_fbLastSyncTs 건드리지 않음 - SSE 차단 안 함)
-      fetch(FB_URL + '/cs_share.json', {
+      // 개별 항목만 업데이트 (전체 덮어쓰기 없음)
+      fetch(FB_URL + '/cs_items/' + id + '.json', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({list: list})
+        body: JSON.stringify(item)
       }).then(function(){ if(cb) cb(); }).catch(function(){ if(cb) cb(); });
       renderCsShare();
     }).catch(function() {
@@ -9661,24 +9660,18 @@ function addCsShare() {
     replies: [],
     confirmed: []
   };
-  // Firebase에서 최신 리스트 가져와서 맨 앞에 추가 (충돌 방지)
-  fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      var list = (data && data.list) ? data.list : loadCsShare();
-      list.unshift(newItem);
-      localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
-      return fetch(FB_URL + '/cs_share.json', {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({list: list})
-      });
-    }).catch(function(){
-      // 폴백
-      var list = loadCsShare();
-      list.unshift(newItem);
-      saveCsShare(list);
-    });
+  // 개별 키로 저장 → 충돌 없음
+  var _itemKey = 'cs_item_' + newItem.id;
+  // localStorage에 임시 추가
+  var _curList = loadCsShare();
+  _curList.unshift(newItem);
+  localStorage.setItem('ws5_cs_share', JSON.stringify({list: _curList}));
+  // Firebase에 개별 항목으로 저장 (덮어쓰기 없음!)
+  fetch(FB_URL + '/cs_items/' + newItem.id + '.json', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(newItem)
+  }).catch(function(){ console.log('CS 저장 실패'); });
   _csLastSeenId = newItem.id;
   // 초기화
   if (inpEl) inpEl.value = '';
@@ -9692,7 +9685,13 @@ function toggleCsShareDone(id) {
 }
 function delCsShare(id) {
   confirmDel('이 CS 항목', function(){
-    saveCsShare(loadCsShare().filter(function(x){return x.id!==id;}));
+    var list = loadCsShare().filter(function(x){return x.id!==id;});
+    localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
+    // Firebase 개별 키 삭제 + cs_share 동기화
+    fetch(FB_URL + '/cs_items/' + id + '.json', { method: 'DELETE' }).catch(function(){});
+    fetch(FB_URL + '/cs_share.json', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({list: list})
+    }).catch(function(){});
     renderCsShare(); toast('🗑️ 삭제됐어요');
   });
 }
