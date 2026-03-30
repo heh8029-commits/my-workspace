@@ -1960,11 +1960,22 @@ function hCsAdd() {
   var newItem={id:Date.now(),type:'',category:_hCsCategory||'CS',author:_hCsAuthor,text:txt,imgs:_hCsImgs.slice(),img:_hCsImgs[0]||'',done:false,createdAt:Date.now(),replies:[],confirmed:[]};
   _hCsLastSeenId=newItem.id;
   var _hFB='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
-  var _curList=hLoadCs(); _curList.unshift(newItem);
-  localStorage.setItem('ws5_cs_share',JSON.stringify({list:_curList}));
-  fetch(_hFB+'/cs_items/'+newItem.id+'.json',{
-    method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(newItem)
-  }).catch(function(){});
+  fetch(_hFB+'/cs_share.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var list=(data&&data.list)?data.list:[];
+      list=list.filter(function(x){return x.id!==newItem.id;});
+      list.unshift(newItem);
+      localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
+      return fetch(_hFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})});
+    })
+    .then(function(){hCsRender&&hCsRender();})
+    .catch(function(){
+      var list=hLoadCs(); list.unshift(newItem);
+      localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
+      fetch(_hFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})}).catch(function(){});
+      hCsRender&&hCsRender();
+    });
   if(inpEl)inpEl.value=''; _hCsImgs=[]; hCsRenderImgPreview();
   toast('📤 등록됐어요!');
   setTimeout(function(){hCsRender();},100);
@@ -1982,10 +1993,10 @@ function hCsUpdateItem(id, updater) {
       if (!item) return;
       updater(item, list);
       localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
-      fetch(_hFB2 + '/cs_items/' + id + '.json', {
+      fetch(_hFB2 + '/cs_share.json', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(item)
+        body: JSON.stringify({list: list})
       }).catch(function(){});
       hCsRender();
     }).catch(function() {
@@ -2003,7 +2014,6 @@ function hCsDelete(id) {
   confirmDel('이 CS 항목',function(){
     var list=hLoadCs().filter(function(x){return x.id!==id;});
     localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
-    fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_items/'+id+'.json',{method:'DELETE'}).catch(function(){});
     fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json',{
       method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})
     }).catch(function(){});
@@ -4437,22 +4447,7 @@ function startFbStream() {
         } else if (d.path && d.path.length > 1 && d.data !== null) {
           var key = d.path.replace(/^\//, '').split('/')[0];
           if (!key) return;
-          if (key === 'cs_items') {
-            var newData = d.data;
-            if (newData && typeof newData === 'object') {
-              Object.keys(newData).forEach(function(nid){
-                var ni = newData[nid]; if(!ni) return;
-                var cur = hLoadCs();
-                if (!cur.find(function(x){ return x.id == ni.id; })) {
-                  cur.unshift(ni);
-                  cur.sort(function(a,b){ return (b.createdAt||b.id)-(a.createdAt||a.id); });
-                  localStorage.setItem('ws5_cs_share', JSON.stringify({list: cur}));
-                  clearTimeout(_fbSyncThrottle);
-                  _fbSyncThrottle = setTimeout(function(){ try{hCsRender&&hCsRender();}catch(e){} }, 150);
-                }
-              });
-            }
-          } else if (key === 'cs_share') {
+          if (key === 'cs_share') {
             localStorage.setItem('ws5_cs_share', JSON.stringify(d.data));
             clearTimeout(_fbSyncThrottle);
             _fbSyncThrottle = setTimeout(function(){
@@ -11063,14 +11058,10 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){
       hCsSetAuthor && hCsSetAuthor('수'); hCsSetCategory && hCsSetCategory('CS');
       // cs_items에서 최신 로드
-      fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_items.json?t='+Date.now(), {cache:'no-store'})
+      fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json?t='+Date.now(), {cache:'no-store'})
         .then(function(r){return r.json();})
         .then(function(data){
-          if (data && typeof data === 'object') {
-            var arr = Object.keys(data).map(function(k){return data[k];}).filter(Boolean);
-            arr.sort(function(a,b){return (b.createdAt||b.id)-(a.createdAt||a.id);});
-            localStorage.setItem('ws5_cs_share', JSON.stringify({list:arr}));
-          }
+          if (data && data.list) localStorage.setItem('ws5_cs_share', JSON.stringify(data));
           hCsRender && hCsRender();
         }).catch(function(){ hCsRender && hCsRender(); });
     }, 0);
