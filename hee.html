@@ -2516,19 +2516,9 @@ function _hCsSendAlarm(item) {
 
     </div>
 
-    <!-- CS복사 | AI 문의 답변 -->
-    <div class="sec">🤖 AI 문의 답변 &nbsp;|&nbsp; 📋 CS 복사</div>
-    <div class="cs-ai-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-
-      <!-- AI 문의 답변 -->
-      <div class="card" style="border-top:3px solid #b090e8">
-        <div style="font-size:.95rem;color:#7040c0;margin-bottom:10px">🤖 AI 문의 답변 생성</div>
-        <textarea id="ai-query-inp" rows="4" placeholder="고객 문의글을 여기에 붙여넣으세요...&#10;버튼 누르면 AI가 열리면서 자동으로 답변해줘요!" style="width:100%;box-sizing:border-box;border:1.5px solid #d0b8f8;border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.6;margin-bottom:8px"></textarea>
-        <div style="display:flex;gap:7px;margin-bottom:6px">
-          <button onclick="generateAiReply()" style="width:100%;background:linear-gradient(135deg,#74aa9c,#10a37f);border:none;border-radius:10px;padding:9px;color:white;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif">🟢 ChatGPT로 답변 생성</button>
-        </div>
-        <div style="font-size:.72rem;color:#aaa;text-align:center">문의글이 클립보드에 복사되고 AI 사이트가 열려요 → Ctrl+V 붙여넣기!</div>
-      </div>
+    <!-- CS복사 -->
+    <div class="sec">📋 CS 복사</div>
+    <div style="margin-bottom:16px">
 
       <!-- CS 복사붙여넣기 -->
       <div class="card" style="border-top:3px solid #a0c4ff">
@@ -2556,6 +2546,28 @@ function _hCsSendAlarm(item) {
         <div id="cs-list" style="display:flex;flex-direction:column;gap:0"><div class="empty">CS 내용을 추가해요 📋</div></div>
       </div>
 
+    </div>
+
+    <!-- 단골 리스트 -->
+    <div class="sec">⭐ 단골 리스트</div>
+    <div class="card" style="border-top:3px solid #f0a000;margin-bottom:16px">
+      <!-- 입력 폼 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px">
+        <input id="vip-name" type="text" placeholder="👤 이름" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+        <input id="vip-tel" type="text" placeholder="📞 연락처" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+        <input id="vip-addr" type="text" placeholder="📍 주소" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0;grid-column:1/-1">
+        <input id="vip-invoice" type="text" placeholder="🚚 송장번호" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+        <input id="vip-memo" type="text" placeholder="📝 메모" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+      </div>
+      <button onclick="vipAdd()" style="width:100%;background:linear-gradient(135deg,#f0c040,#e0a000);border:none;border-radius:10px;padding:9px;color:white;font-weight:800;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif;margin-bottom:12px">+ 단골 추가</button>
+
+      <!-- 검색 -->
+      <div style="position:relative;margin-bottom:10px">
+        <input id="vip-search" type="text" placeholder="🔍 이름·연락처·주소 검색..." oninput="vipRender()"
+          style="width:100%;box-sizing:border-box;border:1.5px solid #f0d080;border-radius:20px;padding:6px 30px 6px 12px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+        <button onclick="document.getElementById('vip-search').value='';vipRender()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem">✕</button>
+      </div>
+      <div id="vip-list"></div>
     </div>
   </div><!-- /home -->
 
@@ -4374,7 +4386,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','vip_list','regular_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -4504,7 +4516,7 @@ function _fixHeaderOffset() {
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','vip_list','regular_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -5260,6 +5272,179 @@ function csDel(id) {
 function csDel_orig(id) {
   saveCsList(loadCsList().filter(x => x.id !== id));
   renderCsList(); toast('🗑️ 삭제됐어요');
+}
+
+
+/* ════════════════════════════
+   단골 리스트
+════════════════════════════ */
+function vipLoad() { return loadObj('vip_list').list || []; }
+function vipSave(list) { stor('vip_list', {list: list}); }
+
+function vipAdd() {
+  var name    = (document.getElementById('vip-name')||{}).value||'';
+  var tel     = (document.getElementById('vip-tel')||{}).value||'';
+  var addr    = (document.getElementById('vip-addr')||{}).value||'';
+  var invoice = (document.getElementById('vip-invoice')||{}).value||'';
+  var memo    = (document.getElementById('vip-memo')||{}).value||'';
+  if (!name.trim() && !tel.trim()) { toast('이름 또는 연락처를 입력해요 👤'); return; }
+  var list = vipLoad();
+  list.unshift({ id: Date.now(), name: name.trim(), tel: tel.trim(), addr: addr.trim(), invoice: invoice.trim(), memo: memo.trim() });
+  vipSave(list);
+  ['vip-name','vip-tel','vip-addr','vip-invoice','vip-memo'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  vipRender();
+  toast('⭐ 단골 추가됐어요!');
+}
+
+function vipDel(id) {
+  confirmDel('이 단골 정보', function(){
+    vipSave(vipLoad().filter(function(x){ return x.id !== id; }));
+    vipRender(); toast('🗑️ 삭제됐어요');
+  });
+}
+
+function vipEdit(id) {
+  var list = vipLoad();
+  var item = list.find(function(x){ return x.id === id; });
+  if (!item) return;
+  var old = document.getElementById('vip-edit-'+id);
+  if (old) { old.remove(); vipRender(); return; }
+  var el = document.getElementById('vip-'+id);
+  if (!el) return;
+  var form = document.createElement('div');
+  form.id = 'vip-edit-'+id;
+  form.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;background:#fffbe8;border-top:1px solid #f0d080';
+  var fields = [
+    {id:'e-name',  ph:'👤 이름',   val:item.name,    col:''},
+    {id:'e-tel',   ph:'📞 연락처', val:item.tel,     col:''},
+    {id:'e-addr',  ph:'📍 주소',   val:item.addr,    col:'grid-column:1/-1'},
+    {id:'e-inv',   ph:'🚚 송장번호',val:item.invoice, col:''},
+    {id:'e-memo',  ph:'📝 메모',   val:item.memo,    col:''},
+  ];
+  fields.forEach(function(f){
+    var inp = document.createElement('input');
+    inp.type='text'; inp.id='vip-'+id+'-'+f.id; inp.value=f.val; inp.placeholder=f.ph;
+    inp.style.cssText='border:1.5px solid #f0d080;border-radius:7px;padding:6px 9px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0;'+f.col;
+    if(f.col) inp.style.gridColumn='1/-1';
+    form.appendChild(inp);
+  });
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'grid-column:1/-1;display:flex;gap:6px;margin-top:2px';
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent='💾 저장'; saveBtn.style.cssText='flex:1;background:linear-gradient(135deg,#f0c040,#e0a000);border:none;border-radius:8px;padding:7px;color:white;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Pretendard,sans-serif';
+  saveBtn.onclick = function(){
+    var l=vipLoad(); var it=l.find(function(x){return x.id===id;});
+    if(it){
+      it.name    = document.getElementById('vip-'+id+'-e-name').value.trim();
+      it.tel     = document.getElementById('vip-'+id+'-e-tel').value.trim();
+      it.addr    = document.getElementById('vip-'+id+'-e-addr').value.trim();
+      it.invoice = document.getElementById('vip-'+id+'-e-inv').value.trim();
+      it.memo    = document.getElementById('vip-'+id+'-e-memo').value.trim();
+    }
+    vipSave(l); vipRender(); toast('✅ 수정됐어요!');
+  };
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent='취소'; cancelBtn.style.cssText='padding:7px 14px;background:#f0f0f0;border:none;border-radius:8px;font-size:.82rem;color:#888;cursor:pointer;font-family:Pretendard,sans-serif';
+  cancelBtn.onclick = function(){ form.remove(); };
+  btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+  form.appendChild(btnRow);
+  el.after(form);
+}
+
+function vipCopy(item) {
+  var txt = [
+    item.name    ? '👤 ' + item.name    : '',
+    item.tel     ? '📞 ' + item.tel     : '',
+    item.addr    ? '📍 ' + item.addr    : '',
+    item.invoice ? '🚚 ' + item.invoice : '',
+    item.memo    ? '📝 ' + item.memo    : '',
+  ].filter(Boolean).join('\n');
+  navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사됐어요!'); });
+}
+
+function vipRender() {
+  var el = document.getElementById('vip-list'); if (!el) return;
+  var list = vipLoad();
+  var kw = ((document.getElementById('vip-search')||{}).value||'').trim().toLowerCase();
+  if (kw) list = list.filter(function(x){
+    return (x.name||'').toLowerCase().includes(kw)
+      || (x.tel||'').toLowerCase().includes(kw)
+      || (x.addr||'').toLowerCase().includes(kw)
+      || (x.invoice||'').toLowerCase().includes(kw);
+  });
+  if (!list.length) { el.innerHTML='<div style="text-align:center;color:#ccc;padding:24px;font-size:.88rem">단골을 추가해요 ⭐</div>'; return; }
+  el.innerHTML = '';
+  list.forEach(function(item){
+    var row = document.createElement('div');
+    row.id = 'vip-'+item.id;
+    row.style.cssText = 'border:1.5px solid #f0e0a0;border-radius:10px;margin-bottom:8px;background:white;overflow:hidden';
+    var info = document.createElement('div');
+    info.style.cssText = 'padding:10px 12px;display:flex;gap:8px;align-items:flex-start';
+    var left = document.createElement('div');
+    left.style.cssText = 'flex:1;min-width:0';
+
+    // 이름 + 연락처
+    var top = document.createElement('div');
+    top.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap';
+    if(item.name){
+      var nm=document.createElement('span');
+      nm.style.cssText='font-size:.95rem;font-weight:900;color:#7a4800';
+      nm.textContent='👤 '+item.name; top.appendChild(nm);
+    }
+    if(item.tel){
+      var tel=document.createElement('span');
+      tel.style.cssText='font-size:.82rem;font-weight:700;color:#a06000;background:#fff8e0;padding:2px 8px;border-radius:8px;cursor:pointer';
+      tel.textContent='📞 '+item.tel;
+      tel.onclick=function(){ navigator.clipboard.writeText(item.tel).then(function(){toast('📞 복사됐어요!');}); };
+      top.appendChild(tel);
+    }
+    left.appendChild(top);
+
+    // 주소
+    if(item.addr){
+      var addr=document.createElement('div');
+      addr.style.cssText='font-size:.8rem;color:#666;margin-bottom:3px;cursor:pointer';
+      addr.textContent='📍 '+item.addr;
+      addr.onclick=function(){ navigator.clipboard.writeText(item.addr).then(function(){toast('📍 주소 복사됐어요!');}); };
+      left.appendChild(addr);
+    }
+    // 송장번호
+    if(item.invoice){
+      var inv=document.createElement('div');
+      inv.style.cssText='font-size:.8rem;color:#666;margin-bottom:3px;cursor:pointer';
+      inv.textContent='🚚 '+item.invoice;
+      inv.onclick=function(){ navigator.clipboard.writeText(item.invoice).then(function(){toast('🚚 송장번호 복사됐어요!');}); };
+      left.appendChild(inv);
+    }
+    // 메모
+    if(item.memo){
+      var memo=document.createElement('div');
+      memo.style.cssText='font-size:.8rem;color:#888;border-top:1px solid #f5e8c0;padding-top:4px;margin-top:4px;line-height:1.5;white-space:pre-wrap';
+      memo.textContent='📝 '+item.memo;
+      left.appendChild(memo);
+    }
+
+    // 버튼들
+    var btns=document.createElement('div');
+    btns.style.cssText='display:flex;flex-direction:column;gap:4px;flex-shrink:0';
+    [
+      {txt:'📋', title:'복사', fn:function(){ vipCopy(item); }},
+      {txt:'✏️', title:'수정', fn:function(){ vipEdit(item.id); }},
+      {txt:'🗑️', title:'삭제', fn:function(){ vipDel(item.id); }},
+    ].forEach(function(b){
+      var btn=document.createElement('button'); btn.textContent=b.txt; btn.title=b.title;
+      btn.style.cssText='background:none;border:none;cursor:pointer;font-size:.85rem;padding:2px;color:#bbb;line-height:1';
+      btn.onmouseover=function(){this.style.color='#e0a000';}; btn.onmouseout=function(){this.style.color='#bbb';};
+      btn.onclick=b.fn;
+      btns.appendChild(btn);
+    });
+
+    info.appendChild(left); info.appendChild(btns);
+    row.appendChild(info);
+    el.appendChild(row);
+  });
 }
 
 // ── AI 문의 답변 생성 (웹 연동) ──
@@ -13208,6 +13393,8 @@ function initRender(pageId) {
     (function(){ const sc2=load('shortcuts2'); if(sc2&&sc2.length) renderShortcuts2(sc2); })();
     renderFabIcons && renderFabIcons();
     renderCsList && renderCsList();
+  vipRender && vipRender();
+    renderRegularList && renderRegularList();
   } else if (pageId === 'menu1') {
     TAX_KEYS.forEach(renderTaxList);
     renderTaxMemoList();
