@@ -11060,7 +11060,20 @@ function switchSub(pageId, num, el) {
     setTimeout(function(){ renderStaff && renderStaff(); }, 0);
   }
   if (pageId === 'menu1' && num === 23) {
-    setTimeout(function(){ hCsRender && hCsRender(); hCsSetAuthor && hCsSetAuthor('수'); hCsSetCategory && hCsSetCategory('CS'); }, 0);
+    setTimeout(function(){
+      hCsSetAuthor && hCsSetAuthor('수'); hCsSetCategory && hCsSetCategory('CS');
+      // cs_items에서 최신 로드
+      fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_items.json?t='+Date.now(), {cache:'no-store'})
+        .then(function(r){return r.json();})
+        .then(function(data){
+          if (data && typeof data === 'object') {
+            var arr = Object.keys(data).map(function(k){return data[k];}).filter(Boolean);
+            arr.sort(function(a,b){return (b.createdAt||b.id)-(a.createdAt||a.id);});
+            localStorage.setItem('ws5_cs_share', JSON.stringify({list:arr}));
+          }
+          hCsRender && hCsRender();
+        }).catch(function(){ hCsRender && hCsRender(); });
+    }, 0);
   }
   if (pageId === 'menu2' && num === 18) {
     setTimeout(function(){ renderCardMgmt && renderCardMgmt(); renderCmNotes && renderCmNotes(); }, 0);
