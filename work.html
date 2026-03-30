@@ -9172,6 +9172,34 @@ var CS_AUTHOR_COLORS = {'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
 var CS_AUTHOR_TEXT = {'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
 
 function loadCsShare() { return loadObj('cs_share').list || []; }
+
+// Firebase에서 최신 데이터 가져온 후 해당 항목만 수정 (충돌 방지)
+function csUpdateItem(id, updater, cb) {
+  fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      var list = (data && data.list) ? data.list : loadCsShare();
+      var item = list.find(function(x){ return x.id === id; });
+      if (!item) { if(cb) cb(); return; }
+      updater(item, list);
+      // localStorage + Firebase 저장
+      localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
+      _fbLastSyncTs = Date.now();
+      fetch(FB_URL + '/cs_share.json', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({list: list})
+      }).then(function(){ if(cb) cb(); }).catch(function(){ if(cb) cb(); });
+      renderCsShare();
+    }).catch(function() {
+      // fetch 실패시 localStorage 폴백
+      var list = loadCsShare();
+      var item = list.find(function(x){ return x.id === id; });
+      if (item) { updater(item, list); saveCsShare(list); }
+      renderCsShare();
+    });
+}
+
 function saveCsShare(list) { stor('cs_share', {list:list}); }
 
 function setCsType(type) {
@@ -9647,8 +9675,7 @@ function addCsShare() {
   setTimeout(function(){ renderCsShare(); }, 100);
 }
 function toggleCsShareDone(id) {
-  var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
-  if(it) it.done=!it.done; saveCsShare(list); renderCsShare();
+  csUpdateItem(id, function(item){ item.done = !item.done; });
 }
 function delCsShare(id) {
   confirmDel('이 CS 항목', function(){
@@ -9713,9 +9740,12 @@ function csEditOpen(id) {
 function addCsReply(id) {
   var inp=document.getElementById('cs-reply-inp-'+id);
   if(!inp||!inp.value.trim()) return;
-  var list=loadCsShare(); var it=list.find(function(x){return x.id===id;});
-  if(it){it.replies=it.replies||[];it.replies.push({id:Date.now(),text:inp.value.trim(),author:_csShareAuthor,createdAt:Date.now()});}
-  saveCsShare(list); inp.value=''; renderCsShare();
+  var txt=inp.value.trim(); inp.value='';
+  var auth=_csShareAuthor;
+  csUpdateItem(id, function(item){
+    item.replies=item.replies||[];
+    item.replies.push({id:Date.now(),text:txt,author:auth,createdAt:Date.now()});
+  });
 }
 
 function renderCsShare() {
@@ -9811,9 +9841,7 @@ function renderCsShare() {
       chk.checked = it.done||false;
       chk.style.cssText = 'width:36px;height:36px;accent-color:#e0a000;cursor:pointer';
       chk.onchange = (function(id,c){ return function(){
-        var lst=loadCsShare(); var item=lst.find(function(x){return x.id===id;});
-        if(item){ item.done=c.checked; }
-        saveCsShare(lst); renderCsShare();
+        csUpdateItem(id, function(item){ item.done=c.checked; });
       }; })(it.id,chk);
       var doneEl = document.createElement('span');
       doneEl.style.cssText = 'font-size:.9rem;font-weight:800;color:#e0a000';
@@ -9833,16 +9861,14 @@ function renderCsShare() {
         nameEl.style.cssText = 'font-size:1rem;font-weight:900;color:'+(AT[name]||'#333');
         nameEl.textContent = name;
         chk.onchange = (function(id,n,c){ return function(){
-          var lst=loadCsShare(); var item=lst.find(function(x){return x.id===id;});
-          if(item){
+          csUpdateItem(id, function(item){
             item.confirmed=item.confirmed||[];
             var idx=item.confirmed.indexOf(n);
             if(c.checked){if(idx===-1)item.confirmed.push(n);}
             else{if(idx!==-1)item.confirmed.splice(idx,1);}
             var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});
             item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});
-          }
-          saveCsShare(lst); renderCsShare();
+          });
         }; })(it.id,name,chk);
         lbl.appendChild(chk); lbl.appendChild(nameEl);
         chkWrap.appendChild(lbl);
