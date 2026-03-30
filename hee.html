@@ -2516,59 +2516,56 @@ function _hCsSendAlarm(item) {
 
     </div>
 
-    <!-- CS복사 -->
-    <div class="sec">📋 CS 복사</div>
-    <div style="margin-bottom:16px">
+    <!-- 단골리스트 | CS복사 2열 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-bottom:16px">
 
-      <!-- CS 복사붙여넣기 -->
-      <div class="card" style="border-top:3px solid #a0c4ff">
-        <div style="font-size:.95rem;color:#4a80d0;margin-bottom:10px">📋 CS 복사 메모</div>
-        <div class="inp-row">
-          <textarea id="cs-inp" rows="2" placeholder="CS 내용 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCs()}"></textarea>
-          <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addCs()">+</button>
-        </div>
-
-        <!-- 조합칸 -->
-        <div id="cs-compose-wrap" style="display:none;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-            <div style="font-size:.78rem;font-weight:700;color:#4a80d0">✍️ 조합 편집</div>
-            <button onclick="csClearCompose()" style="background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;font-size:.7rem;color:#aaa;cursor:pointer">초기화</button>
-            <button onclick="csFinalCopy()" style="margin-left:auto;background:linear-gradient(135deg,#6aaaf0,#4a80d0);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">📋 최종복사</button>
+      <!-- 왼쪽: 단골 리스트 -->
+      <div>
+        <div class="sec" style="margin-top:0">⭐ 단골 리스트</div>
+        <div class="card" style="border-top:3px solid #f0a000">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+            <input id="vip-name" type="text" placeholder="👤 이름" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+            <input id="vip-tel" type="text" placeholder="📞 연락처" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+            <input id="vip-addr" type="text" placeholder="📍 주소" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0;grid-column:1/-1">
+            <input id="vip-invoice" type="text" placeholder="🚚 그전송장번호" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+            <input id="vip-memo" type="text" placeholder="📝 메모" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
           </div>
-          <textarea id="cs-compose-area" rows="5" placeholder="체크한 항목이 여기에 쌓여요. 직접 편집도 가능해요!"
-            style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:10px;padding:9px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.7;background:#f5f9ff"></textarea>
+          <button onclick="vipAdd()" style="width:100%;background:linear-gradient(135deg,#f0c040,#e0a000);border:none;border-radius:10px;padding:9px;color:white;font-weight:800;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif;margin-bottom:10px">+ 단골 추가</button>
+          <div style="position:relative;margin-bottom:8px">
+            <input id="vip-search" type="text" placeholder="🔍 이름·연락처 검색..." oninput="vipRender()"
+              style="width:100%;box-sizing:border-box;border:1.5px solid #f0d080;border-radius:20px;padding:6px 28px 6px 10px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+            <button onclick="document.getElementById('vip-search').value='';vipRender()" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem">✕</button>
+          </div>
+          <div id="vip-list"></div>
         </div>
+      </div>
 
-        <div style="position:relative;margin-bottom:6px">
-          <input id="cs-search" type="text" placeholder="🔍 빠른 검색..." oninput="renderCsList()" style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:8px;padding:6px 30px 6px 10px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:#f5f9ff">
-          <button onclick="document.getElementById('cs-search').value='';renderCsList()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0">✕</button>
+      <!-- 오른쪽: CS 복사 -->
+      <div>
+        <div class="sec" style="margin-top:0">📋 CS 복사</div>
+        <div class="card" style="border-top:3px solid #a0c4ff">
+          <div class="inp-row">
+            <textarea id="cs-inp" rows="2" placeholder="CS 내용 입력..." onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCs()}"></textarea>
+            <button class="abtn" style="background:linear-gradient(135deg,#6aaaf0,#4a80d0)" onclick="addCs()">+</button>
+          </div>
+          <div id="cs-compose-wrap" style="display:none;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+              <div style="font-size:.78rem;font-weight:700;color:#4a80d0">✍️ 조합 편집</div>
+              <button onclick="csClearCompose()" style="background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;font-size:.7rem;color:#aaa;cursor:pointer">초기화</button>
+              <button onclick="csFinalCopy()" style="margin-left:auto;background:linear-gradient(135deg,#6aaaf0,#4a80d0);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">📋 최종복사</button>
+            </div>
+            <textarea id="cs-compose-area" rows="4" placeholder="체크한 항목이 여기에 쌓여요."
+              style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:10px;padding:9px 12px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none;resize:vertical;line-height:1.7;background:#f5f9ff"></textarea>
+          </div>
+          <div style="position:relative;margin-bottom:6px">
+            <input id="cs-search" type="text" placeholder="🔍 빠른 검색..." oninput="renderCsList()" style="width:100%;box-sizing:border-box;border:1.5px solid #b8d4f8;border-radius:8px;padding:6px 28px 6px 10px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none;background:#f5f9ff">
+            <button onclick="document.getElementById('cs-search').value='';renderCsList()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem;padding:0">✕</button>
+          </div>
+          <div id="cs-list" style="display:flex;flex-direction:column;gap:0"><div class="empty">CS 내용을 추가해요 📋</div></div>
         </div>
-        <div id="cs-list" style="display:flex;flex-direction:column;gap:0"><div class="empty">CS 내용을 추가해요 📋</div></div>
       </div>
 
-    </div>
-
-    <!-- 단골 리스트 -->
-    <div class="sec">⭐ 단골 리스트</div>
-    <div class="card" style="border-top:3px solid #f0a000;margin-bottom:16px">
-      <!-- 입력 폼 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px">
-        <input id="vip-name" type="text" placeholder="👤 이름" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
-        <input id="vip-tel" type="text" placeholder="📞 연락처" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
-        <input id="vip-addr" type="text" placeholder="📍 주소" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0;grid-column:1/-1">
-        <input id="vip-invoice" type="text" placeholder="🚚 그전송장번호" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
-        <input id="vip-memo" type="text" placeholder="📝 메모" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
-      </div>
-      <button onclick="vipAdd()" style="width:100%;background:linear-gradient(135deg,#f0c040,#e0a000);border:none;border-radius:10px;padding:9px;color:white;font-weight:800;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif;margin-bottom:12px">+ 단골 추가</button>
-
-      <!-- 검색 -->
-      <div style="position:relative;margin-bottom:10px">
-        <input id="vip-search" type="text" placeholder="🔍 이름·연락처·주소 검색..." oninput="vipRender()"
-          style="width:100%;box-sizing:border-box;border:1.5px solid #f0d080;border-radius:20px;padding:6px 30px 6px 12px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
-        <button onclick="document.getElementById('vip-search').value='';vipRender()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#bbb;font-size:.8rem">✕</button>
-      </div>
-      <div id="vip-list"></div>
-    </div>
+    </div><!-- /2열 -->
   </div><!-- /home -->
 
   <!-- ══════════════ 메뉴 1,2,3 ══════════════ -->
@@ -5180,11 +5177,10 @@ function renderCsList() {
   const items = kw ? allItems.filter(function(it){ return (it.text||'').toLowerCase().includes(kw); }) : allItems;
   if (!allItems.length) { el.innerHTML='<div class="empty">CS 내용을 추가해요 📋</div>'; return; }
   if (!items.length) { el.innerHTML='<div class="empty" style="font-size:.78rem">검색 결과가 없어요 🔍</div>'; return; }
-  el.innerHTML = '<div id="cs-list-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0"></div>';
-  var csGrid = document.getElementById('cs-list-grid');
+  el.innerHTML = '';
   items.forEach(function(it) {
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:4px;padding:5px 7px;border-bottom:1px solid #eef3ff;border-right:1px solid #eef3ff;font-family:Pretendard,sans-serif';
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif';
     // 체크박스 (다중복사용)
     const chk = document.createElement('input');
     chk.type = 'checkbox'; chk.dataset.csid = it.id;
@@ -5217,7 +5213,7 @@ function renderCsList() {
     delBtn.onclick = (function(id){ return function(){ var it2=loadCsList().find(function(x){return x.id===id;}); confirmDel(it2?(it2.text||'이 항목'):'이 항목', function(){csDel_orig(id);}); }; })(it.id);
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
     row.appendChild(txtEl); row.appendChild(acts);
-    csGrid.appendChild(row);
+    el.appendChild(row);
   });
 }
 
@@ -5376,12 +5372,11 @@ function vipRender() {
       || (x.invoice||'').toLowerCase().includes(kw);
   });
   if (!list.length) { el.innerHTML='<div style="text-align:center;color:#ccc;padding:24px;font-size:.88rem">단골을 추가해요 ⭐</div>'; return; }
-  el.innerHTML = '<div id="vip-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>';
-  var vipGrid = document.getElementById('vip-grid');
+  el.innerHTML = '';
   list.forEach(function(item){
     var row = document.createElement('div');
     row.id = 'vip-'+item.id;
-    row.style.cssText = 'border:1.5px solid #f0e0a0;border-radius:10px;background:white;overflow:hidden';
+    row.style.cssText = 'border:1.5px solid #f0e0a0;border-radius:10px;margin-bottom:8px;background:white;overflow:hidden';
     var info = document.createElement('div');
     info.style.cssText = 'padding:10px 12px;display:flex;gap:8px;align-items:flex-start';
     var left = document.createElement('div');
