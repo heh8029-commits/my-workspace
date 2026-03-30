@@ -2556,7 +2556,7 @@ function _hCsSendAlarm(item) {
         <input id="vip-name" type="text" placeholder="👤 이름" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
         <input id="vip-tel" type="text" placeholder="📞 연락처" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
         <input id="vip-addr" type="text" placeholder="📍 주소" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0;grid-column:1/-1">
-        <input id="vip-invoice" type="text" placeholder="🚚 송장번호" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
+        <input id="vip-invoice" type="text" placeholder="🚚 그전송장번호" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
         <input id="vip-memo" type="text" placeholder="📝 메모" style="border:1.5px solid #f0d080;border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:#fffdf0">
       </div>
       <button onclick="vipAdd()" style="width:100%;background:linear-gradient(135deg,#f0c040,#e0a000);border:none;border-radius:10px;padding:9px;color:white;font-weight:800;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif;margin-bottom:12px">+ 단골 추가</button>
@@ -5180,10 +5180,11 @@ function renderCsList() {
   const items = kw ? allItems.filter(function(it){ return (it.text||'').toLowerCase().includes(kw); }) : allItems;
   if (!allItems.length) { el.innerHTML='<div class="empty">CS 내용을 추가해요 📋</div>'; return; }
   if (!items.length) { el.innerHTML='<div class="empty" style="font-size:.78rem">검색 결과가 없어요 🔍</div>'; return; }
-  el.innerHTML = '';
+  el.innerHTML = '<div id="cs-list-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0"></div>';
+  var csGrid = document.getElementById('cs-list-grid');
   items.forEach(function(it) {
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #eef3ff;font-family:Pretendard,sans-serif';
+    row.style.cssText = 'display:flex;align-items:center;gap:4px;padding:5px 7px;border-bottom:1px solid #eef3ff;border-right:1px solid #eef3ff;font-family:Pretendard,sans-serif';
     // 체크박스 (다중복사용)
     const chk = document.createElement('input');
     chk.type = 'checkbox'; chk.dataset.csid = it.id;
@@ -5216,7 +5217,7 @@ function renderCsList() {
     delBtn.onclick = (function(id){ return function(){ var it2=loadCsList().find(function(x){return x.id===id;}); confirmDel(it2?(it2.text||'이 항목'):'이 항목', function(){csDel_orig(id);}); }; })(it.id);
     acts.appendChild(copyBtn); acts.appendChild(editBtn); acts.appendChild(delBtn);
     row.appendChild(txtEl); row.appendChild(acts);
-    el.appendChild(row);
+    csGrid.appendChild(row);
   });
 }
 
@@ -5320,7 +5321,7 @@ function vipEdit(id) {
     {id:'e-name',  ph:'👤 이름',   val:item.name,    col:''},
     {id:'e-tel',   ph:'📞 연락처', val:item.tel,     col:''},
     {id:'e-addr',  ph:'📍 주소',   val:item.addr,    col:'grid-column:1/-1'},
-    {id:'e-inv',   ph:'🚚 송장번호',val:item.invoice, col:''},
+    {id:'e-inv',   ph:'🚚 그전송장번호',val:item.invoice, col:''},
     {id:'e-memo',  ph:'📝 메모',   val:item.memo,    col:''},
   ];
   fields.forEach(function(f){
@@ -5375,11 +5376,12 @@ function vipRender() {
       || (x.invoice||'').toLowerCase().includes(kw);
   });
   if (!list.length) { el.innerHTML='<div style="text-align:center;color:#ccc;padding:24px;font-size:.88rem">단골을 추가해요 ⭐</div>'; return; }
-  el.innerHTML = '';
+  el.innerHTML = '<div id="vip-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>';
+  var vipGrid = document.getElementById('vip-grid');
   list.forEach(function(item){
     var row = document.createElement('div');
     row.id = 'vip-'+item.id;
-    row.style.cssText = 'border:1.5px solid #f0e0a0;border-radius:10px;margin-bottom:8px;background:white;overflow:hidden';
+    row.style.cssText = 'border:1.5px solid #f0e0a0;border-radius:10px;background:white;overflow:hidden';
     var info = document.createElement('div');
     info.style.cssText = 'padding:10px 12px;display:flex;gap:8px;align-items:flex-start';
     var left = document.createElement('div');
@@ -5414,8 +5416,8 @@ function vipRender() {
     if(item.invoice){
       var inv=document.createElement('div');
       inv.style.cssText='font-size:.8rem;color:#666;margin-bottom:3px;cursor:pointer';
-      inv.textContent='🚚 '+item.invoice;
-      inv.onclick=function(){ navigator.clipboard.writeText(item.invoice).then(function(){toast('🚚 송장번호 복사됐어요!');}); };
+      inv.textContent='🚚 그전: '+item.invoice;
+      inv.onclick=function(){ navigator.clipboard.writeText(item.invoice).then(function(){toast('🚚 그전송장번호 복사됐어요!');}); };
       left.appendChild(inv);
     }
     // 메모
