@@ -1965,9 +1965,28 @@ function hCsAdd() {
   setTimeout(function(){hCsRender();},100);
 }
 
+
+function hCsUpdateItem(id, updater) {
+  fetch('https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      var list = (data && data.list) ? data.list : hLoadCs();
+      var item = list.find(function(x){ return x.id === id; });
+      if (!item) return;
+      updater(item, list);
+      localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
+      stor('cs_share', {list: list});
+      hCsRender();
+    }).catch(function() {
+      var list = hLoadCs();
+      var item = list.find(function(x){ return x.id === id; });
+      if (item) { updater(item, list); hSaveCs(list); }
+      hCsRender();
+    });
+}
+
 function hCsToggleDone(id) {
-  var list=hLoadCs(); var it=list.find(function(x){return x.id===id;});
-  if(it)it.done=!it.done; hSaveCs(list); hCsRender();
+  hCsUpdateItem(id, function(item){ item.done = !item.done; });
 }
 function hCsDelete(id) {
   confirmDel('이 CS 항목',function(){hSaveCs(hLoadCs().filter(function(x){return x.id!==id;}));hCsRender();toast('🗑️ 삭제됐어요');});
@@ -2044,9 +2063,7 @@ function hCsRender() {
       var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=it.done||false;
       chk.style.cssText='width:36px;height:36px;accent-color:#e0a000;cursor:pointer';
       chk.onchange=(function(id,c){return function(){
-        var lst=hLoadCs(); var item=lst.find(function(x){return x.id===id;});
-        if(item){item.done=c.checked;}
-        hSaveCs(lst); hCsRender();
+        hCsUpdateItem(id, function(item){ item.done=c.checked; });
       };})(it.id,chk);
       var doneEl=document.createElement('span'); doneEl.style.cssText='font-size:.9rem;font-weight:800;color:#e0a000'; doneEl.textContent='확인완료';
       lbl.appendChild(chk); lbl.appendChild(doneEl); chkWrap.appendChild(lbl);
@@ -2057,10 +2074,14 @@ function hCsRender() {
         var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=confirmed.indexOf(name)!==-1;
         chk.style.cssText='width:30px;height:30px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
         chk.onchange=(function(id,n,c){return function(){
-          var lst=hLoadCs(); var item=lst.find(function(x){return x.id===id;});
-          if(item){item.confirmed=item.confirmed||[];var idx=item.confirmed.indexOf(n);if(c.checked){if(idx===-1)item.confirmed.push(n);}else{if(idx!==-1)item.confirmed.splice(idx,1);}
-          var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});}
-          hSaveCs(lst); hCsRender();
+          hCsUpdateItem(id, function(item){
+            item.confirmed=item.confirmed||[];
+            var idx=item.confirmed.indexOf(n);
+            if(c.checked){if(idx===-1)item.confirmed.push(n);}
+            else{if(idx!==-1)item.confirmed.splice(idx,1);}
+            var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});
+            item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});
+          });
         };})(it.id,name,chk);
         var nameEl=document.createElement('span'); nameEl.style.cssText='font-size:1rem;font-weight:900;color:'+(AT[name]||'#333'); nameEl.textContent=name;
         lbl.appendChild(chk); lbl.appendChild(nameEl); chkWrap.appendChild(lbl);
