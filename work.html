@@ -9182,9 +9182,9 @@ function csUpdateItem(id, updater, cb) {
       var item = list.find(function(x){ return x.id === id; });
       if (!item) { if(cb) cb(); return; }
       updater(item, list);
-      // localStorage + Firebase 저장
+      // localStorage 업데이트 (SSE가 올 때 최신 상태로)
       localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
-      _fbLastSyncTs = Date.now();
+      // Firebase에 저장 (_fbLastSyncTs 건드리지 않음 - SSE 차단 안 함)
       fetch(FB_URL + '/cs_share.json', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -9192,7 +9192,6 @@ function csUpdateItem(id, updater, cb) {
       }).then(function(){ if(cb) cb(); }).catch(function(){ if(cb) cb(); });
       renderCsShare();
     }).catch(function() {
-      // fetch 실패시 localStorage 폴백
       var list = loadCsShare();
       var item = list.find(function(x){ return x.id === id; });
       if (item) { updater(item, list); saveCsShare(list); }
@@ -9662,10 +9661,24 @@ function addCsShare() {
     replies: [],
     confirmed: []
   };
-  var list = loadCsShare();
-  list.unshift(newItem);
-  saveCsShare(list);
-  // 기준 id 업데이트 (내 글은 알림 안 보냄)
+  // Firebase에서 최신 리스트 가져와서 맨 앞에 추가 (충돌 방지)
+  fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var list = (data && data.list) ? data.list : loadCsShare();
+      list.unshift(newItem);
+      localStorage.setItem('ws5_cs_share', JSON.stringify({list: list}));
+      return fetch(FB_URL + '/cs_share.json', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({list: list})
+      });
+    }).catch(function(){
+      // 폴백
+      var list = loadCsShare();
+      list.unshift(newItem);
+      saveCsShare(list);
+    });
   _csLastSeenId = newItem.id;
   // 초기화
   if (inpEl) inpEl.value = '';
