@@ -13025,17 +13025,25 @@ function renderSalesAllTable() {
 
     const rowColor = isToday ? '#fff0fa' : isSun ? '#fff5f5' : isSat ? '#f5f0ff' : (d%2===0?'#f8fffe':'#fff');
     const textColor = isToday ? '#e03c6e' : isSun ? '#e03c6e' : isSat ? '#8060d0' : '#333';
+    const mkInp2 = (yr2, mn2, d2, field2, val2) => {
+      const fmt2 = val2 ? Number(val2).toLocaleString() : '';
+      return `<input type="text" inputmode="numeric" data-raw="${val2||''}" value="${fmt2}"
+        style="border:1px solid #d0f0e0;border-radius:7px;padding:5px 6px;font-size:.8rem;text-align:right;background:transparent;outline:none;color:#2a7a4a;width:88px;font-family:inherit"
+        onfocus="salesInpFocus(this)"
+        onblur="salesInpBlur(this,${yr2},${mn2},${d2},'${field2}')"
+        onkeydown="if(event.key==='Enter')this.blur()">`;
+    };
     rows += `<tr style="background:${rowColor}">
-      <td style="padding:6px 10px;text-align:center;color:${textColor};font-weight:${isToday?'800':'600'};white-space:nowrap;cursor:pointer">${mn}/${d}</td>
+      <td style="padding:6px 10px;text-align:center;color:${textColor};font-weight:${isToday?'800':'600'};white-space:nowrap"><span style="font-size:.72rem;color:#aaa">${yr}년 </span>${mn}/${d}</td>
       <td style="padding:6px 8px;text-align:center;color:${textColor};font-weight:700">${dow}</td>
-      <td style="padding:6px 8px;text-align:right;color:#2a7a4a;font-weight:600">${r.gross?parseNum(r.gross).toLocaleString():'-'}</td>
-      <td style="padding:6px 8px;text-align:right;color:#2a7a4a;font-weight:600">${r.seller?parseNum(r.seller).toLocaleString():'-'}</td>
-      <td style="padding:6px 8px;text-align:right;font-weight:700;color:#2a9a6a;background:#f0fff8">${coupangTotal>0?coupangTotal.toLocaleString():'-'}</td>
-      <td style="padding:6px 8px;text-align:right;color:#e03c6e;font-weight:600">${r.coupangAd?parseNum(r.coupangAd).toLocaleString():'-'}</td>
+      <td style="padding:4px 5px">${mkInp2(yr,mn,d,'gross',r.gross)}</td>
+      <td style="padding:4px 5px">${mkInp2(yr,mn,d,'seller',r.seller)}</td>
+      <td id="sales-ctotal-${mn}-${d}" style="padding:6px 8px;text-align:right;font-weight:700;color:#2a9a6a;background:#f0fff8">${coupangTotal>0?coupangTotal.toLocaleString():'-'}</td>
+      <td style="padding:4px 5px">${mkInp2(yr,mn,d,'coupangAd',r.coupangAd)}</td>
       <td style="padding:6px 5px;text-align:center;font-size:.78rem;font-weight:700;color:#e8648a">${coupangTotal>0&&parseNum(r.coupangAd)>0?(parseNum(r.coupangAd)/coupangTotal*100).toFixed(1)+'%':'-'}</td>
-      <td style="padding:6px 8px;text-align:right;color:#2a7a4a;font-weight:600">${r.naver?parseNum(r.naver).toLocaleString():'-'}</td>
-      <td style="padding:6px 8px;text-align:right;color:#e8648a;font-weight:600">${r.naverSearch?parseNum(r.naverSearch).toLocaleString():'-'}</td>
-      <td style="padding:6px 8px;text-align:right;color:#e8648a;font-weight:600">${r.naverAi?parseNum(r.naverAi).toLocaleString():'-'}</td>
+      <td style="padding:4px 5px">${mkInp2(yr,mn,d,'naver',r.naver)}</td>
+      <td style="padding:4px 5px">${mkInp2(yr,mn,d,'naverSearch',r.naverSearch)}</td>
+      <td style="padding:4px 5px">${mkInp2(yr,mn,d,'naverAi',r.naverAi)}</td>
       <td style="padding:6px 5px;text-align:center;font-size:.78rem;font-weight:700;color:#e8648a">${(()=>{const nAd=parseNum(r.naverSearch)+parseNum(r.naverAi);return parseNum(r.naver)>0&&nAd>0?(nAd/parseNum(r.naver)*100).toFixed(1)+'%':'-'})()}</td>
       <td style="padding:6px 10px;text-align:right;font-weight:800;color:#8b60d0">${total>0?total.toLocaleString():'-'}</td>
       <td style="padding:6px 10px;text-align:right;font-weight:700;color:#e03c6e">${adTotal>0?adTotal.toLocaleString():'-'}</td>
@@ -13298,16 +13306,15 @@ function switchHourlyMonth(year, month) {
 function renderHourlyMonthTabs() {
   const el = document.getElementById('hourly-month-tabs');
   if (!el) return;
-  el.innerHTML = SALES_MONTHS.map((m, i) => {
+  const allActive = hourlyCurrentMonth === 0;
+  let html = `<button onclick="switchHourlyMonth(0,0)" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${allActive?'#8060d0':'#d0c8f8'};background:${allActive?'linear-gradient(135deg,#8060d0,#5030a0)':'white'};color:${allActive?'white':'#6040b0'};font-size:.82rem;font-weight:${allActive?'700':'500'};cursor:pointer;font-family:inherit">📋 전체</button>`;
+  html += SALES_MONTHS.map((m, i) => {
     const mn = SALES_MONTH_NUMS[i];
     const yr = mn <= 2 ? 2027 : 2026;
     const active = (mn === hourlyCurrentMonth && yr === hourlyCurrentYear);
-    return `<button onclick="switchHourlyMonth(${yr},${mn})"
-      style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'#4da6e8':'#b2d8f8'};
-      background:${active?'linear-gradient(135deg,#4da6e8,#2280c0)':'white'};
-      color:${active?'white':'#2280c0'};font-size:.82rem;font-weight:${active?'700':'500'};
-      cursor:pointer;font-family:inherit">${yr}년 ${m}</button>`;
+    return `<button onclick="switchHourlyMonth(${yr},${mn})" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'#4da6e8':'#b2d8f8'};background:${active?'linear-gradient(135deg,#4da6e8,#2280c0)':'white'};color:${active?'white':'#2280c0'};font-size:.82rem;font-weight:${active?'700':'500'};cursor:pointer;font-family:inherit">${yr}년 ${m}</button>`;
   }).join('');
+  el.innerHTML = html;
 }
 
 function renderHourlyTable() {
