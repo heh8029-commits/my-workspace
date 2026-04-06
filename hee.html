@@ -13226,74 +13226,110 @@ function renderHourlyAllTable() {
   const TH = 'padding:8px 5px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2d8f8;font-size:.75rem;color:#1a5f8a';
 
   // 헤더
-  let hdrHtml = '<tr>';
-  hdrHtml += '<th style="' + TH + ';background:#c8e4f4">날짜</th>';
-  hdrHtml += '<th style="' + TH + ';background:#c8e4f4">요일</th>';
-  HOURLY_SLOT_LABELS.forEach(function(l) {
-    hdrHtml += '<th style="' + TH + ';background:#daeef8">' + l + '<br><span style="font-size:.63rem;color:#aaa;font-weight:500">금액 / 분</span></th>';
-  });
+  let hdrHtml = '<tr><th style="'+TH+';background:#c8e4f4">날짜</th><th style="'+TH+';background:#c8e4f4">요일</th>';
+  HOURLY_SLOT_LABELS.forEach(function(l){ hdrHtml += '<th style="'+TH+';background:#daeef8">'+l+'<br><span style="font-size:.63rem;color:#aaa;font-weight:500">금액/분</span></th>'; });
   hdrHtml += '</tr>';
   thead.innerHTML = hdrHtml;
 
-  // 모든 월 날짜 수집 → 날짜 오름차순
+  // 데이터 있는 날만 수집 (빈 날 스킵 → 속도 개선)
+  const todayY=NOW.getFullYear(), todayM=NOW.getMonth()+1, todayD2=NOW.getDate();
   let allRows = [];
   SALES_MONTHS.forEach(function(m, i) {
     const mn = SALES_MONTH_NUMS[i];
-    const yr = mn >= 3 ? 2026 : 2027;
+    const yr = mn <= 2 ? 2027 : 2026;
     const days = getDaysInMonth(yr, mn);
-    const key = 'hourly_' + yr + '_' + mn;
+    const key = 'hourly_'+yr+'_'+mn;
     let data = {};
     try { data = JSON.parse(localStorage.getItem('ws5_'+key)||'{}'); } catch(e){}
     for (let d=1; d<=days; d++) {
-      allRows.push({yr, mn, d, data});
+      const isToday = yr===todayY && mn===todayM && d===todayD2;
+      const r = data['d'+d] || {};
+      const hasData = HOURLY_SLOTS.some(function(sl){ return r['h'+sl] > 0; });
+      if (!hasData && !isToday) continue; // 데이터 없고 오늘 아니면 스킵
+      allRows.push({yr, mn, d, r, isToday});
     }
   });
-  allRows.sort(function(a,b){ return new Date(a.yr,a.mn-1,a.d) - new Date(b.yr,b.mn-1,b.d); });
+  allRows.sort(function(a,b){ return new Date(a.yr,a.mn-1,a.d)-new Date(b.yr,b.mn-1,b.d); });
 
-  const todayY=NOW.getFullYear(), todayM=NOW.getMonth()+1, todayD2=NOW.getDate();
+  if (!allRows.length) {
+    tbody.innerHTML = '<tr><td colspan="'+(HOURLY_SLOTS.length+2)+'" style="text-align:center;color:#bbb;padding:40px">입력된 데이터가 없어요</td></tr>';
+    return;
+  }
+
+  // DocumentFragment로 한번에 렌더 (DOM 조작 최소화)
+  const frag = document.createDocumentFragment();
   const nowH = NOW.getHours();
 
-  let rows = '';
-  allRows.forEach(function({yr, mn, d, data}) {
-    const r = data['d'+d] || {};
+  allRows.forEach(function({yr, mn, d, r, isToday}) {
     const date = new Date(yr, mn-1, d);
     const dow = WEEK_KO[date.getDay()];
     const isSun=date.getDay()===0, isSat=date.getDay()===6;
-    const isToday = yr===todayY && mn===todayM && d===todayD2;
     const rowBg = isToday?'#f0f8ff':isSun?'#fff5f5':isSat?'#f5f0ff':(d%2===0?'#f5fbff':'#fff');
     const txtC = isToday?'#1a6fbf':isSun?'#e03c6e':isSat?'#8060d0':'#333';
-    const todayAnim = isToday?'animation:salesTodayShimmer 2s ease-in-out infinite;outline:2px solid #4da6e8;outline-offset:-1px;':'';
 
-    let row = '<tr style="background:'+rowBg+';'+todayAnim+'">';
-    row += '<td style="padding:5px 8px;text-align:center;color:'+txtC+';font-weight:'+(isToday?'800':'600')+';white-space:nowrap">'+(isToday?'✨ ':'')+'<span style="font-size:.72rem;color:#aaa">'+yr+'년 </span>'+mn+'/'+d+'</td>';
-    row += '<td style="padding:5px 6px;text-align:center;color:'+txtC+';font-weight:700">'+dow+'</td>';
+    const tr = document.createElement('tr');
+    tr.style.background = rowBg;
+    if (isToday) { tr.style.outline='2px solid #4da6e8'; tr.style.outlineOffset='-1px'; }
+
+    // 날짜 셀
+    const tdDate = document.createElement('td');
+    tdDate.style.cssText = 'padding:5px 8px;text-align:center;color:'+txtC+';font-weight:'+(isToday?'800':'600')+';white-space:nowrap';
+    tdDate.innerHTML = (isToday?'✨ ':'')+'<span style="font-size:.7rem;color:#bbb">'+mn+'월 </span>'+d+'일';
+    tr.appendChild(tdDate);
+
+    const tdDow = document.createElement('td');
+    tdDow.style.cssText = 'padding:5px 6px;text-align:center;color:'+txtC+';font-weight:700';
+    tdDow.textContent = dow;
+    tr.appendChild(tdDow);
+
+    // 시간 셀
     HOURLY_SLOTS.forEach(function(sl) {
       const raw = r['h'+sl] || '';
-      const disp = raw ? Number(raw).toLocaleString() : '';
       const min = r['m'+sl] || '';
-      const minDisp = min ? '<span style="font-size:.65rem;color:#4da6e8;font-weight:700">'+min+'분</span>' : '<span style="font-size:.63rem;color:#ddd">-분</span>';
       const isNowCell = isToday && sl===nowH;
-      const tdBg = isNowCell?'background:#fffbe6;':'';
-      const inpStyle = isNowCell ? INP+';border:2px solid #f0c000;background:#fffbe6;font-weight:800;color:#8a5a00' : INP;
-      row += '<td style="padding:3px 4px;text-align:center;'+tdBg+'">'
-        +'<div style="display:flex;align-items:center;gap:3px;justify-content:center">'
-        +'<input type="text" inputmode="numeric" data-raw="'+raw+'" value="'+disp+'" style="'+inpStyle+'" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,'+yr+','+mn+','+d+','+sl+')" onkeydown="if(event.key===\'Enter\')this.blur()">'
-        +'<span id="hmin-'+yr+'-'+mn+'-'+d+'-'+sl+'">'+minDisp+'</span>'
-        +'</div></td>';
+      const td = document.createElement('td');
+      td.style.cssText = 'padding:3px 4px;text-align:center;'+(isNowCell?'background:#fffbe6':'');
+
+      const inp = document.createElement('input');
+      inp.type='text'; inp.inputMode='numeric';
+      inp.dataset.raw = raw;
+      inp.value = raw ? Number(raw).toLocaleString() : '';
+      inp.style.cssText = isNowCell
+        ? INP+';border:2px solid #f0c000;background:#fffbe6;font-weight:800;color:#8a5a00'
+        : INP;
+      inp.onfocus = function(){ hourlyInpFocus(this); };
+      inp.onblur = (function(y,m,dy,s){ return function(){ hourlyInpBlur(this,y,m,dy,s); }; })(yr,mn,d,sl);
+      inp.onkeydown = function(e){ if(e.key==='Enter') this.blur(); };
+
+      const minSpan = document.createElement('span');
+      minSpan.id = 'hmin-'+yr+'-'+mn+'-'+d+'-'+sl;
+      if (min) {
+        minSpan.style.cssText='font-size:.65rem;color:#4da6e8;font-weight:700';
+        minSpan.textContent = min+'분';
+      } else {
+        minSpan.style.cssText='font-size:.63rem;color:#ddd';
+        minSpan.textContent = '-분';
+      }
+
+      const div = document.createElement('div');
+      div.style.cssText='display:flex;align-items:center;gap:3px;justify-content:center';
+      div.appendChild(inp); div.appendChild(minSpan);
+      td.appendChild(div);
+      tr.appendChild(td);
     });
-    row += '</tr>';
-    rows += row;
+    frag.appendChild(tr);
   });
 
-  tbody.innerHTML = rows;
+  tbody.innerHTML = '';
+  tbody.appendChild(frag);
 
-  // 오늘 행으로 스크롤
+  // 오늘 행 스크롤
   setTimeout(function(){
     const trs = tbody.querySelectorAll('tr');
     for(var i=0;i<trs.length;i++){
       if(trs[i].style.outline){ trs[i].scrollIntoView({block:'center',behavior:'smooth'}); break; }
     }
-  }, 80);
+  }, 50);
 }
 
 function switchHourlyMonth(year, month) {
