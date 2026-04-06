@@ -13025,7 +13025,7 @@ function renderSalesAllTable() {
 
     const rowColor = isToday ? '#fff0fa' : isSun ? '#fff5f5' : isSat ? '#f5f0ff' : (d%2===0?'#f8fffe':'#fff');
     const textColor = isToday ? '#e03c6e' : isSun ? '#e03c6e' : isSat ? '#8060d0' : '#333';
-    rows += `<tr style="background:${rowColor}" onclick="switchSalesMonth(${yr},${mn})" title="${yr}년 ${mn}월로 이동" class="sales-all-row">
+    rows += `<tr style="background:${rowColor}">
       <td style="padding:6px 10px;text-align:center;color:${textColor};font-weight:${isToday?'800':'600'};white-space:nowrap;cursor:pointer">${mn}/${d}</td>
       <td style="padding:6px 8px;text-align:center;color:${textColor};font-weight:700">${dow}</td>
       <td style="padding:6px 8px;text-align:right;color:#2a7a4a;font-weight:600">${r.gross?parseNum(r.gross).toLocaleString():'-'}</td>
@@ -13209,56 +13209,82 @@ function saveHourly(year, month, data) {
 
 
 function renderHourlyAllTable() {
-  const wrap = document.getElementById('hourly-wrap');
-  if (!wrap) return;
-  // 모든 월 데이터 수집 → 날짜 오름차순
+  const thead = document.getElementById('hourly-thead');
+  const tbody = document.getElementById('hourly-tbody');
+  if (!tbody) return;
+
+  const INP = 'border:1px solid #b2d8f8;border-radius:6px;padding:4px 3px;font-size:.78rem;text-align:right;background:transparent;outline:none;color:#1a5f8a;width:68px;font-family:inherit';
+  const TH = 'padding:8px 5px;text-align:center;font-weight:700;white-space:nowrap;border-bottom:2px solid #b2d8f8;font-size:.75rem;color:#1a5f8a';
+
+  // 헤더
+  let hdrHtml = '<tr>';
+  hdrHtml += '<th style="' + TH + ';background:#c8e4f4">날짜</th>';
+  hdrHtml += '<th style="' + TH + ';background:#c8e4f4">요일</th>';
+  HOURLY_SLOT_LABELS.forEach(function(l) {
+    hdrHtml += '<th style="' + TH + ';background:#daeef8">' + l + '<br><span style="font-size:.63rem;color:#aaa;font-weight:500">금액 / 분</span></th>';
+  });
+  hdrHtml += '</tr>';
+  thead.innerHTML = hdrHtml;
+
+  // 모든 월 날짜 수집 → 날짜 오름차순
   let allRows = [];
   SALES_MONTHS.forEach(function(m, i) {
     const mn = SALES_MONTH_NUMS[i];
     const yr = mn >= 3 ? 2026 : 2027;
     const days = getDaysInMonth(yr, mn);
-    const key = `hourly_${yr}_${mn}`;
+    const key = 'hourly_' + yr + '_' + mn;
     let data = {};
     try { data = JSON.parse(localStorage.getItem('ws5_'+key)||'{}'); } catch(e){}
     for (let d=1; d<=days; d++) {
-      const row = data['d'+d];
-      if (!row) continue;
-      // 데이터 있는 날만
-      const hasData = HOURLY_SLOTS.some(function(sl){ return row['h'+sl] && row['h'+sl] > 0; });
-      if (!hasData) continue;
-      allRows.push({yr, mn, d, row});
+      allRows.push({yr, mn, d, data});
     }
   });
-  allRows.sort(function(a,b){
-    return new Date(a.yr,a.mn-1,a.d) - new Date(b.yr,b.mn-1,b.d);
-  });
+  allRows.sort(function(a,b){ return new Date(a.yr,a.mn-1,a.d) - new Date(b.yr,b.mn-1,b.d); });
 
-  if (!allRows.length) {
-    wrap.innerHTML = '<div style="text-align:center;color:#bbb;padding:40px">데이터가 없어요</div>';
-    return;
-  }
+  const todayY=NOW.getFullYear(), todayM=NOW.getMonth()+1, todayD2=NOW.getDate();
+  const nowH = NOW.getHours();
 
-  let html = '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.8rem;font-family:Pretendard,sans-serif;width:100%">';
-  html += '<thead><tr style="background:#f5f0ff"><th style="padding:7px 10px;border:1px solid #ddd">날짜</th>';
-  HOURLY_SLOT_LABELS.forEach(function(sl){ html += `<th style="padding:7px 8px;border:1px solid #ddd;white-space:nowrap">${sl}</th>`; });
-  html += '</tr></thead><tbody>';
-
-  allRows.forEach(function({yr, mn, d, row}) {
+  let rows = '';
+  allRows.forEach(function({yr, mn, d, data}) {
+    const r = data['d'+d] || {};
     const date = new Date(yr, mn-1, d);
     const dow = WEEK_KO[date.getDay()];
-    const isSun = date.getDay()===0, isSat = date.getDay()===6;
-    const rowBg = isSun?'#fff5f5':isSat?'#f5f0ff':'#fff';
-    const textColor = isSun?'#e03c6e':isSat?'#8060d0':'#333';
-    html += `<tr style="background:${rowBg}" onclick="switchHourlyMonth(${yr},${mn})" title="${mn}월로 이동" style="cursor:pointer">`;
-    html += `<td style="padding:6px 10px;border:1px solid #eee;font-weight:700;color:${textColor};white-space:nowrap;cursor:pointer">${mn}/${d}(${dow})</td>`;
+    const isSun=date.getDay()===0, isSat=date.getDay()===6;
+    const isToday = yr===todayY && mn===todayM && d===todayD2;
+    const rowBg = isToday?'#f0f8ff':isSun?'#fff5f5':isSat?'#f5f0ff':(d%2===0?'#f5fbff':'#fff');
+    const txtC = isToday?'#1a6fbf':isSun?'#e03c6e':isSat?'#8060d0':'#333';
+    const todayAnim = isToday?'animation:salesTodayShimmer 2s ease-in-out infinite;outline:2px solid #4da6e8;outline-offset:-1px;':'';
+
+    let row = '<tr style="background:'+rowBg+';'+todayAnim+'">';
+    row += '<td style="padding:5px 8px;text-align:center;color:'+txtC+';font-weight:'+(isToday?'800':'600')+';white-space:nowrap">'+(isToday?'✨ ':'')+'<span style="font-size:.72rem;color:#aaa">'+yr+'년 </span>'+mn+'/'+d+'</td>';
+    row += '<td style="padding:5px 6px;text-align:center;color:'+txtC+';font-weight:700">'+dow+'</td>';
     HOURLY_SLOTS.forEach(function(sl) {
-      const val = row['h'+sl] || '';
-      html += `<td style="padding:6px 8px;border:1px solid #eee;text-align:right;color:${val?'#6040b0':'#ddd'}">${val ? Number(val).toLocaleString() : '-'}</td>`;
+      const raw = r['h'+sl] || '';
+      const disp = raw ? Number(raw).toLocaleString() : '';
+      const min = r['m'+sl] || '';
+      const minDisp = min ? '<span style="font-size:.65rem;color:#4da6e8;font-weight:700">'+min+'분</span>' : '<span style="font-size:.63rem;color:#ddd">-분</span>';
+      const isNowCell = isToday && sl===nowH;
+      const tdBg = isNowCell?'background:#fffbe6;':'';
+      const inpStyle = isNowCell ? INP+';border:2px solid #f0c000;background:#fffbe6;font-weight:800;color:#8a5a00' : INP;
+      row += '<td style="padding:3px 4px;text-align:center;'+tdBg+'">'
+        +'<div style="display:flex;align-items:center;gap:3px;justify-content:center">'
+        +'<input type="text" inputmode="numeric" data-raw="'+raw+'" value="'+disp+'" style="'+inpStyle+'" onfocus="hourlyInpFocus(this)" onblur="hourlyInpBlur(this,'+yr+','+mn+','+d+','+sl+')" onkeydown="if(event.key===\'Enter\')this.blur()">'
+        +'<span id="hmin-'+yr+'-'+mn+'-'+d+'-'+sl+'">'+minDisp+'</span>'
+        +'</div></td>';
     });
-    html += '</tr>';
+    row += '</tr>';
+    rows += row;
   });
-  html += '</tbody></table></div>';
-  wrap.innerHTML = html;
+
+  tbody.innerHTML = rows;
+
+  // 오늘 행으로 스크롤
+  setTimeout(function(){
+    const trs = tbody.querySelectorAll('tr');
+    for(var i=0;i<trs.length;i++){
+      if(trs[i].style.outline){ trs[i].scrollIntoView({block:'center',behavior:'smooth'}); break; }
+    }
+  }, 80);
 }
 
 function switchHourlyMonth(year, month) {
