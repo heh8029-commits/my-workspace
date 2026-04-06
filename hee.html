@@ -12779,7 +12779,7 @@ document.getElementById('m2-sm-0') && document.getElementById('m2-sm-0').classLi
 const SALES_MONTHS = ['3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','1월','2월'];
 const SALES_MONTH_NUMS = [3,4,5,6,7,8,9,10,11,12,1,2];
 const WEEK_KO = ['일','월','화','수','목','금','토'];
-let salesCurrentMonth = 3;
+let salesCurrentMonth = 0;
 let salesCurrentYear = 2026;
 
 function salesKey(year, month) { return `sales_${year}_${month}`; }
@@ -13187,7 +13187,8 @@ function renderSalesTable() {
 
 function renderSales() {
   renderSalesMonthTabs();
-  renderSalesTable();
+  if (salesCurrentMonth === 0) { renderSalesAllTable(); }
+  else { renderSalesTable(); }
 }
 
 // ══════════════════════════════════════════
@@ -13201,7 +13202,7 @@ const HOURLY_SLOT_LABELS = HOURLY_SLOTS.map(h => {
 });
 const DOW_LABELS = ['일','월','화','수','목','금','토'];
 let hourlyCurrentYear = 2026;
-let hourlyCurrentMonth = 3;
+let hourlyCurrentMonth = 0;
 
 function hourlyKey(year, month) { return `hourly_${year}_${month}`; }
 function loadHourly(year, month) {
@@ -13493,7 +13494,8 @@ function renderHourlyDowSummary(year, month) {
 
 function renderHourly() {
   renderHourlyMonthTabs();
-  renderHourlyTable();
+  if (hourlyCurrentMonth === 0) { renderHourlyAllTable(); }
+  else { renderHourlyTable(); }
 }
 
 // ── 퀵 바로가기 FAB ──
