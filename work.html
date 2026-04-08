@@ -9994,6 +9994,15 @@ function renderCsShare() {
 }
 
 function workSync() {
+  // cs_share는 별도로 항상 최신 fetch
+  fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data && data.list) {
+        localStorage.setItem('ws5_cs_share', JSON.stringify(data));
+        renderCsShare && renderCsShare();
+      }
+    }).catch(function(){});
   return syncFromSheet();
 }
 
