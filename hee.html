@@ -2196,257 +2196,7 @@ function _hCsSendAlarm(item) {
 // _fbRender에 hCsRender 추가
 
 
-/* ════════════════════════════════
-   💄 뷰티관리 JS
-════════════════════════════════ */
-var BEAUTY_PARTS = [
-  {key:'머리', icon:'💇', color:'#7040c0', bg:'#f8f4ff', border:'#c0a0f8'},
-  {key:'얼굴', icon:'✨', color:'#e03c6e', bg:'#fff0f8', border:'#f7a8c0'},
-  {key:'목',   icon:'🦢', color:'#1a7a50', bg:'#f0fff8', border:'#b0e8c0'},
-  {key:'가슴', icon:'💗', color:'#e05080', bg:'#fff5f8', border:'#f7c0d0'},
-  {key:'팔',   icon:'💪', color:'#1050a0', bg:'#f0f8ff', border:'#b0c8f8'},
-  {key:'다리', icon:'🦵', color:'#a05010', bg:'#fffaf0', border:'#f0d080'},
-  {key:'전신', icon:'🧖', color:'#3dbb8f', bg:'#f0fff8', border:'#a0e8c0'},
-];
 
-function beautyLoad() { return loadObj('beauty_data'); }
-function beautySave(d) { stor('beauty_data', d); }
-function beautyShopsLoad() { return loadObj('beauty_shops').list || []; }
-function beautyShopsSave(list) { stor('beauty_shops', {list:list}); }
-
-function beautyShopAdd() {
-  var name = prompt('쇼핑몰 이름:'); if(!name) return;
-  var url = prompt('URL (https://...)'); if(!url) return;
-  if(!url.startsWith('http')) url = 'https://' + url;
-  var list = beautyShopsLoad();
-  list.push({id:Date.now(), name:name, url:url});
-  beautyShopsSave(list);
-  beautyRenderShops();
-}
-
-function beautyRenderShops() {
-  var el = document.getElementById('beauty-shop-list'); if(!el) return;
-  var list = beautyShopsLoad();
-  if(!list.length) { el.innerHTML='<div style="font-size:.82rem;color:#ccc;padding:4px">+ 버튼으로 쇼핑몰을 등록해요</div>'; return; }
-  el.innerHTML = '';
-  list.forEach(function(shop) {
-    var chip = document.createElement('div');
-    chip.style.cssText = 'display:flex;align-items:center;gap:5px;background:#fff0f8;border:1.5px solid #f7a8c0;border-radius:20px;padding:5px 12px';
-    var a = document.createElement('a');
-    a.href=shop.url; a.target='_blank';
-    a.style.cssText = 'color:#c04070;text-decoration:none;font-size:.82rem;font-weight:700';
-    a.textContent = '🛍️ '+shop.name;
-    var del = document.createElement('button');
-    del.textContent='✕'; del.style.cssText='background:none;border:none;color:#f7a8c0;cursor:pointer;font-size:.72rem;padding:0;margin-left:2px';
-    del.onclick=(function(id){return function(e){e.preventDefault();e.stopPropagation();
-      if(confirm(shop.name+' 삭제?')){ beautyShopsSave(beautyShopsLoad().filter(function(x){return x.id!==id;})); beautyRenderShops(); }
-    };})(shop.id);
-    chip.appendChild(a); chip.appendChild(del);
-    el.appendChild(chip);
-  });
-}
-
-function beautyRenderAll() {
-  var wrap = document.getElementById('beauty-all-parts'); if(!wrap) return;
-  var data = beautyLoad();
-  wrap.innerHTML = '';
-
-  BEAUTY_PARTS.forEach(function(part) {
-    var pd = data[part.key] || {memo:'', routines:[], products:[], photos:[]};
-    var routines = pd.routines||[];
-    var products = pd.products||[];
-    var photos = pd.photos||[];
-
-    // ── 파트 카드 ──
-    var card = document.createElement('div');
-    card.style.cssText = 'background:white;border:2px solid '+part.border+';border-radius:16px;margin-bottom:16px;overflow:hidden';
-
-    // 헤더 바
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px;background:'+part.bg+';border-bottom:1.5px solid '+part.border+';cursor:pointer';
-    hdr.innerHTML = '<span style="font-size:1.4rem">'+part.icon+'</span>'
-      +'<span style="font-size:1rem;font-weight:900;color:'+part.color+'">'+part.key+'</span>'
-      +'<span style="font-size:.78rem;color:#bbb;margin-left:4px">'
-        +(routines.length ? '✅'+routines.filter(function(r){return r.done;}).length+'/'+routines.length+' ' : '')
-        +(products.length ? '🧴'+products.length+' ' : '')
-        +(photos.length ? '📸'+photos.length : '')
-      +'</span>'
-      +'<span id="beauty-toggle-'+part.key+'" style="margin-left:auto;font-size:1rem;color:'+part.color+'">▼</span>';
-
-    var body = document.createElement('div');
-    body.id = 'beauty-body-'+part.key;
-    body.style.cssText = 'padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px';
-
-    // 클릭 토글
-    hdr.onclick = function() {
-      var b = document.getElementById('beauty-body-'+part.key);
-      var t = document.getElementById('beauty-toggle-'+part.key);
-      if(b.style.display==='none'){b.style.display='grid';t.textContent='▲';}
-      else{b.style.display='none';t.textContent='▼';}
-    };
-
-    // ── 왼쪽: 메모 + 루틴 ──
-    var left = document.createElement('div');
-    left.style.cssText = 'display:flex;flex-direction:column;gap:10px';
-
-    // 메모
-    var memoWrap = document.createElement('div');
-    memoWrap.innerHTML = '<div style="font-size:.78rem;font-weight:700;color:'+part.color+';margin-bottom:5px">📝 상태 메모</div>';
-    var ta = document.createElement('textarea');
-    ta.id = 'beauty-memo-'+part.key;
-    ta.rows = 4; ta.placeholder = '현재 상태, 고민, 개선하고 싶은 점...';
-    ta.value = pd.memo||'';
-    ta.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid '+part.border+';border-radius:10px;padding:9px 11px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:'+part.bg+';color:#2a1a2a';
-    ta.oninput = (function(pk){ return function(){ beautyMemoSave(pk); }; })(part.key);
-    memoWrap.appendChild(ta);
-    left.appendChild(memoWrap);
-
-    // 루틴 체크
-    var routineWrap = document.createElement('div');
-    var rHead = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-      +'<div style="font-size:.78rem;font-weight:700;color:'+part.color+'">✅ 루틴</div>'
-      +'<button onclick="beautyRoutineAdd(''+part.key+'')" style="margin-left:auto;background:'+part.color+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer">+</button>'
-      +'</div>';
-    var rItems = routines.map(function(r, i) {
-      return '<label style="display:flex;align-items:center;gap:7px;margin-bottom:5px;cursor:pointer">'
-        +'<input type="checkbox" '+(r.done?'checked':'')+' onchange="beautyRoutineToggle(''+part.key+'','+i+',this.checked)" style="width:15px;height:15px;accent-color:'+part.color+';cursor:pointer;flex-shrink:0">'
-        +'<span style="font-size:.83rem;flex:1;'+(r.done?'text-decoration:line-through;color:#bbb':'color:#333')+'">'+escHtml(r.text)+'</span>'
-        +'<button onclick="beautyRoutineDel(''+part.key+'','+i+')" style="background:none;border:none;color:#ddd;cursor:pointer;font-size:.72rem;padding:0;flex-shrink:0">✕</button>'
-        +'</label>';
-    }).join('');
-    routineWrap.innerHTML = rHead + (rItems || '<div style="font-size:.78rem;color:#ccc;text-align:center;padding:8px">루틴을 추가해요</div>');
-    left.appendChild(routineWrap);
-    body.appendChild(left);
-
-    // ── 오른쪽: 제품 + 사진 ──
-    var right = document.createElement('div');
-    right.style.cssText = 'display:flex;flex-direction:column;gap:10px';
-
-    // 제품
-    var prodWrap = document.createElement('div');
-    var pHead = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-      +'<div style="font-size:.78rem;font-weight:700;color:'+part.color+'">🧴 사용 제품</div>'
-      +'<button onclick="beautyProductAdd(''+part.key+'')" style="margin-left:auto;background:'+part.color+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer">+</button>'
-      +'</div>';
-    var pItems = products.map(function(p, i) {
-      return '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;padding:5px 8px;background:'+part.bg+';border-radius:8px;border:1px solid '+part.border+'">'
-        +'<span style="font-size:.82rem;color:#333;flex:1;word-break:break-all">'+escHtml(p.name)+'</span>'
-        +(p.url?'<a href="'+p.url+'" target="_blank" style="font-size:.72rem;color:'+part.color+';text-decoration:none;font-weight:700;flex-shrink:0">🔗</a>':'')
-        +'<button onclick="beautyProductDel(''+part.key+'','+i+')" style="background:none;border:none;color:#ddd;cursor:pointer;font-size:.72rem;padding:0;flex-shrink:0">✕</button>'
-        +'</div>';
-    }).join('');
-    prodWrap.innerHTML = pHead + (pItems || '<div style="font-size:.78rem;color:#ccc;text-align:center;padding:8px">제품을 추가해요</div>');
-    right.appendChild(prodWrap);
-
-    // 사진 (최근 3장만 미리보기)
-    var photoWrap = document.createElement('div');
-    var phHead = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-      +'<div style="font-size:.78rem;font-weight:700;color:'+part.color+'">📸 사진 기록</div>'
-      +'<button onclick="beautyPhotoAdd(''+part.key+'')" style="margin-left:auto;background:'+part.color+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>'
-      +'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
-    var phItems = photos.slice(0,6).map(function(p, i) {
-      return '<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:'+part.bg+';border:1px solid '+part.border+'">'
-        +'<img src="'+p.url+'" style="width:100%;height:100%;object-fit:cover;cursor:pointer" onclick="openImgModal(''+p.url+'')">'
-        +'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);padding:2px 4px;font-size:.58rem;color:white;text-align:center">'+escHtml(p.date||'')+'</div>'
-        +'<button onclick="beautyPhotoDel(''+part.key+'','+i+')" style="position:absolute;top:2px;right:2px;background:rgba(224,60,110,.85);border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>'
-        +'</div>';
-    }).join('');
-    var phEmpty = photos.length===0 ? '<div style="grid-column:1/-1;text-align:center;color:#ccc;padding:12px;font-size:.78rem">사진을 추가해요 📸</div>' : '';
-    photoWrap.innerHTML = phHead + phItems + phEmpty + '</div>';
-    right.appendChild(photoWrap);
-    body.appendChild(right);
-
-    card.appendChild(hdr);
-    card.appendChild(body);
-    wrap.appendChild(card);
-  });
-}
-
-function beautyMemoSave(part) {
-  var el = document.getElementById('beauty-memo-'+part); if(!el) return;
-  var data = beautyLoad();
-  if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
-  data[part].memo = el.value;
-  beautySave(data);
-}
-
-function beautyRoutineAdd(part) {
-  var txt = prompt(part+' 루틴 추가:'); if(!txt) return;
-  var data = beautyLoad();
-  if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
-  data[part].routines = data[part].routines||[];
-  data[part].routines.push({text:txt, done:false});
-  beautySave(data); beautyRenderAll();
-}
-function beautyRoutineToggle(part, idx, done) {
-  var data = beautyLoad();
-  if(data[part]&&data[part].routines&&data[part].routines[idx]!==undefined) {
-    data[part].routines[idx].done = done; beautySave(data);
-  }
-}
-function beautyRoutineDel(part, idx) {
-  var data = beautyLoad();
-  if(data[part]&&data[part].routines) { data[part].routines.splice(idx,1); beautySave(data); beautyRenderAll(); }
-}
-function beautyProductAdd(part) {
-  var name = prompt(part+' 사용 제품명:'); if(!name) return;
-  var url = prompt('제품 URL (없으면 빈칸):') || '';
-  if(url && !url.startsWith('http')) url = 'https://'+url;
-  var data = beautyLoad();
-  if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
-  data[part].products = data[part].products||[];
-  data[part].products.push({name:name, url:url});
-  beautySave(data); beautyRenderAll();
-}
-function beautyProductDel(part, idx) {
-  var data = beautyLoad();
-  if(data[part]&&data[part].products) { data[part].products.splice(idx,1); beautySave(data); beautyRenderAll(); }
-}
-function beautyPhotoAdd(part) {
-  var inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
-  inp.onchange = function() {
-    var f = inp.files&&inp.files[0]; if(!f) return;
-    toast('⬆️ 업로드 중...');
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var img2 = new Image();
-      img2.onload = function() {
-        var maxW=1200, ratio=Math.min(1,maxW/img2.width,maxW/img2.height);
-        var canvas=document.createElement('canvas');
-        canvas.width=Math.round(img2.width*ratio); canvas.height=Math.round(img2.height*ratio);
-        canvas.getContext('2d').drawImage(img2,0,0,canvas.width,canvas.height);
-        canvas.toBlob(function(blob){
-          var fd=new FormData(); fd.append('file',blob,'beauty.jpg'); fd.append('upload_preset','hwx2iwfz');
-          fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
-            .then(function(r){return r.json();})
-            .then(function(res){
-              if(res.secure_url){
-                var data=beautyLoad();
-                if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
-                data[part].photos=data[part].photos||[];
-                var today=new Date(); var ds=(today.getMonth()+1)+'/'+today.getDate();
-                data[part].photos.unshift({url:res.secure_url,date:ds});
-                beautySave(data); beautyRenderAll(); toast('📸 사진 추가됐어요!');
-              } else { toast('❌ 업로드 실패'); }
-            }).catch(function(){ toast('❌ 업로드 오류'); });
-        },'image/jpeg',0.85);
-      };
-      img2.src=ev.target.result;
-    };
-    reader.readAsDataURL(f);
-  };
-  inp.click();
-}
-function beautyPhotoDel(part, idx) {
-  var data = beautyLoad();
-  if(data[part]&&data[part].photos) { data[part].photos.splice(idx,1); beautySave(data); beautyRenderAll(); }
-}
-
-function initBeauty() {
-  beautyRenderShops();
-  beautyRenderAll();
-}
 
 </script>
 
@@ -15331,6 +15081,292 @@ function renderMenu5(sub) {
   }
 })();
 
+
+
+/* ════════════════════════════════
+   💄 뷰티관리 JS
+════════════════════════════════ */
+var BEAUTY_PARTS = [
+  {key:'머리', icon:'💇', color:'#7040c0', bg:'#f8f4ff', border:'#c0a0f8'},
+  {key:'얼굴', icon:'✨', color:'#e03c6e', bg:'#fff0f8', border:'#f7a8c0'},
+  {key:'목',   icon:'🦢', color:'#1a7a50', bg:'#f0fff8', border:'#b0e8c0'},
+  {key:'가슴', icon:'💗', color:'#e05080', bg:'#fff5f8', border:'#f7c0d0'},
+  {key:'팔',   icon:'💪', color:'#1050a0', bg:'#f0f8ff', border:'#b0c8f8'},
+  {key:'다리', icon:'🦵', color:'#a05010', bg:'#fffaf0', border:'#f0d080'},
+  {key:'전신', icon:'🧖', color:'#3dbb8f', bg:'#f0fff8', border:'#a0e8c0'},
+];
+
+function beautyLoad() { return loadObj('beauty_data'); }
+function beautySave(d) { stor('beauty_data', d); }
+function beautyShopsLoad() { return loadObj('beauty_shops').list || []; }
+function beautyShopsSave(list) { stor('beauty_shops', {list:list}); }
+
+function beautyShopAdd() {
+  var name = prompt('쇼핑몰 이름:'); if(!name) return;
+  var url = prompt('URL (https://...)'); if(!url) return;
+  if(!url.startsWith('http')) url = 'https://' + url;
+  var list = beautyShopsLoad();
+  list.push({id:Date.now(), name:name, url:url});
+  beautyShopsSave(list); beautyRenderShops();
+}
+
+function beautyRenderShops() {
+  var el = document.getElementById('beauty-shop-list'); if(!el) return;
+  var list = beautyShopsLoad();
+  if(!list.length) { el.innerHTML='<div style="font-size:.82rem;color:#ccc;padding:4px">+ 버튼으로 쇼핑몰을 등록해요</div>'; return; }
+  el.innerHTML = '';
+  list.forEach(function(shop) {
+    var chip = document.createElement('div');
+    chip.style.cssText = 'display:flex;align-items:center;gap:5px;background:#fff0f8;border:1.5px solid #f7a8c0;border-radius:20px;padding:5px 12px';
+    var a = document.createElement('a');
+    a.href=shop.url; a.target='_blank';
+    a.style.cssText='color:#c04070;text-decoration:none;font-size:.82rem;font-weight:700';
+    a.textContent='🛍️ '+shop.name;
+    var del = document.createElement('button');
+    del.textContent='✕';
+    del.style.cssText='background:none;border:none;color:#f7a8c0;cursor:pointer;font-size:.72rem;padding:0;margin-left:2px';
+    del.onclick=(function(id){return function(e){e.preventDefault();e.stopPropagation();
+      if(confirm(shop.name+' 삭제?')){ beautyShopsSave(beautyShopsLoad().filter(function(x){return x.id!==id;})); beautyRenderShops(); }
+    };})(shop.id);
+    chip.appendChild(a); chip.appendChild(del); el.appendChild(chip);
+  });
+}
+
+function beautyRenderAll() {
+  var wrap = document.getElementById('beauty-all-parts'); if(!wrap) return;
+  var data = beautyLoad();
+  wrap.innerHTML = '';
+
+  BEAUTY_PARTS.forEach(function(part) {
+    var pd = data[part.key] || {memo:'', routines:[], products:[], photos:[]};
+    var routines = pd.routines||[], products = pd.products||[], photos = pd.photos||[];
+
+    var card = document.createElement('div');
+    card.style.cssText = 'background:white;border:2px solid '+part.border+';border-radius:16px;margin-bottom:16px;overflow:hidden';
+    card.dataset.part = part.key;
+
+    // 헤더
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px;background:'+part.bg+';border-bottom:1.5px solid '+part.border+';cursor:pointer;user-select:none';
+    var doneCnt = routines.filter(function(r){return r.done;}).length;
+    hdr.innerHTML = '<span style="font-size:1.4rem">'+part.icon+'</span>'
+      +'<span style="font-size:1rem;font-weight:900;color:'+part.color+'">'+part.key+'</span>'
+      +'<span style="font-size:.78rem;color:#aaa;margin-left:4px">'
+        +(routines.length ? '✅'+doneCnt+'/'+routines.length+' ' : '')
+        +(products.length ? '🧴'+products.length+' ' : '')
+        +(photos.length ? '📸'+photos.length : '')
+      +'</span>'
+      +'<span class="beauty-toggle" style="margin-left:auto;font-size:1rem;color:'+part.color+'">▼</span>';
+
+    var body = document.createElement('div');
+    body.className = 'beauty-body';
+    body.style.cssText = 'padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px';
+
+    hdr.onclick = function() {
+      var b = body;
+      var t = hdr.querySelector('.beauty-toggle');
+      if(b.style.display==='none'){ b.style.display='grid'; if(t)t.textContent='▲'; }
+      else{ b.style.display='none'; if(t)t.textContent='▼'; }
+    };
+
+    // 왼쪽: 메모 + 루틴
+    var left = document.createElement('div');
+    left.style.cssText = 'display:flex;flex-direction:column;gap:10px';
+
+    // 메모
+    var memoDiv = document.createElement('div');
+    var memoLabel = document.createElement('div');
+    memoLabel.style.cssText='font-size:.78rem;font-weight:700;color:'+part.color+';margin-bottom:5px';
+    memoLabel.textContent='📝 상태 메모';
+    var ta = document.createElement('textarea');
+    ta.id='beauty-memo-'+part.key; ta.rows=4; ta.placeholder='현재 상태, 고민, 개선하고 싶은 점...';
+    ta.value=pd.memo||'';
+    ta.style.cssText='width:100%;box-sizing:border-box;border:1.5px solid '+part.border+';border-radius:10px;padding:9px 11px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:'+part.bg+';color:#2a1a2a';
+    ta.oninput=(function(pk){return function(){beautyMemoSave(pk);};})(part.key);
+    memoDiv.appendChild(memoLabel); memoDiv.appendChild(ta);
+    left.appendChild(memoDiv);
+
+    // 루틴
+    var routineDiv = document.createElement('div');
+    var rHead = document.createElement('div');
+    rHead.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px';
+    var rLabel = document.createElement('div');
+    rLabel.style.cssText='font-size:.78rem;font-weight:700;color:'+part.color;
+    rLabel.textContent='✅ 루틴';
+    var rAdd = document.createElement('button');
+    rAdd.textContent='+'; rAdd.style.cssText='margin-left:auto;background:'+part.color+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer';
+    rAdd.onclick=(function(pk){return function(){beautyRoutineAdd(pk);};})(part.key);
+    rHead.appendChild(rLabel); rHead.appendChild(rAdd);
+    routineDiv.appendChild(rHead);
+
+    if(routines.length) {
+      routines.forEach(function(r, i) {
+        var lbl = document.createElement('label');
+        lbl.style.cssText='display:flex;align-items:center;gap:7px;margin-bottom:5px;cursor:pointer';
+        var chk = document.createElement('input'); chk.type='checkbox'; chk.checked=r.done;
+        chk.style.cssText='width:15px;height:15px;accent-color:'+part.color+';cursor:pointer;flex-shrink:0';
+        chk.onchange=(function(pk,idx){return function(){beautyRoutineToggle(pk,idx,this.checked);};})(part.key,i);
+        var span = document.createElement('span');
+        span.style.cssText='font-size:.83rem;flex:1;'+(r.done?'text-decoration:line-through;color:#bbb':'color:#333');
+        span.textContent=r.text;
+        var del = document.createElement('button'); del.textContent='✕';
+        del.style.cssText='background:none;border:none;color:#ddd;cursor:pointer;font-size:.72rem;padding:0;flex-shrink:0';
+        del.onclick=(function(pk,idx){return function(){beautyRoutineDel(pk,idx);};})(part.key,i);
+        lbl.appendChild(chk); lbl.appendChild(span); lbl.appendChild(del);
+        routineDiv.appendChild(lbl);
+      });
+    } else {
+      var rEmpty=document.createElement('div'); rEmpty.style.cssText='font-size:.78rem;color:#ccc;text-align:center;padding:8px'; rEmpty.textContent='루틴을 추가해요';
+      routineDiv.appendChild(rEmpty);
+    }
+    left.appendChild(routineDiv);
+    body.appendChild(left);
+
+    // 오른쪽: 제품 + 사진
+    var right = document.createElement('div');
+    right.style.cssText='display:flex;flex-direction:column;gap:10px';
+
+    // 제품
+    var prodDiv = document.createElement('div');
+    var pHead = document.createElement('div');
+    pHead.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px';
+    var pLabel=document.createElement('div'); pLabel.style.cssText='font-size:.78rem;font-weight:700;color:'+part.color; pLabel.textContent='🧴 사용 제품';
+    var pAdd=document.createElement('button'); pAdd.textContent='+'; pAdd.style.cssText='margin-left:auto;background:'+part.color+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer';
+    pAdd.onclick=(function(pk){return function(){beautyProductAdd(pk);};})(part.key);
+    pHead.appendChild(pLabel); pHead.appendChild(pAdd);
+    prodDiv.appendChild(pHead);
+
+    if(products.length) {
+      products.forEach(function(p, i) {
+        var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:5px;margin-bottom:4px;padding:5px 8px;background:'+part.bg+';border-radius:8px;border:1px solid '+part.border;
+        var nm=document.createElement('span'); nm.style.cssText='font-size:.82rem;color:#333;flex:1;word-break:break-all'; nm.textContent=p.name;
+        row.appendChild(nm);
+        if(p.url){ var lnk=document.createElement('a'); lnk.href=p.url; lnk.target='_blank'; lnk.style.cssText='font-size:.72rem;color:'+part.color+';text-decoration:none;font-weight:700;flex-shrink:0'; lnk.textContent='🔗'; row.appendChild(lnk); }
+        var pdel=document.createElement('button'); pdel.textContent='✕'; pdel.style.cssText='background:none;border:none;color:#ddd;cursor:pointer;font-size:.72rem;padding:0;flex-shrink:0';
+        pdel.onclick=(function(pk,idx){return function(){beautyProductDel(pk,idx);};})(part.key,i);
+        row.appendChild(pdel); prodDiv.appendChild(row);
+      });
+    } else {
+      var pEmpty=document.createElement('div'); pEmpty.style.cssText='font-size:.78rem;color:#ccc;text-align:center;padding:8px'; pEmpty.textContent='제품을 추가해요';
+      prodDiv.appendChild(pEmpty);
+    }
+    right.appendChild(prodDiv);
+
+    // 사진
+    var photoDiv=document.createElement('div');
+    var phHead=document.createElement('div'); phHead.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px';
+    var phLabel=document.createElement('div'); phLabel.style.cssText='font-size:.78rem;font-weight:700;color:'+part.color; phLabel.textContent='📸 사진 기록';
+    var phAdd=document.createElement('button'); phAdd.textContent='+ 추가'; phAdd.style.cssText='margin-left:auto;background:'+part.color+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer';
+    phAdd.onclick=(function(pk){return function(){beautyPhotoAdd(pk);};})(part.key);
+    phHead.appendChild(phLabel); phHead.appendChild(phAdd);
+    photoDiv.appendChild(phHead);
+
+    var phGrid=document.createElement('div'); phGrid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:5px';
+    if(photos.length) {
+      photos.slice(0,6).forEach(function(p, i) {
+        var cell=document.createElement('div'); cell.style.cssText='position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:'+part.bg+';border:1px solid '+part.border;
+        var img2=document.createElement('img'); img2.src=p.url; img2.loading='lazy';
+        img2.style.cssText='width:100%;height:100%;object-fit:cover;cursor:pointer';
+        img2.onclick=(function(u){return function(){openImgModal(u);};})(p.url);
+        var dateEl=document.createElement('div'); dateEl.style.cssText='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);padding:2px 4px;font-size:.58rem;color:white;text-align:center'; dateEl.textContent=p.date||'';
+        var xbtn=document.createElement('button'); xbtn.textContent='✕'; xbtn.style.cssText='position:absolute;top:2px;right:2px;background:rgba(224,60,110,.85);border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center';
+        xbtn.onclick=(function(pk,idx){return function(){beautyPhotoDel(pk,idx);};})(part.key,i);
+        cell.appendChild(img2); cell.appendChild(dateEl); cell.appendChild(xbtn);
+        phGrid.appendChild(cell);
+      });
+    } else {
+      var phEmpty=document.createElement('div'); phEmpty.style.cssText='grid-column:1/-1;text-align:center;color:#ccc;padding:12px;font-size:.78rem'; phEmpty.textContent='사진을 추가해요 📸';
+      phGrid.appendChild(phEmpty);
+    }
+    photoDiv.appendChild(phGrid);
+    right.appendChild(photoDiv);
+    body.appendChild(right);
+
+    card.appendChild(hdr); card.appendChild(body);
+    wrap.appendChild(card);
+  });
+}
+
+function beautyMemoSave(part) {
+  var el=document.getElementById('beauty-memo-'+part); if(!el) return;
+  var data=beautyLoad();
+  if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
+  data[part].memo=el.value; beautySave(data);
+}
+function beautyRoutineAdd(part) {
+  var txt=prompt(part+' 루틴 추가:'); if(!txt) return;
+  var data=beautyLoad();
+  if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
+  data[part].routines=data[part].routines||[];
+  data[part].routines.push({text:txt,done:false});
+  beautySave(data); beautyRenderAll();
+}
+function beautyRoutineToggle(part,idx,done) {
+  var data=beautyLoad();
+  if(data[part]&&data[part].routines&&data[part].routines[idx]!==undefined){ data[part].routines[idx].done=done; beautySave(data); }
+}
+function beautyRoutineDel(part,idx) {
+  var data=beautyLoad();
+  if(data[part]&&data[part].routines){ data[part].routines.splice(idx,1); beautySave(data); beautyRenderAll(); }
+}
+function beautyProductAdd(part) {
+  var name=prompt(part+' 사용 제품명:'); if(!name) return;
+  var url=prompt('제품 URL (없으면 빈칸):')||'';
+  if(url&&!url.startsWith('http')) url='https://'+url;
+  var data=beautyLoad();
+  if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
+  data[part].products=data[part].products||[];
+  data[part].products.push({name:name,url:url});
+  beautySave(data); beautyRenderAll();
+}
+function beautyProductDel(part,idx) {
+  var data=beautyLoad();
+  if(data[part]&&data[part].products){ data[part].products.splice(idx,1); beautySave(data); beautyRenderAll(); }
+}
+function beautyPhotoAdd(part) {
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    toast('⬆️ 업로드 중...');
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var img3=new Image();
+      img3.onload=function(){
+        var maxW=1200,ratio=Math.min(1,maxW/img3.width,maxW/img3.height);
+        var canvas=document.createElement('canvas');
+        canvas.width=Math.round(img3.width*ratio); canvas.height=Math.round(img3.height*ratio);
+        canvas.getContext('2d').drawImage(img3,0,0,canvas.width,canvas.height);
+        canvas.toBlob(function(blob){
+          var fd=new FormData(); fd.append('file',blob,'beauty.jpg'); fd.append('upload_preset','hwx2iwfz');
+          fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+            .then(function(r){return r.json();})
+            .then(function(res){
+              if(res.secure_url){
+                var data=beautyLoad();
+                if(!data[part]) data[part]={memo:'',routines:[],products:[],photos:[]};
+                data[part].photos=data[part].photos||[];
+                var today=new Date(); var ds=(today.getMonth()+1)+'/'+today.getDate();
+                data[part].photos.unshift({url:res.secure_url,date:ds});
+                beautySave(data); beautyRenderAll(); toast('📸 사진 추가됐어요!');
+              } else { toast('❌ 업로드 실패'); }
+            }).catch(function(){toast('❌ 업로드 오류');});
+        },'image/jpeg',0.85);
+      };
+      img3.src=ev.target.result;
+    };
+    reader.readAsDataURL(f);
+  };
+  inp.click();
+}
+function beautyPhotoDel(part,idx) {
+  var data=beautyLoad();
+  if(data[part]&&data[part].photos){ data[part].photos.splice(idx,1); beautySave(data); beautyRenderAll(); }
+}
+
+function initBeauty() {
+  beautyRenderShops();
+  beautyRenderAll();
+}
 </script>
 <!-- 지출 메모 팝업 -->
 <div class="exp-memo-overlay" id="exp-memo-overlay" onclick="closeExpMemo()"></div>
