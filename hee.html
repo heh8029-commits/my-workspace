@@ -2254,7 +2254,7 @@ function _hCsSendAlarm(item) {
   <button class="msub-btn" onclick="switchSub('menu2',20,null);setMobileSubActive(this)">✈️ 여행갈때</button>
   <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사 기록</button>
   <button class="msub-btn" onclick="switchSub('menu2',21,null);setMobileSubActive(this)">🔔 알림설정</button>
-  <button class="msub-btn" onclick="switchSub('menu2',22,null);setMobileSubActive(this)">💄 뷰티관리</button>
+  <button class="msub-btn" onclick="switchSub('menu2',22,null);setMobileSubActive(this);setTimeout(function(){initBeauty&&initBeauty();},50)">💄 뷰티관리</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu5">
   <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
@@ -2306,7 +2306,7 @@ function _hCsSendAlarm(item) {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',20,null)">✈️ 여행갈때</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null)">🎊 경조사 기록</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',21,null)">🔔 알림설정</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',22,null)">💄 뷰티관리</div>
+    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',22,null);setTimeout(function(){initBeauty&&initBeauty();},50)">💄 뷰티관리</div>
   </div>
 
   <div class="gnav-main" id="gnav-menu5" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');gnavActivate('menu5')">
@@ -3225,8 +3225,6 @@ function _hCsSendAlarm(item) {
           <button onclick="testAlarm('water')" style="background:linear-gradient(135deg,#e0f4ff,#4da6e8);border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;color:white;cursor:pointer">💧 물 알림 테스트</button>
           <button onclick="testAlarm('task')" style="background:linear-gradient(135deg,#fffbe0,#f0c800);border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;color:#7a5800;cursor:pointer">⏰ 할일 알림 테스트</button>
         </div>
-      </div>
-    </div>
 
     <!-- ══ 뷰티관리 menu2-sub-22 ══ -->
     <div class="subpage" id="menu2-sub-22">
