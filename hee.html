@@ -13721,24 +13721,24 @@ function initRender(pageId) {
     renderPhrases && renderPhrases();
     renderFabIcons && renderFabIcons();
   } else if (pageId === 'menu2') {
-    renderExp && renderExp();
-    renderFridgeMemo && renderFridgeMemo();
-    renderCalPage && renderCalPage();
-    renderImpCheck && renderImpCheck();
-    renderAllImpLists && renderAllImpLists();
-    renderJinuScheds && renderJinuScheds();
-    renderJinuNotes && renderJinuNotes();
-    renderEventRec && renderEventRec();
-    renderEventMemos && renderEventMemos();
-    renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true);
-    renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false);
-    renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false);
-    renderCardMgmt && renderCardMgmt();
-    renderCmNotes && renderCmNotes();
-    renderTripPage && renderTripPage();
-    initAlarmPage && initAlarmPage();
-    initBeauty && initBeauty();
-    renderFabIcons && renderFabIcons();
+    try { renderExp && renderExp(); } catch(e){}
+    try { renderFridgeMemo && renderFridgeMemo(); } catch(e){}
+    try { renderCalPage && renderCalPage(); } catch(e){}
+    try { renderImpCheck && renderImpCheck(); } catch(e){}
+    try { renderAllImpLists && renderAllImpLists(); } catch(e){}
+    try { renderJinuScheds && renderJinuScheds(); } catch(e){}
+    try { renderJinuNotes && renderJinuNotes(); } catch(e){}
+    try { renderEventRec && renderEventRec(); } catch(e){}
+    try { renderEventMemos && renderEventMemos(); } catch(e){}
+    try { renderSimpleList('money_check','money-check-list','체크할 항목을 추가해요 💸','#e0b000',true); } catch(e){}
+    try { renderSimpleList('sub_list','sub-list-list','구독 중인 서비스를 추가해요 📋','#4da6e8',false); } catch(e){}
+    try { renderSimpleList('etc_memo','etc-memo-list','메모를 추가해요 📝','#3dbb8f',false); } catch(e){}
+    try { renderCardMgmt && renderCardMgmt(); } catch(e){}
+    try { renderCmNotes && renderCmNotes(); } catch(e){}
+    try { renderTripPage && renderTripPage(); } catch(e){}
+    try { initAlarmPage && initAlarmPage(); } catch(e){}
+    try { if(typeof initBeauty==='function') initBeauty(); } catch(e){}
+    try { renderFabIcons && renderFabIcons(); } catch(e){}
   } else if (pageId === 'menu5') {
     renderMenu5 && renderMenu5();
     // 현재 sub에 맞는 메모박스도 로드
@@ -15127,6 +15127,7 @@ function bShopDel(id){
 
 function beautyRenderAll(){
   var wrap=document.getElementById('beauty-all-parts');if(!wrap)return;
+  if(!window._BP||!_BP.length)return;
   var data=bLoad();
   var html='';
   _BP.forEach(function(p){
@@ -15276,8 +15277,8 @@ function bPhDel(k,i){
 }
 
 function initBeauty(){
-  beautyRenderShops();
-  beautyRenderAll();
+  try{beautyRenderShops();}catch(e){}
+  try{beautyRenderAll();}catch(e){}
 }
 </script>
 <!-- 지출 메모 팝업 -->
