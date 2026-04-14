@@ -2254,7 +2254,6 @@ function _hCsSendAlarm(item) {
   <button class="msub-btn" onclick="switchSub('menu2',20,null);setMobileSubActive(this)">✈️ 여행갈때</button>
   <button class="msub-btn" onclick="switchSub('menu2',17,null);setMobileSubActive(this)">🎊 경조사 기록</button>
   <button class="msub-btn" onclick="switchSub('menu2',21,null);setMobileSubActive(this)">🔔 알림설정</button>
-  <button class="msub-btn" onclick="switchSub('menu2',22,null);setMobileSubActive(this);setTimeout(function(){initBeauty&&initBeauty();},50)">💄 뷰티관리</button>
 </div>
 <div class="mobile-subnav" id="msubnav-menu5">
   <button class="msub-btn" onclick="switchSub('menu5',1,null);setMobileSubActive(this)">💰 현재자산정보</button>
@@ -2306,7 +2305,6 @@ function _hCsSendAlarm(item) {
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',20,null)">✈️ 여행갈때</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',17,null)">🎊 경조사 기록</div>
     <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',21,null)">🔔 알림설정</div>
-    <div class="gnav-sub" onclick="goTab(document.querySelector('.tab[onclick*=menu2]'),'menu2');switchSub('menu2',22,null);setTimeout(function(){initBeauty&&initBeauty();},50)">💄 뷰티관리</div>
   </div>
 
   <div class="gnav-main" id="gnav-menu5" onclick="goTab(document.querySelector('.tab[onclick*=menu5]'),'menu5');gnavActivate('menu5')">
@@ -3779,28 +3777,6 @@ function _hCsSendAlarm(item) {
 
     <!-- ══ 2. 자동이체리스트 ══ -->
 
-    <!-- ══ 뷰티관리 menu2-sub-22 ══ -->
-    <div class="subpage" id="menu2-sub-22">
-      <div class="subpage-header">
-        <div class="subpage-icon" style="background:linear-gradient(135deg,#fff0f8,#f7a8c0)">💄</div>
-        <div><div class="subpage-title">뷰티관리</div><div class="subpage-desc">파트별 관리 기록 & 쇼핑몰 즐겨찾기</div></div>
-      </div>
-
-      <!-- 쇼핑몰 즐겨찾기 -->
-      <div class="card" style="border-top:3px solid #f7a8c0;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:.88rem;font-weight:800;color:#c04070">🛒 쇼핑몰 즐겨찾기</div>
-          <button onclick="beautyShopAdd()" style="margin-left:auto;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:8px;padding:5px 14px;font-size:.78rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>
-        </div>
-        <div id="beauty-shop-list" style="display:flex;gap:8px;flex-wrap:wrap;min-height:28px"></div>
-      </div>
-
-      <!-- 파트별 카드 (세로 나열) -->
-      <div id="beauty-all-parts"></div>
-
-
-    </div>
-
     <div class="subpage" id="menu5-sub-2">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#e8fff4,#b2e8d4)">🔄</div>
@@ -4439,7 +4415,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','vip_list','regular_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes','beauty_data','beauty_shops'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','vip_list','regular_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -4575,7 +4551,7 @@ function _fixHeaderOffset() {
 }
 // Firebase에서 전체 데이터 불러오기
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','vip_list','regular_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes','beauty_data','beauty_shops'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','vip_list','regular_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','product_memo_box','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -11138,9 +11114,6 @@ function switchSub(pageId, num, el) {
   if (pageId === 'menu2' && num === 20) {
     setTimeout(function(){ renderTripPage && renderTripPage(); }, 0);
   }
-  if (pageId === 'menu2' && num == 22) {
-    setTimeout(function(){ initBeauty && initBeauty(); }, 100);
-  }
   if (pageId === 'menu2' && num === 21) {
     setTimeout(function(){ initAlarmPage && initAlarmPage(); }, 0);
   }
@@ -13737,7 +13710,6 @@ function initRender(pageId) {
     try { renderCmNotes && renderCmNotes(); } catch(e){}
     try { renderTripPage && renderTripPage(); } catch(e){}
     try { initAlarmPage && initAlarmPage(); } catch(e){}
-    try { if(typeof initBeauty==='function') initBeauty(); } catch(e){}
     try { renderFabIcons && renderFabIcons(); } catch(e){}
   } else if (pageId === 'menu5') {
     renderMenu5 && renderMenu5();
@@ -15088,198 +15060,6 @@ function renderMenu5(sub) {
 
 
 
-/* 💄 뷰티관리 */
-var _BP = [
-  {k:'머리',ic:'💇',c:'#7040c0',bg:'#f8f4ff',bd:'#c0a0f8'},
-  {k:'얼굴',ic:'✨',c:'#e03c6e',bg:'#fff0f8',bd:'#f7a8c0'},
-  {k:'목',  ic:'🦢',c:'#1a7a50',bg:'#f0fff8',bd:'#b0e8c0'},
-  {k:'가슴',ic:'💗',c:'#e05080',bg:'#fff5f8',bd:'#f7c0d0'},
-  {k:'팔',  ic:'💪',c:'#1050a0',bg:'#f0f8ff',bd:'#b0c8f8'},
-  {k:'다리',ic:'🦵',c:'#a05010',bg:'#fffaf0',bd:'#f0d080'},
-  {k:'전신',ic:'🧖',c:'#3dbb8f',bg:'#f0fff8',bd:'#a0e8c0'},
-];
-function bLoad(){return loadObj('beauty_data');}
-function bSave(d){stor('beauty_data',d);}
-function bShopsLoad(){return loadObj('beauty_shops').list||[];}
-function bShopsSave(l){stor('beauty_shops',{list:l});}
-
-function beautyShopAdd(){
-  var name=prompt('쇼핑몰 이름:');if(!name)return;
-  var url=prompt('URL:');if(!url)return;
-  if(!url.startsWith('http'))url='https://'+url;
-  var list=bShopsLoad();list.push({id:Date.now(),name:name,url:url});
-  bShopsSave(list);beautyRenderShops();
-}
-function beautyRenderShops(){
-  var el=document.getElementById('beauty-shop-list');if(!el)return;
-  var list=bShopsLoad();
-  el.innerHTML=list.length?list.map(function(s){
-    return '<span style="display:inline-flex;align-items:center;gap:4px;background:#fff0f8;border:1.5px solid #f7a8c0;border-radius:20px;padding:5px 12px;margin:2px">'
-      +'<a href="'+s.url+'" target="_blank" style="color:#c04070;text-decoration:none;font-size:.82rem;font-weight:700">🛍️ '+escHtml(s.name)+'</a>'
-      +'<button onclick="bShopDel('+s.id+')" style="background:none;border:none;color:#f7a8c0;cursor:pointer;font-size:.72rem;padding:0;margin-left:3px">✕</button>'
-      +'</span>';
-  }).join(''):'<span style="font-size:.82rem;color:#ccc">+ 버튼으로 쇼핑몰을 등록해요</span>';
-}
-function bShopDel(id){
-  if(!confirm('삭제?'))return;
-  bShopsSave(bShopsLoad().filter(function(x){return x.id!==id;}));beautyRenderShops();
-}
-
-function beautyRenderAll(){
-  var wrap=document.getElementById('beauty-all-parts');if(!wrap)return;
-  if(!window._BP||!_BP.length)return;
-  var data=bLoad();
-  var html='';
-  _BP.forEach(function(p){
-    var pd=data[p.k]||{memo:'',routines:[],products:[],photos:[]};
-    var rt=pd.routines||[],pr=pd.products||[],ph=pd.photos||[];
-    var done=rt.filter(function(r){return r.done;}).length;
-    var badge=(rt.length?'✅'+done+'/'+rt.length+' ':'')+
-              (pr.length?'🧴'+pr.length+' ':'')+
-              (ph.length?'📸'+ph.length:'');
-
-    // 루틴
-    var rtHtml=rt.length?rt.map(function(r,i){
-      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:5px;cursor:pointer">'
-        +'<input type="checkbox"'+(r.done?' checked':'')+' onchange="bRtToggle(\''+p.k+'\','+i+',this.checked)"'
-        +' style="width:15px;height:15px;accent-color:'+p.c+';cursor:pointer;flex-shrink:0">'
-        +'<span style="font-size:.83rem;flex:1;'+(r.done?'text-decoration:line-through;color:#bbb':'color:#333')+'">'+escHtml(r.text)+'</span>'
-        +'<button onclick="bRtDel(\''+p.k+'\','+i+')" style="background:none;border:none;color:#ddd;cursor:pointer;font-size:.7rem;flex-shrink:0">✕</button>'
-        +'</label>';
-    }).join(''):'<div style="font-size:.78rem;color:#ccc;padding:6px 0">루틴을 추가해요</div>';
-
-    // 제품
-    var prHtml=pr.length?pr.map(function(prod,i){
-      return '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;padding:5px 8px;background:'+p.bg+';border-radius:8px;border:1px solid '+p.bd+'">'
-        +'<span style="font-size:.82rem;color:#333;flex:1">'+escHtml(prod.name)+'</span>'
-        +(prod.url?'<a href="'+prod.url+'" target="_blank" style="color:'+p.c+';font-size:.72rem;font-weight:700;text-decoration:none">🔗</a>':'')
-        +'<button onclick="bPrDel(\''+p.k+'\','+i+')" style="background:none;border:none;color:#ddd;cursor:pointer;font-size:.7rem">✕</button>'
-        +'</div>';
-    }).join(''):'<div style="font-size:.78rem;color:#ccc;padding:6px 0">제품을 추가해요</div>';
-
-    // 사진
-    var phHtml=ph.length?'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">'+ph.slice(0,6).map(function(img,i){
-      return '<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid '+p.bd+'">'
-        +'<img src="'+img.url+'" style="width:100%;height:100%;object-fit:cover;cursor:pointer" onclick="openImgModal(\''+img.url+'\')">'
-        +'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);padding:2px 4px;font-size:.58rem;color:white;text-align:center">'+escHtml(img.date||'')+'</div>'
-        +'<button onclick="bPhDel(\''+p.k+'\','+i+')" style="position:absolute;top:2px;right:2px;background:rgba(224,60,110,.85);border:none;border-radius:50%;width:16px;height:16px;color:white;font-size:.5rem;cursor:pointer;font-weight:800;display:flex;align-items:center;justify-content:center">✕</button>'
-        +'</div>';
-    }).join('')+'</div>':'<div style="font-size:.78rem;color:#ccc;padding:6px 0;text-align:center">사진을 추가해요 📸</div>';
-
-    html+='<div style="background:white;border:2px solid '+p.bd+';border-radius:16px;margin-bottom:16px;overflow:hidden">'
-      // 헤더
-      +'<div onclick="bToggle(\''+p.k+'\')" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:'+p.bg+';border-bottom:1.5px solid '+p.bd+';cursor:pointer;user-select:none">'
-        +'<span style="font-size:1.4rem">'+p.ic+'</span>'
-        +'<span style="font-size:1rem;font-weight:900;color:'+p.c+'">'+p.k+'</span>'
-        +'<span style="font-size:.78rem;color:#aaa;margin-left:4px">'+badge+'</span>'
-        +'<span id="bt-'+p.k+'" style="margin-left:auto;font-size:1rem;color:'+p.c+'">▼</span>'
-      +'</div>'
-      // 바디
-      +'<div id="bb-'+p.k+'" style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px">'
-        // 왼쪽
-        +'<div>'
-          +'<div style="font-size:.78rem;font-weight:700;color:'+p.c+';margin-bottom:5px">📝 상태 메모</div>'
-          +'<textarea id="bm-'+p.k+'" rows="4" oninput="bMemoSave(\''+p.k+'\')" placeholder="현재 상태, 고민..." style="width:100%;box-sizing:border-box;border:1.5px solid '+p.bd+';border-radius:10px;padding:9px 11px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:'+p.bg+'">'+escHtml(pd.memo||'')+'</textarea>'
-          +'<div style="display:flex;align-items:center;gap:6px;margin:10px 0 6px">'
-            +'<div style="font-size:.78rem;font-weight:700;color:'+p.c+'">✅ 루틴</div>'
-            +'<button onclick="bRtAdd(\''+p.k+'\')" style="margin-left:auto;background:'+p.c+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer">+</button>'
-          +'</div>'
-          +rtHtml
-        +'</div>'
-        // 오른쪽
-        +'<div>'
-          +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-            +'<div style="font-size:.78rem;font-weight:700;color:'+p.c+'">🧴 사용 제품</div>'
-            +'<button onclick="bPrAdd(\''+p.k+'\')" style="margin-left:auto;background:'+p.c+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer">+</button>'
-          +'</div>'
-          +prHtml
-          +'<div style="display:flex;align-items:center;gap:6px;margin:10px 0 6px">'
-            +'<div style="font-size:.78rem;font-weight:700;color:'+p.c+'">📸 사진</div>'
-            +'<button onclick="bPhAdd(\''+p.k+'\')" style="margin-left:auto;background:'+p.c+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer">+ 추가</button>'
-          +'</div>'
-          +phHtml
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  });
-  wrap.innerHTML=html;
-}
-
-function bToggle(k){
-  var b=document.getElementById('bb-'+k),t=document.getElementById('bt-'+k);
-  if(!b)return;
-  if(b.style.display==='none'){b.style.display='grid';if(t)t.textContent='▲';}
-  else{b.style.display='none';if(t)t.textContent='▼';}
-}
-function bMemoSave(k){
-  var el=document.getElementById('bm-'+k);if(!el)return;
-  var d=bLoad();if(!d[k])d[k]={memo:'',routines:[],products:[],photos:[]};
-  d[k].memo=el.value;bSave(d);
-}
-function bRtAdd(k){
-  var t=prompt(k+' 루틴 추가:');if(!t)return;
-  var d=bLoad();if(!d[k])d[k]={memo:'',routines:[],products:[],photos:[]};
-  d[k].routines=d[k].routines||[];d[k].routines.push({text:t,done:false});
-  bSave(d);beautyRenderAll();
-}
-function bRtToggle(k,i,done){
-  var d=bLoad();if(d[k]&&d[k].routines&&d[k].routines[i]!==undefined){d[k].routines[i].done=done;bSave(d);}
-}
-function bRtDel(k,i){
-  var d=bLoad();if(d[k]&&d[k].routines){d[k].routines.splice(i,1);bSave(d);beautyRenderAll();}
-}
-function bPrAdd(k){
-  var name=prompt(k+' 제품명:');if(!name)return;
-  var url=prompt('제품 URL (없으면 빈칸):')||'';
-  if(url&&!url.startsWith('http'))url='https://'+url;
-  var d=bLoad();if(!d[k])d[k]={memo:'',routines:[],products:[],photos:[]};
-  d[k].products=d[k].products||[];d[k].products.push({name:name,url:url});
-  bSave(d);beautyRenderAll();
-}
-function bPrDel(k,i){
-  var d=bLoad();if(d[k]&&d[k].products){d[k].products.splice(i,1);bSave(d);beautyRenderAll();}
-}
-function bPhAdd(k){
-  var inp=document.createElement('input');inp.type='file';inp.accept='image/*';
-  inp.onchange=function(){
-    var f=inp.files&&inp.files[0];if(!f)return;
-    toast('⬆️ 업로드 중...');
-    var reader=new FileReader();
-    reader.onload=function(ev){
-      var i2=new Image();
-      i2.onload=function(){
-        var r=Math.min(1,1200/i2.width,1200/i2.height);
-        var cv=document.createElement('canvas');cv.width=Math.round(i2.width*r);cv.height=Math.round(i2.height*r);
-        cv.getContext('2d').drawImage(i2,0,0,cv.width,cv.height);
-        cv.toBlob(function(blob){
-          var fd=new FormData();fd.append('file',blob,'b.jpg');fd.append('upload_preset','hwx2iwfz');
-          fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
-            .then(function(r2){return r2.json();})
-            .then(function(res){
-              if(res.secure_url){
-                var d=bLoad();if(!d[k])d[k]={memo:'',routines:[],products:[],photos:[]};
-                d[k].photos=d[k].photos||[];
-                var today=new Date();
-                d[k].photos.unshift({url:res.secure_url,date:(today.getMonth()+1)+'/'+today.getDate()});
-                bSave(d);beautyRenderAll();toast('📸 추가됐어요!');
-              }else{toast('❌ 실패');}
-            }).catch(function(){toast('❌ 오류');});
-        },'image/jpeg',0.85);
-      };
-      i2.src=ev.target.result;
-    };
-    reader.readAsDataURL(f);
-  };
-  inp.click();
-}
-function bPhDel(k,i){
-  var d=bLoad();if(d[k]&&d[k].photos){d[k].photos.splice(i,1);bSave(d);beautyRenderAll();}
-}
-
-function initBeauty(){
-  try{beautyRenderShops();}catch(e){}
-  try{beautyRenderAll();}catch(e){}
-}
 </script>
 <!-- 지출 메모 팝업 -->
 <div class="exp-memo-overlay" id="exp-memo-overlay" onclick="closeExpMemo()"></div>
