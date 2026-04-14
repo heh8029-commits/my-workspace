@@ -4204,6 +4204,13 @@ const DAYS  = ['일','월','화','수','목','금','토'];
 const DAYKO = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
 const TOD   = DAYS[NOW.getDay()];
 
+function updateDate() {
+  var n = new Date();
+  var d = DAYS[n.getDay()];
+  var el = document.getElementById('dtxt');
+  if (el) el.textContent = n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 ('+d+') ✨';
+}
+
 document.getElementById('dtxt').textContent =
   `${NOW.getFullYear()}년 ${NOW.getMonth()+1}월 ${NOW.getDate()}일 (${TOD}) ✨`;
 // dpill은 updateTodaySchedBar()가 처리
