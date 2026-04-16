@@ -2125,7 +2125,31 @@ function hCsRender() {
     card.appendChild(chkWrap);
     // 바디
     var body=document.createElement('div'); body.style.cssText='padding:0 16px 14px';
-    if(it.text){var memo=document.createElement('div');memo.style.cssText='text-align:center;font-size:1.1rem;font-weight:900;color:'+(it.done?'#aaa':'#1a1a2e')+';line-height:1.8;white-space:pre-wrap;word-break:break-all;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';memo.textContent=it.text;body.appendChild(memo);}
+    if(it.text){
+      var memo=document.createElement('div');
+      if(isCat==='그로스'){
+        // 줄마다 체크박스
+        memo.style.cssText='padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        it.text.split('\n').filter(function(l){return l.trim();}).forEach(function(line,i){
+          var lbl=document.createElement('label');
+          lbl.style.cssText='display:flex;align-items:flex-start;gap:10px;padding:7px 6px;cursor:pointer;border-bottom:1px solid #fdf0cc;font-size:1rem;font-weight:700;line-height:1.5;word-break:break-all';
+          var chk=document.createElement('input'); chk.type='checkbox';
+          chk.style.cssText='width:20px;height:20px;accent-color:#e0a000;cursor:pointer;flex-shrink:0;margin-top:2px';
+          chk.onchange=function(){
+            var sp=this.nextElementSibling;
+            if(this.checked){sp.style.textDecoration='line-through';sp.style.color='#ccc';}
+            else{sp.style.textDecoration='';sp.style.color='';}
+          };
+          var sp=document.createElement('span'); sp.textContent=line;
+          lbl.appendChild(chk); lbl.appendChild(sp);
+          memo.appendChild(lbl);
+        });
+      } else {
+        memo.style.cssText='text-align:center;font-size:1.1rem;font-weight:900;color:'+(it.done?'#aaa':'#1a1a2e')+';line-height:1.8;white-space:pre-wrap;word-break:break-all;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        memo.textContent=it.text;
+      }
+      body.appendChild(memo);
+    }
     var imgs=(it.imgs&&it.imgs.length)?it.imgs:(it.img?[it.img]:[]);
     if(imgs.length){
       var mi=document.createElement('img'); mi.src=imgs[0];
