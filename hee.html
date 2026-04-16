@@ -11047,7 +11047,7 @@ function setView(mode) {
 }
 
 // 저장된 뷰모드 복원
-const savedView = localStorage.getItem('ws5_viewmode') || 'pc';
+const savedView = localStorage.getItem('ws5_viewmode') || (window.innerWidth <= 768 ? 'mobile' : 'pc');
 setView(savedView);
 
 // ── 사이드 메뉴 전환 ──
@@ -15017,7 +15017,7 @@ function renderMenu5(sub) {
   const savedTab = localStorage.getItem('ws5_curtab') || 'home';
   window._currentPage = savedTab;
   // 뷰모드
-  const vm = localStorage.getItem('ws5_viewmode') || 'pc';
+  const vm = localStorage.getItem('ws5_viewmode') || (window.innerWidth <= 768 ? 'mobile' : 'pc');
   setView(vm, true);
   // gnav 접힘
   const collapsed = localStorage.getItem('ws5_gnavcollapsed') === 'true';
