@@ -2102,6 +2102,14 @@ function hCsRender() {
       };})(it.id,chk);
       var doneEl=document.createElement('span'); doneEl.style.cssText='font-size:.9rem;font-weight:800;color:#e0a000'; doneEl.textContent='확인완료';
       lbl.appendChild(chk); lbl.appendChild(doneEl); chkWrap.appendChild(lbl);
+      // 복사 버튼
+      var cpyBtn=document.createElement('button');
+      cpyBtn.textContent='📋 복사';
+      cpyBtn.style.cssText='background:white;border:1.5px solid #e0a000;border-radius:10px;padding:6px 14px;font-size:.85rem;font-weight:800;color:#e0a000;cursor:pointer;margin-left:8px';
+      cpyBtn.onclick=(function(txt){return function(e){e.stopPropagation();
+        navigator.clipboard.writeText(txt).then(function(){toast('📋 복사됐어요!');});
+      };})(it.text||'');
+      chkWrap.appendChild(cpyBtn);
     } else {
       ['은','수','슬'].forEach(function(name){
         if(name===(it.author||''))return;
