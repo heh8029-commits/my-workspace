@@ -13267,6 +13267,9 @@ function saveHourly(year, month, data) {
 
 
 function renderHourlyAllTable() {
+  // 입력 중이면 리렌더 스킵 (커서 사라짐 방지)
+  var active = document.activeElement;
+  if (active && active.closest && active.closest('#hourly-tbody')) return;
   const thead = document.getElementById('hourly-thead');
   const tbody = document.getElementById('hourly-tbody');
   if (!tbody) return;
@@ -13404,6 +13407,9 @@ function renderHourlyMonthTabs() {
 }
 
 function renderHourlyTable() {
+  // 입력 중이면 리렌더 스킵
+  var active = document.activeElement;
+  if (active && active.closest && active.closest('#hourly-tbody')) return;
   const thead = document.getElementById('hourly-thead');
   const tbody = document.getElementById('hourly-tbody');
   if (!tbody) return;
