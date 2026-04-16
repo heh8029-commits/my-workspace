@@ -9913,8 +9913,26 @@ function renderCsShare() {
     // 2. 메모 먼저 (이미지 위에)
     if (it.text) {
       var memoEl = document.createElement('div');
-      memoEl.style.cssText = 'text-align:center;font-size:1.15rem;font-weight:900;color:#1a1a2e;line-height:1.8;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
-      memoEl.textContent = it.text;
+      if (isCat === '그로스') {
+        memoEl.style.cssText = 'padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        it.text.split('\n').filter(function(l){ return l.trim(); }).forEach(function(line) {
+          var lbl = document.createElement('label');
+          lbl.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:7px 6px;cursor:pointer;border-bottom:1px solid #fdf0cc;font-size:1rem;font-weight:700;line-height:1.5;word-break:break-all';
+          var chk = document.createElement('input'); chk.type = 'checkbox';
+          chk.style.cssText = 'width:20px;height:20px;accent-color:#e0a000;cursor:pointer;flex-shrink:0;margin-top:2px';
+          chk.onchange = function() {
+            var sp = this.nextElementSibling;
+            if (this.checked) { sp.style.textDecoration='line-through'; sp.style.color='#ccc'; }
+            else { sp.style.textDecoration=''; sp.style.color=''; }
+          };
+          var sp = document.createElement('span'); sp.textContent = line;
+          lbl.appendChild(chk); lbl.appendChild(sp);
+          memoEl.appendChild(lbl);
+        });
+      } else {
+        memoEl.style.cssText = 'text-align:center;font-size:1.15rem;font-weight:900;color:#1a1a2e;line-height:1.8;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        memoEl.textContent = it.text;
+      }
       body.appendChild(memoEl);
     }
 
