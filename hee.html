@@ -2138,17 +2138,24 @@ function hCsRender() {
       if(isCat==='그로스'){
         // 줄마다 체크박스
         memo.style.cssText='padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        var checks=it.lineChecks||[];
         it.text.split('\n').filter(function(l){return l.trim();}).forEach(function(line,i){
           var lbl=document.createElement('label');
           lbl.style.cssText='display:flex;align-items:flex-start;gap:10px;padding:7px 6px;cursor:pointer;border-bottom:1px solid #fdf0cc;font-size:1rem;font-weight:700;line-height:1.5;word-break:break-all';
           var chk=document.createElement('input'); chk.type='checkbox';
           chk.style.cssText='width:20px;height:20px;accent-color:#e0a000;cursor:pointer;flex-shrink:0;margin-top:2px';
-          chk.onchange=function(){
-            var sp=this.nextElementSibling;
-            if(this.checked){sp.style.textDecoration='line-through';sp.style.color='#ccc';}
-            else{sp.style.textDecoration='';sp.style.color='';}
-          };
+          chk.checked=!!checks[i];
           var sp=document.createElement('span'); sp.textContent=line;
+          if(chk.checked){sp.style.textDecoration='line-through';sp.style.color='#ccc';}
+          chk.onchange=(function(itemId,idx,spanEl){return function(){
+            var isChecked=this.checked;
+            if(isChecked){spanEl.style.textDecoration='line-through';spanEl.style.color='#ccc';}
+            else{spanEl.style.textDecoration='';spanEl.style.color='';}
+            hCsUpdateItem(itemId,function(item){
+              item.lineChecks=item.lineChecks||[];
+              item.lineChecks[idx]=isChecked;
+            });
+          };})(it.id,i,sp);
           lbl.appendChild(chk); lbl.appendChild(sp);
           memo.appendChild(lbl);
         });
