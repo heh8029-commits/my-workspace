@@ -9236,6 +9236,10 @@ function csOpenGrossWindow(item) {
     + '.header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e0a000}'
     + '.author{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}'
     + '.memo{font-size:1rem;font-weight:700;line-height:1.7;white-space:pre-wrap;word-break:break-all;text-align:center;padding:8px 0 10px}'
+    + '.checklist{padding:4px 0 10px}'
+    + '.chk-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-bottom:1px solid #f5e8c0;cursor:pointer;font-size:.95rem;font-weight:700;line-height:1.5;word-break:break-all}'
+    + '.chk-row input{width:20px;height:20px;accent-color:#e0a000;cursor:pointer;flex-shrink:0;margin-top:2px}'
+    + '.chk-row.done span{text-decoration:line-through;color:#ccc}'
     + '</style></head><body>'
     + '<div class="topbar"><label><input type="checkbox" id="top-chk"> 📌 항상 위에</label></div>'
     + '<div class="content">'
@@ -9243,7 +9247,9 @@ function csOpenGrossWindow(item) {
     + '<span class="author" style="background:'+(author==='수'?'#a0c8f8':author==='은'?'#f7a8c0':'#b0e8c0')+';color:'+(author==='수'?'#1050a0':author==='은'?'#c04070':'#1a7a50')+'">'+author+'</span>'
     + '<div><div style="font-weight:800;font-size:.9rem">📋 그로스리스트</div><div style="font-size:.8rem;color:#888">'+dateStr+'</div></div>'
     + '</div>'
-    + (txt ? '<div class="memo">'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : '')
+    + (txt ? '<div class="checklist">'+txt.split('\n').filter(function(l){return l.trim();}).map(function(line,i){
+      return '<label class="chk-row"><input type="checkbox" id="cl'+i+'" onchange="this.closest(\'label\').classList.toggle(\'done\',this.checked)"><span>'+line.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span></label>';
+    }).join('')+'</div>' : '')
     + (imgHtml ? '<div>'+imgHtml+'</div>' : '')
     + '</div>'
     + '</body></html>';
