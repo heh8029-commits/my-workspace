@@ -2013,6 +2013,26 @@ function hCsUpdateItem(id, updater) {
     });
 }
 
+
+function hCsCleanOld() {
+  var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  var list = hLoadCs();
+  var before = list.length;
+  var filtered = list.filter(function(x){ return (x.createdAt||x.id) > cutoff; });
+  var removed = before - filtered.length;
+  if (removed === 0) { toast('7일 지난 글이 없어요 😊'); return; }
+  if (!confirm(removed + '개의 글을 삭제할까요? (7일 이상 지난 글)')) return;
+  localStorage.setItem('ws5_cs_share', JSON.stringify({list: filtered}));
+  var FB = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
+  fetch(FB + '/cs_share.json', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({list: filtered})
+  }).catch(function(){});
+  hCsRender();
+  toast('🗑️ ' + removed + '개 삭제됐어요!');
+}
+
 function hCsToggleDone(id) {
   hCsUpdateItem(id, function(item){ item.done = !item.done; });
 }
@@ -3141,6 +3161,7 @@ function _hCsSendAlarm(item) {
       <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
           <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
+          <button onclick="hCsCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="7일 지난 글 삭제">🗑️ 7일정리</button>
           <div style="display:flex;gap:5px;align-items:center;margin-left:8px">
             <button type="button" onclick="hCsSetAuthor('수')" class="hcs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
             <button type="button" onclick="hCsSetAuthor('은')" class="hcs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
