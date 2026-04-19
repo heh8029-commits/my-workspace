@@ -15242,6 +15242,48 @@ function _beautyRenderShops(){
   });
 }
 
+function _beautyRoutineModal(pk, color, editIdx){
+  var old = document.getElementById('_bRtModal'); if(old) old.remove();
+  var d = _bLoad();
+  var rts = (d[pk]&&d[pk].routines)||[];
+  var existing = (editIdx!==null && editIdx!==undefined) ? rts[editIdx] : null;
+
+  var modal = document.createElement('div');
+  modal.id = '_bRtModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML =
+    '<div style="background:white;border-radius:18px;padding:22px;width:100%;max-width:360px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.2)">'
+    +'<div style="font-size:.95rem;font-weight:800;color:'+color+';margin-bottom:14px">'+(existing?'✏️ 루틴 수정':'✅ 루틴 추가 - '+pk)+'</div>'
+    +'<div style="font-size:.78rem;color:#888;margin-bottom:5px;font-weight:600">루틴 내용 *</div>'
+    +'<input id="_bRtText" type="text" placeholder="예: 수분크림 바르기, 마사지 5분" value="'+(existing?escHtml(existing.text):'')+'"'
+    +' style="width:100%;box-sizing:border-box;border:1.5px solid #ddd;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:Pretendard,sans-serif;outline:none;margin-bottom:16px">'
+    +'<div style="display:flex;gap:8px">'
+    +'<button id="_bRtCancel" style="flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer">취소</button>'
+    +'<button id="_bRtSave" style="flex:2;padding:10px;background:'+color+';border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:white;cursor:pointer">'+(existing?'수정 완료':'추가하기')+'</button>'
+    +'</div>'
+    +'</div>';
+
+  document.body.appendChild(modal);
+  var inp = document.getElementById('_bRtText');
+  inp.focus(); inp.select();
+
+  document.getElementById('_bRtCancel').onclick = function(){ modal.remove(); };
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+
+  document.getElementById('_bRtSave').onclick = function(){
+    var text = inp.value.trim();
+    if(!text){ inp.style.borderColor='#e03c6e'; inp.focus(); return; }
+    var d2 = _bLoad();
+    if(!d2[pk]) d2[pk] = {memo:'',routines:[],products:[],photos:[]};
+    d2[pk].routines = d2[pk].routines||[];
+    if(existing){ d2[pk].routines[editIdx].text = text; }
+    else { d2[pk].routines.push({text:text, done:false}); }
+    _bSave(d2); modal.remove(); _beautyRenderParts();
+    toast(existing ? '✅ 수정됐어요!' : '✅ 루틴 추가됐어요!');
+  };
+  inp.onkeydown = function(e){ if(e.key==='Enter') document.getElementById('_bRtSave').click(); };
+}
+
 function _beautyProductModal(pk, color, editIdx, _unused){
   var old = document.getElementById('_bPrModal'); if(old) old.remove();
   var d = _bLoad();
@@ -15378,12 +15420,7 @@ function _beautyRenderParts(){
     rtLabel.style.cssText='font-size:.78rem;font-weight:700;color:'+p.c; rtLabel.textContent='✅ 루틴';
     var rtAdd=document.createElement('button'); rtAdd.textContent='+';
     rtAdd.style.cssText='margin-left:auto;background:'+p.c+';border:none;border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;color:white;cursor:pointer';
-    rtAdd.onclick=(function(pk){return function(){
-      var t=prompt(pk+' 루틴:'); if(!t) return;
-      var d=_bLoad(); if(!d[pk])d[pk]={memo:'',routines:[],products:[],photos:[]};
-      d[pk].routines=d[pk].routines||[]; d[pk].routines.push({text:t,done:false});
-      _bSave(d); _beautyRenderParts();
-    };})(p.k);
+    rtAdd.onclick=(function(pk,pc){return function(){ _beautyRoutineModal(pk,pc,null); };})(p.k,p.c);
     rtHead.appendChild(rtLabel); rtHead.appendChild(rtAdd); rtWrap.appendChild(rtHead);
     if(rt.length){
       rt.forEach(function(r,i){
