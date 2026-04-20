@@ -3309,6 +3309,7 @@ function _hCsSendAlarm(item) {
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
         <button onclick="_beautyAddPart()" style="background:white;border:1.5px solid #f7a8c0;border-radius:8px;padding:5px 14px;font-size:.8rem;font-weight:700;color:#c04070;cursor:pointer">+ 파트 추가</button>
+        <button onclick="_beautyReorderModal()" style="background:white;border:1.5px solid #ddd;border-radius:8px;padding:5px 14px;font-size:.8rem;font-weight:700;color:#aaa;cursor:pointer">⇅ 순서변경</button>
       </div>
       <div id="beauty-parts-wrap"></div>
     </div>
@@ -15334,6 +15335,64 @@ function _beautyProductModal(pk, color, editIdx, _unused){
   nameInp.onkeydown = urlInp.onkeydown = function(e){
     if(e.key==='Enter') document.getElementById('_bPrSave').click();
   };
+}
+
+function _beautyReorderModal(){
+  var old=document.getElementById('_bReorderModal'); if(old) old.remove();
+  var list=_getBP();
+
+  var modal=document.createElement('div');
+  modal.id='_bReorderModal';
+  modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var box=document.createElement('div');
+  box.style.cssText='background:white;border-radius:18px;padding:22px;width:100%;max-width:360px;font-family:Pretendard,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.2)';
+  box.innerHTML='<div style="font-size:.95rem;font-weight:800;color:#c04070;margin-bottom:4px">⇅ 파트 순서 변경</div>'
+    +'<div style="font-size:.78rem;color:#bbb;margin-bottom:14px">↑ ↓ 버튼으로 순서를 바꿔요</div>';
+
+  var listEl=document.createElement('div');
+  listEl.id='_bReorderList';
+
+  function renderList(){
+    listEl.innerHTML='';
+    list.forEach(function(p,i){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:8px;padding:10px 12px;background:'+p.bg+';border:1.5px solid '+p.bd+';border-radius:10px;margin-bottom:6px';
+      var icon=document.createElement('span'); icon.textContent=p.ic; icon.style.fontSize='1.2rem';
+      var name=document.createElement('span'); name.textContent=p.k; name.style.cssText='flex:1;font-size:.9rem;font-weight:700;color:'+p.c;
+      var upBtn=document.createElement('button'); upBtn.textContent='↑';
+      upBtn.style.cssText='background:white;border:1.5px solid '+p.bd+';border-radius:7px;padding:4px 10px;cursor:pointer;font-size:.9rem;font-weight:700;color:'+p.c+(i===0?';opacity:.3;cursor:default':'');
+      upBtn.disabled=(i===0);
+      upBtn.onclick=function(){
+        var tmp=list[i]; list[i]=list[i-1]; list[i-1]=tmp; renderList();
+      };
+      var dnBtn=document.createElement('button'); dnBtn.textContent='↓';
+      dnBtn.style.cssText='background:white;border:1.5px solid '+p.bd+';border-radius:7px;padding:4px 10px;cursor:pointer;font-size:.9rem;font-weight:700;color:'+p.c+(i===list.length-1?';opacity:.3;cursor:default':'');
+      dnBtn.disabled=(i===list.length-1);
+      dnBtn.onclick=function(){
+        var tmp=list[i]; list[i]=list[i+1]; list[i+1]=tmp; renderList();
+      };
+      row.appendChild(icon); row.appendChild(name); row.appendChild(upBtn); row.appendChild(dnBtn);
+      listEl.appendChild(row);
+    });
+  }
+  renderList();
+  box.appendChild(listEl);
+
+  var btns=document.createElement('div'); btns.style.cssText='display:flex;gap:8px;margin-top:16px';
+  var cancel=document.createElement('button'); cancel.textContent='취소';
+  cancel.style.cssText='flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer';
+  cancel.onclick=function(){modal.remove();};
+  var save=document.createElement('button'); save.textContent='저장';
+  save.style.cssText='flex:2;padding:10px;background:linear-gradient(135deg,#f7a8c0,#e03c6e);border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
+  save.onclick=function(){
+    _saveBP(list); modal.remove(); _beautyRenderParts(); toast('✅ 순서 저장됐어요!');
+  };
+  btns.appendChild(cancel); btns.appendChild(save);
+  box.appendChild(btns);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  modal.onclick=function(e){if(e.target===modal)modal.remove();};
 }
 
 function _beautyAddPart(){
