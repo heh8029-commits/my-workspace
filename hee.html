@@ -2789,6 +2789,8 @@ function _hCsSendAlarm(item) {
 
       <!-- 30일 기준 일평균 카드 -->
       <div id="sales-daily-avg" style="margin-top:20px"></div>
+      <!-- 요일별 평균 -->
+      <div id="sales-dow-avg" style="margin-top:16px"></div>
 
     </div>
     <div class="subpage" id="menu1-sub-7">
@@ -13099,6 +13101,42 @@ function updateSalesSummary(year, month) {
             <div style="font-size:.92rem;font-weight:800;color:${c.color}">${c.val > 0 ? c.val.toLocaleString()+'원' : '-'}</div>
             ${c.cnt > 0 ? `<div style="font-size:.62rem;color:#ccc;margin-top:1px">${c.cnt}일 기준</div>` : ''}
           </div>`).join('');
+    }
+
+    // ── 요일별 평균 ──
+    const dowAvg = document.getElementById('sales-dow-avg');
+    if (dowAvg) {
+      const DOW_LABELS = ['일','월','화','수','목','금','토'];
+      const DOW_COLORS = ['#e03c6e','#1050a0','#3dbb8f','#3dbb8f','#3dbb8f','#3dbb8f','#8060d0'];
+      // 요일별 합계/카운트
+      const dowTotal = [0,0,0,0,0,0,0];
+      const dowCount = [0,0,0,0,0,0,0];
+      for (let d2=1; d2<=days; d2++) {
+        const r2 = data['d'+d2] || {};
+        const total2 = parseNum(r2.gross) + parseNum(r2.seller) + parseNum(r2.naver);
+        if (total2 > 0) {
+          const dow = new Date(year, month-1, d2).getDay();
+          dowTotal[dow] += total2;
+          dowCount[dow]++;
+        }
+      }
+      // 월~일 순서로 표시
+      const ORDER = [1,2,3,4,5,6,0]; // 월화수목금토일
+      dowAvg.style.cssText = 'background:#fafafa;border:1.5px solid #eee;border-radius:14px;padding:14px';
+      dowAvg.innerHTML = '<div style="font-size:.78rem;font-weight:800;color:#888;margin-bottom:10px">📆 요일별 총매출 평균</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">'
+        + ORDER.map(dow => {
+          const avg = dowCount[dow] ? Math.round(dowTotal[dow] / dowCount[dow]) : 0;
+          const isSun = dow === 0, isSat = dow === 6;
+          const c = isSun ? '#e03c6e' : isSat ? '#8060d0' : '#1050a0';
+          const bg = isSun ? '#fff0f5' : isSat ? '#f5f0ff' : '#f0f8ff';
+          return `<div style="background:${bg};border:1.5px solid ${c}20;border-radius:10px;padding:8px 6px;text-align:center">
+            <div style="font-size:.82rem;font-weight:900;color:${c};margin-bottom:4px">${DOW_LABELS[dow]}</div>
+            <div style="font-size:.78rem;font-weight:800;color:${c}">${avg > 0 ? (avg/10000).toFixed(0)+'만' : '-'}</div>
+            <div style="font-size:.62rem;color:#ccc;margin-top:2px">${dowCount[dow]}일</div>
+          </div>`;
+        }).join('')
+        + '</div>';
     }
   }
 }
