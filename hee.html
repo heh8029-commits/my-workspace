@@ -13107,7 +13107,6 @@ function updateSalesSummary(year, month) {
     const dowAvg = document.getElementById('sales-dow-avg');
     if (dowAvg) {
       const DOW_LABELS = ['일','월','화','수','목','금','토'];
-      const DOW_COLORS = ['#e03c6e','#1050a0','#3dbb8f','#3dbb8f','#3dbb8f','#3dbb8f','#8060d0'];
       // 요일별 합계/카운트
       const dowTotal = [0,0,0,0,0,0,0];
       const dowCount = [0,0,0,0,0,0,0];
@@ -13120,23 +13119,48 @@ function updateSalesSummary(year, month) {
           dowCount[dow]++;
         }
       }
-      // 월~일 순서로 표시
+      // 평균 계산
+      const dowAvgs = [0,1,2,3,4,5,6].map(dow => ({
+        dow,
+        avg: dowCount[dow] ? Math.round(dowTotal[dow] / dowCount[dow]) : 0,
+        cnt: dowCount[dow]
+      }));
+      // 데이터 있는 요일만 순위 계산
+      const withData = dowAvgs.filter(x => x.avg > 0).sort((a,b) => b.avg - a.avg);
+      const rankMap = {}; // dow → 순위
+      withData.forEach((x,i) => { rankMap[x.dow] = i+1; });
+      const totalWithData = withData.length;
+
+      // 순위 이모지
+      const RANK_EMOJI = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣'];
+      // 순위별 색상 (1위=금, 2위=은, 3위=동, 나머지=기본)
+      function getRankStyle(rank, dow) {
+        if (rank === 1) return { c:'#c08000', bg:'#fff8e0', bd:'#f0d060', glow:'0 0 0 2px #f0d06060' };
+        if (rank === 2) return { c:'#7080a0', bg:'#f5f8ff', bd:'#c0cce0', glow:'0 0 0 2px #c0cce040' };
+        if (rank === 3) return { c:'#a06040', bg:'#fff4ee', bd:'#e0c0a0', glow:'0 0 0 2px #e0c0a040' };
+        const isSun = dow===0, isSat = dow===6;
+        return { c: isSun?'#e03c6e':isSat?'#8060d0':'#4060a0', bg: isSun?'#fff0f5':isSat?'#f5f0ff':'#f0f8ff', bd:'#ddd', glow:'none' };
+      }
+
       const ORDER = [1,2,3,4,5,6,0]; // 월화수목금토일
       dowAvg.style.cssText = 'background:#fafafa;border:1.5px solid #eee;border-radius:14px;padding:14px';
-      dowAvg.innerHTML = '<div style="font-size:.78rem;font-weight:800;color:#888;margin-bottom:10px">📆 요일별 총매출 평균</div>'
+      dowAvg.innerHTML = '<div style="font-size:.78rem;font-weight:800;color:#888;margin-bottom:10px">📆 요일별 총매출 평균 &amp; 순위</div>'
         + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">'
         + ORDER.map(dow => {
-          const avg = dowCount[dow] ? Math.round(dowTotal[dow] / dowCount[dow]) : 0;
-          const isSun = dow === 0, isSat = dow === 6;
-          const c = isSun ? '#e03c6e' : isSat ? '#8060d0' : '#1050a0';
-          const bg = isSun ? '#fff0f5' : isSat ? '#f5f0ff' : '#f0f8ff';
-          return `<div style="background:${bg};border:1.5px solid ${c}20;border-radius:10px;padding:8px 6px;text-align:center">
-            <div style="font-size:.82rem;font-weight:900;color:${c};margin-bottom:4px">${DOW_LABELS[dow]}</div>
-            <div style="font-size:.78rem;font-weight:800;color:${c}">${avg > 0 ? (avg/10000).toFixed(0)+'만' : '-'}</div>
-            <div style="font-size:.62rem;color:#ccc;margin-top:2px">${dowCount[dow]}일</div>
+          const x = dowAvgs[dow];
+          const rank = rankMap[dow];
+          const s = getRankStyle(rank, dow);
+          const rankEmoji = rank ? RANK_EMOJI[rank-1] : '';
+          return `<div style="background:${s.bg};border:1.5px solid ${s.bd};border-radius:12px;padding:8px 4px;text-align:center;box-shadow:${s.glow};transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            ${rank===1 ? `<div style="font-size:.75rem;margin-bottom:1px">👑</div>` : ''}
+            <div style="font-size:.85rem;font-weight:900;color:${s.c}">${DOW_LABELS[dow]}</div>
+            ${rank ? `<div style="font-size:.7rem;font-weight:800;color:${s.c};margin:2px 0">${rankEmoji} ${rank}위</div>` : '<div style="font-size:.65rem;color:#ddd;margin:2px 0">-</div>'}
+            <div style="font-size:.8rem;font-weight:900;color:${s.c};margin-top:2px">${x.avg > 0 ? (x.avg/10000).toFixed(1)+'만' : '-'}</div>
+            <div style="font-size:.6rem;color:#bbb;margin-top:2px">${x.cnt}일 기준</div>
           </div>`;
         }).join('')
-        + '</div>';
+        + '</div>'
+        + (totalWithData > 0 ? `<div style="margin-top:10px;font-size:.72rem;color:#bbb;text-align:right">${totalWithData}개 요일 비교</div>` : '');
     }
   }
 }
