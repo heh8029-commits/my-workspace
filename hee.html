@@ -13644,11 +13644,63 @@ function hourlyInpBlur(el, year, month, day, hour) {
   }
   saveHourly(year, month, data);
   updateHourlySums(year, month);
-  // renderHourlyDowSummary는 호출 안 함 - innerHTML 변경이 blur 루프 유발
+  // 단계 뱃지 업데이트
+  if (num !== '') _hourlyShowRank(el, year, month, day, hour, Number(num));
+  else {
+    const badge = document.getElementById('hrank-'+year+'-'+month+'-'+day+'-'+hour);
+    if (badge) badge.textContent = '';
+  }
+}
+
+// 같은 요일+같은 시간대 데이터 모아서 단계 계산
+function _hourlyShowRank(el, year, month, day, hour, val) {
+  const badge = document.getElementById('hrank-'+year+'-'+month+'-'+day+'-'+hour);
+  if (!badge) return;
+  // 해당 날짜 요일
+  const targetDow = new Date(year, month-1, day).getDay();
+  // 모든 월 데이터에서 같은 요일+시간 값 수집
+  const vals = [];
+  for (let yr = 2025; yr <= 2027; yr++) {
+    for (let mn = 1; mn <= 12; mn++) {
+      const key = 'hourly_'+yr+'_'+mn;
+      let mdata = {};
+      try { mdata = JSON.parse(localStorage.getItem('ws5_'+key)||'{}'); } catch(e){}
+      const days = new Date(yr, mn, 0).getDate();
+      for (let d=1; d<=days; d++) {
+        if (yr===year && mn===month && d===day) continue; // 오늘은 제외
+        if (new Date(yr, mn-1, d).getDay() !== targetDow) continue;
+        const v = mdata['d'+d] && mdata['d'+d]['h'+hour];
+        if (v && Number(v) > 0) vals.push(Number(v));
+      }
+    }
+  }
+  if (vals.length < 2) { badge.textContent = ''; return; }
+  vals.sort((a,b) => a-b);
+  // 백분위 계산
+  const rank = vals.filter(v => v <= val).length / vals.length * 100;
+  let label, bg, color;
+  if (rank >= 85)      { label='🔥 매우높음'; bg='#fff0f5'; color='#e03c6e'; }
+  else if (rank >= 65) { label='⬆️ 높음';    bg='#f0fff8'; color='#1a9060'; }
+  else if (rank >= 40) { label='➡️ 중간';    bg='#f5f5ff'; color='#6040b0'; }
+  else if (rank >= 20) { label='⬇️ 낮음';    bg='#fffbf0'; color='#b06010'; }
+  else                 { label='❄️ 매우낮음'; bg='#f0f8ff'; color='#1050a0'; }
+  badge.style.cssText = 'font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:6px;background:'+bg+';color:'+color+';white-space:nowrap;display:block;margin-top:2px;text-align:center';
+  badge.textContent = label;
 }
 
 function updateHourlySums(year, month) {
-  // 합계 행 제거됨 - 함수 유지만
+  // 기존 입력값 단계 뱃지 갱신
+  const data = loadHourly(year, month);
+  const days2 = getDaysInMonth(year, month);
+  for (let d=1; d<=days2; d++) {
+    HOURLY_SLOTS.forEach(function(sl) {
+      const v = data['d'+d] && data['d'+d]['h'+sl];
+      if (v && Number(v) > 0) {
+        const el = document.querySelector('input[onblur*=",'+year+','+month+','+d+','+sl+')"]');
+        if (el) _hourlyShowRank(el, year, month, d, sl, Number(v));
+      }
+    });
+  }
 }
 
 function renderHourlyDowSummary(year, month) {
