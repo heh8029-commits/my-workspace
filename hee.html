@@ -1536,6 +1536,15 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 }
 .cal-cell.sun .cal-day-num { color: #e03c6e; }
 .cal-cell.sat .cal-day-num { color: #4da6e8; }
+.cal-holiday-name {
+  font-size: .72rem;
+  color: #e03c6e;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
 .cal-event-dot {
   font-size: .82rem;
   padding: 1px 4px 1px 6px;
@@ -1684,6 +1693,17 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 }
 .mini-cell.sun .mini-day-num { color: #e03c6e; }
 .mini-cell.sat .mini-day-num { color: #4da6e8; }
+.mini-holiday {
+  font-size: .58rem;
+  color: #e03c6e;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  display: block;
+  margin-bottom: 1px;
+}
 .mini-evt-text {
   font-size: .62rem;
   font-weight: 600;
@@ -10938,6 +10958,35 @@ function impCheckClearDone() {
 function loadCalScheds() { return loadObj('cal_scheds').list || []; }
 function saveCalScheds(list) { stor('cal_scheds', {list}); }
 
+/* ── 한국 공휴일 ── */
+var KOREA_HOLIDAYS = {
+  '2024-01-01':'신정','2024-02-09':'설날연휴','2024-02-10':'설날','2024-02-11':'설날연휴','2024-02-12':'대체공휴일',
+  '2024-03-01':'삼일절','2024-05-05':'어린이날','2024-05-15':'부처님오신날','2024-06-06':'현충일',
+  '2024-08-15':'광복절','2024-09-16':'추석연휴','2024-09-17':'추석','2024-09-18':'추석연휴',
+  '2024-10-03':'개천절','2024-10-09':'한글날','2024-12-25':'성탄절',
+  '2025-01-01':'신정','2025-01-28':'설날연휴','2025-01-29':'설날','2025-01-30':'설날연휴',
+  '2025-03-01':'삼일절','2025-05-05':'어린이날','2025-05-06':'대체공휴일','2025-06-06':'현충일',
+  '2025-08-15':'광복절','2025-10-03':'개천절','2025-10-05':'추석연휴','2025-10-06':'추석',
+  '2025-10-07':'추석연휴','2025-10-08':'대체공휴일','2025-10-09':'한글날','2025-12-25':'성탄절',
+  '2026-01-01':'신정','2026-02-17':'설날연휴','2026-02-18':'설날','2026-02-19':'설날연휴',
+  '2026-03-01':'삼일절','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일',
+  '2026-06-06':'현충일','2026-08-15':'광복절','2026-09-24':'추석연휴','2026-09-25':'추석',
+  '2026-09-26':'추석연휴','2026-10-03':'개천절','2026-10-09':'한글날','2026-12-25':'성탄절',
+  '2027-01-01':'신정','2027-02-06':'설날연휴','2027-02-07':'설날','2027-02-08':'설날연휴','2027-02-09':'대체공휴일',
+  '2027-03-01':'삼일절','2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일',
+  '2027-08-15':'광복절','2027-09-14':'추석연휴','2027-09-15':'추석','2027-09-16':'추석연휴',
+  '2027-10-03':'개천절','2027-10-09':'한글날','2027-12-25':'성탄절'
+};
+var KOREA_FIXED = {
+  '01-01':'신정','03-01':'삼일절','05-05':'어린이날','06-06':'현충일',
+  '08-15':'광복절','10-03':'개천절','10-09':'한글날','12-25':'성탄절'
+};
+function getHoliday(y, m, d) {
+  var key = y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  if (KOREA_HOLIDAYS[key]) return KOREA_HOLIDAYS[key];
+  return KOREA_FIXED[String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')] || null;
+}
+
 /* ── 미니 캘린더 팝업 ── */
 var miniCalYear, miniCalMonth;
 function openMiniCal() {
@@ -10998,8 +11047,12 @@ function renderMiniCal() {
     } else {
       var isToday = miniCalYear===todayY && miniCalMonth===todayM && day===todayD;
       var dayScheds = schedDays[day] || [];
-      html += '<div class="mini-cell '+dowCls+(isToday?' today':'')+'">';
+      var holiday = getHoliday(miniCalYear, miniCalMonth, day);
+      var isHoliday = !!holiday;
+      var cellDowCls = dowCls || (isHoliday ? 'sun' : '');
+      html += '<div class="mini-cell '+(isHoliday?'sun':dowCls)+(isToday?' today':'')+'">';
       html += '<div class="mini-day-num">'+day+'</div>';
+      if (holiday) html += '<div class="mini-holiday">'+holiday+'</div>';
       if (dayScheds.length > 0) {
         html += '<div class="mini-evt-text" style="border-left-color:'+(dayScheds[0].color||'#e03c6e')+'">'+escHtml(dayScheds[0].text||'')+'</div>';
         if (dayScheds.length > 1) html += '<div class="mini-evt-more">+' + (dayScheds.length-1) + '</div>';
@@ -11091,6 +11144,7 @@ function renderCal() {
       const isSelected = calSelectedDay === day;
       const dayScheds = schedMap[day] || [];
       const dayExps = expMap[day] || [];
+      const holiday = getHoliday(calYear, calMonth, day);
 
       // 지출 표시 (맨 아래)
       let expDot = '';
@@ -11100,8 +11154,10 @@ function renderCal() {
         expDot = '<span class="cal-exp-dot">💸 ' + escHtml(dayExps[0].item || '') + ' 외 ' + (dayExps.length-1) + '개</span>';
       }
 
-      html += '<div class="cal-cell '+dowCls+(isToday?' today':'')+(isSelected?' selected':'')+'" onclick="calSelectDay('+day+')" style="display:flex;flex-direction:column">';
+      const holDow = holiday ? 'sun' : dowCls;
+      html += '<div class="cal-cell '+holDow+(isToday?' today':'')+(isSelected?' selected':'')+'" onclick="calSelectDay('+day+')" style="display:flex;flex-direction:column">';
       html += '<div class="cal-day-num">'+day+'</div>';
+      if (holiday) html += '<div class="cal-holiday-name">'+holiday+'</div>';
 
       // 일정 표시 (최대 2개) — 위에
       const showScheds = dayScheds.slice(0, 2);
