@@ -109,7 +109,9 @@ body.mobile-view .asset-layout { grid-template-columns: 1fr !important; }
 body.mobile-view .three-col > .card {
   min-width: 0; height: auto !important; max-height: none !important; }
 body.mobile-view .three-col > .card .ilist { max-height: 300px !important; }
-body.mobile-view .two-col   { grid-template-columns: 1fr; gap: 12px; }
+body.mobile-view .two-col   { grid-template-columns: 1fr !important; gap: 12px; }
+.home-two-col { grid-template-columns: 1fr 1fr; }
+body.mobile-view .home-two-col { grid-template-columns: 1fr; }
 body.mobile-view .week-row  { grid-template-columns: repeat(4,1fr); gap: 4px; }
 
 body.mobile-view .topbar { padding: 7px 10px; gap: 4px; }
@@ -2613,7 +2615,7 @@ function _hCsSendAlarm(item) {
     </div>
 
     <!-- 단골리스트 | CS복사 2열 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-bottom:16px">
+    <div class="home-two-col" style="display:grid;gap:10px;align-items:start;margin-bottom:16px">
 
       <!-- 왼쪽: 단골 리스트 -->
       <div>
