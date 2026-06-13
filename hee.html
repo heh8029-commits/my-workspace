@@ -11113,6 +11113,20 @@ function addJin() {
   rerender('jin'); toast('🎀 저장됐어요!');
 }
 
+// ── 헤더 높이 동적 계산 ──
+function updateHeaderH() {
+  const header = document.getElementById('sticky-header');
+  if (!header) return;
+  // mobile-subnav는 fixed라 offsetHeight에 미포함 — topbar+datebar 합산
+  const topbar = header.querySelector('.topbar');
+  const datebar = header.querySelector('.datebar');
+  let h = 0;
+  if (topbar) h += topbar.offsetHeight;
+  if (datebar) h += datebar.offsetHeight;
+  document.documentElement.style.setProperty('--header-h', h + 'px');
+}
+window.addEventListener('resize', updateHeaderH);
+
 // ── PC/모바일 뷰 전환 ──
 function setView(mode) {
   const body = document.body;
@@ -11128,6 +11142,7 @@ function setView(mode) {
     btnMobile.classList.remove('active-view');
   }
   localStorage.setItem('ws5_viewmode', mode);
+  setTimeout(updateHeaderH, 50);
 }
 
 // 저장된 뷰모드 복원
