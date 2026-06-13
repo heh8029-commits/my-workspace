@@ -581,26 +581,23 @@ function applyToSelected(type) {
   if (type === 'font') {
     const ff = document.getElementById('fb-font').value;
     document.getElementById('font-sel').value = ff;
-    obj._objects[0].set('fontFamily', ff);
-    obj._objects[1].set('fontFamily', ff);
+    updateLine(idx);
+    return;
   }
   if (type === 'size') {
     const fs = parseInt(document.getElementById('fb-size').value) || 48;
-    const sw = Math.max(8, Math.round(fs * 0.20));
     document.getElementById('font-size').value = fs;
-    obj._objects[0].set({fontSize: fs, strokeWidth: sw});
-    obj._objects[1].set('fontSize', fs);
-    obj._objects[0].initDimensions();
-    obj._objects[1].initDimensions();
+    updateLine(idx);
+    return;
   }
   if (type === 'color') {
     const col = document.getElementById('fb-color').value;
     obj._objects[1].set('fill', col);
     const row = document.querySelectorAll('.text-row')[idx];
     if (row) { const c = row.querySelector('input[type=color]'); if(c) c.value = col; }
+    canvas.renderAll();
+    setTimeout(posFloatBar, 50);
   }
-  canvas.renderAll();
-  setTimeout(posFloatBar, 50);
 }
 
 // ── 인라인 텍스트 오버레이 ──
