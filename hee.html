@@ -11148,6 +11148,7 @@ function setView(mode) {
 // 저장된 뷰모드 복원
 const savedView = localStorage.getItem('ws5_viewmode') || (window.innerWidth <= 768 ? 'mobile' : 'pc');
 setView(savedView);
+setTimeout(updateHeaderH, 100);
 
 // ── 사이드 메뉴 전환 ──
 function switchSub(pageId, num, el) {
