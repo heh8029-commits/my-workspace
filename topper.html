@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>토퍼 에디터</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=East+Sea+Dokdo&family=Gaegu:wght@300;700&family=Single+Day&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family:'Jalnan'; src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff') format('woff'); }
+@font-face { font-family:'GmarketSans'; src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff'); font-weight:700; }
+@font-face { font-family:'HannaAge'; src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2021-03@1.0/HannaAge11yrs.woff') format('woff'); }
+@font-face { font-family:'NanumSquareRound'; src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff') format('woff'); }
+@font-face { font-family:'SCDream'; src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff') format('woff'); }
+@font-face { font-family:'CookieRun'; src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff'); }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -240,9 +248,30 @@ input[type=color]{
       <div class="font-row">
         <span class="font-label">폰트</span>
         <select class="font-sel" id="font-sel" onchange="reRenderTexts()">
-          <option value="Pretendard">기본체</option>
-          <option value="'Nanum Pen Script'">손글씨체</option>
-          <option value="'Black Han Sans'">블랙체</option>
+          <optgroup label="── 고딕/산세리프 ──">
+            <option value="Pretendard">프리텐다드</option>
+            <option value="'Nanum Gothic'">나눔고딕</option>
+            <option value="GmarketSans">지마켓산스</option>
+            <option value="SCDream">에스코어드림</option>
+            <option value="NanumSquareRound">나눔스퀘어라운드</option>
+            <option value="'Do Hyeon'">도현체</option>
+            <option value="'Black Han Sans'">블랙한산스</option>
+            <option value="Jua">주아체</option>
+          </optgroup>
+          <optgroup label="── 명조/세리프 ──">
+            <option value="'Nanum Myeongjo'">나눔명조</option>
+          </optgroup>
+          <optgroup label="── 손글씨 ──">
+            <option value="'Nanum Pen Script'">나눔펜체</option>
+            <option value="Gaegu">개구쟁이체</option>
+            <option value="'East Sea Dokdo'">동해독도체</option>
+            <option value="'Single Day'">싱글데이</option>
+            <option value="HannaAge">한나는열한살</option>
+          </optgroup>
+          <optgroup label="── 캐릭터/팝 ──">
+            <option value="Jalnan">잘난체</option>
+            <option value="CookieRun">쿠키런</option>
+          </optgroup>
         </select>
         <span class="font-label">크기</span>
         <input class="fsize-inp" type="number" id="font-size" value="48" min="10" max="200" oninput="reRenderTexts()">
@@ -342,7 +371,7 @@ function updateLine(idx) {
   const color = col ? col.value : '#ff0000';
   const ff    = getFontFamily();
   const fs    = getFontSize();
-  const sw    = Math.max(10, Math.round(fs * 0.28)); // 굵은 테두리
+  const sw    = Math.max(14, Math.round(fs * 0.38)); // 굵은 테두리
 
   if (textObjs[idx]) { canvas.remove(textObjs[idx]); textObjs[idx] = null; }
   if (!val) { canvas.renderAll(); return; }
@@ -353,12 +382,25 @@ function updateLine(idx) {
   const startY = CH/2 - ((total - 1) * gap) / 2;
   const y     = startY + idx * gap;
 
-  const t = new fabric.Text(val, {
+  // 틈 방지: 검정 배경 레이어 + 컬러 전경 레이어를 그룹으로
+  const base = new fabric.Text(val, {
     fontFamily: ff, fontSize: fs,
-    fill: color,
+    fill: '#000000',
     stroke: '#000000', strokeWidth: sw,
     strokeLineJoin: 'round', strokeLineCap: 'round',
-    strokeUniform: true, paintFirst: 'stroke',
+    paintFirst: 'fill',
+    charSpacing: -30,
+    left: 0, top: 0, originX: 'center', originY: 'center',
+    selectable: false, evented: false
+  });
+  const front = new fabric.Text(val, {
+    fontFamily: ff, fontSize: fs,
+    fill: color,
+    charSpacing: -30,
+    left: 0, top: 0, originX: 'center', originY: 'center',
+    selectable: false, evented: false
+  });
+  const t = new fabric.Group([base, front], {
     left: CW/2, top: y,
     originX: 'center', originY: 'center',
     selectable: true
