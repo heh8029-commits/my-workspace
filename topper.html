@@ -432,7 +432,7 @@ function updateLine(idx) {
   const color = col ? col.value : '#ff0000';
   const ff    = getFontFamily();
   const fs    = getFontSize();
-  const sw    = Math.max(8, Math.round(fs * 0.20)); // 테두리 두께
+  const sw    = Math.max(10, Math.round(fs * 0.25)); // 테두리 두께
 
   if (textObjs[idx]) { canvas.remove(textObjs[idx]); textObjs[idx] = null; }
   if (!val) { canvas.renderAll(); return; }
@@ -443,20 +443,21 @@ function updateLine(idx) {
   const startY = CH/2 - ((total - 1) * gap) / 2;
   const y     = startY + idx * gap;
 
-  // 틈 방지: 검정 베이스(fill+stroke) + 컬러 레이어 그룹
-  // charSpacing 건드리지 않음 — 베이스 검정이 틈을 자연스럽게 메꿈
+  // 틈/구멍 방지: 검정 베이스(fill+stroke) + 컬러 전경 레이어
   const base = new fabric.Text(val, {
     fontFamily: ff, fontSize: fs,
     fill: '#000000',
     stroke: '#000000', strokeWidth: sw,
     strokeLineJoin: 'round', strokeLineCap: 'round',
     paintFirst: 'fill',
+    charSpacing: -15,
     left: 0, top: 0, originX: 'center', originY: 'center',
     selectable: false, evented: false
   });
   const front = new fabric.Text(val, {
     fontFamily: ff, fontSize: fs,
     fill: color,
+    charSpacing: -15,
     left: 0, top: 0, originX: 'center', originY: 'center',
     selectable: false, evented: false
   });
