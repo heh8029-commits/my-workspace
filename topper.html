@@ -73,15 +73,6 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,sans-serif;backgrou
   overflow:hidden;
 }
 
-/* 선택 오브젝트 삭제 버튼 (플로팅) */
-#del-float{
-  display:none;position:fixed;z-index:200;
-  background:#e03c6e;color:white;border:none;border-radius:8px;
-  padding:5px 12px;font-size:.78rem;font-weight:800;cursor:pointer;
-  font-family:'Pretendard',sans-serif;
-  box-shadow:0 3px 10px rgba(224,60,110,.4);
-  pointer-events:auto;
-}
 
 /* ── 사이드바 ── */
 .sidebar{
@@ -160,6 +151,42 @@ input[type=color]{
 .edit-btn:hover{background:#fff0f5}
 .edit-btn.danger{border-color:#e03c6e;background:#fff0f5}
 
+/* ── 플로팅 툴바 ── */
+#float-bar{
+  display:none;position:fixed;z-index:500;
+  background:white;border:2px solid var(--pink);border-radius:14px;
+  padding:6px 10px;box-shadow:0 4px 20px rgba(232,100,138,.22);
+  display:none;align-items:center;gap:8px;flex-wrap:wrap;
+}
+#float-bar select,#float-bar input[type=number]{
+  padding:5px 8px;border-radius:8px;
+  border:1.5px solid var(--pink);font-size:.8rem;
+  font-family:'Pretendard',sans-serif;outline:none;background:white;
+}
+#float-bar input[type=number]{width:58px;text-align:center}
+#float-bar input[type=color]{
+  width:28px;height:28px;border:2px solid var(--pink);
+  border-radius:50%;padding:0;cursor:pointer;
+}
+#float-bar .fb-del{
+  padding:5px 12px;border:1.5px solid #ffb3c6;border-radius:8px;
+  background:white;color:var(--rose);font-size:.78rem;font-weight:800;
+  cursor:pointer;font-family:'Pretendard',sans-serif;
+}
+#float-bar .fb-del:hover{background:#fff0f5}
+#float-bar .fb-label{font-size:.72rem;color:var(--soft);font-weight:700}
+
+/* ── 인라인 텍스트 오버레이 ── */
+#overlay-input{
+  display:none;position:fixed;z-index:600;
+  border:2px solid var(--rose);border-radius:6px;
+  background:rgba(255,255,255,.92);
+  font-family:'Pretendard',sans-serif;
+  outline:none;text-align:center;
+  padding:4px 8px;min-width:80px;
+  box-shadow:0 2px 12px rgba(224,60,110,.2);
+}
+
 /* 모바일 */
 @media(max-width:700px){
   :root{--sidebar:100%}
@@ -199,8 +226,43 @@ input[type=color]{
     </div>
   </div>
 
-  <!-- 플로팅 삭제 버튼 -->
-  <button id="del-float" onclick="deleteSelected()">✕ 삭제</button>
+  <!-- 플로팅 툴바 -->
+  <div id="float-bar">
+    <span class="fb-label">폰트</span>
+    <select id="fb-font" onchange="applyToSelected('font')">
+      <optgroup label="── 고딕 ──">
+        <option value="Pretendard">프리텐다드</option>
+        <option value="'Nanum Gothic'">나눔고딕</option>
+        <option value="GmarketSans">지마켓산스</option>
+        <option value="SCDream">에스코어드림</option>
+        <option value="NanumSquareRound">나눔스퀘어라운드</option>
+        <option value="'Do Hyeon'">도현체</option>
+        <option value="'Black Han Sans'">블랙한산스</option>
+        <option value="Jua">주아체</option>
+      </optgroup>
+      <optgroup label="── 명조 ──">
+        <option value="'Nanum Myeongjo'">나눔명조</option>
+      </optgroup>
+      <optgroup label="── 손글씨 ──">
+        <option value="'Nanum Pen Script'">나눔펜체</option>
+        <option value="Gaegu">개구쟁이체</option>
+        <option value="'East Sea Dokdo'">동해독도체</option>
+        <option value="'Single Day'">싱글데이</option>
+        <option value="HannaAge">한나는열한살</option>
+      </optgroup>
+      <optgroup label="── 팝 ──">
+        <option value="Jalnan">잘난체</option>
+        <option value="CookieRun">쿠키런</option>
+      </optgroup>
+    </select>
+    <span class="fb-label">크기</span>
+    <input type="number" id="fb-size" value="48" min="8" max="200" oninput="applyToSelected('size')">
+    <input type="color" id="fb-color" value="#ff0000" oninput="applyToSelected('color')" title="글자색">
+    <button class="fb-del" onclick="deleteSelected()">✕ 삭제</button>
+  </div>
+
+  <!-- 인라인 텍스트 편집 오버레이 -->
+  <input id="overlay-input" type="text" placeholder="텍스트 입력...">
 
   <!-- 사이드바 -->
   <div class="sidebar">
@@ -459,47 +521,126 @@ function clearAll() {
   hideDelFloat();
 }
 
-// ── 플로팅 삭제 버튼 ──
-const delFloat = document.getElementById('del-float');
-canvas.on('selection:created', showDelFloat);
-canvas.on('selection:updated', showDelFloat);
-canvas.on('selection:cleared', hideDelFloat);
-canvas.on('object:moving', updateDelFloatPos);
+// ── 플로팅 툴바 ──
+const floatBar = document.getElementById('float-bar');
 
-function showDelFloat(e) {
+function getWrapScale() {
+  const wr = document.getElementById('canvas-wrap').getBoundingClientRect();
+  return { wr, sx: wr.width/CW, sy: wr.height/CH };
+}
+function posFloatBar() {
   const obj = canvas.getActiveObject();
   if (!obj) return;
-  updateDelFloatPos();
-  delFloat.style.display = 'block';
+  const {wr, sx, sy} = getWrapScale();
+  const br = obj.getBoundingRect();
+  const barW = floatBar.offsetWidth || 440;
+  let left = wr.left + br.left * sx;
+  let top  = wr.top  + br.top  * sy - 56;
+  if (top < 56) top = wr.top + (br.top + br.height) * sy + 8;
+  left = Math.max(4, Math.min(left, window.innerWidth - barW - 4));
+  floatBar.style.left = left + 'px';
+  floatBar.style.top  = top  + 'px';
 }
-function hideDelFloat() { delFloat.style.display = 'none'; }
-function updateDelFloatPos() {
+function showFloatBar() {
   const obj = canvas.getActiveObject();
   if (!obj) return;
-  const br  = document.getElementById('canvas-wrap').getBoundingClientRect();
-  const objBr = obj.getBoundingRect();
-  const scale = br.width / CW;
-  delFloat.style.left = (br.left + objBr.left * scale + (objBr.width * scale)/2 - 30) + 'px';
-  delFloat.style.top  = (br.top  + objBr.top  * scale - 36) + 'px';
+  const isText = textObjs.includes(obj);
+  ['fb-font','fb-size','fb-color'].forEach(id => {
+    document.getElementById(id).style.display = isText ? '' : 'none';
+  });
+  document.querySelectorAll('#float-bar .fb-label').forEach(l => l.style.display = isText ? '' : 'none');
+  if (isText) {
+    const base = obj._objects && obj._objects[0];
+    if (base) {
+      document.getElementById('fb-font').value = base.fontFamily || 'Pretendard';
+      document.getElementById('fb-size').value = base.fontSize  || 48;
+    }
+    const idx = textObjs.indexOf(obj);
+    const row = document.querySelectorAll('.text-row')[idx];
+    if (row) {
+      const c = row.querySelector('input[type=color]');
+      if (c) document.getElementById('fb-color').value = c.value;
+    }
+  }
+  posFloatBar();
+  floatBar.style.display = 'flex';
+}
+function hideFloatBar() { floatBar.style.display = 'none'; }
+
+canvas.on('selection:created', showFloatBar);
+canvas.on('selection:updated', showFloatBar);
+canvas.on('selection:cleared', hideFloatBar);
+canvas.on('object:moving', posFloatBar);
+canvas.on('object:scaling', posFloatBar);
+
+function applyToSelected(type) {
+  const obj = canvas.getActiveObject();
+  const idx = textObjs.indexOf(obj);
+  if (idx < 0 || !obj._objects) return;
+  if (type === 'font') {
+    const ff = document.getElementById('fb-font').value;
+    document.getElementById('font-sel').value = ff;
+    obj._objects[0].set('fontFamily', ff);
+    obj._objects[1].set('fontFamily', ff);
+  }
+  if (type === 'size') {
+    const fs = parseInt(document.getElementById('fb-size').value) || 48;
+    const sw = Math.max(8, Math.round(fs * 0.20));
+    document.getElementById('font-size').value = fs;
+    obj._objects[0].set({fontSize: fs, strokeWidth: sw});
+    obj._objects[1].set('fontSize', fs);
+    obj._objects[0].initDimensions();
+    obj._objects[1].initDimensions();
+  }
+  if (type === 'color') {
+    const col = document.getElementById('fb-color').value;
+    obj._objects[1].set('fill', col);
+    const row = document.querySelectorAll('.text-row')[idx];
+    if (row) { const c = row.querySelector('input[type=color]'); if(c) c.value = col; }
+  }
+  canvas.renderAll();
+  setTimeout(posFloatBar, 50);
 }
 
-// ── 더블클릭 → 해당 텍스트 입력창 포커스 ──
+// ── 인라인 텍스트 오버레이 ──
+const overlayInp = document.getElementById('overlay-input');
+let overlayIdx = -1;
+
 canvas.on('mouse:dblclick', function(e) {
   const obj = e.target;
   if (!obj) return;
   const idx = textObjs.indexOf(obj);
-  if (idx > -1) {
-    const rows = document.querySelectorAll('.text-row');
-    if (rows[idx]) {
-      const inp = rows[idx].querySelector('.text-inp');
-      if (inp) {
-        inp.focus();
-        inp.select();
-        inp.style.borderColor = 'var(--rose)';
-        setTimeout(() => inp.style.borderColor = '', 1200);
-      }
-    }
+  if (idx < 0) return;
+  overlayIdx = idx;
+  const base = obj._objects[0];
+  const {wr, sx, sy} = getWrapScale();
+  const br = obj.getBoundingRect();
+  overlayInp.value = base.text;
+  overlayInp.style.left    = (wr.left + br.left * sx) + 'px';
+  overlayInp.style.top     = (wr.top  + br.top  * sy) + 'px';
+  overlayInp.style.width   = Math.max(120, br.width * sx + 20) + 'px';
+  overlayInp.style.fontSize = Math.max(14, base.fontSize * Math.min(sx, sy) * 0.75) + 'px';
+  overlayInp.style.display = 'block';
+  hideFloatBar();
+  setTimeout(() => { overlayInp.focus(); overlayInp.select(); }, 30);
+});
+
+overlayInp.addEventListener('input', function() {
+  if (overlayIdx < 0) return;
+  const rows = document.querySelectorAll('.text-row');
+  if (rows[overlayIdx]) {
+    const inp = rows[overlayIdx].querySelector('.text-inp');
+    if (inp) inp.value = this.value;
   }
+  updateLine(overlayIdx);
+});
+overlayInp.addEventListener('blur', function() {
+  this.style.display = 'none';
+  overlayIdx = -1;
+  showFloatBar();
+});
+overlayInp.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === 'Escape') this.blur();
 });
 
 // Delete 키
