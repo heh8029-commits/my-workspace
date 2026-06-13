@@ -597,15 +597,11 @@ body.mobile-view .gnav { display: none !important; position: static !important; 
 .mobile-subnav::-webkit-scrollbar { display: none; }
 body.mobile-view .mobile-subnav.active {
   display: flex;
-  position: fixed;
-  top: var(--header-h, 100px);
-  left: 0;
-  right: 0;
-  z-index: 290;
-  box-shadow: 0 3px 10px rgba(0,0,0,.1);
+  position: static;
   overflow-x: auto;
   flex-wrap: nowrap;
   scrollbar-width: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,.1);
 }
 .msub-btn {
   display: inline-flex;
@@ -2297,8 +2293,6 @@ function _hCsSendAlarm(item) {
 </div>
 
 
-</div>
-
 <div class="mobile-subnav" id="msubnav-menu1">
   <button class="msub-btn" onclick="switchSub('menu1',8,null);setMobileSubActive(this)">📉 월별손익</button>
   <button class="msub-btn" onclick="switchSub('menu1',1,null);setMobileSubActive(this)">💰 부가세/종소세/세금</button>
@@ -2332,6 +2326,8 @@ function _hCsSendAlarm(item) {
 </div>
 <div class="mobile-subnav" id="msubnav-menu4"></div>
 <div class="mobile-subnav" id="msubnav-menu3"></div>
+
+</div>
 
 <div class="app-wrapper" id="app-wrapper">
 <nav class="gnav" id="gnav">
@@ -4332,6 +4328,7 @@ function goTab(el, id) {
   document.querySelectorAll('.mobile-subnav').forEach(n => n.classList.remove('active'));
   const mn = document.getElementById('msubnav-'+id);
   if (mn) mn.classList.add('active');
+  setTimeout(updateHeaderH, 0);
   initRender(id);
   // ※ subpage 선택은 이 함수를 호출하는 쪽(gnav/msub)의 switchSub가 담당
   //   탭 직접 클릭 시에만 기본값 적용
