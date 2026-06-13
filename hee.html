@@ -1576,6 +1576,137 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   .cal-more { font-size:.58rem; }
 }
 
+/* ── 미니 캘린더 팝업 ── */
+#mini-cal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(58,26,46,.18);
+  backdrop-filter: blur(2px);
+}
+#mini-cal-overlay.open { display: block; }
+#mini-cal-box {
+  position: absolute;
+  top: 54px;
+  right: 8px;
+  width: 320px;
+  background: white;
+  border-radius: 20px;
+  border: 2px solid var(--pink);
+  box-shadow: 0 8px 32px rgba(232,100,138,.22);
+  padding: 14px 14px 12px;
+  animation: miniCalIn .18s ease;
+}
+@keyframes miniCalIn {
+  from { opacity:0; transform:translateY(-8px) scale(.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.mini-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.mini-cal-title {
+  font-size: .95rem;
+  font-weight: 800;
+  color: var(--rose);
+}
+.mini-cal-nav {
+  background: none;
+  border: 1.5px solid var(--pink);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  cursor: pointer;
+  font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--rose);
+  transition: background .12s;
+}
+.mini-cal-nav:hover { background: var(--pink-pale); }
+.mini-cal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--soft);
+  margin-left: 4px;
+  line-height: 1;
+}
+#mini-cal-grid { font-size: .8rem; }
+.mini-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  background: linear-gradient(135deg,#fff0f5,#ffe0ee);
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+.mini-dow-cell {
+  text-align: center;
+  padding: 5px 0;
+  font-size: .72rem;
+  font-weight: 800;
+}
+.mini-dow-cell.sun { color: #e03c6e; }
+.mini-dow-cell.sat { color: #4da6e8; }
+.mini-dow-cell.wkd { color: #888; }
+.mini-week-row {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  border-top: 1px solid #fce0ea;
+}
+.mini-cell {
+  min-height: 36px;
+  padding: 3px 2px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 1px solid #fce0ea;
+  position: relative;
+  transition: background .12s;
+}
+.mini-cell:last-child { border-right: none; }
+.mini-cell:hover { background: #fff8fb; }
+.mini-cell.today { background: linear-gradient(145deg,#fff0f5,#ffe8f0); }
+.mini-cell.other-month { opacity: .35; }
+.mini-day-num {
+  font-size: .75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+}
+.mini-cell.today .mini-day-num {
+  background: linear-gradient(135deg,#f7a8c0,#e03c6e);
+  color: white;
+}
+.mini-cell.sun .mini-day-num { color: #e03c6e; }
+.mini-cell.sat .mini-day-num { color: #4da6e8; }
+.mini-evt-bar {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #e03c6e;
+  margin: 0 auto 1px;
+}
+.mini-cal-go {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg,var(--pink-dark),var(--rose));
+  color: white;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Pretendard,sans-serif;
+  transition: opacity .15s;
+}
+.mini-cal-go:hover { opacity: .88; }
+
 /* ── 냉장고 메모 ── */
 .fridge-wrap {
   display: grid;
@@ -2280,6 +2411,7 @@ function _hCsSendAlarm(item) {
   <div class="divider"></div>
   <div class="tb-right">
     <div class="tb-icon" id="fab-btn" onclick="toggleFabMenu()" title="바로가기" style="display:none">🔗</div>
+    <div class="tb-icon" onclick="openMiniCal()" title="달력">📅</div>
     <div class="divider"></div>
     <div class="tb-icon view-btn active-view" id="btn-pc" onclick="setView('pc')" title="PC 버전">🖥️</div>
     <div class="tb-icon view-btn" id="btn-mobile" onclick="setView('mobile')" title="모바일 버전">📱</div>
@@ -2292,6 +2424,19 @@ function _hCsSendAlarm(item) {
   <span>✨</span>
   <span class="salary-alarm" id="salary-alarm"></span>
   <div class="dpill" id="dpill" style="max-width:55vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
+</div>
+
+<div id="mini-cal-overlay" onclick="closeMiniCalIfBg(event)">
+  <div id="mini-cal-box">
+    <div class="mini-cal-header">
+      <button class="mini-cal-nav" onclick="miniCalPrev()">‹</button>
+      <span class="mini-cal-title" id="mini-cal-title"></span>
+      <button class="mini-cal-nav" onclick="miniCalNext()">›</button>
+      <button class="mini-cal-close" onclick="closeMiniCal()">✕</button>
+    </div>
+    <div id="mini-cal-grid"></div>
+    <button class="mini-cal-go" onclick="goToFullCal()">📅 달력 전체 보기</button>
+  </div>
 </div>
 
 
@@ -10778,6 +10923,76 @@ function impCheckClearDone() {
 
 function loadCalScheds() { return loadObj('cal_scheds').list || []; }
 function saveCalScheds(list) { stor('cal_scheds', {list}); }
+
+/* ── 미니 캘린더 팝업 ── */
+var miniCalYear, miniCalMonth;
+function openMiniCal() {
+  var now = new Date();
+  miniCalYear  = now.getFullYear();
+  miniCalMonth = now.getMonth() + 1;
+  renderMiniCal();
+  document.getElementById('mini-cal-overlay').classList.add('open');
+}
+function closeMiniCal() {
+  document.getElementById('mini-cal-overlay').classList.remove('open');
+}
+function closeMiniCalIfBg(e) {
+  if (e.target === document.getElementById('mini-cal-overlay')) closeMiniCal();
+}
+function miniCalPrev() { miniCalMonth--; if (miniCalMonth < 1) { miniCalMonth = 12; miniCalYear--; } renderMiniCal(); }
+function miniCalNext() { miniCalMonth++; if (miniCalMonth > 12) { miniCalMonth = 1; miniCalYear++; } renderMiniCal(); }
+function goToFullCal() {
+  closeMiniCal();
+  var calTab = document.querySelector('.tab[onclick*="menu2"]');
+  if (calTab) { goTab(calTab, 'menu2'); switchSub('menu2', 14, null); }
+}
+function renderMiniCal() {
+  document.getElementById('mini-cal-title').textContent = miniCalYear + '년 ' + miniCalMonth + '월';
+  var scheds = (typeof loadCalScheds === 'function') ? loadCalScheds() : [];
+  var schedDays = {};
+  scheds.forEach(function(s) {
+    var parts = (s.date || '').split('-').map(Number);
+    if (parts[0] === miniCalYear && parts[1] === miniCalMonth) {
+      schedDays[parts[2]] = (schedDays[parts[2]] || 0) + 1;
+    }
+  });
+  var today = new Date();
+  var todayY = today.getFullYear(), todayM = today.getMonth()+1, todayD = today.getDate();
+  var firstDay = new Date(miniCalYear, miniCalMonth-1, 1).getDay();
+  var daysInMonth = new Date(miniCalYear, miniCalMonth, 0).getDate();
+  var prevDays = new Date(miniCalYear, miniCalMonth-1, 0).getDate();
+  var DOWS = ['일','월','화','수','목','금','토'];
+  var html = '<div class="mini-dow-row">';
+  DOWS.forEach(function(d, i) {
+    var cls = i===0?'sun':i===6?'sat':'wkd';
+    html += '<div class="mini-dow-cell '+cls+'">'+d+'</div>';
+  });
+  html += '</div>';
+  var day = 1, prevDay = prevDays - firstDay + 1;
+  var totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  for (var cell = 0; cell < totalCells; cell++) {
+    if (cell % 7 === 0) html += '<div class="mini-week-row">';
+    var dow = cell % 7;
+    var dowCls = dow===0?'sun':dow===6?'sat':'';
+    if (cell < firstDay) {
+      html += '<div class="mini-cell other-month '+dowCls+'"><div class="mini-day-num">'+prevDay+'</div></div>';
+      prevDay++;
+    } else if (day > daysInMonth) {
+      html += '<div class="mini-cell other-month '+dowCls+'"><div class="mini-day-num">'+(day-daysInMonth)+'</div></div>';
+      day++;
+    } else {
+      var isToday = miniCalYear===todayY && miniCalMonth===todayM && day===todayD;
+      var hasSched = schedDays[day] > 0;
+      html += '<div class="mini-cell '+dowCls+(isToday?' today':'')+'">';
+      html += '<div class="mini-day-num">'+day+'</div>';
+      if (hasSched) html += '<div class="mini-evt-bar"></div>';
+      html += '</div>';
+      day++;
+    }
+    if (cell % 7 === 6) html += '</div>';
+  }
+  document.getElementById('mini-cal-grid').innerHTML = html;
+}
 
 function calPrevMonth() { calMonth--; if (calMonth < 1) { calMonth = 12; calYear--; } renderCal(); }
 function calNextMonth() { calMonth++; if (calMonth > 12) { calMonth = 1; calYear++; } renderCal(); }
