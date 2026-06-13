@@ -1657,7 +1657,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   border-top: 1px solid #fce0ea;
 }
 .mini-cell {
-  min-height: 36px;
+  min-height: 46px;
   padding: 3px 2px;
   text-align: center;
   cursor: pointer;
@@ -1684,11 +1684,25 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 }
 .mini-cell.sun .mini-day-num { color: #e03c6e; }
 .mini-cell.sat .mini-day-num { color: #4da6e8; }
-.mini-evt-bar {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #e03c6e;
-  margin: 0 auto 1px;
+.mini-evt-text {
+  font-size: .62rem;
+  font-weight: 600;
+  color: #222;
+  background: rgba(255,255,255,.8);
+  border-left: 2.5px solid #e03c6e;
+  padding: 0 3px;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  display: block;
+  margin-bottom: 1px;
+}
+.mini-evt-more {
+  font-size: .58rem;
+  color: #aaa;
+  text-align: center;
 }
 .mini-cal-go {
   display: block;
@@ -10953,7 +10967,8 @@ function renderMiniCal() {
   scheds.forEach(function(s) {
     var parts = (s.date || '').split('-').map(Number);
     if (parts[0] === miniCalYear && parts[1] === miniCalMonth) {
-      schedDays[parts[2]] = (schedDays[parts[2]] || 0) + 1;
+      if (!schedDays[parts[2]]) schedDays[parts[2]] = [];
+      schedDays[parts[2]].push(s);
     }
   });
   var today = new Date();
@@ -10982,10 +10997,13 @@ function renderMiniCal() {
       day++;
     } else {
       var isToday = miniCalYear===todayY && miniCalMonth===todayM && day===todayD;
-      var hasSched = schedDays[day] > 0;
+      var dayScheds = schedDays[day] || [];
       html += '<div class="mini-cell '+dowCls+(isToday?' today':'')+'">';
       html += '<div class="mini-day-num">'+day+'</div>';
-      if (hasSched) html += '<div class="mini-evt-bar"></div>';
+      if (dayScheds.length > 0) {
+        html += '<div class="mini-evt-text" style="border-left-color:'+(dayScheds[0].color||'#e03c6e')+'">'+escHtml(dayScheds[0].text||'')+'</div>';
+        if (dayScheds.length > 1) html += '<div class="mini-evt-more">+' + (dayScheds.length-1) + '</div>';
+      }
       html += '</div>';
       day++;
     }
