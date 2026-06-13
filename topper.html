@@ -443,7 +443,17 @@ function updateLine(idx) {
   const startY = CH/2 - ((total - 1) * gap) / 2;
   const y     = startY + idx * gap;
 
-  // 완전한 구멍/틈 제거: 검정 배경 rect + 컬러 텍스트
+  // 틈/구멍 방지: 검정 베이스(fill+stroke) + 컬러 전경 레이어
+  const base = new fabric.Text(val, {
+    fontFamily: ff, fontSize: fs,
+    fill: '#000000',
+    stroke: '#000000', strokeWidth: sw,
+    strokeLineJoin: 'round', strokeLineCap: 'round',
+    paintFirst: 'fill',
+    charSpacing: -15,
+    left: 0, top: 0, originX: 'center', originY: 'center',
+    selectable: false, evented: false
+  });
   const front = new fabric.Text(val, {
     fontFamily: ff, fontSize: fs,
     fill: color,
@@ -451,20 +461,11 @@ function updateLine(idx) {
     left: 0, top: 0, originX: 'center', originY: 'center',
     selectable: false, evented: false
   });
-  const bgRect = new fabric.Rect({
-    width:  front.width  + sw * 2.5,
-    height: front.height + sw * 1.5,
-    rx: sw * 0.7, ry: sw * 0.7,
-    fill: '#000000',
-    originX: 'center', originY: 'center',
-    left: 0, top: 0,
-    selectable: false, evented: false
-  });
-  const t = new fabric.Group([bgRect, front], {
+  const t = new fabric.Group([base, front], {
     left: CW/2, top: y,
     originX: 'center', originY: 'center',
     selectable: true,
-    _lineIdx: idx
+    _lineIdx: idx  // 나중에 찾기 위한 인덱스
   });
   textObjs[idx] = t;
   canvas.add(t);
@@ -550,10 +551,10 @@ function showFloatBar() {
   });
   document.querySelectorAll('#float-bar .fb-label').forEach(l => l.style.display = isText ? '' : 'none');
   if (isText) {
-    const front = obj._objects && obj._objects[1];
-    if (front) {
-      document.getElementById('fb-font').value = front.fontFamily || 'Pretendard';
-      document.getElementById('fb-size').value = front.fontSize  || 48;
+    const base = obj._objects && obj._objects[0];
+    if (base) {
+      document.getElementById('fb-font').value = base.fontFamily || 'Pretendard';
+      document.getElementById('fb-size').value = base.fontSize  || 48;
     }
     const idx = textObjs.indexOf(obj);
     const row = document.querySelectorAll('.text-row')[idx];
@@ -580,23 +581,26 @@ function applyToSelected(type) {
   if (type === 'font') {
     const ff = document.getElementById('fb-font').value;
     document.getElementById('font-sel').value = ff;
-    updateLine(idx);
-    return;
+    obj._objects[0].set('fontFamily', ff);
+    obj._objects[1].set('fontFamily', ff);
   }
   if (type === 'size') {
     const fs = parseInt(document.getElementById('fb-size').value) || 48;
+    const sw = Math.max(8, Math.round(fs * 0.20));
     document.getElementById('font-size').value = fs;
-    updateLine(idx);
-    return;
+    obj._objects[0].set({fontSize: fs, strokeWidth: sw});
+    obj._objects[1].set('fontSize', fs);
+    obj._objects[0].initDimensions();
+    obj._objects[1].initDimensions();
   }
   if (type === 'color') {
     const col = document.getElementById('fb-color').value;
     obj._objects[1].set('fill', col);
     const row = document.querySelectorAll('.text-row')[idx];
     if (row) { const c = row.querySelector('input[type=color]'); if(c) c.value = col; }
-    canvas.renderAll();
-    setTimeout(posFloatBar, 50);
   }
+  canvas.renderAll();
+  setTimeout(posFloatBar, 50);
 }
 
 // ── 인라인 텍스트 오버레이 ──
@@ -609,14 +613,14 @@ canvas.on('mouse:dblclick', function(e) {
   const idx = textObjs.indexOf(obj);
   if (idx < 0) return;
   overlayIdx = idx;
-  const front = obj._objects[1];
+  const base = obj._objects[0];
   const {wr, sx, sy} = getWrapScale();
   const br = obj.getBoundingRect();
-  overlayInp.value = front.text;
+  overlayInp.value = base.text;
   overlayInp.style.left    = (wr.left + br.left * sx) + 'px';
   overlayInp.style.top     = (wr.top  + br.top  * sy) + 'px';
   overlayInp.style.width   = Math.max(120, br.width * sx + 20) + 'px';
-  overlayInp.style.fontSize = Math.max(14, front.fontSize * Math.min(sx, sy) * 0.75) + 'px';
+  overlayInp.style.fontSize = Math.max(14, base.fontSize * Math.min(sx, sy) * 0.75) + 'px';
   overlayInp.style.display = 'block';
   hideFloatBar();
   setTimeout(() => { overlayInp.focus(); overlayInp.select(); }, 30);
