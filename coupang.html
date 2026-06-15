@@ -224,14 +224,16 @@ function render() {
   let dates = Object.keys(data).filter(d => !currentMonth || d.startsWith(currentMonth)).sort();
 
   // 요약
-  const latestDate = dates[dates.length - 1];
-  const latestRow = latestDate ? data[latestDate] : {};
-  const latestMax = latestDate ? Math.max(...Object.values(latestRow), 0) : 0;
+  // 조회 기간 내 전체 합산 (각 날짜의 가장 큰 값 = 그날 최고 누적매출 합산)
+  const totalSum = dates.reduce((sum, d) => {
+    const vals = Object.values(data[d] || {});
+    return sum + (vals.length ? Math.max(...vals) : 0);
+  }, 0);
   const brandClass = currentBrand === '미리토퍼' ? 'miri' : 'mong';
   document.getElementById('summary').innerHTML = `
     <div class="summary-card">
-      <div class="summary-label">최근 최고 누적</div>
-      <div class="summary-val ${brandClass}">${fmt(latestMax) || '—'}원</div>
+      <div class="summary-label">전체 합산</div>
+      <div class="summary-val ${brandClass}">${fmt(totalSum) || '—'}원</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">기록 일수</div>
