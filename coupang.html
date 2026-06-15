@@ -22,15 +22,17 @@ body{font-family:'Apple SD Gothic Neo','맑은 고딕',sans-serif;background:#f4
 
 /* 그리드 */
 .grid-wrap{overflow-x:auto;padding:16px}
-table{border-collapse:collapse;white-space:nowrap;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:max-content}
-thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:8px 12px;text-align:center;border-bottom:1.5px solid #eee;position:sticky;top:0}
+table{border-collapse:collapse;white-space:nowrap;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:max-content;border:1px solid #e0e0e0}
+thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:8px 12px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;position:sticky;top:0}
+thead th:last-child{border-right:none}
 thead th:first-child,thead th:nth-child(2){position:sticky;background:#f8f8f8;z-index:10}
 thead th:first-child{left:0}
 thead th:nth-child(2){left:52px}
 tbody tr:hover{background:#fafafa}
-td{padding:7px 10px;border-bottom:1px solid #f4f4f4;text-align:center;color:#444}
-td.date-cell{font-weight:600;color:#333;position:sticky;left:0;background:inherit;min-width:52px;font-size:.8rem}
-td.day-cell{position:sticky;left:52px;background:inherit;min-width:26px;font-size:.75rem;color:#aaa;padding:7px 6px}
+td{padding:7px 10px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:center;color:#444}
+td:last-child{border-right:none}
+td.date-cell{font-weight:600;color:#333;position:sticky;left:0;background:inherit;min-width:52px;font-size:.8rem;border-right:1px solid #d0d0d0}
+td.day-cell{position:sticky;left:52px;background:inherit;min-width:26px;font-size:.75rem;color:#aaa;padding:7px 6px;border-right:2px solid #d0d0d0}
 td.amount{font-size:.8rem;color:#222;font-weight:500;min-width:82px}
 td.today{background:#fffbe6!important}
 td.today.date-cell{color:#e8234a;font-weight:800}
