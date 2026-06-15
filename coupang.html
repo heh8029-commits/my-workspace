@@ -275,6 +275,29 @@ function render() {
   document.getElementById('grid-body').innerHTML = rows;
 }
 
+function scrollToCurrentHour() {
+  const hh = new Date().getHours();
+  const hourKey = hh < 12 ? `오전${hh}시` : (hh === 12 ? '오후12시' : `오후${hh-12}시`);
+  const idx = HOURS.indexOf(hourKey);
+  if (idx < 0) return;
+  const ths = document.querySelectorAll('#grid-head th');
+  const target = ths[idx + 2]; // 날짜·요일 열 2개 건너뜀
+  if (!target) return;
+  const wrap = document.querySelector('.grid-wrap');
+  const stickyW = 78; // date-cell + day-cell
+  wrap.scrollLeft = target.offsetLeft - stickyW - (wrap.clientWidth - stickyW) / 2 + target.offsetWidth / 2;
+}
+
+let initialScrollDone = false;
+const _origRender = render;
+render = function() {
+  _origRender();
+  if (!initialScrollDone) {
+    setTimeout(scrollToCurrentHour, 50);
+    initialScrollDone = true;
+  }
+};
+
 loadAutoData();
 setInterval(loadAutoData, 60000);
 </script>
