@@ -49,6 +49,32 @@ tr.today-row{background:#fffbe6}
 .summary-val{font-size:1.5rem;font-weight:700;color:#111}
 .summary-val.miri{color:#1a5eff}
 .summary-val.mong{color:#e91e8c}
+
+/* 매출 탭 */
+.view-tab{padding:14px 24px;font-size:.9rem;font-weight:700;color:#aaa;border-bottom:3px solid transparent;cursor:pointer;transition:all .15s}
+.view-tab.active{color:#06b06a;border-color:#06b06a}
+.view-tab:hover{color:#555}
+#sales-view{display:none;padding:16px}
+#sales-view.active{display:block}
+#main-view.hidden{display:none}
+.sales-table-wrap{overflow-x:auto}
+.sales-table{border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);width:100%;border:1px solid #e0e0e0}
+.sales-table thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:9px 14px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;white-space:nowrap}
+.sales-table thead th:last-child{border-right:none}
+.sales-table th.group-miri{color:#1a5eff;background:#f0f4ff}
+.sales-table th.group-mong{color:#e91e8c;background:#fff0f7}
+.sales-table th.group-label{background:#f0f4ff;color:#1a5eff;font-size:.8rem;text-align:center;border-bottom:1px solid #d0d0d0}
+.sales-table th.group-label-mong{background:#fff0f7;color:#e91e8c}
+.sales-table tbody tr:hover{background:#fafafa}
+.sales-table td{padding:8px 14px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:right;color:#444;white-space:nowrap;font-size:.82rem}
+.sales-table td:last-child{border-right:none}
+.sales-table td.date-col{text-align:center;font-weight:700;color:#333;min-width:70px}
+.sales-table td.total-col{font-weight:700;color:#111}
+.sales-table td.rg-col{color:#1a5eff}
+.sales-table td.sd-col{color:#888}
+.sales-table tr.today-sales{background:#fffbe6}
+.sales-table tr.today-sales td.date-col{color:#e8234a}
+.sales-updated{font-size:.72rem;color:#bbb;padding:8px 16px}
 </style>
 </head>
 <body>
@@ -56,17 +82,42 @@ tr.today-row{background:#fffbe6}
 <div class="brand-bar">
   <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">미리토퍼</div>
   <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">몽몽토퍼</div>
+  <div class="view-tab" onclick="setView('매출')">매출</div>
 </div>
 
-<div class="month-bar" id="month-bar"></div>
+<div id="main-view">
+  <div class="month-bar" id="month-bar"></div>
+  <div class="summary" id="summary"></div>
+  <div class="grid-wrap">
+    <table id="grid-table">
+      <thead id="grid-head"></thead>
+      <tbody id="grid-body"></tbody>
+    </table>
+  </div>
+</div>
 
-<div class="summary" id="summary"></div>
-
-<div class="grid-wrap">
-  <table id="grid-table">
-    <thead id="grid-head"></thead>
-    <tbody id="grid-body"></tbody>
-  </table>
+<div id="sales-view">
+  <div class="sales-updated" id="sales-updated"></div>
+  <div class="sales-table-wrap">
+    <table class="sales-table">
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align:middle">날짜</th>
+          <th colspan="3" class="group-label">미리토퍼</th>
+          <th colspan="3" class="group-label group-label-mong">몽몽토퍼</th>
+        </tr>
+        <tr>
+          <th class="group-miri">로켓그로스</th>
+          <th class="group-miri">판매자배송</th>
+          <th class="group-miri">합계</th>
+          <th class="group-mong">로켓그로스</th>
+          <th class="group-mong">판매자배송</th>
+          <th class="group-mong">합계</th>
+        </tr>
+      </thead>
+      <tbody id="sales-body"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
@@ -138,6 +189,9 @@ let currentBrand = "미리토퍼";
 let currentMonth = null; // null = 전체
 let autoData = {};
 let currentAmount = {}; // brand → 실시간 매출 (오늘 최신값)
+let salesData = {}; // brand → [{date, rocket_growth, seller_delivery, total}]
+let salesUpdated = '';
+let currentView = 'main'; // 'main' | 'sales'
 
 // coupang_data.json 로드
 async function loadAutoData() {
@@ -155,12 +209,74 @@ async function loadAutoData() {
         if (!autoData[brand][dateStr]) autoData[brand][dateStr] = {};
         autoData[brand][dateStr][hourKey] = h.amount;
       }
-      // 오늘 기록 중 가장 큰 값 = 현재 누적 매출
       const todayVals = Object.values(autoData[brand][todayStr] || {});
       currentAmount[brand] = todayVals.length ? Math.max(...todayVals) : 0;
     }
+    // 매출 데이터 로드
+    const sd = d.sales_data || {};
+    salesUpdated = sd.last_updated || '';
+    salesData['미리토퍼'] = sd['미리토퍼'] || [];
+    salesData['몽몽토퍼'] = sd['몽몽토퍼'] || [];
   } catch(e) {}
-  render();
+  if (currentView === 'sales') renderSales();
+  else render();
+}
+
+function setView(v) {
+  currentView = v;
+  const mainEl = document.getElementById('main-view');
+  const salesEl = document.getElementById('sales-view');
+  document.querySelectorAll('.brand-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  if (v === 'sales') {
+    mainEl.classList.add('hidden');
+    salesEl.classList.add('active');
+    document.querySelector('.view-tab').classList.add('active');
+    renderSales();
+  } else {
+    mainEl.classList.remove('hidden');
+    salesEl.classList.remove('active');
+    document.querySelector(`.brand-tab[data-brand="${currentBrand}"]`).classList.add('active');
+    render();
+  }
+}
+
+function renderSales() {
+  document.getElementById('sales-updated').textContent = salesUpdated ? `최종 수집: ${salesUpdated}` : '';
+
+  // 날짜 집합 (미리토퍼 + 몽몽토퍼 합집합, 내림차순)
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayMD = `${String(new Date().getMonth()+1).padStart(2,'0')}/${String(new Date().getDate()).padStart(2,'0')}`;
+
+  const miriMap = {};
+  for (const row of (salesData['미리토퍼'] || [])) miriMap[row.date] = row;
+  const mongMap = {};
+  for (const row of (salesData['몽몽토퍼'] || [])) mongMap[row.date] = row;
+
+  const allDates = [...new Set([...Object.keys(miriMap), ...Object.keys(mongMap)])].sort().reverse();
+
+  if (!allDates.length) {
+    document.getElementById('sales-body').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 9시 40분에 수집됩니다</small></td></tr>';
+    return;
+  }
+
+  const rows = allDates.map(date => {
+    const isToday = date === todayMD;
+    const m = miriMap[date] || {};
+    const g = mongMap[date] || {};
+    const fmtNum = n => n ? Number(n).toLocaleString('ko-KR') : '-';
+    return `<tr class="${isToday ? 'today-sales' : ''}">
+      <td class="date-col">${date}</td>
+      <td class="rg-col">${fmtNum(m.rocket_growth)}</td>
+      <td class="sd-col">${fmtNum(m.seller_delivery)}</td>
+      <td class="total-col">${fmtNum(m.total)}</td>
+      <td class="rg-col">${fmtNum(g.rocket_growth)}</td>
+      <td class="sd-col">${fmtNum(g.seller_delivery)}</td>
+      <td class="total-col">${fmtNum(g.total)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sales-body').innerHTML = rows;
 }
 
 function getMergedData(brand) {
@@ -195,7 +311,11 @@ function dayOfWeek(dateStr) {
 function setBrand(brand) {
   currentBrand = brand;
   currentMonth = null;
+  currentView = 'main';
   document.querySelectorAll('.brand-tab').forEach(t => t.classList.toggle('active', t.dataset.brand === brand));
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('main-view').classList.remove('hidden');
+  document.getElementById('sales-view').classList.remove('active');
   render();
 }
 
