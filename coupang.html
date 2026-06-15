@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쿠팡 판매현황</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #999;
+      margin-bottom: 28px;
+      letter-spacing: 0.05em;
+    }
+
+    /* 상단 두 계정 카드 나란히 */
+    .accounts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 540px) { .accounts { grid-template-columns: 1fr; } }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .acc-name {
+      font-size: 0.75rem;
+      color: #e8234a;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.02em;
+    }
+    .amount .unit {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #bbb;
+      margin-left: 4px;
+    }
+    .total-card {
+      background: #111;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .total-label { font-size: 0.75rem; color: #888; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .total-amount { font-size: 2.4rem; font-weight: 700; color: white; letter-spacing: -0.02em; }
+    .total-amount .unit { font-size: 1.1rem; font-weight: 400; color: #666; margin-left: 4px; }
+
+    .updated { font-size: 0.72rem; color: #bbb; margin-top: 10px; }
+
+    /* 히스토리 테이블 */
+    .history-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .history-title {
+      font-size: 0.78rem;
+      color: #aaa;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      margin-bottom: 18px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      font-size: 0.72rem;
+      color: #bbb;
+      font-weight: 500;
+      text-align: left;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+      letter-spacing: 0.05em;
+    }
+    th.right, td.right { text-align: right; }
+    td {
+      font-size: 0.85rem;
+      color: #555;
+      padding: 11px 0;
+      border-bottom: 1px solid #fafafa;
+    }
+    td.amt { font-weight: 600; color: #222; }
+    tr:last-child td { border-bottom: none; }
+    .empty { text-align: center; color: #ccc; padding: 24px 0; font-size: 0.82rem; }
+
+    .bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .bar-bg { flex: 1; height: 3px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #e8234a; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>쿠팡 로켓그로스 판매현황</h1>
+
+    <!-- 합산 카드 -->
+    <div class="total-card">
+      <div class="total-label">전체 합산 매출</div>
+      <div class="total-amount" id="total-amount">—<span class="unit">원</span></div>
+      <div class="updated" id="last-updated">불러오는 중...</div>
+    </div>
+
+    <!-- 계정별 카드 -->
+    <div class="accounts" id="account-cards"></div>
+
+    <!-- 히스토리 -->
+    <div class="history-card">
+      <div class="history-title">시간대별 기록</div>
+      <table>
+        <thead>
+          <tr>
+            <th>시간</th>
+            <th class="right">미리토퍼</th>
+            <th class="right">몽몽토퍼</th>
+            <th class="right">합산</th>
+            <th style="padding-left:14px">추이</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="5" class="empty">아직 기록이 없습니다</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function fmt(n) {
+      return (n || 0).toLocaleString('ko-KR');
+    }
+
+    async function load() {
+      try {
+        const res = await fetch('coupang_data.json?t=' + Date.now());
+        const data = await res.json();
+        const accs = data.accounts || {};
+        const names = Object.keys(accs);
+
+        // 합산
+        const totalNow = names.reduce((s, n) => s + (accs[n].current_amount || 0), 0);
+        document.getElementById('total-amount').innerHTML = fmt(totalNow) + '<span class="unit">원</span>';
+        if (data.last_updated) {
+          document.getElementById('last-updated').textContent = '마지막 업데이트: ' + data.last_updated;
+        }
+
+        // 계정 카드
+        const cardsEl = document.getElementById('account-cards');
+        cardsEl.innerHTML = names.map(name => `
+          <div class="card">
+            <div class="acc-name">${name}</div>
+            <div class="amount">${fmt(accs[name].current_amount)}<span class="unit">원</span></div>
+          </div>
+        `).join('');
+
+        // 히스토리 — 시간 기준으로 merge
+        const timeMap = {};
+        for (const name of names) {
+          for (const h of (accs[name].history || [])) {
+            if (!timeMap[h.time]) timeMap[h.time] = {};
+            timeMap[h.time][name] = h.amount;
+          }
+        }
+        const times = Object.keys(timeMap).sort().reverse();
+        const allTotals = times.map(t => names.reduce((s, n) => s + (timeMap[t][n] || 0), 0));
+        const maxTotal = Math.max(...allTotals, 1);
+
+        const tbody = document.getElementById('history-body');
+        if (times.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty">아직 기록이 없습니다</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = times.map((t, i) => {
+          const row = timeMap[t];
+          const total = names.reduce((s, n) => s + (row[n] || 0), 0);
+          const pct = Math.round((total / maxTotal) * 100);
+          const cells = names.map(n => `<td class="amt right">${fmt(row[n] || 0)}원</td>`).join('');
+          return `<tr>
+            <td>${t}</td>
+            ${cells}
+            <td class="amt right">${fmt(total)}원</td>
+            <td style="padding-left:14px">
+              <div class="bar-wrap">
+                <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+                <span style="font-size:0.7rem;color:#bbb;min-width:28px">${pct}%</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+      } catch (e) {
+        document.getElementById('last-updated').textContent = '데이터 로드 실패';
+      }
+    }
+
+    load();
+    setInterval(load, 60000);
+  </script>
+</body>
+</html>
