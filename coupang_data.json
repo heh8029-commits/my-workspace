@@ -2,10 +2,9 @@
   "last_updated": "2026-06-15 13:02",
   "accounts": {
     "미리토퍼": {
-      "current_amount": 307280,
+      "current_amount": 296480,
       "history": [
-        {"time": "2026-06-15 12:46", "amount": 296480},
-        {"time": "2026-06-15 13:02", "amount": 307280}
+        {"time": "2026-06-15 12:46", "amount": 296480}
       ]
     },
     "몽몽토퍼": {
