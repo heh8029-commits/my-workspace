@@ -111,6 +111,7 @@ tr.today-row{background:#fffbe6}
 </div>
 
 <div id="sales-view">
+  <div class="month-bar" id="sales-month-bar"></div>
   <div class="sales-updated" id="sales-updated"></div>
   <div class="sales-summary" id="sales-summary"></div>
   <div class="sales-table-wrap">
@@ -209,6 +210,7 @@ const DAYS = ["일","월","화","수","목","금","토"];
 
 let currentBrand = "미리토퍼";
 let currentMonth = null; // null = 전체
+let currentSalesMonth = null; // null = 전체 (매출 탭 월별 필터, "MM" 형식)
 let autoData = {};
 let currentAmount = {}; // brand → 실시간 매출 (오늘 최신값)
 let salesData = {}; // brand → [{date, rocket_growth, seller_delivery, total}]
@@ -274,6 +276,21 @@ function formatInputCommas(el) {
   el.value = digits ? Number(digits).toLocaleString('ko-KR') : '';
 }
 
+function renderSalesMonthBar(dates) {
+  const bar = document.getElementById('sales-month-bar');
+  const months = Array.from(new Set(dates.map(d => d.split('/')[0]))).sort();
+  const allTab = `<div class="month-tab${currentSalesMonth === null ? ' active' : ''}" onclick="setSalesMonth(null)">전체</div>`;
+  const monthTabs = months.map(mm =>
+    `<div class="month-tab${mm === currentSalesMonth ? ' active' : ''}" onclick="setSalesMonth('${mm}')">${parseInt(mm)}월</div>`
+  ).join('');
+  bar.innerHTML = allTab + monthTabs;
+}
+
+function setSalesMonth(mm) {
+  currentSalesMonth = mm;
+  renderSales();
+}
+
 function updateAdField(date, field, value) {
   const n = Number(String(value).replace(/[^\d.-]/g, '')) || 0;
   if (!adData[date]) adData[date] = {};
@@ -330,9 +347,27 @@ function renderSales() {
   const miriMap = {};
   for (const row of (salesData['미리토퍼'] || [])) miriMap[row.date] = row;
 
-  const allDates = Object.keys(miriMap).sort().reverse();
+  renderSalesMonthBar(Object.keys(miriMap));
 
-  renderSalesSummary(allDates[0], miriMap[allDates[0]] || {}, adData[allDates[0]] || {});
+  const allDates = Object.keys(miriMap)
+    .filter(d => currentSalesMonth === null || d.split('/')[0] === currentSalesMonth)
+    .sort().reverse();
+
+  // 합산 요약 (현재 필터된 기간 전체)
+  const sumRow = { rocket_growth: 0, seller_delivery: 0, total: 0 };
+  const sumAd = { cpAdCost: 0, naverSales: 0, naverSearchAd: 0, naverAiAd: 0 };
+  for (const d of allDates) {
+    const m = miriMap[d] || {};
+    const ad = adData[d] || {};
+    sumRow.rocket_growth += m.rocket_growth || 0;
+    sumRow.seller_delivery += m.seller_delivery || 0;
+    sumRow.total += m.total || ((m.rocket_growth || 0) + (m.seller_delivery || 0));
+    sumAd.cpAdCost += ad.cpAdCost || 0;
+    sumAd.naverSales += ad.naverSales || 0;
+    sumAd.naverSearchAd += ad.naverSearchAd || 0;
+    sumAd.naverAiAd += ad.naverAiAd || 0;
+  }
+  renderSalesSummary(allDates.length ? 'sum' : null, sumRow, sumAd);
 
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
