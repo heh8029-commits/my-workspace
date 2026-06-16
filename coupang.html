@@ -56,6 +56,10 @@ tr.today-row{background:#fffbe6}
 .view-tab:hover{color:#555}
 #sales-view{display:none;padding:16px}
 #sales-view.active{display:block}
+#log-view{display:none}
+#log-view.active{display:block}
+.sales-table td.status-ok{color:#0f9960;font-weight:700}
+.sales-table td.status-fail{color:#e0316b;font-weight:700}
 #main-view.hidden{display:none}
 .sales-table-wrap{overflow-x:auto}
 .sales-table{border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);width:100%;border:1px solid #e0e0e0}
@@ -109,7 +113,8 @@ tr.today-row{background:#fffbe6}
 <div class="brand-bar">
   <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">그로스매출 미리토퍼</div>
   <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">그로스매출 몽몽토퍼</div>
-  <div class="view-tab" onclick="setView('sales')">매출</div>
+  <div class="view-tab" data-view="sales" onclick="setView('sales')">매출</div>
+  <div class="view-tab" data-view="log" onclick="setView('log')">로그</div>
   <div class="sync-area">
     <span class="sync-time" id="sync-time"></span>
     <div class="sync-btn" id="sync-btn" onclick="manualSync()"><span class="icon">⟳</span>새로고침</div>
@@ -157,6 +162,22 @@ tr.today-row{background:#fffbe6}
       </thead>
       <tbody id="sales-body"></tbody>
       <tfoot id="sales-foot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<div id="log-view">
+  <div class="sales-table-wrap" style="padding:16px">
+    <table class="sales-table">
+      <thead>
+        <tr>
+          <th>시간</th>
+          <th>계정</th>
+          <th>상태</th>
+          <th>매출금액 / 실패원인</th>
+        </tr>
+      </thead>
+      <tbody id="log-body"></tbody>
     </table>
   </div>
 </div>
@@ -233,7 +254,8 @@ let autoData = {};
 let currentAmount = {}; // brand → 실시간 매출 (오늘 최신값)
 let salesData = {}; // brand → [{date, rocket_growth, seller_delivery, total}]
 let salesUpdated = '';
-let currentView = 'main'; // 'main' | 'sales'
+let runLog = []; // [{time, account, status, amount, reason}]
+let currentView = 'main'; // 'main' | 'sales' | 'log'
 
 // coupang_data.json 로드
 async function loadAutoData() {
@@ -264,11 +286,29 @@ async function loadAutoData() {
     const jsonAdData = d.ad_data || {};
     const localAdData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
     adData = Object.assign({}, jsonAdData, localAdData);
+
+    runLog = d.run_log || [];
   } catch(e) {}
   const t = document.getElementById('sync-time');
   if (t) t.textContent = '갱신: ' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   if (currentView === 'sales') renderSales();
+  else if (currentView === 'log') renderLog();
   else render();
+}
+
+function renderLog() {
+  const rows = [...runLog].reverse().map(e => {
+    const isOk = e.status === 'ok';
+    const detail = isOk ? `${Number(e.amount || 0).toLocaleString('ko-KR')}원` : (e.reason || '-');
+    return `<tr>
+      <td class="date-col">${e.time}</td>
+      <td>${e.account}</td>
+      <td class="status-${e.status}">${isOk ? '성공' : '실패'}</td>
+      <td style="text-align:left">${detail}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('log-body').innerHTML = rows ||
+    '<tr><td colspan="4" style="text-align:center;padding:40px;color:#ccc">로그가 없습니다</td></tr>';
 }
 
 function manualSync() {
@@ -283,16 +323,23 @@ function setView(v) {
   currentView = v;
   const mainEl = document.getElementById('main-view');
   const salesEl = document.getElementById('sales-view');
+  const logEl = document.getElementById('log-view');
   document.querySelectorAll('.brand-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  mainEl.classList.add('hidden');
+  salesEl.classList.remove('active');
+  logEl.classList.remove('active');
+
   if (v === 'sales') {
-    mainEl.classList.add('hidden');
     salesEl.classList.add('active');
-    document.querySelector('.view-tab').classList.add('active');
+    document.querySelector('.view-tab[data-view="sales"]').classList.add('active');
     renderSales();
+  } else if (v === 'log') {
+    logEl.classList.add('active');
+    document.querySelector('.view-tab[data-view="log"]').classList.add('active');
+    renderLog();
   } else {
     mainEl.classList.remove('hidden');
-    salesEl.classList.remove('active');
     document.querySelector(`.brand-tab[data-brand="${currentBrand}"]`).classList.add('active');
     render();
   }
@@ -560,6 +607,7 @@ function setBrand(brand) {
   document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('main-view').classList.remove('hidden');
   document.getElementById('sales-view').classList.remove('active');
+  document.getElementById('log-view').classList.remove('active');
   render();
 }
 
