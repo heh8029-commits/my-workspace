@@ -333,7 +333,7 @@ function renderSalesSummary(date, m, ad, dayCount) {
     card('네이버 검색광고', naverSearchAd, 'cost', ''),
     card('네이버 AI광고', naverAiAd, 'cost', ''),
     card('전체 총광고비', totalAdCost, 'cost', ''),
-    card('전체 총매출', totalSales, 'grand', dayCount ? `<span class="sales-summary-pct" style="color:#6c4fd1">일평균 ${fmtNum(Math.round(totalSales / dayCount))}</span>` : ''),
+    card('전체 총매출', totalSales, 'grand', dayCount ? `<span class="sales-summary-pct" style="color:#999">일평균 ${fmtNum(Math.round(totalSales / dayCount))}</span>` : ''),
   ].join('');
 }
 
