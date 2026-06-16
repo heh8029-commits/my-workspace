@@ -263,7 +263,9 @@ function updateAdField(date, field, value) {
 }
 
 function renderSales() {
-  document.getElementById('sales-updated').textContent = salesUpdated ? `최종 수집: ${salesUpdated} (쿠팡 로켓그로스/판매자배송만 자동 수집, 나머지는 직접 입력)` : '';
+  document.getElementById('sales-updated').textContent = salesUpdated
+    ? `최종 수집: ${salesUpdated} · 매일 오후 8시 10분에 업데이트됩니다 (쿠팡 로켓그로스/판매자배송만 자동 수집, 나머지는 직접 입력)`
+    : '매일 오후 8시 10분에 업데이트됩니다';
 
   const todayMD = `${String(new Date().getMonth()+1).padStart(2,'0')}/${String(new Date().getDate()).padStart(2,'0')}`;
 
