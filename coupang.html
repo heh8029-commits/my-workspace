@@ -382,25 +382,46 @@ function renderSales() {
 
   renderSalesMonthBar(Object.keys(miriMap));
 
-  const allDates = Object.keys(miriMap)
-    .filter(d => currentSalesMonth === null || d.split('/')[0] === currentSalesMonth)
-    .sort().reverse();
+  // 실제 데이터가 있는 날짜 (합계/평균 계산용)
+  const dataDates = Object.keys(miriMap)
+    .filter(d => currentSalesMonth === null || d.split('/')[0] === currentSalesMonth);
 
-  // 합산 요약 (현재 필터된 기간 전체)
+  // 화면에 표시할 날짜: 입력 안 된 날도 포함해서 해당 달 전체를 채움
+  const monthsInScope = currentSalesMonth !== null
+    ? [currentSalesMonth]
+    : Array.from(new Set(Object.keys(miriMap).map(d => d.split('/')[0]))).sort();
+  const allDates = [];
+  for (const mm of monthsInScope) {
+    const dCount = new Date(2026, parseInt(mm), 0).getDate();
+    for (let day = 1; day <= dCount; day++) {
+      allDates.push(`${mm}/${String(day).padStart(2, '0')}`);
+    }
+  }
+  allDates.sort().reverse();
+
+  const getRgSd = (date) => {
+    const m = miriMap[date] || {};
+    const ad = adData[date] || {};
+    const rg = (ad.manualRg !== undefined && ad.manualRg !== null && ad.manualRg !== '') ? ad.manualRg : (m.rocket_growth || 0);
+    const sd = (ad.manualSd !== undefined && ad.manualSd !== null && ad.manualSd !== '') ? ad.manualSd : (m.seller_delivery || 0);
+    return { rg, sd };
+  };
+
+  // 합산 요약 (실제 데이터가 있는 날짜 기준)
   const sumRow = { rocket_growth: 0, seller_delivery: 0, total: 0 };
   const sumAd = { cpAdCost: 0, naverSales: 0, naverSearchAd: 0, naverAiAd: 0 };
-  for (const d of allDates) {
-    const m = miriMap[d] || {};
+  for (const d of dataDates) {
+    const { rg, sd } = getRgSd(d);
     const ad = adData[d] || {};
-    sumRow.rocket_growth += m.rocket_growth || 0;
-    sumRow.seller_delivery += m.seller_delivery || 0;
-    sumRow.total += m.total || ((m.rocket_growth || 0) + (m.seller_delivery || 0));
+    sumRow.rocket_growth += rg;
+    sumRow.seller_delivery += sd;
+    sumRow.total += rg + sd;
     sumAd.cpAdCost += ad.cpAdCost || 0;
     sumAd.naverSales += ad.naverSales || 0;
     sumAd.naverSearchAd += ad.naverSearchAd || 0;
     sumAd.naverAiAd += ad.naverAiAd || 0;
   }
-  renderSalesSummary(allDates.length ? 'sum' : null, sumRow, sumAd, allDates.length);
+  renderSalesSummary(dataDates.length ? 'sum' : null, sumRow, sumAd, dataDates.length);
 
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
@@ -418,12 +439,10 @@ function renderSales() {
 
   const rows = allDates.map(date => {
     const isToday = date === todayMD;
-    const m = miriMap[date] || {};
     const ad = adData[date] || {};
 
-    const rg = m.rocket_growth || 0;
-    const sd = m.seller_delivery || 0;
-    const cpTotal = m.total || (rg + sd);
+    const { rg, sd } = getRgSd(date);
+    const cpTotal = rg + sd;
     const cpAdCost = ad.cpAdCost || 0;
     const cpAdPct = cpTotal ? (cpAdCost / cpTotal * 100) : 0;
 
@@ -443,8 +462,8 @@ function renderSales() {
 
     return `<tr class="${isToday ? 'today-sales' : ''}">
       <td class="date-col${isWeekend ? ' weekend' : ''}">${date} (${dow})</td>
-      <td class="rg-col">${fmtNum(rg)}</td>
-      <td class="sd-col">${fmtNum(sd)}</td>
+      ${inputCell(date, 'manualRg', rg)}
+      ${inputCell(date, 'manualSd', sd)}
       <td class="total-col">${fmtNum(cpTotal)}</td>
       ${inputCell(date, 'cpAdCost', cpAdCost)}
       <td class="sd-col">${fmtPct(cpAdPct)}</td>
