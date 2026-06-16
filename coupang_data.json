@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-17 01:45",
+  "last_updated": "2026-06-17 01:50",
   "sales_data": {
     "last_updated": "2026-06-16",
     "미리토퍼": [
@@ -1015,5 +1015,13 @@
       "naverSearchAd": 0,
       "naverAiAd": 0
     }
-  }
+  },
+  "run_log": [
+    {
+      "time": "2026-06-17 01:50",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
+    }
+  ]
 }
