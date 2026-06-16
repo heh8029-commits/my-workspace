@@ -299,7 +299,7 @@ function updateAdField(date, field, value) {
   renderSales();
 }
 
-function renderSalesSummary(date, m, ad) {
+function renderSalesSummary(date, m, ad, dayCount) {
   const box = document.getElementById('sales-summary');
   if (!date) { box.innerHTML = ''; return; }
 
@@ -333,7 +333,7 @@ function renderSalesSummary(date, m, ad) {
     card('네이버 검색광고', naverSearchAd, 'cost', ''),
     card('네이버 AI광고', naverAiAd, 'cost', ''),
     card('전체 총광고비', totalAdCost, 'cost', ''),
-    card('전체 총매출', totalSales, 'grand', ''),
+    card('전체 총매출', totalSales, 'grand', dayCount ? `<span class="sales-summary-pct" style="color:#6c4fd1">일평균 ${fmtNum(Math.round(totalSales / dayCount))}</span>` : ''),
   ].join('');
 }
 
@@ -367,7 +367,7 @@ function renderSales() {
     sumAd.naverSearchAd += ad.naverSearchAd || 0;
     sumAd.naverAiAd += ad.naverAiAd || 0;
   }
-  renderSalesSummary(allDates.length ? 'sum' : null, sumRow, sumAd);
+  renderSalesSummary(allDates.length ? 'sum' : null, sumRow, sumAd, allDates.length);
 
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
