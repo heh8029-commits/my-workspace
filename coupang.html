@@ -495,18 +495,10 @@ function render() {
   // 요약
   const brandClass = currentBrand === '미리토퍼' ? 'miri' : 'mong';
   const todayAmt = currentAmount[currentBrand] || 0;
-  const curHourKey = getCurrentHourKey();
-  const hourAvg = getHourlyAverage(currentBrand, curHourKey, todayStr);
-  let compareHtml = '';
-  if (hourAvg && todayAmt) {
-    const diffPct = (todayAmt - hourAvg) / hourAvg * 100;
-    const up = diffPct >= 0;
-    compareHtml = `<span style="font-size:.8rem;font-weight:700;margin-left:8px;color:${up ? '#0ea5e9' : '#e0316b'}">${up ? '▲' : '▼'} 평균대비 ${Math.abs(diffPct).toFixed(0)}%</span>`;
-  }
   document.getElementById('summary').innerHTML = `
     <div class="summary-card">
-      <div class="summary-label">실시간 매출 (오늘, ${curHourKey.replace('시','')}시 기준)</div>
-      <div class="summary-val ${brandClass}">${fmt(todayAmt) || '—'}원${compareHtml}</div>
+      <div class="summary-label">실시간 매출 (오늘)</div>
+      <div class="summary-val ${brandClass}">${fmt(todayAmt) || '—'}원</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">기록 일수</div>
@@ -531,6 +523,17 @@ function render() {
     ${HOURS.map(h => `<th>${h.replace('시','')}</th>`).join('')}
   </tr>`;
 
+  // 시간대별 평균 계산용 (전체 날짜 기준 합계/개수)
+  const hourStats = {};
+  for (const h of HOURS) {
+    let sum = 0, count = 0;
+    for (const d of Object.keys(data)) {
+      const v = data[d][h];
+      if (v) { sum += v; count++; }
+    }
+    hourStats[h] = { sum, count };
+  }
+
   // 바디
   const rows = dates.map(dateStr => {
     const row = data[dateStr] || {};
@@ -541,7 +544,18 @@ function render() {
     const trClass = [isToday ? 'today-row' : '', isSun ? 'sunday' : '', isSat ? 'saturday' : ''].filter(Boolean).join(' ');
     const cells = HOURS.map(h => {
       const v = row[h];
-      return `<td class="amount">${v ? fmt(v) : ''}</td>`;
+      let badge = '';
+      if (v) {
+        const stat = hourStats[h];
+        const otherCount = stat.count - 1;
+        if (otherCount > 0) {
+          const avg = (stat.sum - v) / otherCount;
+          const diffPct = (v - avg) / avg * 100;
+          const up = diffPct >= 0;
+          badge = `<br><span style="font-size:.62rem;font-weight:700;color:${up ? '#0ea5e9' : '#e0316b'}">${up ? '▲' : '▼'}${Math.abs(diffPct).toFixed(0)}%</span>`;
+        }
+      }
+      return `<td class="amount">${v ? fmt(v) : ''}${badge}</td>`;
     }).join('');
     return `<tr class="${trClass}">
       <td class="date-cell${isToday ? ' today' : ''}">${parseInt(mm)}/${parseInt(dd)}</td>
@@ -556,18 +570,6 @@ function render() {
 function getCurrentHourKey() {
   const hh = new Date().getHours();
   return hh < 12 ? `오전${hh}시` : (hh === 12 ? '오후12시' : `오후${hh-12}시`);
-}
-
-function getHourlyAverage(brand, hourKey, excludeDateStr) {
-  const data = getMergedData(brand);
-  const vals = [];
-  for (const d of Object.keys(data)) {
-    if (d === excludeDateStr) continue;
-    const v = data[d][hourKey];
-    if (v) vals.push(v);
-  }
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
 function scrollToCurrentHour() {
