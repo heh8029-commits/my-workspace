@@ -89,6 +89,14 @@ tr.today-row{background:#fffbe6}
 .sales-summary-pct{font-size:.66rem;font-weight:700;color:#0f9960;margin-left:4px}
 .sales-summary-pct .pct-label{display:none}
 @media (max-width:900px){.sales-summary{grid-template-columns:repeat(3,1fr)}}
+
+.sync-area{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:4px}
+.sync-time{font-size:.7rem;color:#aaa}
+.sync-btn{display:flex;align-items:center;gap:5px;background:#f4f4f6;border:1px solid #e0e0e0;border-radius:20px;padding:6px 14px;font-size:.78rem;font-weight:600;color:#555;cursor:pointer;transition:all .15s}
+.sync-btn:hover{background:#ececef}
+.sync-btn .icon{display:inline-block;transition:transform .5s}
+.sync-btn.spinning .icon{animation:sync-spin .6s linear infinite}
+@keyframes sync-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -97,6 +105,10 @@ tr.today-row{background:#fffbe6}
   <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">그로스매출 미리토퍼</div>
   <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">그로스매출 몽몽토퍼</div>
   <div class="view-tab" onclick="setView('sales')">매출</div>
+  <div class="sync-area">
+    <span class="sync-time" id="sync-time"></span>
+    <div class="sync-btn" id="sync-btn" onclick="manualSync()"><span class="icon">⟳</span>새로고침</div>
+  </div>
 </div>
 
 <div id="main-view">
@@ -242,8 +254,18 @@ async function loadAutoData() {
     salesData['미리토퍼'] = sd['미리토퍼'] || [];
     salesData['몽몽토퍼'] = sd['몽몽토퍼'] || [];
   } catch(e) {}
+  const t = document.getElementById('sync-time');
+  if (t) t.textContent = '갱신: ' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   if (currentView === 'sales') renderSales();
   else render();
+}
+
+function manualSync() {
+  const btn = document.getElementById('sync-btn');
+  btn.classList.add('spinning');
+  loadAutoData().finally(() => {
+    setTimeout(() => btn.classList.remove('spinning'), 400);
+  });
 }
 
 function setView(v) {
