@@ -75,19 +75,19 @@ tr.today-row{background:#fffbe6}
 .sales-table tr.today-sales{background:#fffbe6}
 .sales-table tr.today-sales td.date-col{color:#e8234a}
 .sales-updated{font-size:.72rem;color:#bbb;padding:8px 16px}
-.sales-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 16px 16px}
-.sales-summary-card{border-radius:14px;padding:14px 18px}
+.sales-summary{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;padding:0 16px 12px}
+.sales-summary-card{border-radius:10px;padding:8px 10px;line-height:1.3}
 .sales-summary-card.rev{background:#eafaf1}
 .sales-summary-card.cost{background:#fdeef2}
 .sales-summary-card.grand{background:#eeecfb}
-.sales-summary-label{font-size:.75rem;color:#888;margin-bottom:6px}
-.sales-summary-val{font-size:1.3rem;font-weight:800}
+.sales-summary-label{font-size:.66rem;color:#999;white-space:nowrap}
+.sales-summary-val{font-size:.92rem;font-weight:800;white-space:nowrap}
 .sales-summary-val.rev{color:#0f9960}
 .sales-summary-val.cost{color:#e0316b}
 .sales-summary-val.grand{color:#6c4fd1}
-.sales-summary-pct{font-size:.78rem;font-weight:700;margin-top:4px}
-.sales-summary-pct .pct-label{color:#999;font-weight:500;margin-left:3px}
-@media (max-width:700px){.sales-summary{grid-template-columns:1fr 1fr}}
+.sales-summary-pct{font-size:.66rem;font-weight:700;color:#0f9960;margin-left:4px}
+.sales-summary-pct .pct-label{display:none}
+@media (max-width:900px){.sales-summary{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -293,13 +293,12 @@ function renderSalesSummary(date, m, ad) {
   const totalSales = cpTotal + naverSales;
   const totalAdCost = cpAdCost + naverSearchAd + naverAiAd;
 
-  const pctOf = v => totalSales ? `<div class="sales-summary-pct" style="color:#0f9960">${fmtPct(v / totalSales * 100)}<span class="pct-label">(전체매출)</span></div>` : '';
+  const pctOf = v => totalSales ? `<span class="sales-summary-pct">${fmtPct(v / totalSales * 100)}</span>` : '';
 
   const card = (label, val, cls, pctHtml) => `
     <div class="sales-summary-card ${cls}">
       <div class="sales-summary-label">${label}</div>
-      <div class="sales-summary-val ${cls}">${fmtNum(val)}</div>
-      ${pctHtml || ''}
+      <div class="sales-summary-val ${cls}">${fmtNum(val)}${pctHtml || ''}</div>
     </div>`;
 
   box.innerHTML = [
