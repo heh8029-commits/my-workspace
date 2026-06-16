@@ -75,6 +75,19 @@ tr.today-row{background:#fffbe6}
 .sales-table tr.today-sales{background:#fffbe6}
 .sales-table tr.today-sales td.date-col{color:#e8234a}
 .sales-updated{font-size:.72rem;color:#bbb;padding:8px 16px}
+.sales-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 16px 16px}
+.sales-summary-card{border-radius:14px;padding:14px 18px}
+.sales-summary-card.rev{background:#eafaf1}
+.sales-summary-card.cost{background:#fdeef2}
+.sales-summary-card.grand{background:#eeecfb}
+.sales-summary-label{font-size:.75rem;color:#888;margin-bottom:6px}
+.sales-summary-val{font-size:1.3rem;font-weight:800}
+.sales-summary-val.rev{color:#0f9960}
+.sales-summary-val.cost{color:#e0316b}
+.sales-summary-val.grand{color:#6c4fd1}
+.sales-summary-pct{font-size:.78rem;font-weight:700;margin-top:4px}
+.sales-summary-pct .pct-label{color:#999;font-weight:500;margin-left:3px}
+@media (max-width:700px){.sales-summary{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -98,6 +111,7 @@ tr.today-row{background:#fffbe6}
 
 <div id="sales-view">
   <div class="sales-updated" id="sales-updated"></div>
+  <div class="sales-summary" id="sales-summary"></div>
   <div class="sales-table-wrap">
     <table class="sales-table">
       <thead>
@@ -262,6 +276,45 @@ function updateAdField(date, field, value) {
   renderSales();
 }
 
+function renderSalesSummary(date, m, ad) {
+  const box = document.getElementById('sales-summary');
+  if (!date) { box.innerHTML = ''; return; }
+
+  const fmtNum = n => Number(n || 0).toLocaleString('ko-KR') + '원';
+  const fmtPct = n => n.toFixed(0) + '%';
+
+  const rg = m.rocket_growth || 0;
+  const sd = m.seller_delivery || 0;
+  const cpTotal = m.total || (rg + sd);
+  const cpAdCost = ad.cpAdCost || 0;
+  const naverSales = ad.naverSales || 0;
+  const naverSearchAd = ad.naverSearchAd || 0;
+  const naverAiAd = ad.naverAiAd || 0;
+  const totalSales = cpTotal + naverSales;
+  const totalAdCost = cpAdCost + naverSearchAd + naverAiAd;
+
+  const pctOf = v => totalSales ? `<div class="sales-summary-pct" style="color:#0f9960">${fmtPct(v / totalSales * 100)}<span class="pct-label">(전체매출)</span></div>` : '';
+
+  const card = (label, val, cls, pctHtml) => `
+    <div class="sales-summary-card ${cls}">
+      <div class="sales-summary-label">${label}</div>
+      <div class="sales-summary-val ${cls}">${fmtNum(val)}</div>
+      ${pctHtml || ''}
+    </div>`;
+
+  box.innerHTML = [
+    card('쿠팡 그로스', rg, 'rev', pctOf(rg)),
+    card('쿠팡 판매자배송', sd, 'rev', pctOf(sd)),
+    card('쿠팡 총매출', cpTotal, 'rev', pctOf(cpTotal)),
+    card('쿠팡 광고비', cpAdCost, 'cost', ''),
+    card('네이버 총매출', naverSales, 'rev', pctOf(naverSales)),
+    card('네이버 검색광고', naverSearchAd, 'cost', ''),
+    card('네이버 AI광고', naverAiAd, 'cost', ''),
+    card('전체 총광고비', totalAdCost, 'cost', ''),
+    card('전체 총매출', totalSales, 'grand', ''),
+  ].join('');
+}
+
 function renderSales() {
   document.getElementById('sales-updated').textContent = salesUpdated
     ? `최종 수집: ${salesUpdated} · 매일 오후 8시 10분에 업데이트됩니다 (쿠팡 로켓그로스/판매자배송만 자동 수집, 나머지는 직접 입력)`
@@ -274,9 +327,11 @@ function renderSales() {
 
   const allDates = Object.keys(miriMap).sort().reverse();
 
+  renderSalesSummary(allDates[0], miriMap[allDates[0]] || {}, adData[allDates[0]] || {});
+
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
-      '<tr><td colspan="13" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 9시 40분에 수집됩니다</small></td></tr>';
+      '<tr><td colspan="13" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 8시 10분에 수집됩니다</small></td></tr>';
     return;
   }
 
