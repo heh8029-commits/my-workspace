@@ -69,6 +69,7 @@ tr.today-row{background:#fffbe6}
 .sales-table td{padding:8px 14px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:right;color:#444;white-space:nowrap;font-size:.82rem}
 .sales-table td:last-child{border-right:none}
 .sales-table td.date-col{text-align:center;font-weight:700;color:#333;min-width:70px}
+.sales-table td.date-col.weekend{color:#e8234a}
 .sales-table td.total-col{font-weight:700;color:#111}
 .sales-table td.rg-col{color:#1a5eff}
 .sales-table td.sd-col{color:#888}
@@ -362,8 +363,12 @@ function renderSales() {
     const totalAdCost = cpAdCost + naverAdTotal;
     const totalAdPct = totalSales ? (totalAdCost / totalSales * 100) : 0;
 
+    const [mm, dd] = date.split('/');
+    const dow = dayOfWeek(`2026-${mm}-${dd}`);
+    const isWeekend = dow === '토' || dow === '일';
+
     return `<tr class="${isToday ? 'today-sales' : ''}">
-      <td class="date-col">${date}</td>
+      <td class="date-col${isWeekend ? ' weekend' : ''}">${date} (${dow})</td>
       <td class="rg-col">${fmtNum(rg)}</td>
       <td class="sd-col">${fmtNum(sd)}</td>
       <td class="total-col">${fmtNum(cpTotal)}</td>
