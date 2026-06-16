@@ -501,7 +501,7 @@ function render() {
   if (hourAvg && todayAmt) {
     const diffPct = (todayAmt - hourAvg) / hourAvg * 100;
     const up = diffPct >= 0;
-    compareHtml = `<span style="font-size:.8rem;font-weight:700;margin-left:8px;color:${up ? '#0f9960' : '#e0316b'}">${up ? '▲' : '▼'} 평균대비 ${Math.abs(diffPct).toFixed(0)}%</span>`;
+    compareHtml = `<span style="font-size:.8rem;font-weight:700;margin-left:8px;color:${up ? '#0ea5e9' : '#e0316b'}">${up ? '▲' : '▼'} 평균대비 ${Math.abs(diffPct).toFixed(0)}%</span>`;
   }
   document.getElementById('summary').innerHTML = `
     <div class="summary-card">
