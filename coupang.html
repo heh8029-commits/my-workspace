@@ -174,7 +174,7 @@ tr.today-row{background:#fffbe6}
           <th>시간</th>
           <th>계정</th>
           <th>상태</th>
-          <th>매출금액 / 실패원인</th>
+          <th>실패 사유</th>
         </tr>
       </thead>
       <tbody id="log-body"></tbody>
@@ -297,18 +297,14 @@ async function loadAutoData() {
 }
 
 function renderLog() {
-  const rows = [...runLog].reverse().map(e => {
-    const isOk = e.status === 'ok';
-    const detail = isOk ? `${Number(e.amount || 0).toLocaleString('ko-KR')}원` : (e.reason || '-');
-    return `<tr>
+  const rows = [...runLog].reverse().map(e => `<tr>
       <td class="date-col">${e.time}</td>
       <td>${e.account}</td>
-      <td class="status-${e.status}">${isOk ? '성공' : '실패'}</td>
-      <td style="text-align:left">${detail}</td>
-    </tr>`;
-  }).join('');
+      <td class="status-fail">실패</td>
+      <td style="text-align:left">${e.reason || '-'}</td>
+    </tr>`).join('');
   document.getElementById('log-body').innerHTML = rows ||
-    '<tr><td colspan="4" style="text-align:center;padding:40px;color:#ccc">로그가 없습니다</td></tr>';
+    '<tr><td colspan="4" style="text-align:center;padding:40px;color:#ccc">실패 기록이 없습니다 (전부 정상)</td></tr>';
 }
 
 function manualSync() {
