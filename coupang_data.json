@@ -1,28 +1,98 @@
 {
-  "last_updated": "2026-06-16 21:45",
+  "last_updated": "2026-06-16 22:20",
   "sales_data": {
     "last_updated": "2026-06-16",
     "미리토퍼": [
-      {"date": "06/02", "rocket_growth": 1451430, "seller_delivery": 404860, "total": 1856290},
-      {"date": "06/03", "rocket_growth": 1253510, "seller_delivery": 294000, "total": 1547510},
-      {"date": "06/04", "rocket_growth": 1846870, "seller_delivery": 397900, "total": 2244770},
-      {"date": "06/05", "rocket_growth": 1532960, "seller_delivery": 245160, "total": 1778120},
-      {"date": "06/06", "rocket_growth": 791890, "seller_delivery": 182400, "total": 974290},
-      {"date": "06/07", "rocket_growth": 763730, "seller_delivery": 289400, "total": 1053130},
-      {"date": "06/08", "rocket_growth": 1220150, "seller_delivery": 419920, "total": 1640070},
-      {"date": "06/09", "rocket_growth": 1355820, "seller_delivery": 361100, "total": 1716920},
-      {"date": "06/10", "rocket_growth": 1414600, "seller_delivery": 349500, "total": 1764100},
-      {"date": "06/11", "rocket_growth": 1820030, "seller_delivery": 340900, "total": 2160930},
-      {"date": "06/12", "rocket_growth": 1837600, "seller_delivery": 260400, "total": 2098000},
-      {"date": "06/13", "rocket_growth": 885750, "seller_delivery": 271000, "total": 1156750},
-      {"date": "06/14", "rocket_growth": 735330, "seller_delivery": 184800, "total": 920130},
-      {"date": "06/15", "rocket_growth": 992930, "seller_delivery": 368260, "total": 1361190}
+      {
+        "date": "06/02",
+        "rocket_growth": 1451430,
+        "seller_delivery": 404860,
+        "total": 1856290
+      },
+      {
+        "date": "06/03",
+        "rocket_growth": 1253510,
+        "seller_delivery": 294000,
+        "total": 1547510
+      },
+      {
+        "date": "06/04",
+        "rocket_growth": 1846870,
+        "seller_delivery": 397900,
+        "total": 2244770
+      },
+      {
+        "date": "06/05",
+        "rocket_growth": 1532960,
+        "seller_delivery": 245160,
+        "total": 1778120
+      },
+      {
+        "date": "06/06",
+        "rocket_growth": 791890,
+        "seller_delivery": 182400,
+        "total": 974290
+      },
+      {
+        "date": "06/07",
+        "rocket_growth": 763730,
+        "seller_delivery": 289400,
+        "total": 1053130
+      },
+      {
+        "date": "06/08",
+        "rocket_growth": 1220150,
+        "seller_delivery": 419920,
+        "total": 1640070
+      },
+      {
+        "date": "06/09",
+        "rocket_growth": 1355820,
+        "seller_delivery": 361100,
+        "total": 1716920
+      },
+      {
+        "date": "06/10",
+        "rocket_growth": 1414600,
+        "seller_delivery": 349500,
+        "total": 1764100
+      },
+      {
+        "date": "06/11",
+        "rocket_growth": 1820030,
+        "seller_delivery": 340900,
+        "total": 2160930
+      },
+      {
+        "date": "06/12",
+        "rocket_growth": 1837600,
+        "seller_delivery": 260400,
+        "total": 2098000
+      },
+      {
+        "date": "06/13",
+        "rocket_growth": 885750,
+        "seller_delivery": 271000,
+        "total": 1156750
+      },
+      {
+        "date": "06/14",
+        "rocket_growth": 735330,
+        "seller_delivery": 184800,
+        "total": 920130
+      },
+      {
+        "date": "06/15",
+        "rocket_growth": 992930,
+        "seller_delivery": 368260,
+        "total": 1361190
+      }
     ],
     "몽몽토퍼": []
   },
   "accounts": {
     "미리토퍼": {
-      "current_amount": 725400,
+      "current_amount": 912290,
       "history": [
         {
           "time": "2026-06-15 12:46",
@@ -107,6 +177,10 @@
         {
           "time": "2026-06-16 17:40",
           "amount": 725400
+        },
+        {
+          "time": "2026-06-16 22:20",
+          "amount": 912290
         }
       ]
     },
