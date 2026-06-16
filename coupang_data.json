@@ -1,23 +1,98 @@
 {
-  "last_updated": "2026-06-16 08:40",
+  "last_updated": "2026-06-16 08:55",
   "sales_data": {
     "last_updated": "2026-06-16",
     "미리토퍼": [
-      {"date": "06/02", "rocket_growth": 1451430, "seller_delivery": 404860, "total": 1856290},
-      {"date": "06/03", "rocket_growth": 1253510, "seller_delivery": 294000, "total": 1547510},
-      {"date": "06/04", "rocket_growth": 1846870, "seller_delivery": 397900, "total": 2244770},
-      {"date": "06/05", "rocket_growth": 1532960, "seller_delivery": 245160, "total": 1778120},
-      {"date": "06/06", "rocket_growth": 791890, "seller_delivery": 182400, "total": 974290},
-      {"date": "06/07", "rocket_growth": 763730, "seller_delivery": 289400, "total": 1053130},
-      {"date": "06/08", "rocket_growth": 1220150, "seller_delivery": 419920, "total": 1640070},
-      {"date": "06/09", "rocket_growth": 1355820, "seller_delivery": 361100, "total": 1716920},
-      {"date": "06/10", "rocket_growth": 1414600, "seller_delivery": 349500, "total": 1764100},
-      {"date": "06/11", "rocket_growth": 1820030, "seller_delivery": 340900, "total": 2160930},
-      {"date": "06/12", "rocket_growth": 1837600, "seller_delivery": 260400, "total": 2098000},
-      {"date": "06/13", "rocket_growth": 885750, "seller_delivery": 271000, "total": 1156750},
-      {"date": "06/14", "rocket_growth": 735330, "seller_delivery": 184800, "total": 920130},
-      {"date": "06/15", "rocket_growth": 992930, "seller_delivery": 368260, "total": 1361190},
-      {"date": "06/16", "rocket_growth": 96000, "seller_delivery": 16500, "total": 112500}
+      {
+        "date": "06/02",
+        "rocket_growth": 1451430,
+        "seller_delivery": 404860,
+        "total": 1856290
+      },
+      {
+        "date": "06/03",
+        "rocket_growth": 1253510,
+        "seller_delivery": 294000,
+        "total": 1547510
+      },
+      {
+        "date": "06/04",
+        "rocket_growth": 1846870,
+        "seller_delivery": 397900,
+        "total": 2244770
+      },
+      {
+        "date": "06/05",
+        "rocket_growth": 1532960,
+        "seller_delivery": 245160,
+        "total": 1778120
+      },
+      {
+        "date": "06/06",
+        "rocket_growth": 791890,
+        "seller_delivery": 182400,
+        "total": 974290
+      },
+      {
+        "date": "06/07",
+        "rocket_growth": 763730,
+        "seller_delivery": 289400,
+        "total": 1053130
+      },
+      {
+        "date": "06/08",
+        "rocket_growth": 1220150,
+        "seller_delivery": 419920,
+        "total": 1640070
+      },
+      {
+        "date": "06/09",
+        "rocket_growth": 1355820,
+        "seller_delivery": 361100,
+        "total": 1716920
+      },
+      {
+        "date": "06/10",
+        "rocket_growth": 1414600,
+        "seller_delivery": 349500,
+        "total": 1764100
+      },
+      {
+        "date": "06/11",
+        "rocket_growth": 1820030,
+        "seller_delivery": 340900,
+        "total": 2160930
+      },
+      {
+        "date": "06/12",
+        "rocket_growth": 1837600,
+        "seller_delivery": 260400,
+        "total": 2098000
+      },
+      {
+        "date": "06/13",
+        "rocket_growth": 885750,
+        "seller_delivery": 271000,
+        "total": 1156750
+      },
+      {
+        "date": "06/14",
+        "rocket_growth": 735330,
+        "seller_delivery": 184800,
+        "total": 920130
+      },
+      {
+        "date": "06/15",
+        "rocket_growth": 992930,
+        "seller_delivery": 368260,
+        "total": 1361190
+      },
+      {
+        "date": "06/16",
+        "rocket_growth": 96000,
+        "seller_delivery": 16500,
+        "total": 112500
+      }
     ],
     "몽몽토퍼": []
   },
@@ -25,33 +100,99 @@
     "미리토퍼": {
       "current_amount": 96000,
       "history": [
-        {"time": "2026-06-15 12:46", "amount": 296480},
-        {"time": "2026-06-15 13:02", "amount": 307280},
-        {"time": "2026-06-15 14:18", "amount": 360980},
-        {"time": "2026-06-15 16:38", "amount": 559460},
-        {"time": "2026-06-15 19:28", "amount": 675360},
-        {"time": "2026-06-15 20:40", "amount": 734120},
-        {"time": "2026-06-15 21:40", "amount": 778420},
-        {"time": "2026-06-15 23:35", "amount": 941830},
-        {"time": "2026-06-16 00:10", "amount": 10800},
-        {"time": "2026-06-16 01:00", "amount": 10800},
-        {"time": "2026-06-16 03:40", "amount": 21600},
-        {"time": "2026-06-16 05:40", "amount": 43900},
-        {"time": "2026-06-16 06:40", "amount": 43200},
-        {"time": "2026-06-16 08:40", "amount": 96000}
+        {
+          "time": "2026-06-15 12:46",
+          "amount": 296480
+        },
+        {
+          "time": "2026-06-15 13:02",
+          "amount": 307280
+        },
+        {
+          "time": "2026-06-15 14:18",
+          "amount": 360980
+        },
+        {
+          "time": "2026-06-15 16:38",
+          "amount": 559460
+        },
+        {
+          "time": "2026-06-15 19:28",
+          "amount": 675360
+        },
+        {
+          "time": "2026-06-15 20:40",
+          "amount": 734120
+        },
+        {
+          "time": "2026-06-15 21:40",
+          "amount": 778420
+        },
+        {
+          "time": "2026-06-15 23:35",
+          "amount": 941830
+        },
+        {
+          "time": "2026-06-16 00:10",
+          "amount": 10800
+        },
+        {
+          "time": "2026-06-16 01:00",
+          "amount": 10800
+        },
+        {
+          "time": "2026-06-16 03:40",
+          "amount": 21600
+        },
+        {
+          "time": "2026-06-16 05:40",
+          "amount": 43900
+        },
+        {
+          "time": "2026-06-16 06:40",
+          "amount": 43200
+        },
+        {
+          "time": "2026-06-16 08:40",
+          "amount": 96000
+        }
       ]
     },
     "몽몽토퍼": {
       "current_amount": 10500,
       "history": [
-        {"time": "2026-06-15 12:18", "amount": 84000},
-        {"time": "2026-06-15 13:02", "amount": 84000},
-        {"time": "2026-06-15 14:10", "amount": 94500},
-        {"time": "2026-06-15 16:38", "amount": 134900},
-        {"time": "2026-06-15 19:40", "amount": 176900},
-        {"time": "2026-06-15 20:40", "amount": 187400},
-        {"time": "2026-06-15 21:56", "amount": 187400},
-        {"time": "2026-06-16 08:40", "amount": 10500}
+        {
+          "time": "2026-06-15 12:18",
+          "amount": 84000
+        },
+        {
+          "time": "2026-06-15 13:02",
+          "amount": 84000
+        },
+        {
+          "time": "2026-06-15 14:10",
+          "amount": 94500
+        },
+        {
+          "time": "2026-06-15 16:38",
+          "amount": 134900
+        },
+        {
+          "time": "2026-06-15 19:40",
+          "amount": 176900
+        },
+        {
+          "time": "2026-06-15 20:40",
+          "amount": 187400
+        },
+        {
+          "time": "2026-06-15 21:56",
+          "amount": 187400
+        },
+        {
+          "time": "2026-06-16 08:40",
+          "amount": 10500
+        }
       ]
     }
   }
