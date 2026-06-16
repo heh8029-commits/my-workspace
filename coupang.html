@@ -269,6 +269,11 @@ function saveAdData() {
   localStorage.setItem('coupangAdData', JSON.stringify(adData));
 }
 
+function formatInputCommas(el) {
+  const digits = el.value.replace(/[^\d]/g, '');
+  el.value = digits ? Number(digits).toLocaleString('ko-KR') : '';
+}
+
 function updateAdField(date, field, value) {
   const n = Number(String(value).replace(/[^\d.-]/g, '')) || 0;
   if (!adData[date]) adData[date] = {};
@@ -338,8 +343,9 @@ function renderSales() {
   const fmtNum = n => n ? Number(n).toLocaleString('ko-KR') : '-';
   const fmtPct = n => n ? n.toFixed(1) + '%' : '-';
   const inputCell = (date, field, val) =>
-    `<td class="rg-col"><input type="number" value="${val || ''}" placeholder="0"
-      style="width:72px;text-align:right;border:1px solid #ddd;border-radius:4px;padding:3px 5px;font-size:.8rem"
+    `<td class="rg-col"><input type="text" inputmode="numeric" value="${val ? Number(val).toLocaleString('ko-KR') : ''}" placeholder="0"
+      style="width:84px;text-align:right;border:1px solid #ddd;border-radius:4px;padding:3px 5px;font-size:.8rem"
+      oninput="formatInputCommas(this)"
       onchange="updateAdField('${date}','${field}',this.value)"></td>`;
 
   const rows = allDates.map(date => {
