@@ -103,16 +103,23 @@ tr.today-row{background:#fffbe6}
       <thead>
         <tr>
           <th rowspan="2" style="vertical-align:middle">날짜</th>
-          <th colspan="3" class="group-label">미리토퍼</th>
-          <th colspan="3" class="group-label group-label-mong">몽몽토퍼</th>
+          <th colspan="5" class="group-label">쿠팡</th>
+          <th colspan="4" class="group-label group-label-mong">네이버</th>
+          <th colspan="3" class="group-label" style="background:#fff7e0;color:#b8860b">전체</th>
         </tr>
         <tr>
           <th class="group-miri">로켓그로스</th>
           <th class="group-miri">판매자배송</th>
           <th class="group-miri">합계</th>
-          <th class="group-mong">로켓그로스</th>
-          <th class="group-mong">판매자배송</th>
-          <th class="group-mong">합계</th>
+          <th class="group-miri">광고비</th>
+          <th class="group-miri">광고%</th>
+          <th class="group-mong">매출</th>
+          <th class="group-mong">검색광고</th>
+          <th class="group-mong">AI광고</th>
+          <th class="group-mong">광고%</th>
+          <th style="background:#fff7e0;color:#b8860b">총매출</th>
+          <th style="background:#fff7e0;color:#b8860b">총광고비</th>
+          <th style="background:#fff7e0;color:#b8860b">총광고%</th>
         </tr>
       </thead>
       <tbody id="sales-body"></tbody>
@@ -241,39 +248,78 @@ function setView(v) {
   }
 }
 
-function renderSales() {
-  document.getElementById('sales-updated').textContent = salesUpdated ? `최종 수집: ${salesUpdated}` : '';
+let adData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
 
-  // 날짜 집합 (미리토퍼 + 몽몽토퍼 합집합, 내림차순)
-  const todayStr = new Date().toISOString().slice(0, 10);
+function saveAdData() {
+  localStorage.setItem('coupangAdData', JSON.stringify(adData));
+}
+
+function updateAdField(date, field, value) {
+  const n = Number(String(value).replace(/[^\d.-]/g, '')) || 0;
+  if (!adData[date]) adData[date] = {};
+  adData[date][field] = n;
+  saveAdData();
+  renderSales();
+}
+
+function renderSales() {
+  document.getElementById('sales-updated').textContent = salesUpdated ? `최종 수집: ${salesUpdated} (쿠팡 로켓그로스/판매자배송만 자동 수집, 나머지는 직접 입력)` : '';
+
   const todayMD = `${String(new Date().getMonth()+1).padStart(2,'0')}/${String(new Date().getDate()).padStart(2,'0')}`;
 
   const miriMap = {};
   for (const row of (salesData['미리토퍼'] || [])) miriMap[row.date] = row;
-  const mongMap = {};
-  for (const row of (salesData['몽몽토퍼'] || [])) mongMap[row.date] = row;
 
-  const allDates = [...new Set([...Object.keys(miriMap), ...Object.keys(mongMap)])].sort().reverse();
+  const allDates = Object.keys(miriMap).sort().reverse();
 
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
-      '<tr><td colspan="7" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 9시 40분에 수집됩니다</small></td></tr>';
+      '<tr><td colspan="13" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 9시 40분에 수집됩니다</small></td></tr>';
     return;
   }
+
+  const fmtNum = n => n ? Number(n).toLocaleString('ko-KR') : '-';
+  const fmtPct = n => n ? n.toFixed(1) + '%' : '-';
+  const inputCell = (date, field, val) =>
+    `<td class="rg-col"><input type="number" value="${val || ''}" placeholder="0"
+      style="width:72px;text-align:right;border:1px solid #ddd;border-radius:4px;padding:3px 5px;font-size:.8rem"
+      onchange="updateAdField('${date}','${field}',this.value)"></td>`;
 
   const rows = allDates.map(date => {
     const isToday = date === todayMD;
     const m = miriMap[date] || {};
-    const g = mongMap[date] || {};
-    const fmtNum = n => n ? Number(n).toLocaleString('ko-KR') : '-';
+    const ad = adData[date] || {};
+
+    const rg = m.rocket_growth || 0;
+    const sd = m.seller_delivery || 0;
+    const cpTotal = m.total || (rg + sd);
+    const cpAdCost = ad.cpAdCost || 0;
+    const cpAdPct = cpTotal ? (cpAdCost / cpTotal * 100) : 0;
+
+    const naverSales = ad.naverSales || 0;
+    const naverSearchAd = ad.naverSearchAd || 0;
+    const naverAiAd = ad.naverAiAd || 0;
+    const naverAdTotal = naverSearchAd + naverAiAd;
+    const naverAdPct = naverSales ? (naverAdTotal / naverSales * 100) : 0;
+
+    const totalSales = cpTotal + naverSales;
+    const totalAdCost = cpAdCost + naverAdTotal;
+    const totalAdPct = totalSales ? (totalAdCost / totalSales * 100) : 0;
+
     return `<tr class="${isToday ? 'today-sales' : ''}">
       <td class="date-col">${date}</td>
-      <td class="rg-col">${fmtNum(m.rocket_growth)}</td>
-      <td class="sd-col">${fmtNum(m.seller_delivery)}</td>
-      <td class="total-col">${fmtNum(m.total)}</td>
-      <td class="rg-col">${fmtNum(g.rocket_growth)}</td>
-      <td class="sd-col">${fmtNum(g.seller_delivery)}</td>
-      <td class="total-col">${fmtNum(g.total)}</td>
+      <td class="rg-col">${fmtNum(rg)}</td>
+      <td class="sd-col">${fmtNum(sd)}</td>
+      <td class="total-col">${fmtNum(cpTotal)}</td>
+      ${inputCell(date, 'cpAdCost', cpAdCost)}
+      <td class="sd-col">${fmtPct(cpAdPct)}</td>
+      ${inputCell(date, 'naverSales', naverSales)}
+      ${inputCell(date, 'naverSearchAd', naverSearchAd)}
+      ${inputCell(date, 'naverAiAd', naverAiAd)}
+      <td class="sd-col">${fmtPct(naverAdPct)}</td>
+      <td class="total-col">${fmtNum(totalSales)}</td>
+      <td class="total-col">${fmtNum(totalAdCost)}</td>
+      <td class="sd-col">${fmtPct(totalAdPct)}</td>
     </tr>`;
   }).join('');
   document.getElementById('sales-body').innerHTML = rows;
