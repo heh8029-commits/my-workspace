@@ -23,16 +23,16 @@ body{font-family:'Apple SD Gothic Neo','맑은 고딕',sans-serif;background:#f4
 /* 그리드 */
 .grid-wrap{overflow-x:auto;padding:16px}
 table{border-collapse:collapse;white-space:nowrap;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:max-content;border:1px solid #e0e0e0}
-thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:8px 12px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;position:sticky;top:0}
+thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:8px 12px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;position:sticky;top:87px;z-index:6}
 thead th:last-child{border-right:none}
-thead th:first-child,thead th:nth-child(2){position:sticky;background:#f8f8f8;z-index:10}
+thead th:first-child,thead th:nth-child(2){position:sticky;background:#f8f8f8;z-index:15}
 thead th:first-child{left:0}
 thead th:nth-child(2){left:52px}
 tbody tr:hover{background:#fafafa}
 td{padding:7px 10px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:center;color:#444}
 td:last-child{border-right:none}
-td.date-cell{font-weight:600;color:#333;position:sticky;left:0;background:inherit;min-width:52px;font-size:.8rem;border-right:1px solid #d0d0d0}
-td.day-cell{position:sticky;left:52px;background:inherit;min-width:26px;font-size:.75rem;color:#aaa;padding:7px 6px;border-right:2px solid #d0d0d0}
+td.date-cell{font-weight:600;color:#333;position:sticky;left:0;background:inherit;min-width:52px;font-size:.8rem;border-right:1px solid #d0d0d0;z-index:3}
+td.day-cell{position:sticky;left:52px;background:inherit;min-width:26px;font-size:.75rem;color:#aaa;padding:7px 6px;border-right:2px solid #d0d0d0;z-index:3}
 td.amount{font-size:.85rem;color:#222;font-weight:700;min-width:82px}
 td.today{background:#fffbe6!important}
 td.today.date-cell{color:#e8234a;font-weight:800}
@@ -63,8 +63,9 @@ tr.today-row{background:#fffbe6}
 #main-view.hidden{display:none}
 .sales-table-wrap{overflow-x:auto}
 .sales-table{border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);width:100%;border:1px solid #e0e0e0}
-.sales-table thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:9px 14px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;white-space:nowrap}
+.sales-table thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:9px 14px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;white-space:nowrap;position:sticky;top:87px;z-index:6}
 .sales-table thead th:last-child{border-right:none}
+.sales-table thead th:first-child{position:sticky;left:0;z-index:15;background:#f8f8f8}
 .sales-table th.group-miri{color:#1a5eff;background:#f0f4ff}
 .sales-table th.group-mong{color:#e91e8c;background:#fff0f7}
 .sales-table th.group-label{background:#f0f4ff;color:#1a5eff;font-size:.8rem;text-align:center;border-bottom:1px solid #d0d0d0}
@@ -72,7 +73,7 @@ tr.today-row{background:#fffbe6}
 .sales-table tbody tr:hover{background:#fafafa}
 .sales-table td{padding:8px 14px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:right;color:#444;white-space:nowrap;font-size:.82rem}
 .sales-table td:last-child{border-right:none}
-.sales-table td.date-col{text-align:center;font-weight:700;color:#333;min-width:70px}
+.sales-table td.date-col{text-align:center;font-weight:700;color:#333;min-width:70px;position:sticky;left:0;background:inherit;z-index:3;border-right:2px solid #d0d0d0}
 .sales-table td.date-col.weekend{color:#e8234a}
 .sales-table td.total-col{font-weight:700;color:#111}
 .sales-table td.rg-col{color:#1a5eff}
