@@ -9,7 +9,7 @@
 body{font-family:'Apple SD Gothic Neo','맑은 고딕',sans-serif;background:#f4f4f6;color:#222;font-size:13px}
 
 /* 브랜드 탭 */
-.brand-bar{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 16px;display:flex;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.brand-bar{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 16px;display:flex;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow-x:auto}
 .brand-tab{padding:14px 24px;font-size:.9rem;font-weight:700;color:#aaa;border-bottom:3px solid transparent;cursor:pointer;transition:all .15s}
 .brand-tab.active[data-brand="미리토퍼"]{color:#1a5eff;border-color:#1a5eff}
 .brand-tab.active[data-brand="몽몽토퍼"]{color:#e91e8c;border-color:#e91e8c}
@@ -130,6 +130,8 @@ tr.today-row{background:#fffbe6}
 .ad-metric-val.highlight{color:#e8234a}
 .ad-updated{font-size:.7rem;color:#bbb;margin-top:6px}
 .ad-no-data{color:#ccc;font-size:.85rem;padding:20px;text-align:center}
+.back-btn{display:inline-flex;align-items:center;gap:6px;margin:20px 0 8px;padding:10px 22px;background:#f4f4f6;border:1px solid #e0e0e0;border-radius:20px;font-size:.82rem;font-weight:600;color:#555;cursor:pointer;transition:all .15s}
+.back-btn:hover{background:#e8e8eb}
 </style>
 </head>
 <body>
@@ -138,7 +140,7 @@ tr.today-row{background:#fffbe6}
   <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">그로스매출 미리토퍼</div>
   <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">그로스매출 몽몽토퍼</div>
   <div class="view-tab" data-view="sales" onclick="setView('sales')">매출</div>
-  <div class="view-tab" data-view="ad" onclick="setView('ad')">광고성과확인</div>
+  <div class="view-tab" data-view="ad" onclick="setView('ad')">광고성과</div>
   <div class="view-tab" data-view="log" onclick="setView('log')">로그</div>
   <div class="sync-area">
     <span class="sync-time" id="sync-time"></span>
@@ -193,6 +195,9 @@ tr.today-row{background:#fffbe6}
 
 <div id="ad-perf-view">
   <div id="ad-perf-content"></div>
+  <div style="padding:0 16px 24px">
+    <div class="back-btn" onclick="setView('main')">← 메뉴로 돌아가기</div>
+  </div>
 </div>
 
 <div id="log-view">
