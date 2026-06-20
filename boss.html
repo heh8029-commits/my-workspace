@@ -513,7 +513,19 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tv-trip-emoji-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:1.05rem;cursor:pointer;transition:all .12s}
 .tv-trip-emoji-btn.on{border-color:#C4714A;background:#FFF0EA;box-shadow:0 0 0 2px #F5B8A055}
 /* ── 초딩진우 일정 ── */
-.child-wrap{max-width:780px}
+.child-wrap{max-width:1120px}
+.child-pg-grid{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start}
+@media(max-width:820px){.child-pg-grid{grid-template-columns:1fr}}
+.child-notes-area{padding-top:44px}
+@media(max-width:820px){.child-notes-area{padding-top:0}}
+.child-notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.child-note-card{border-radius:12px;padding:12px 11px 8px;position:relative;min-height:80px;box-shadow:0 2px 8px rgba(0,0,0,.07);cursor:default}
+.child-note-card:hover .child-note-del{opacity:1}
+.child-note-del{position:absolute;top:5px;right:5px;width:17px;height:17px;border:none;border-radius:50%;background:rgba(0,0,0,.1);color:#555;font-size:.58rem;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.child-note-del:hover{background:rgba(0,0,0,.22);color:#E03A3A}
+.child-note-ta{width:100%;border:none;background:transparent;resize:none;font-size:.77rem;color:#333;font-family:inherit;line-height:1.6;min-height:64px;padding:0;box-sizing:border-box;outline:none}
+.child-note-add{width:100%;padding:12px 8px;border:1.5px dashed rgba(0,0,0,.13);border-radius:12px;background:none;color:#AAA;font-size:.8rem;cursor:pointer;grid-column:span 2;transition:all .13s}
+.child-note-add:hover{border-color:#C4714A;color:#C4714A;background:#FFF8F5}
 .child-tt-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #EDE8E1;margin-top:20px}
 .child-tt-grid{display:flex;min-width:480px}
 .child-tt-time-col{width:48px;flex-shrink:0}
@@ -1012,24 +1024,37 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="font-size:.9rem;font-weight:800;color:#555">🎒 초당진우 일정</div>
           <button onclick="fetchChildData().then(()=>renderChild())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
-        <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px">
-          <div style="display:flex;gap:8px">
-            <input class="bm-input" id="child-memo-input" placeholder="메모 입력... (URL 자동 링크, Ctrl+V 이미지 붙여넣기)" maxlength="500"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey)addChildMemo()"
-              onpaste="handleChildMemoPaste(event)">
-            <input type="file" id="child-file-inp" accept="image/*" style="display:none" onchange="handleChildMemoFile(this.files[0]);this.value=''">
-            <button class="bm-attach-btn" onclick="document.getElementById('child-file-inp').click()" title="이미지 첨부">📎</button>
-            <button class="bm-add-btn" onclick="addChildMemo()">➕ 추가</button>
+        <div class="child-pg-grid">
+          <!-- 왼쪽: 메모 + 시간표 -->
+          <div>
+            <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;gap:8px">
+                <input class="bm-input" id="child-memo-input" placeholder="메모 입력... (URL 자동 링크, Ctrl+V 이미지 붙여넣기)" maxlength="500"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey)addChildMemo()"
+                  onpaste="handleChildMemoPaste(event)">
+                <input type="file" id="child-file-inp" accept="image/*" style="display:none" onchange="handleChildMemoFile(this.files[0]);this.value=''">
+                <button class="bm-attach-btn" onclick="document.getElementById('child-file-inp').click()" title="이미지 첨부">📎</button>
+                <button class="bm-add-btn" onclick="addChildMemo()">➕ 추가</button>
+              </div>
+              <div id="child-form-status"></div>
+            </div>
+            <div class="bno-list" id="child-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
+            <div class="child-tt-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:.82rem;font-weight:800;color:#555">📋 주간 시간표</div>
+                <button id="child-tt-edit-btn" onclick="toggleChildTtEdit()" style="padding:4px 12px;border-radius:8px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">✏️ 편집</button>
+              </div>
+              <div style="overflow-x:auto"><div id="child-tt-wrap"></div></div>
+            </div>
           </div>
-          <div id="child-form-status"></div>
-        </div>
-        <div class="bno-list" id="child-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
-        <div class="child-tt-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div style="font-size:.82rem;font-weight:800;color:#555">📋 주간 시간표</div>
-            <button id="child-tt-edit-btn" onclick="toggleChildTtEdit()" style="padding:4px 12px;border-radius:8px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">✏️ 편집</button>
+          <!-- 오른쪽: 포스트잇 -->
+          <div class="child-notes-area">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:.82rem;font-weight:800;color:#555">📌 포스트잇</div>
+              <button onclick="addChildNote()" style="padding:4px 11px;border-radius:8px;background:#FFF3CC;border:1px solid #EED888;font-size:.72rem;font-weight:700;color:#AA8800;cursor:pointer">+ 추가</button>
+            </div>
+            <div class="child-notes-grid" id="child-notes-grid"></div>
           </div>
-          <div style="overflow-x:auto"><div id="child-tt-wrap"></div></div>
         </div>
       </div>
     </div>
@@ -2673,6 +2698,7 @@ async function fetchChildData(){
       const d=await r.json();
       if(d&&typeof d==='object'){
         _childData.memos=Array.isArray(d.memos)?d.memos:[];
+        _childData.notes=Array.isArray(d.notes)?d.notes:[];
         // 신규 포맷 (schedule 객체) 여부 확인
         if(d.timetable&&d.timetable.schedule&&typeof d.timetable.schedule==='object'){
           _childData.timetable=d.timetable;
@@ -2687,7 +2713,37 @@ function _childDebounceSave(){clearTimeout(_childSaveTimer);_childSaveTimer=setT
 async function _saveChildData(){
   await fetch(FB_CHILD,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_childData)});
 }
-function renderChild(){renderChildMemos();renderChildTt();}
+function renderChild(){renderChildMemos();renderChildTt();renderChildNotes();}
+
+// child 포스트잇
+const CHILD_NOTE_COLORS=['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
+function renderChildNotes(){
+  const el=document.getElementById('child-notes-grid');if(!el) return;
+  const notes=_childData.notes||[];
+  el.innerHTML=notes.map(n=>`
+    <div class="child-note-card" style="background:${n.color||CHILD_NOTE_COLORS[0]}">
+      <button class="child-note-del" onclick="deleteChildNote(${n.id})" title="삭제">✕</button>
+      <textarea class="child-note-ta" oninput="updateChildNote(${n.id},this.value)" onblur="_saveChildData()">${(n.text||'').replace(/</g,'&lt;')}</textarea>
+    </div>`).join('')
+  +`<button class="child-note-add" onclick="addChildNote()">+ 메모 추가</button>`;
+}
+function addChildNote(){
+  if(!_childData.notes) _childData.notes=[];
+  const colorIdx=_childData.notes.length%CHILD_NOTE_COLORS.length;
+  const newId=Math.max(0,...(_childData.notes.map(n=>n.id||0)))+1;
+  _childData.notes.push({id:newId,text:'',color:CHILD_NOTE_COLORS[colorIdx]});
+  _saveChildData();renderChildNotes();
+  setTimeout(()=>{const tas=document.querySelectorAll('.child-note-ta');if(tas.length)tas[tas.length-2].focus();},60);
+}
+function updateChildNote(id,text){
+  const n=(_childData.notes||[]).find(n=>n.id===id);
+  if(n){n.text=text;_childDebounceSave();}
+}
+function deleteChildNote(id){
+  if(!confirm('포스트잇을 삭제할까요?')) return;
+  _childData.notes=(_childData.notes||[]).filter(n=>n.id!==id);
+  _saveChildData();renderChildNotes();
+}
 
 // child 메모
 function _childSetFormStatus(html){const el=document.getElementById('child-form-status');if(el)el.innerHTML=html;}
