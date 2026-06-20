@@ -348,6 +348,22 @@ a{text-decoration:none;color:inherit}
 .alarm-row-edit-form{background:#FDF0EA;border-radius:13px;padding:12px 14px;border:1.5px solid #E8C4A8;display:flex;flex-direction:column;gap:9px}
 .alarm-edit-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .alarm-empty{text-align:center;padding:24px;color:#CCC;font-size:.8rem}
+.alarm-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:13px;border:1px solid #EDE8E1;background:#fff}
+.alarm-table{width:100%;border-collapse:collapse;font-size:.78rem;min-width:380px}
+.alarm-table th{padding:8px 3px;text-align:center;font-size:.68rem;font-weight:700;color:#AAA;border-bottom:2px solid #EDE8E1;white-space:nowrap;background:#FAFAF8}
+.alarm-table th.col-t{text-align:left;padding-left:12px;min-width:50px}
+.alarm-table th.col-n{text-align:left;min-width:60px}
+.alarm-table td{padding:9px 3px;text-align:center;border-bottom:1px solid #F5F0EB;vertical-align:middle}
+.alarm-table tbody tr:last-child td{border-bottom:none}
+.alarm-table td.col-t{text-align:left;padding-left:12px;font-size:.88rem;font-weight:800;color:#C4714A;white-space:nowrap}
+.alarm-table td.col-n{text-align:left;font-size:.78rem;color:#555;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px}
+.alarm-table td.col-d{width:26px}
+.alarm-dot{width:13px;height:13px;border-radius:50%;background:#C4714A;display:inline-block}
+.alarm-dot.daily{background:#D4895E}
+.alarm-table tr:hover td{background:#FDF8F5}
+.alarm-tbl-btns{display:flex;gap:3px;align-items:center;justify-content:flex-end;padding-right:6px;flex-wrap:nowrap}
+.alarm-edit-colspan td{padding:0}
+.alarm-edit-colspan .alarm-row-edit-form{margin:6px 8px;border-radius:10px}
 /* ── 브라우저 알림 팝업 ── */
 .alarm-notify{position:fixed;bottom:20px;right:20px;z-index:9999;background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 18px;min-width:230px;max-width:300px;border-left:4px solid #C4714A;transform:translateY(20px);opacity:0;transition:transform .3s ease,opacity .3s ease;pointer-events:none}
 .alarm-notify.show{transform:translateY(0);opacity:1;pointer-events:auto}
@@ -899,53 +915,73 @@ function addNewAlarm(){
   renderAlarmList();
 }
 
+const DAY_COLS = ['매일','월','화','수','목','금','토','일'];
+
 function renderAlarmList(){
   const el = document.getElementById('alarm-list-all');
   if(!el) return;
   if(!alarmData.alarms.length){
     el.innerHTML='<div class="alarm-empty">등록된 알람이 없어요</div>'; return;
   }
-  el.innerHTML = alarmData.alarms.map(a=>{
-    if(alarmEditId===a.id) return buildAlarmEditForm(a);
+  const tbody = alarmData.alarms.map(a=>{
+    if(alarmEditId===a.id) return _buildEditRow(a);
     const isDaily = a.days.includes('매일');
-    const tags = isDaily
-      ? '<span class="alarm-day-tag daily">매일</span>'
-      : a.days.map(d=>`<span class="alarm-day-tag">${d}</span>`).join('');
+    const dots = DAY_COLS.map(d=>{
+      const active = isDaily ? d==='매일' : a.days.includes(d);
+      return `<td class="col-d">${active?`<span class="alarm-dot${d==='매일'?' daily':''}"></span>`:''}</td>`;
+    }).join('');
     return `
-    <div class="alarm-row">
-      <div class="alarm-row-left">
-        <div class="alarm-row-meta">
-          <span class="alarm-row-time">${a.time}</span>
-          <span class="alarm-row-lbl">${a.label}</span>
+    <tr>
+      <td class="col-t">${a.time}</td>
+      <td class="col-n" title="${a.label}">${a.label}</td>
+      ${dots}
+      <td>
+        <div class="alarm-tbl-btns">
+          <label class="alarm-toggle">
+            <input type="checkbox" ${a.on?'checked':''} onchange="toggleAlarmOn(${a.id},this.checked)">
+            <span class="alarm-toggle-sl"></span>
+          </label>
+          <button class="alarm-btn-edit" onclick="startAlarmEdit(${a.id})">수정</button>
+          <button class="alarm-row-del"  onclick="delAlarm(${a.id})">삭제</button>
         </div>
-        <div class="alarm-day-tags">${tags}</div>
-      </div>
-      <label class="alarm-toggle">
-        <input type="checkbox" ${a.on?'checked':''} onchange="toggleAlarmOn(${a.id},this.checked)">
-        <span class="alarm-toggle-sl"></span>
-      </label>
-      <button class="alarm-btn-edit" onclick="startAlarmEdit(${a.id})">수정</button>
-      <button class="alarm-row-del"  onclick="delAlarm(${a.id})">삭제</button>
-    </div>`;
+      </td>
+    </tr>`;
   }).join('');
+
+  el.innerHTML = `
+  <div class="alarm-tbl-wrap">
+    <table class="alarm-table">
+      <thead><tr>
+        <th class="col-t">시간</th>
+        <th class="col-n">이름</th>
+        <th>매일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th>
+        <th></th>
+      </tr></thead>
+      <tbody>${tbody}</tbody>
+    </table>
+  </div>`;
 }
 
-function buildAlarmEditForm(a){
-  const dayBtns = ['매일','월','화','수','목','금','토','일'].map(d=>
+function _buildEditRow(a){
+  const dayBtns = DAY_COLS.map(d=>
     `<span class="day-check-lbl${a.days.includes(d)?' checked':''}" onclick="toggleEditDay(this,'${d}')">${d}</span>`
   ).join('');
   return `
-  <div class="alarm-row-edit-form">
-    <div class="alarm-edit-top">
-      <input type="time" class="alarm-time-input" id="ea-time" value="${a.time}">
-      <input type="text" class="alarm-label-input" id="ea-label" value="${a.label}" maxlength="30">
-    </div>
-    <div class="alarm-day-checks" id="ea-days">${dayBtns}</div>
-    <div class="inline-btns">
-      <button class="ibtn ibtn-cancel" onclick="cancelAlarmEdit()">취소</button>
-      <button class="ibtn ibtn-save"   onclick="saveAlarmEdit(${a.id})">저장</button>
-    </div>
-  </div>`;
+  <tr class="alarm-edit-colspan">
+    <td colspan="11">
+      <div class="alarm-row-edit-form">
+        <div class="alarm-edit-top">
+          <input type="time" class="alarm-time-input" id="ea-time" value="${a.time}">
+          <input type="text" class="alarm-label-input" id="ea-label" value="${a.label}" maxlength="30">
+        </div>
+        <div class="alarm-day-checks" id="ea-days">${dayBtns}</div>
+        <div class="inline-btns">
+          <button class="ibtn ibtn-cancel" onclick="cancelAlarmEdit()">취소</button>
+          <button class="ibtn ibtn-save"   onclick="saveAlarmEdit(${a.id})">저장</button>
+        </div>
+      </div>
+    </td>
+  </tr>`;
 }
 
 function startAlarmEdit(id){
