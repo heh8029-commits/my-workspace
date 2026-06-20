@@ -465,6 +465,50 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-calc-pct{width:36px;font-size:.71rem;color:#E03A3A;font-weight:700;text-align:right;flex-shrink:0}
 .pnl-calc-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;font-size:.68rem;cursor:pointer;color:#D0D0D0;flex-shrink:0;transition:all .12s;padding:0}
 .pnl-calc-del:hover{background:#FFE8E8;color:#E03A3A}
+/* ── 월별지출 ── */
+.exp-month-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;border:1px solid #EDE8E1;padding:11px 16px;margin-bottom:12px}
+.exp-month-btn{width:30px;height:30px;border-radius:50%;border:none;background:#F5F0EB;color:#C4714A;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .13s;line-height:1}
+.exp-month-btn:hover{background:#EDE5DA}
+.exp-month-label{font-size:.95rem;font-weight:800;color:#333}
+.exp-summary-bar{background:linear-gradient(135deg,#FFF5EF,#FAF7F4);border:1.5px solid #EDE8E1;border-radius:12px;padding:12px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.exp-summary-total{font-size:1.2rem;font-weight:800;color:#C85050}
+.exp-summary-count{font-size:.73rem;color:#AAA;margin-top:2px}
+.exp-cat-filter{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.exp-cat-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.74rem;font-weight:700;color:#888;cursor:pointer;transition:all .12s}
+.exp-cat-btn:hover{border-color:#C4714A;color:#C4714A}
+.exp-cat-btn.on{background:#C4714A;color:#fff;border-color:#C4714A}
+.exp-add-card{background:#fff;border-radius:13px;border:1px solid #EDE8E1;padding:13px 14px;margin-bottom:13px}
+.exp-add-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.exp-inp{padding:7px 9px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:#fff}
+.exp-inp:focus{border-color:#C4714A}
+.exp-inp-day{width:60px;text-align:center}
+.exp-inp-name{flex:2;min-width:90px}
+.exp-inp-amt{width:105px;text-align:right}
+.exp-inp-note{flex:1;min-width:70px}
+.exp-cat-sel{padding:7px 9px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:#fff;cursor:pointer}
+.exp-cat-sel:focus{border-color:#C4714A}
+.exp-add-submit{padding:7px 15px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.exp-add-submit:hover{background:#B46040}
+.exp-list{display:flex;flex-direction:column;gap:4px}
+.exp-row{display:flex;align-items:center;gap:7px;background:#fff;border-radius:10px;padding:9px 12px;border:1px solid #EDE8E1;transition:background .12s}
+.exp-row:hover{background:#FDF5F1}
+.exp-row-day{width:28px;font-size:.75rem;font-weight:800;color:#AAA;flex-shrink:0;text-align:center}
+.exp-row-name{flex:1;font-size:.84rem;color:#333;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-row-cat{padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;flex-shrink:0}
+.exp-row-note{font-size:.71rem;color:#BBB;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.exp-row-amt{font-size:.88rem;font-weight:800;color:#333;flex-shrink:0;white-space:nowrap}
+.exp-row-actions{display:flex;gap:2px;flex-shrink:0}
+.exp-row-btn{width:24px;height:24px;border-radius:6px;border:none;background:transparent;font-size:.72rem;cursor:pointer;color:#CCC;transition:all .12s;padding:0}
+.exp-row-btn:hover{background:#F0EBE5;color:#C4714A}
+.exp-row-btn.del:hover{background:#FFE8E8;color:#E03A3A}
+.exp-empty-msg{text-align:center;padding:28px;color:#CCC;font-size:.82rem}
+.exp-cat-식비{background:#FFF0E8;color:#C4714A}
+.exp-cat-교통{background:#E8EEFF;color:#4466CC}
+.exp-cat-생활{background:#EDFFF4;color:#2E9B5E}
+.exp-cat-의료{background:#FFE8F0;color:#CC4466}
+.exp-cat-교육{background:#F2E8FF;color:#7744CC}
+.exp-cat-여가{background:#FFFCE8;color:#AA8800}
+.exp-cat-기타{background:#F0F0F0;color:#888}
 </style>
 </head>
 <body>
@@ -556,6 +600,22 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <button onclick="refreshAlarms()" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #E8C4A8;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
         <div id="alarm-list-all"><div class="alarm-empty">불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <!-- 월별지출 페이지 -->
+    <div class="page" id="page-expense">
+      <div style="max-width:760px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">💳 월별지출</div>
+          <button onclick="fetchExpenses().then(()=>renderExpenses())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div class="exp-month-nav">
+          <button class="exp-month-btn" onclick="expPrevMonth()">‹</button>
+          <div class="exp-month-label" id="exp-month-label">-</div>
+          <button class="exp-month-btn" onclick="expNextMonth()">›</button>
+        </div>
+        <div id="exp-cont"><div class="exp-empty-msg">불러오는 중...</div></div>
       </div>
     </div>
 
@@ -793,6 +853,9 @@ function setSub(id, label){
     showPage('iframe');
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
+  } else if(id==='expense'){
+    showPage('expense');
+    fetchExpenses().then(()=>renderExpenses());
   } else if(id==='profit'){
     showPage('profit');
     fetchPnlMemos().then(()=>renderPnlMemos());
@@ -1426,6 +1489,155 @@ function setMode(m){
   document.getElementById('btn-mob').classList.toggle('on',m==='mob');
 }
 
+// ── 월별지출 ─────────────────────────────────────────────────
+const FB_EXPENSE = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_expenses.json';
+const EXP_CATS = ['식비','교통','생활','의료','교육','여가','기타'];
+let expItems = [];
+let expYearMonth = new Date().toISOString().slice(0,7);
+let expCatFilter = '전체';
+let expEditId = null;
+
+async function fetchExpenses(){
+  try{
+    const r = await fetch(FB_EXPENSE + '?t=' + Date.now());
+    if(r.ok){ const d = await r.json(); expItems = (d && Array.isArray(d.items)) ? d.items : []; }
+  }catch(e){ console.log('지출 fetch 실패',e); }
+}
+
+async function saveExpenses(){
+  try{
+    await fetch(FB_EXPENSE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:expItems})});
+  }catch(e){ console.log('지출 저장 실패',e); }
+}
+
+function _updateExpMonthLabel(){
+  const el = document.getElementById('exp-month-label');
+  if(!el) return;
+  const [y,m] = expYearMonth.split('-');
+  el.textContent = `${y}년 ${parseInt(m)}월`;
+}
+
+function renderExpenses(){
+  _updateExpMonthLabel();
+  const cont = document.getElementById('exp-cont');
+  if(!cont) return;
+
+  const monthAll = expItems.filter(e=>e.yearmonth===expYearMonth);
+  const total = monthAll.reduce((s,e)=>s+(+e.amount||0),0);
+  let filtered = expCatFilter==='전체' ? [...monthAll] : monthAll.filter(e=>e.cat===expCatFilter);
+  filtered.sort((a,b)=>(+a.day||0)-(+b.day||0));
+
+  const summaryHtml = `
+  <div class="exp-summary-bar">
+    <div>
+      <div style="font-size:.71rem;color:#AAA;margin-bottom:2px">이번달 총 지출</div>
+      <div class="exp-summary-total">${_fmtAmt(total)}원</div>
+    </div>
+    <div class="exp-summary-count">${monthAll.length}건</div>
+  </div>`;
+
+  const catHtml = `
+  <div class="exp-cat-filter">
+    ${['전체',...EXP_CATS].map(c=>`<button class="exp-cat-btn${expCatFilter===c?' on':''}" onclick="setExpCat('${c}')">${c}</button>`).join('')}
+  </div>`;
+
+  const formHtml = `
+  <div class="exp-add-card">
+    <div class="exp-add-row">
+      <input class="exp-inp exp-inp-day" id="exp-day" type="number" placeholder="날짜" min="1" max="31">
+      <input class="exp-inp exp-inp-name" id="exp-name" type="text" placeholder="항목명" onkeydown="if(event.key==='Enter')submitExpense()">
+      <input class="exp-inp exp-inp-amt" id="exp-amt" type="text" placeholder="금액" oninput="fmtExpAmt(this)" onkeydown="if(event.key==='Enter')submitExpense()">
+      <select class="exp-cat-sel" id="exp-cat">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+      <input class="exp-inp exp-inp-note" id="exp-note" type="text" placeholder="메모" onkeydown="if(event.key==='Enter')submitExpense()">
+      <button class="exp-add-submit" id="exp-submit-btn" onclick="submitExpense()">➕ 추가</button>
+    </div>
+    <div id="exp-edit-bar" style="display:none;font-size:.72rem;color:#C4714A;margin-top:8px">
+      ✏️ 편집 중
+      <button onclick="cancelExpEdit()" style="margin-left:8px;border:none;background:#F5F0EB;color:#888;border-radius:6px;padding:2px 9px;font-size:.71rem;cursor:pointer">취소</button>
+    </div>
+  </div>`;
+
+  const listHtml = filtered.length ? filtered.map(e=>`
+  <div class="exp-row">
+    <span class="exp-row-day">${e.day}</span>
+    <span class="exp-row-name">${e.name}</span>
+    <span class="exp-row-cat exp-cat-${e.cat||'기타'}">${e.cat||'기타'}</span>
+    <span class="exp-row-note">${e.note||''}</span>
+    <span class="exp-row-amt">${_fmtAmt(+e.amount||0)}원</span>
+    <div class="exp-row-actions">
+      <button class="exp-row-btn" onclick="startExpEdit(${e.id})">✏️</button>
+      <button class="exp-row-btn del" onclick="delExpense(${e.id})">🗑️</button>
+    </div>
+  </div>`).join('') : `<div class="exp-empty-msg">지출 내역이 없어요</div>`;
+
+  cont.innerHTML = summaryHtml + catHtml + formHtml + `<div class="exp-list">${listHtml}</div>`;
+
+  if(expEditId !== null){
+    const m = expItems.find(e=>e.id===expEditId);
+    if(m){
+      document.getElementById('exp-day').value = m.day;
+      document.getElementById('exp-name').value = m.name;
+      document.getElementById('exp-amt').value = _fmtAmt(+m.amount||0);
+      document.getElementById('exp-cat').value = m.cat||'기타';
+      document.getElementById('exp-note').value = m.note||'';
+      document.getElementById('exp-submit-btn').textContent = '✏️ 수정';
+      document.getElementById('exp-edit-bar').style.display = 'block';
+    }
+  }
+}
+
+function fmtExpAmt(el){
+  const raw = el.value.replace(/,/g,'').replace(/\D/g,'');
+  if(raw) el.value = parseInt(raw).toLocaleString('ko-KR');
+}
+
+function setExpCat(cat){ expCatFilter=cat; renderExpenses(); }
+
+async function submitExpense(){
+  const day = parseInt(document.getElementById('exp-day').value)||0;
+  const name = document.getElementById('exp-name').value.trim();
+  const amount = parseInt((document.getElementById('exp-amt').value||'').replace(/,/g,''))||0;
+  const cat = document.getElementById('exp-cat').value||'기타';
+  const note = document.getElementById('exp-note').value.trim();
+  if(!name||!amount) return;
+  if(expEditId !== null){
+    const idx = expItems.findIndex(e=>e.id===expEditId);
+    if(idx>=0) expItems[idx] = {...expItems[idx], day, name, amount, cat, note};
+    expEditId = null;
+  } else {
+    const newId = Math.max(0,...expItems.map(e=>e.id),0)+1;
+    expItems.push({id:newId, yearmonth:expYearMonth, day, name, amount, cat, note});
+  }
+  await saveExpenses();
+  renderExpenses();
+}
+
+function startExpEdit(id){ expEditId=id; renderExpenses(); document.getElementById('exp-day').focus(); }
+function cancelExpEdit(){ expEditId=null; renderExpenses(); }
+
+async function delExpense(id){
+  if(!confirm('삭제할까요?')) return;
+  expItems = expItems.filter(e=>e.id!==id);
+  await saveExpenses();
+  renderExpenses();
+}
+
+function expPrevMonth(){
+  const [y,m] = expYearMonth.split('-').map(Number);
+  const d = new Date(y, m-2, 1);
+  expYearMonth = d.toISOString().slice(0,7);
+  expCatFilter = '전체';
+  renderExpenses();
+}
+
+function expNextMonth(){
+  const [y,m] = expYearMonth.split('-').map(Number);
+  const d = new Date(y, m, 1);
+  expYearMonth = d.toISOString().slice(0,7);
+  expCatFilter = '전체';
+  renderExpenses();
+}
+
 // ── 손익 계산기 ─────────────────────────────────────────────
 const FB_CALC = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_calc.json';
 let calcData = null;
@@ -1563,6 +1775,8 @@ function hardRefresh(){
   const pid = (document.querySelector('.page.active')||{}).id || '';
   if(pid==='page-alarm'){
     fetchAlarms().then(()=>renderAlarmList());
+  } else if(pid==='page-expense'){
+    fetchExpenses().then(()=>renderExpenses());
   } else if(pid==='page-profit'){
     fetchPnlMemos().then(()=>renderPnlMemos());
     fetchCalcData().then(()=>renderCalc());
