@@ -523,7 +523,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .child-tt-day-hd{height:32px;text-align:center;font-size:.76rem;font-weight:800;color:#555;border-bottom:1.5px solid #D0C8BE;border-left:1px solid #D0C8BE;display:flex;align-items:center;justify-content:center}
 .child-tt-day-body{position:relative;border-left:1px solid #D0C8BE}
 .child-tt-hour-line{height:60px;border-top:1px solid #EDEBE8;box-sizing:border-box}
-.child-tt-event{position:absolute;left:2px;right:2px;border-radius:7px;padding:5px 7px;font-size:.75rem;font-weight:800;color:#222;overflow:hidden;box-sizing:border-box;z-index:1;line-height:1.35;border-left:3.5px solid rgba(0,0,0,.18);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.child-tt-event{position:absolute;left:2px;right:2px;border-radius:7px;padding:5px 7px;font-size:.75rem;font-weight:800;color:#222;overflow:hidden;box-sizing:border-box;z-index:1;line-height:1.35;border-left:3.5px solid rgba(0,0,0,.18);box-shadow:0 1px 4px rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .child-tt-event .ctt-name{display:block}
 .child-tt-event .ctt-time{display:block;font-size:.68rem;font-weight:600;color:#333;margin-top:2px}
 .child-tt-event-btns{position:absolute;top:2px;right:2px;display:flex;gap:2px;opacity:0;transition:opacity .1s}
@@ -2788,7 +2788,7 @@ function renderChildTt(){
       </div>`:'';
       const timeStr=ev.start&&ev.end?`${ev.start}~${ev.end}`:'';
       const inner=h<38
-        ?`<span style="font-size:.7rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;color:#222">${ev.name||''}${timeStr?' · '+timeStr:''}</span>`
+        ?`<span style="font-size:.7rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;color:#222;text-align:center;width:100%">${ev.name||''}${timeStr?' · '+timeStr:''}</span>`
         :`<span class="ctt-name">${ev.name||''}</span>${timeStr?`<span class="ctt-time">${timeStr}</span>`:''}`;
       return `<div class="child-tt-event" style="top:${top}px;height:${Math.max(h,22)}px;background:${ev.color||CHILD_COLORS[0]}">
         ${inner}${btns}
