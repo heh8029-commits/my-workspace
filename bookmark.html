@@ -192,11 +192,58 @@
       transition:opacity 0.25s; z-index:200;
     }
     .toast.show { opacity:1; }
+
+    /* ── boss 바로가기 섹션 ── */
+    .boss-section {
+      max-width: 960px;
+      margin: 0 auto 22px;
+    }
+    .boss-section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #888;
+      margin-bottom: 7px;
+      letter-spacing: 0.04em;
+    }
+    .boss-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #d0c8c0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .boss-table td {
+      padding: 8px 12px;
+      border: 1px solid #e0d8d0;
+      font-size: 0.83rem;
+      text-align: center;
+      vertical-align: middle;
+      background: #fff;
+    }
+    .boss-table tr:nth-child(even) td { background: #faf8f5; }
+    .boss-table td a {
+      color: #333;
+      text-decoration: none;
+      display: block;
+      padding: 1px 0;
+      transition: color 0.13s;
+    }
+    .boss-table td a:hover { color: #C4714A; }
+    .boss-table td.no-url { color: #bbb; }
+    .boss-table td.empty { color: #eee; font-size: 0.7rem; }
   </style>
 </head>
 <body>
 
 <h1>미리토퍼 북마크</h1>
+
+<!-- boss 바로가기 -->
+<div class="boss-section">
+  <div class="boss-section-title">⚡ 바로가기 (boss.html 연동)</div>
+  <table class="boss-table">
+    <tbody id="boss-shortcut-body"></tbody>
+  </table>
+</div>
 
 <div class="toolbar">
   <span class="hint" id="hint-text">💡 편집 모드를 켜면 ✏️ 버튼으로 이름·URL을 바꿀 수 있어요</span>
@@ -441,6 +488,36 @@ function showToast(msg) {
 }
 
 init();
+
+/* ── boss 바로가기 연동 ── */
+const BOSS_COLS = 5;
+
+function loadBossShortcuts() {
+  const bms = JSON.parse(localStorage.getItem('boss_bm') || '[]');
+  const tbody = document.getElementById('boss-shortcut-body');
+  if (!bms.length) {
+    tbody.innerHTML = '<tr><td colspan="' + BOSS_COLS + '" style="text-align:center;color:#ccc;padding:14px">boss.html에서 바로가기를 추가하면 여기에 표시됩니다</td></tr>';
+    return;
+  }
+  const rows = [];
+  for (let i = 0; i < bms.length; i += BOSS_COLS) rows.push(bms.slice(i, i + BOSS_COLS));
+  tbody.innerHTML = rows.map(row => {
+    const cells = row.map(b => {
+      if (!b.name) return '<td class="empty">─</td>';
+      if (b.url) return `<td><a href="${esc(b.url)}" target="_blank">${esc(b.name)}</a></td>`;
+      return `<td class="no-url">${esc(b.name)}</td>`;
+    });
+    while (cells.length < BOSS_COLS) cells.push('<td class="empty">─</td>');
+    return `<tr>${cells.join('')}</tr>`;
+  }).join('');
+}
+
+loadBossShortcuts();
+
+/* localStorage 변경 시 자동 반영 (boss.html과 같은 도메인일 때) */
+window.addEventListener('storage', e => {
+  if (e.key === 'boss_bm') loadBossShortcuts();
+});
 </script>
 </body>
 </html>
