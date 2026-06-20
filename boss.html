@@ -2786,10 +2786,12 @@ function renderChildTt(){
         <button class="child-tt-ev-btn" onclick="event.stopPropagation();openChildEvModal('${day}',${ev.id})" title="수정">✏</button>
         <button class="child-tt-ev-btn" onclick="event.stopPropagation();delChildEvent('${day}',${ev.id})" title="삭제">✕</button>
       </div>`:'';
-      return `<div class="child-tt-event" style="top:${top}px;height:${h}px;background:${ev.color||CHILD_COLORS[0]}">
-        <span class="ctt-name">${ev.name||''}</span>
-        ${ev.start&&ev.end?`<span class="ctt-time">${ev.start}~${ev.end}</span>`:''}
-        ${btns}
+      const timeStr=ev.start&&ev.end?`${ev.start}~${ev.end}`:'';
+      const inner=h<38
+        ?`<span style="font-size:.67rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${ev.name||''}${timeStr?' · '+timeStr:''}</span>`
+        :`<span class="ctt-name">${ev.name||''}</span>${timeStr?`<span class="ctt-time">${timeStr}</span>`:''}`;
+      return `<div class="child-tt-event" style="top:${top}px;height:${Math.max(h,22)}px;background:${ev.color||CHILD_COLORS[0]}">
+        ${inner}${btns}
       </div>`;
     }).join('');
     const addBtn=_childTtEdit?`<div class="child-tt-add-ev" onclick="openChildEvModal('${day}',null)" title="${day} 수업 추가">+</div>`:'';
