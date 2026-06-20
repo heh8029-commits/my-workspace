@@ -513,9 +513,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tv-trip-emoji-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:1.05rem;cursor:pointer;transition:all .12s}
 .tv-trip-emoji-btn.on{border-color:#C4714A;background:#FFF0EA;box-shadow:0 0 0 2px #F5B8A055}
 /* ── 초딩진우 일정 ── */
-.child-wrap{max-width:1120px}
-.child-pg-grid{display:block}
-.child-notes-area{margin-top:20px}
+.child-wrap{max-width:1440px}
+.child-pg-grid{display:grid;grid-template-columns:1fr 820px;gap:20px;align-items:start}
+@media(max-width:1100px){.child-pg-grid{grid-template-columns:1fr}}
+.child-notes-area{margin-top:0}
+@media(max-width:1100px){.child-notes-area{margin-top:20px}}
 .child-notes-grid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
 .child-note-card{width:190px;height:180px;border-radius:14px;padding:10px 10px 6px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.09);cursor:default;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .child-note-card:hover .child-note-del{opacity:1}
@@ -1053,7 +1055,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
             </div>
             <div class="bno-list" id="child-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
           </div>
-          <!-- 포스트잇 (시간표 아래 전체 너비) -->
+          <!-- 오른쪽: 포스트잇 -->
           <div class="child-notes-area">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div style="font-size:.82rem;font-weight:800;color:#555">📌 포스트잇</div>
