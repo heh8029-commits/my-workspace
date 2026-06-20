@@ -1005,7 +1005,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="overflow-x:auto">
             <table class="child-tt-table">
               <thead><tr>
-                <th style="text-align:left;min-width:76px">시간대</th>
+                <th style="text-align:left;min-width:76px;color:#888;font-weight:600">시간</th>
                 <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
               </tr></thead>
               <tbody id="child-tt-body"></tbody>
@@ -2778,9 +2778,10 @@ function renderChildTt(){
     }).join('');
     const colorSwatches=_childTtEdit?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${CHILD_COLORS.map(c=>`<span class="child-tt-color-sw${c===rc?' on':''}" style="background:${c}" onclick="setChildRowColor(${row.id},'${c}')"></span>`).join('')}</div>`:'';
     const labelEdit=_childTtEdit
-      ?`<input class="child-tt-inp" value="${(row.label||'').replace(/"/g,'&quot;')}" placeholder="교시/활동명" oninput="setChildRowLabel(${row.id},this.value)" style="font-weight:700;margin-bottom:3px">
+      ?`<input class="child-tt-inp" value="${(row.time||'').replace(/"/g,'&quot;')}" placeholder="시간 (9:00~9:40)" oninput="setChildRowTime(${row.id},this.value)" style="font-weight:700;margin-bottom:3px">
+        <input class="child-tt-inp" value="${(row.label||'').replace(/"/g,'&quot;')}" placeholder="이름 선택 (1교시)" oninput="setChildRowLabel(${row.id},this.value)" style="color:#888;font-size:.68rem;margin-bottom:3px">
         ${colorSwatches}`
-      :`<span class="child-tt-row-main">${row.label}</span>${row.time?`<span class="child-tt-row-sub">${row.time}</span>`:''}`;
+      :`<span class="child-tt-row-main">${row.time||row.label}</span>${row.time&&row.label?`<span class="child-tt-row-sub">${row.label}</span>`:''}`;
     const delBtn=_childTtEdit?`<button class="child-tt-del-row" onclick="delChildRow(${row.id})" title="삭제">✕</button>`:'';
     return `<tr>
       <td style="padding:${_childTtEdit?'5px 6px':'8px 6px'};${_childTtEdit?`border-left:3px solid ${rc}`:''}">${labelEdit}${delBtn}</td>
@@ -2815,10 +2816,11 @@ function setChildRowTime(rowId,val){
   if(row){row.time=val;_childDebounceSave();}
 }
 function addChildRow(){
-  const label=prompt('시간대 이름을 입력하세요 (예: 6교시, 학원3)');
-  if(!label||!label.trim()) return;
-  const time=prompt('시간을 입력하세요 (예: 14:00~14:40, 없으면 비워두세요)','');
-  _childData.timetable.rows.push({id:_childNextRowId++,label:label.trim(),time:(time||'').trim()});
+  const time=prompt('시간을 입력하세요 (예: 14:00~15:00)');
+  if(!time||!time.trim()) return;
+  const label=prompt('이름을 입력하세요 (선택 — 예: 학원3, 비워도 됨)','');
+  const color=CHILD_COLORS[_childNextRowId%CHILD_COLORS.length];
+  _childData.timetable.rows.push({id:_childNextRowId++,label:(label||'').trim(),time:time.trim(),color});
   _saveChildData();renderChildTt();
 }
 function delChildRow(id){
