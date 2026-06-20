@@ -41,6 +41,19 @@ a{text-decoration:none;color:inherit}
 .top-icon-btn:hover{background:#EDE5DA;color:#C4714A}
 .top-icon-btn.on{background:#C4714A;color:#fff}
 
+/* ── 동기화 버튼 ── */
+.sync-btn{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#F5F0EB;border:none;font-size:1rem;
+  cursor:pointer;transition:all .15s;color:#C4714A;
+  flex-shrink:0;margin-right:4px;
+}
+.sync-btn:hover{background:#EDE5DA}
+.sync-btn.spinning .sync-icon{animation:spin .6s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.sync-icon{display:inline-block;transition:transform .3s}
+
 /* ── DATE BAR ── */
 .datebar{
   background:linear-gradient(135deg,#C4714A 0%,#D4895E 100%);
@@ -278,6 +291,9 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
 <!-- ── TOP BAR ── -->
 <header class="topbar">
+  <button class="sync-btn" id="sync-btn" onclick="hardRefresh()" title="새로고침 (캐시 무시)">
+    <span class="sync-icon">⟳</span>
+  </button>
   <div class="topbar-menus" id="topbar-menus"></div>
   <div class="topbar-right">
     <button class="top-icon-btn" id="bm-popup-btn" onclick="toggleBmPopup()" title="바로가기">🔗</button>
@@ -640,6 +656,15 @@ function setMode(m){
   document.body.classList.add('mode-'+m);
   document.getElementById('btn-pc').classList.toggle('on',m==='pc');
   document.getElementById('btn-mob').classList.toggle('on',m==='mob');
+}
+
+// ── 강제 새로고침 (캐시 무시) ──────────────────────────────
+function hardRefresh(){
+  const btn = document.getElementById('sync-btn');
+  btn.classList.add('spinning');
+  setTimeout(()=>{
+    location.href = location.pathname + '?t=' + Date.now();
+  }, 400);
 }
 
 function gotoCalendar(){
