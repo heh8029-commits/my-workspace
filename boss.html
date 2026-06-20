@@ -255,6 +255,10 @@ a{text-decoration:none;color:inherit}
 .rbtn-e:hover{background:#D4E4FF}
 .rbtn-d{background:#FFE8E8;color:#E03A3A}
 .rbtn-d:hover{background:#FFD4D4}
+.rbtn-bm{background:#E8F8EE;color:#27AE60}
+.rbtn-bm:hover{background:#D4F0E0}
+.rbtn-bm.off{background:#F0F0F0;color:#BBB}
+.rbtn-bm.off:hover{background:#E8E8E8}
 
 /* 인라인 편집 행 */
 .bm-row-edit{
@@ -276,6 +280,8 @@ a{text-decoration:none;color:inherit}
 .inline-colors{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .icswatch{width:24px;height:24px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:all .12s;flex-shrink:0}
 .icswatch.sel{border-color:#333;transform:scale(1.2)}
+.inline-bm-label{display:flex;align-items:center;gap:6px;font-size:.76rem;color:#888;margin-bottom:8px;cursor:pointer}
+.inline-bm-label input{width:15px;height:15px;accent-color:#C4714A;cursor:pointer}
 .inline-btns{display:flex;gap:7px}
 .ibtn{flex:1;padding:7px;border-radius:9px;border:none;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .13s}
 .ibtn-save{background:#C4714A;color:#fff}
@@ -714,6 +720,7 @@ function renderEditorList(){
         <div class="bm-row-url">${b.url||'URL 없음'}</div>
       </div>
       <div class="bm-row-btns">
+        <button class="rbtn rbtn-bm${b.showInBookmark===false?' off':''}" onclick="toggleBmVisible(${b.id})">${b.showInBookmark===false?'북마크숨김':'북마크노출'}</button>
         <button class="rbtn rbtn-e" onclick="startEdit(${b.id})">수정</button>
         <button class="rbtn rbtn-d" onclick="delBm(${b.id})">삭제</button>
       </div>
@@ -750,6 +757,10 @@ function buildInlineForm(b){
         oninput="syncInlinePreview()">
     </div>
     <input class="inline-url" id="if-url" value="${url}" placeholder="https://..." type="url">
+    <label class="inline-bm-label">
+      <input type="checkbox" id="if-bm" ${(b ? b.showInBookmark!==false : true) ? 'checked' : ''}>
+      북마크에 표시
+    </label>
     <div class="inline-colors" id="inline-colors">${swatches}</div>
     <div class="inline-btns">
       <button class="ibtn ibtn-cancel" onclick="cancelInline()">취소</button>
@@ -811,16 +822,24 @@ function saveInline(){
   const name  = (document.getElementById('if-name').value||'').trim();
   const url   = (document.getElementById('if-url').value||'').trim();
   const emoji = (document.getElementById('if-emoji').value||'').trim() || '🔗';
+  const showInBookmark = document.getElementById('if-bm').checked;
   if(!name){alert('이름을 입력해주세요!'); return;}
 
   if(inlineEditId === 'new'){
     const newId = Math.max(0, ...bms.map(b=>b.id)) + 1;
-    bms.push({id:newId, name, url, emoji, color:selColor});
+    bms.push({id:newId, name, url, emoji, color:selColor, showInBookmark});
   } else {
     const idx = bms.findIndex(b=>b.id===inlineEditId);
-    if(idx>=0) bms[idx] = {id:inlineEditId, name, url, emoji, color:selColor};
+    if(idx>=0) bms[idx] = {id:inlineEditId, name, url, emoji, color:selColor, showInBookmark};
   }
   inlineEditId = null;
+  saveBm(); renderEditorList();
+}
+
+function toggleBmVisible(id){
+  const idx = bms.findIndex(b=>b.id===id);
+  if(idx<0) return;
+  bms[idx].showInBookmark = bms[idx].showInBookmark === false ? true : false;
   saveBm(); renderEditorList();
 }
 

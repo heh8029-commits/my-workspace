@@ -115,7 +115,7 @@ function esc(s) {
 }
 
 function render() {
-  const bms = JSON.parse(localStorage.getItem('boss_bm') || '[]');
+  const bms = JSON.parse(localStorage.getItem('boss_bm') || '[]').filter(b => b.showInBookmark !== false);
   const tbody = document.getElementById('boss-body');
   if (!bms.length) {
     tbody.innerHTML = `<tr><td colspan="${COLS}" style="text-align:center;color:#ccc;padding:20px">boss.html에서 바로가기를 추가하면 여기에 표시됩니다</td></tr>`;
