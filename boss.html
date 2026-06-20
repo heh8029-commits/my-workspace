@@ -404,7 +404,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bm-input:focus{border-color:#C4714A}
 .bm-add-btn{padding:8px 15px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap}
 .bm-add-btn:hover{background:#B46040}
-.bm-list{display:flex;flex-direction:column;gap:5px}
+.bno-list{display:flex;flex-direction:column;gap:5px}
 .bm-row{display:flex;align-items:center;gap:7px;background:#fff;border-radius:10px;padding:9px 11px;border:1px solid #EDE8E1;transition:background .12s}
 .bm-row:hover{background:#FDF5F1}
 .bm-row.done{opacity:.6}
@@ -413,9 +413,9 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bm-text{flex:1;font-size:.83rem;color:#333;word-break:break-all;line-height:1.4;min-width:0}
 .bm-date{font-size:.66rem;color:#CCC;white-space:nowrap;flex-shrink:0}
 .bm-actions{display:flex;gap:2px;flex-shrink:0}
-.bm-icon{width:26px;height:26px;border-radius:6px;border:none;background:transparent;font-size:.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#BCBBBB;transition:all .12s;padding:0}
-.bm-icon:hover{background:#F0EBE5;color:#C4714A}
-.bm-icon.del:hover{background:#FFE8E8;color:#E03A3A}
+.bno-icon{width:26px;height:26px;border-radius:6px;border:none;background:transparent;font-size:.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#BCBBBB;transition:all .12s;padding:0}
+.bno-icon:hover{background:#F0EBE5;color:#C4714A}
+.bno-icon.del:hover{background:#FFE8E8;color:#E03A3A}
 .bm-move{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
 .bm-move-btn{width:16px;height:13px;border-radius:3px;border:none;background:transparent;font-size:.55rem;cursor:pointer;color:#D0D0D0;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s;line-height:1}
 .bm-move-btn:hover{background:#EDE5DA;color:#C4714A}
@@ -650,7 +650,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
                 <button class="bm-add-btn" onclick="bmAddNote('a')">➕</button>
               </div>
             </div>
-            <div class="bm-list" id="bm-list-a"></div>
+            <div class="bno-list" id="bno-list-a"></div>
           </div>
           <div class="exp-note-panel">
             <div class="exp-note-title">📦 구독 리스트</div>
@@ -660,7 +660,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
                 <button class="bm-add-btn" onclick="bmAddNote('b')">➕</button>
               </div>
             </div>
-            <div class="bm-list" id="bm-list-b"></div>
+            <div class="bno-list" id="bno-list-b"></div>
           </div>
           <div class="exp-note-panel">
             <div class="exp-note-title">📝 기타 메모</div>
@@ -670,7 +670,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
                 <button class="bm-add-btn" onclick="bmAddNote('c')">➕</button>
               </div>
             </div>
-            <div class="bm-list" id="bm-list-c"></div>
+            <div class="bno-list" id="bno-list-c"></div>
           </div>
         </div>
       </div>
@@ -694,7 +694,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
           </div>
           <div id="pnl-form-status"></div>
         </div>
-        <div class="bm-list" id="pnl-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
+        <div class="bno-list" id="pnl-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
 
         <hr class="pnl-calc-divider">
         <div class="pnl-calc-title">📊 이번달 손익 요약</div>
@@ -1425,9 +1425,12 @@ function _srcIcon(src){ return src==='bot' ? '🤖' : '💻'; }
 
 const _DAY_KO = ['일','월','화','수','목','금','토'];
 function _fmtMemoDate(dateStr){
+  if(!dateStr) return '';
+  const dateOnly = String(dateStr).slice(0,10);
   const today = new Date().toISOString().slice(0,10);
-  if(dateStr === today) return '오늘';
-  const d = new Date(dateStr + 'T00:00:00');
+  if(dateOnly === today) return '오늘';
+  const d = new Date(dateOnly + 'T00:00:00');
+  if(isNaN(d)) return '';
   const mm = String(d.getMonth()+1).padStart(2,'0');
   const dd = String(d.getDate()).padStart(2,'0');
   const day = _DAY_KO[d.getDay()];
@@ -1451,7 +1454,7 @@ function renderPnlMemos(){
         <input class="bm-edit-input" id="pnl-edit-${m.id}" value="${m.text.replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
           onkeydown="if(event.key==='Enter')savePnlEdit(${m.id});if(event.key==='Escape')cancelPnlEdit()">
         <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="savePnlEdit(${m.id})">저장</button>
-        <button class="bm-icon" onclick="cancelPnlEdit()">✕</button>
+        <button class="bno-icon" onclick="cancelPnlEdit()">✕</button>
       </div>
     </div>`;
     const imgs = m.images?.length ? m.images : (m.image ? [m.image] : []);
@@ -1472,9 +1475,9 @@ function renderPnlMemos(){
       <span class="bm-text">${_linkify(m.text)}</span>
       <span class="bm-date">${_fmtMemoDate(m.date)}</span>
       <div class="bm-actions">
-        <button class="bm-icon" onclick="copyPnlMemo(${i})" title="복사">📋</button>
-        <button class="bm-icon" onclick="startPnlEdit(${m.id})" title="편집">✏️</button>
-        <button class="bm-icon del" onclick="deletePnlMemo(${m.id})" title="삭제">🗑️</button>
+        <button class="bno-icon" onclick="copyPnlMemo(${i})" title="복사">📋</button>
+        <button class="bno-icon" onclick="startPnlEdit(${m.id})" title="편집">✏️</button>
+        <button class="bno-icon del" onclick="deletePnlMemo(${m.id})" title="삭제">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -1713,7 +1716,7 @@ async function bmSaveNotes(k){
   try{ await fetch(_bmUrl(k),{method:'PUT',body:JSON.stringify({items:BM_NOTES_CFG[k].items}),headers:{'Content-Type':'application/json'}}); }catch(e){}
 }
 function bmRenderNotes(k){
-  const el=document.getElementById(`bm-list-${k}`);
+  const el=document.getElementById(`bno-list-${k}`);
   if(!el) return;
   const cfg=BM_NOTES_CFG[k];
   if(!cfg.items.length){ el.innerHTML=`<div style="padding:16px;text-align:center;color:#CCC;font-size:.78rem">항목이 없어요</div>`; return; }
@@ -1724,7 +1727,7 @@ function bmRenderNotes(k){
         <input class="bm-edit-input" id="bm-edit-${k}-${m.id}" value="${(m.text||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
           onkeydown="if(event.key==='Enter')bmSaveEdit('${k}',${m.id})">
         <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="bmSaveEdit('${k}',${m.id})">저장</button>
-        <button class="bm-icon" onclick="bmCancelEdit('${k}')">✕</button>
+        <button class="bno-icon" onclick="bmCancelEdit('${k}')">✕</button>
       </div>
     </div>`;
     return `
@@ -1737,8 +1740,8 @@ function bmRenderNotes(k){
       <span class="bm-text">${_linkify(m.text||'')}</span>
       <span class="bm-date">${_fmtMemoDate(m.date)}</span>
       <div class="bm-actions">
-        <button class="bm-icon" onclick="bmStartEdit('${k}',${m.id})" title="편집">✏️</button>
-        <button class="bm-icon del" onclick="bmDeleteNote('${k}',${m.id})" title="삭제">🗑️</button>
+        <button class="bno-icon" onclick="bmStartEdit('${k}',${m.id})" title="편집">✏️</button>
+        <button class="bno-icon del" onclick="bmDeleteNote('${k}',${m.id})" title="삭제">🗑️</button>
       </div>
     </div>`;
   }).join('');
