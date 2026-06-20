@@ -512,6 +512,23 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tv-modal-save{width:100%;padding:10px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:800;cursor:pointer;margin-top:4px}
 .tv-trip-emoji-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:1.05rem;cursor:pointer;transition:all .12s}
 .tv-trip-emoji-btn.on{border-color:#C4714A;background:#FFF0EA;box-shadow:0 0 0 2px #F5B8A055}
+/* ── 초딩진우 일정 ── */
+.child-wrap{max-width:720px}
+.child-tt-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #EDE8E1;margin-top:20px}
+.child-tt-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.child-tt-table th{color:#999;font-weight:700;padding:7px 8px;border-bottom:1.5px solid #EDE8E1;text-align:center;white-space:nowrap}
+.child-tt-table td{padding:7px 5px;border-bottom:1px solid #F8F5F0;text-align:center;vertical-align:middle;min-width:58px}
+.child-tt-table td:first-child{text-align:left;white-space:nowrap;padding-right:8px}
+.child-tt-row-lbl{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:20px}
+.child-tt-cell-view{font-size:.73rem;color:#444;line-height:1.5}
+.child-tt-cell-view .tt-check{color:#5CB85C;font-weight:700;font-size:.88rem}
+.child-tt-cell-view .tt-time{color:#9999BB;font-size:.67rem;display:block}
+.child-tt-cell-view .tt-label{display:block}
+.child-tt-cell-view .tt-dash{color:#CCC}
+.child-tt-cell-edit{display:flex;flex-direction:column;gap:3px;min-width:72px}
+.child-tt-cell-edit input[type=text]{font-size:.67rem;padding:2px 4px;border:1px solid #DDD;border-radius:4px;width:100%;box-sizing:border-box}
+.child-tt-cell-edit input[type=text]:disabled{background:#F8F8F8;color:#CCC}
+.child-tt-cell-edit label{font-size:.64rem;color:#888;display:flex;align-items:center;gap:3px}
 /* ── 보스 달력 ── */
 .boss-cal-wrap{max-width:900px}
 .boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -956,6 +973,43 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- 초딩진우 일정 페이지 -->
+    <div class="page" id="page-child">
+      <div class="child-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">🎒 초당진우 일정</div>
+          <button onclick="fetchChildData().then(()=>renderChild())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px">
+          <div style="display:flex;gap:8px">
+            <input class="bm-input" id="child-memo-input" placeholder="메모 입력... (URL 자동 링크, Ctrl+V 이미지 붙여넣기)" maxlength="500"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey)addChildMemo()"
+              onpaste="handleChildMemoPaste(event)">
+            <input type="file" id="child-file-inp" accept="image/*" style="display:none" onchange="handleChildMemoFile(this.files[0]);this.value=''">
+            <button class="bm-attach-btn" onclick="document.getElementById('child-file-inp').click()" title="이미지 첨부">📎</button>
+            <button class="bm-add-btn" onclick="addChildMemo()">➕ 추가</button>
+          </div>
+          <div id="child-form-status"></div>
+        </div>
+        <div class="bno-list" id="child-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
+        <div class="child-tt-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:.82rem;font-weight:800;color:#555">📋 주간 시간표</div>
+            <button id="child-tt-edit-btn" onclick="toggleChildTtEdit()" style="padding:4px 12px;border-radius:8px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">✏️ 편집</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="child-tt-table">
+              <thead><tr>
+                <th style="text-align:left;min-width:76px">시간대</th>
+                <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
+              </tr></thead>
+              <tbody id="child-tt-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1210,6 +1264,9 @@ function setSub(id, label){
   } else if(id==='travel'){
     showPage('travel');
     fetchTravelData().then(()=>renderTravel());
+  } else if(id==='child'){
+    showPage('child');
+    fetchChildData().then(()=>renderChild());
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -2273,6 +2330,8 @@ function hardRefresh(){
   const pid = (document.querySelector('.page.active')||{}).id || '';
   if(pid==='page-travel'){
     fetchTravelData().then(()=>renderTravel());
+  } else if(pid==='page-child'){
+    fetchChildData().then(()=>renderChild());
   } else if(pid==='page-calendar'){
     Promise.all([fetchCalEvents(),fetchExpenses()]).then(()=>bossRenderCal());
   } else if(pid==='page-alarm'){
@@ -2567,6 +2626,162 @@ async function delBcalEvent(id){
   if(_calSelDate)_bossCalPanel(_calSelDate);
 }
 
+// ── 초딩진우 일정 ──────────────────────────────────────────────
+const FB_CHILD = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_child.json';
+const CHILD_ROWS = [
+  {id:'급식',  emoji:'🍽', label:'급식',  bg:'#FFECEC',color:'#E03A3A'},
+  {id:'5교시', emoji:'',   label:'5교시', bg:'#ECECFF',color:'#5555CC'},
+  {id:'늘봄',  emoji:'🌿', label:'늘봄',  bg:'#ECFFEC',color:'#2C8C4C'},
+  {id:'학원1', emoji:'🎯', label:'학원1', bg:'#FFECEC',color:'#E03A3A'},
+  {id:'학원2', emoji:'🎯', label:'학원2', bg:'#FFECEC',color:'#E03A3A'},
+];
+const CHILD_DAYS = ['월','화','수','목','금'];
+const CHILD_TT_DEFAULT = {
+  '급식' :{'월':{active:true,label:'',time:'~12:50'},'화':{active:false},'수':{active:false},'목':{active:false},'금':{active:false}},
+  '5교시':{'월':{active:false},'화':{active:true,label:'',time:'~13:40'},'수':{active:false},'목':{active:false},'금':{active:true,label:'',time:'~13:40'}},
+  '늘봄' :{'월':{active:true,label:'',time:'~14:30'},'화':{active:true,label:'방과후·쿠킹클레이',time:'~15:10'},'수':{active:false},'목':{active:false},'금':{active:true,label:'방과후 영어',time:'~15:10'}},
+  '학원1':{'월':{active:true,label:'태권도',time:'14:45~15:40'},'화':{active:true,label:'태권도',time:'~16:40'},'수':{active:false},'목':{active:false},'금':{active:true,label:'태권도',time:'~16:40'}},
+  '학원2':{'월':{active:true,label:'피아노',time:'15:45~16:45'},'화':{active:false},'수':{active:false},'목':{active:false},'금':{active:false}},
+};
+let _childData = {memos:[],timetable:{}};
+let _childTtEdit = false;
+let childPendingImgs = [];
+let childMemoEditId = null;
+let _childSaveTimer = null;
+
+async function fetchChildData(){
+  try{
+    const r=await fetch(FB_CHILD+'?t='+Date.now());
+    if(r.ok){
+      const d=await r.json();
+      if(d&&typeof d==='object'){
+        _childData.memos=Array.isArray(d.memos)?d.memos:[];
+        _childData.timetable=(d.timetable&&typeof d.timetable==='object')
+          ?d.timetable:JSON.parse(JSON.stringify(CHILD_TT_DEFAULT));
+        for(const row of CHILD_ROWS){
+          if(!_childData.timetable[row.id]) _childData.timetable[row.id]={};
+          for(const day of CHILD_DAYS){
+            if(!_childData.timetable[row.id][day]) _childData.timetable[row.id][day]={active:false};
+          }
+        }
+      }
+    }
+  }catch(e){}
+}
+function _childDebounceSave(){clearTimeout(_childSaveTimer);_childSaveTimer=setTimeout(()=>_saveChildData(),600);}
+async function _saveChildData(){
+  await fetch(FB_CHILD,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_childData)});
+}
+function renderChild(){renderChildMemos();renderChildTt();}
+
+// child 메모
+function _childSetFormStatus(html){const el=document.getElementById('child-form-status');if(el)el.innerHTML=html;}
+function _childRenderFormImgs(){
+  if(!childPendingImgs.length){_childSetFormStatus('');return;}
+  const p=childPendingImgs.map((url,i)=>`<div class="pnl-form-img-preview"><img src="${url?url.replace('/upload/','/upload/w_160,h_160,c_fill/'):''}" alt="" style="${url?'':'opacity:.4'}"><button class="pnl-form-img-del" onclick="clearChildImg(${i})" title="제거">✕</button></div>`).join('');
+  _childSetFormStatus(`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">${p}</div>`);
+}
+async function _childUploadImg(file){
+  const idx=childPendingImgs.length;childPendingImgs.push(null);
+  _childSetFormStatus('<div class="pnl-uploading">⏳ 업로드 중...</div>');
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const r=await fetch(CLOUDINARY_URL,{method:'POST',body:fd});const d=await r.json();
+    if(d.secure_url){childPendingImgs[idx]=d.secure_url;_childRenderFormImgs();}
+    else{childPendingImgs.splice(idx,1);_childSetFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+  }catch(e){childPendingImgs.splice(idx,1);_childSetFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+}
+function handleChildMemoFile(file){if(file&&file.type.startsWith('image/'))_childUploadImg(file);}
+function handleChildMemoPaste(e){
+  const items=e.clipboardData?.items;if(!items) return;
+  for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();_childUploadImg(item.getAsFile());return;}}
+}
+function clearChildImg(i){childPendingImgs.splice(i,1);_childRenderFormImgs();}
+
+function renderChildMemos(){
+  const el=document.getElementById('child-memo-list');if(!el) return;
+  const memos=_childData.memos||[];
+  if(!memos.length){el.innerHTML='<div class="bno-empty">등록된 메모가 없어요</div>';return;}
+  el.innerHTML=memos.map(m=>{
+    const imgs=Array.isArray(m.images)?m.images:[];
+    const imgHtml=imgs.length?`<div class="bm-thumbs">${imgs.map(u=>`<img class="bm-thumb" src="${u.replace('/upload/','/upload/w_120,h_120,c_fill/')}" onclick="openImgModal('${u}')"></img>`).join('')}</div>`:'';
+    const txt=childMemoEditId===m.id
+      ?`<input class="bm-edit-input" id="child-medit-${m.id}" value="${m.text.replace(/"/g,'&quot;')}" onkeydown="if(event.key==='Enter')saveChildMemoEdit(${m.id})" onblur="saveChildMemoEdit(${m.id})">`
+      :`<span class="bm-text"${m.done?' style="text-decoration:line-through;color:#BBB"':''}>${_linkify(m.text)}</span>`;
+    return `<div class="bm-row"><div style="display:flex;align-items:center;gap:3px;flex-shrink:0" class="bno-drag">☰</div><input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="toggleChildMemoDone(${m.id},this.checked)"><div class="bm-text-wrap" style="flex:1;min-width:0">${txt}${imgHtml}</div><span class="bno-icon" style="font-size:.65rem;color:#CCC;white-space:nowrap;flex-shrink:0">${m.date||''}</span><button class="bno-icon" onclick="copyText('${m.text.replace(/'/g,"\\'")}')">📋</button><button class="bno-icon edit" onclick="startChildMemoEdit(${m.id})">✏️</button><button class="bno-icon del" onclick="deleteChildMemo(${m.id})">🗑️</button></div>`;
+  }).join('');
+}
+async function addChildMemo(){
+  const inp=document.getElementById('child-memo-input');
+  const text=inp.value.trim();const imgs=childPendingImgs.filter(Boolean);
+  if(!text&&!imgs.length) return;
+  const today=new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}).replace(/ /g,'').replace('.','월 ').replace('.','일');
+  const newId=Math.max(0,...(_childData.memos||[]).map(m=>m.id||0))+1;
+  const m={id:newId,text:text||'',done:false,date:today};
+  if(imgs.length) m.images=imgs;
+  (_childData.memos=_childData.memos||[]).unshift(m);
+  inp.value='';childPendingImgs=[];_childSetFormStatus('');
+  await _saveChildData();renderChildMemos();
+}
+function toggleChildMemoDone(id,checked){
+  const m=(_childData.memos||[]).find(m=>m.id===id);
+  if(m){m.done=checked;_childDebounceSave();renderChildMemos();}
+}
+function startChildMemoEdit(id){childMemoEditId=id;renderChildMemos();setTimeout(()=>document.getElementById('child-medit-'+id)?.focus(),50);}
+function saveChildMemoEdit(id){
+  if(childMemoEditId!==id) return;
+  const inp=document.getElementById('child-medit-'+id);if(!inp) return;
+  const m=(_childData.memos||[]).find(m=>m.id===id);
+  if(m){m.text=inp.value.trim();_childDebounceSave();}
+  childMemoEditId=null;renderChildMemos();
+}
+function deleteChildMemo(id){
+  if(!confirm('메모를 삭제할까요?')) return;
+  _childData.memos=(_childData.memos||[]).filter(m=>m.id!==id);
+  _saveChildData();renderChildMemos();
+}
+
+// child 시간표
+function renderChildTt(){
+  const tbody=document.getElementById('child-tt-body');if(!tbody) return;
+  if(!_childData.timetable||!Object.keys(_childData.timetable).length)
+    _childData.timetable=JSON.parse(JSON.stringify(CHILD_TT_DEFAULT));
+  tbody.innerHTML=CHILD_ROWS.map(row=>{
+    const cells=CHILD_DAYS.map(day=>{
+      const cell=(_childData.timetable[row.id]||{})[day]||{active:false};
+      if(_childTtEdit){
+        return `<td><div class="child-tt-cell-edit">
+          <label><input type="checkbox" ${cell.active?'checked':''} onchange="setChildCell('${row.id}','${day}','active',this.checked)"> 있음</label>
+          <input type="text" value="${(cell.label||'').replace(/"/g,'&quot;')}" placeholder="수업명" oninput="setChildCell('${row.id}','${day}','label',this.value)"${!cell.active?' disabled':''}>
+          <input type="text" value="${(cell.time||'').replace(/"/g,'&quot;')}" placeholder="~16:40" oninput="setChildCell('${row.id}','${day}','time',this.value)"${!cell.active?' disabled':''}>
+        </div></td>`;
+      }
+      if(!cell.active) return `<td><span class="child-tt-cell-view"><span class="tt-dash">—</span></span></td>`;
+      const lbl=cell.label?`<span class="tt-label">${cell.label}</span>`:`<span class="tt-check">✓</span>`;
+      const tm=cell.time?`<span class="tt-time">${cell.time}</span>`:'';
+      return `<td><div class="child-tt-cell-view">${lbl}${tm}</div></td>`;
+    }).join('');
+    const lbl=row.emoji
+      ?`<span class="child-tt-row-lbl" style="background:${row.bg};color:${row.color}">${row.emoji} ${row.label}</span>`
+      :`<span class="child-tt-row-lbl" style="background:${row.bg};color:${row.color}">${row.label}</span>`;
+    return `<tr><td>${lbl}</td>${cells}</tr>`;
+  }).join('');
+}
+function setChildCell(rowId,day,key,value){
+  if(!_childData.timetable[rowId]) _childData.timetable[rowId]={};
+  if(!_childData.timetable[rowId][day]) _childData.timetable[rowId][day]={active:false};
+  _childData.timetable[rowId][day][key]=value;
+  if(key==='active') renderChildTt();
+  _childDebounceSave();
+}
+function toggleChildTtEdit(){
+  _childTtEdit=!_childTtEdit;
+  const btn=document.getElementById('child-tt-edit-btn');
+  if(btn) btn.textContent=_childTtEdit?'💾 저장':'✏️ 편집';
+  if(!_childTtEdit) _saveChildData();
+  renderChildTt();
+}
+
 // ── 여행갈때 ─────────────────────────────────────────────────
 const FB_TRAVEL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_travel.json';
 const TV_CATS = [{id:'공통',emoji:'🏠'},{id:'은희',emoji:'👩'},{id:'진우',emoji:'👦'},{id:'민호',emoji:'👨'},{id:'먹거리',emoji:'🍳'}];
@@ -2591,6 +2806,7 @@ let _tvSaveTimer = null;
 let tvPendingImgs = [];
 let tvMemoEditId = null;
 let _tvTripEmoji = '🚗';
+let _tvTripEditId = null;
 
 async function fetchTravelData(){
   try{
@@ -2676,11 +2892,14 @@ function _tvRenderTrips(){
   if(!el) return;
   if(!_tvData.trips.length){el.innerHTML='<span style="font-size:.75rem;color:#CCC">등록된 여행이 없어요</span>';_tvRenderDaily();return;}
   el.innerHTML=_tvData.trips.map(t=>`
-    <button class="tv-chip${_tvSelTripId===t.id?' sel':''}" onclick="tvSelectTrip(${t.id})">
-      ${t.emoji||'🚗'} ${t.name}
-      <span style="font-size:.67rem;opacity:.8">(${_tvFmtDate(t.start)}~${_tvFmtDate(t.end)})</span>
-      <span class="tv-chip-del" onclick="event.stopPropagation();deleteTvTrip(${t.id})">✕</span>
-    </button>`).join('');
+    <div style="display:inline-flex;align-items:center;gap:3px">
+      <button class="tv-chip${_tvSelTripId===t.id?' sel':''}" onclick="tvSelectTrip(${t.id})">
+        ${t.emoji||'🚗'} ${t.name}
+        <span style="font-size:.67rem;opacity:.8">(${_tvFmtDate(t.start)}~${_tvFmtDate(t.end)})</span>
+      </button>
+      <button onclick="editTvTrip(${t.id})" title="수정" style="width:22px;height:22px;border:none;background:none;cursor:pointer;font-size:.75rem;color:#BCBBBB" onmouseover="this.style.color='#C4714A'" onmouseout="this.style.color='#BCBBBB'">✏️</button>
+      <button onclick="deleteTvTrip(${t.id})" title="삭제" style="width:22px;height:22px;border:none;background:none;cursor:pointer;font-size:.75rem;color:#BCBBBB" onmouseover="this.style.color='#E03A3A'" onmouseout="this.style.color='#BCBBBB'">🗑️</button>
+    </div>`).join('');
   _tvRenderDaily();
 }
 function _tvFmtDate(d){
@@ -2704,23 +2923,53 @@ function tvSelTripEmoji(e){
   document.getElementById('tveb-'+e)?.classList.add('on');
 }
 function openTripModal(){
+  _tvTripEditId=null;
   _tvTripEmoji='🚗';
   document.querySelectorAll('.tv-trip-emoji-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('tveb-🚗')?.classList.add('on');
   document.getElementById('tv-trip-name').value='';
   document.getElementById('tv-trip-start').value='';
   document.getElementById('tv-trip-end').value='';
+  const titleEl=document.querySelector('#tv-trip-overlay .tv-modal-hd span');
+  if(titleEl) titleEl.textContent='✈️ 여행 추가';
   document.getElementById('tv-trip-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('tv-trip-name').focus(),80);
 }
-function closeTripModal(){document.getElementById('tv-trip-overlay').classList.remove('open');}
+function editTvTrip(id){
+  const trip=_tvData.trips.find(t=>t.id===id);
+  if(!trip) return;
+  _tvTripEditId=id;
+  _tvTripEmoji=trip.emoji||'🚗';
+  document.querySelectorAll('.tv-trip-emoji-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tveb-'+_tvTripEmoji)?.classList.add('on');
+  document.getElementById('tv-trip-name').value=trip.name||'';
+  document.getElementById('tv-trip-start').value=trip.start||'';
+  document.getElementById('tv-trip-end').value=trip.end||'';
+  const titleEl=document.querySelector('#tv-trip-overlay .tv-modal-hd span');
+  if(titleEl) titleEl.textContent='✏️ 여행 수정';
+  const saveBtn=document.querySelector('#tv-trip-overlay .tv-modal-save');
+  if(saveBtn) saveBtn.textContent='✅ 수정 완료';
+  document.getElementById('tv-trip-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('tv-trip-name').focus(),80);
+}
+function closeTripModal(){
+  _tvTripEditId=null;
+  const saveBtn=document.querySelector('#tv-trip-overlay .tv-modal-save');
+  if(saveBtn) saveBtn.textContent='✅ 추가';
+  document.getElementById('tv-trip-overlay').classList.remove('open');
+}
 function saveTrip(){
   const name=document.getElementById('tv-trip-name').value.trim();
   const start=document.getElementById('tv-trip-start').value;
   const end=document.getElementById('tv-trip-end').value;
   if(!name||!start||!end){alert('이름과 날짜를 모두 입력해주세요');return;}
-  const newId=Math.max(0,..._tvData.trips.map(t=>t.id||0))+1;
-  _tvData.trips.push({id:newId,name,start,end,emoji:_tvTripEmoji});
+  if(_tvTripEditId!==null){
+    const trip=_tvData.trips.find(t=>t.id===_tvTripEditId);
+    if(trip){trip.name=name;trip.start=start;trip.end=end;trip.emoji=_tvTripEmoji;}
+  } else {
+    const newId=Math.max(0,..._tvData.trips.map(t=>t.id||0))+1;
+    _tvData.trips.push({id:newId,name,start,end,emoji:_tvTripEmoji});
+  }
   closeTripModal();_tvRenderTrips();_tvDebounceSave();
 }
 // 날짜별 일정
