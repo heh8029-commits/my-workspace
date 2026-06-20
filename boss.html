@@ -515,25 +515,31 @@ body.mode-mob .mobile-subnav{display:flex!important}
 /* ── 초딩진우 일정 ── */
 .child-wrap{max-width:780px}
 .child-tt-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #EDE8E1;margin-top:20px}
-.child-tt-table{width:100%;border-collapse:collapse;font-size:.78rem;table-layout:fixed}
-.child-tt-table th{background:#F5F1EB;color:#666;font-weight:700;padding:8px 5px;border:1px solid #D0C8BE;text-align:center;white-space:nowrap}
-.child-tt-table th:first-child{min-width:82px;text-align:left;padding-left:8px}
-.child-tt-table td{padding:8px 5px;border:1px solid #D0C8BE;text-align:center;vertical-align:middle}
-.child-tt-table td:first-child{background:#F9F6F2;text-align:left;padding-left:8px;white-space:nowrap;min-width:82px}
-.child-tt-row-main{font-size:.78rem;font-weight:700;color:#444;display:block;line-height:1.3}
-.child-tt-row-sub{font-size:.72rem;color:#888;display:block;line-height:1.3;white-space:nowrap}
-.child-tt-cell-empty{font-size:.75rem;color:#D8D0CC}
-.child-tt-block{width:100%;padding:6px 5px;border-radius:7px;font-size:.74rem;font-weight:600;color:#444;line-height:1.45;box-sizing:border-box;text-align:center}
-.child-tt-block .ctt-name{display:block}
-.child-tt-block .ctt-time{display:block;font-size:.64rem;opacity:.65;margin-top:1px}
-.child-tt-inp{width:100%;font-size:.72rem;padding:3px 4px;border:1.5px solid #CCBFB5;border-radius:5px;box-sizing:border-box;text-align:center;background:#FFFCFA}
-.child-tt-inp:focus{outline:none;border-color:#C4714A;background:#fff}
-.child-tt-del-row{width:16px;height:16px;border:none;background:none;cursor:pointer;color:#D0C8BE;font-size:.68rem;padding:0;float:right;line-height:1}
-.child-tt-del-row:hover{color:#E03A3A}
-.child-tt-add-row-btn{width:100%;padding:8px;border:1.5px dashed #C8BFBB;border-radius:8px;background:none;color:#BBBBBB;font-size:.75rem;cursor:pointer;margin-top:8px}
-.child-tt-add-row-btn:hover{border-color:#C4714A;color:#C4714A;background:#FFF8F5}
-.child-tt-color-sw{width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;display:inline-block;flex-shrink:0;transition:border .1s}
-.child-tt-color-sw.on{border-color:#555}
+.child-tt-grid{display:flex;min-width:480px}
+.child-tt-time-col{width:48px;flex-shrink:0}
+.child-tt-time-hd{height:32px}
+.child-tt-time-slot{height:60px;font-size:.67rem;color:#AAAAAA;text-align:right;padding-right:6px;padding-top:2px;box-sizing:border-box;border-top:1px solid #EDE8E1}
+.child-tt-day-col{flex:1;min-width:0}
+.child-tt-day-hd{height:32px;text-align:center;font-size:.76rem;font-weight:800;color:#555;border-bottom:1.5px solid #D0C8BE;border-left:1px solid #D0C8BE;display:flex;align-items:center;justify-content:center}
+.child-tt-day-body{position:relative;border-left:1px solid #D0C8BE}
+.child-tt-hour-line{height:60px;border-top:1px solid #EDEBE8;box-sizing:border-box}
+.child-tt-event{position:absolute;left:2px;right:2px;border-radius:7px;padding:4px 6px;font-size:.71rem;font-weight:700;color:#444;overflow:hidden;box-sizing:border-box;z-index:1;line-height:1.35}
+.child-tt-event .ctt-name{display:block}
+.child-tt-event .ctt-time{display:block;font-size:.62rem;font-weight:400;opacity:.7;margin-top:1px}
+.child-tt-event-btns{position:absolute;top:2px;right:2px;display:flex;gap:2px;opacity:0;transition:opacity .1s}
+.child-tt-event:hover .child-tt-event-btns{opacity:1}
+.child-tt-ev-btn{width:15px;height:15px;border:none;border-radius:3px;background:rgba(0,0,0,.12);color:#555;font-size:.58rem;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
+.child-tt-add-ev{position:absolute;left:50%;transform:translateX(-50%);width:22px;height:22px;border-radius:50%;background:#C4714A18;border:1.5px dashed #C4714A55;color:#C4714A;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;bottom:6px}
+.child-tt-add-ev:hover{background:#C4714A30}
+/* event modal */
+.child-ev-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:1000;display:none;align-items:center;justify-content:center}
+.child-ev-overlay.open{display:flex}
+.child-ev-modal{background:#fff;border-radius:16px;padding:20px;width:min(93vw,300px);box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.child-ev-inp{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;box-sizing:border-box;margin-bottom:8px}
+.child-ev-inp:focus{border-color:#C4714A;outline:none}
+.child-ev-save{width:100%;padding:10px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:800;cursor:pointer;margin-top:4px}
+.child-tt-color-sw{width:20px;height:20px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;display:inline-block;flex-shrink:0;transition:border .1s}
+.child-tt-color-sw.on{border-color:#444}
 /* ── 보스 달력 ── */
 .boss-cal-wrap{max-width:900px}
 .boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -978,6 +984,27 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+<!-- ── 수업 추가/수정 모달 ── -->
+<div class="child-ev-overlay" id="child-ev-overlay" onclick="if(event.target===this)closeChildEvModal()">
+  <div class="child-ev-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <span id="child-ev-modal-title" style="font-size:.88rem;font-weight:800;color:#444">+ 수업 추가</span>
+        <span id="child-ev-day-label" style="font-size:.78rem;color:#C4714A;margin-left:6px;font-weight:700"></span>
+      </div>
+      <button onclick="closeChildEvModal()" style="border:none;background:none;font-size:1.1rem;cursor:pointer;color:#AAA">✕</button>
+    </div>
+    <input id="child-ev-name" class="child-ev-inp" placeholder="수업명 (예: 1교시, 태권도)">
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+      <input id="child-ev-start" type="time" class="child-ev-inp" style="flex:1;margin-bottom:0">
+      <span style="color:#AAA;font-size:.9rem">~</span>
+      <input id="child-ev-end" type="time" class="child-ev-inp" style="flex:1;margin-bottom:0">
+    </div>
+    <div id="child-ev-colors" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <button class="child-ev-save" onclick="saveChildEvent()">✅ 저장</button>
+  </div>
+</div>
+
     <!-- 초딩진우 일정 페이지 -->
     <div class="page" id="page-child">
       <div class="child-wrap">
@@ -998,19 +1025,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
         <div class="bno-list" id="child-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
         <div class="child-tt-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div style="font-size:.82rem;font-weight:800;color:#555">📋 주간 시간표</div>
             <button id="child-tt-edit-btn" onclick="toggleChildTtEdit()" style="padding:4px 12px;border-radius:8px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">✏️ 편집</button>
           </div>
-          <div style="overflow-x:auto">
-            <table class="child-tt-table">
-              <thead><tr>
-                <th style="text-align:left;min-width:76px;color:#888;font-weight:600">시간</th>
-                <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
-              </tr></thead>
-              <tbody id="child-tt-body"></tbody>
-            </table>
-          </div>
+          <div style="overflow-x:auto"><div id="child-tt-wrap"></div></div>
         </div>
       </div>
     </div>
@@ -2635,24 +2654,17 @@ async function delBcalEvent(id){
 const FB_CHILD = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_child.json';
 const CHILD_DAYS = ['월','화','수','목','금'];
 const CHILD_COLORS = ['#E8E0FF','#FFE8CC','#FFF3CC','#D0EEFF','#D0FFE8','#FFD6D6','#E8FFD0','#F5ECFF'];
-const CHILD_TT_DEFAULT_ROWS = [
-  {id:1, label:'8:40',  time:'8:40~9:00',   color:'#FFE8CC'},
-  {id:2, label:'1교시', time:'9:00~9:40',   color:'#E8E0FF'},
-  {id:3, label:'2교시', time:'9:50~10:30',  color:'#E8E0FF'},
-  {id:4, label:'3교시', time:'10:40~11:20', color:'#E8E0FF'},
-  {id:5, label:'4교시', time:'11:30~12:10', color:'#E8E0FF'},
-  {id:6, label:'급식',  time:'12:10~12:50', color:'#FFE8CC'},
-  {id:7, label:'5교시', time:'13:00~13:40', color:'#E8E0FF'},
-  {id:8, label:'늘봄',  time:'',            color:'#FFF3CC'},
-  {id:9, label:'학원1', time:'',            color:'#D0EEFF'},
-  {id:10,label:'학원2', time:'',            color:'#D0FFE8'},
-];
-let _childData = {memos:[], timetable:{rows:[], cells:{}}};
+const CHILD_TT_HOUR_H = 60; // px per hour
+const CHILD_TT_START  = 8;
+const CHILD_TT_END    = 18;
+let _childData = {memos:[], timetable:{schedule:{}}};
 let _childTtEdit = false;
 let childPendingImgs = [];
 let childMemoEditId = null;
 let _childSaveTimer = null;
-let _childNextRowId = 11;
+let _childEvDay = null;
+let _childEvId  = null;
+let _childEvColor = CHILD_COLORS[0];
 
 async function fetchChildData(){
   try{
@@ -2661,14 +2673,12 @@ async function fetchChildData(){
       const d=await r.json();
       if(d&&typeof d==='object'){
         _childData.memos=Array.isArray(d.memos)?d.memos:[];
-        // 신규 포맷 (rows+cells) 여부 확인
-        if(d.timetable&&Array.isArray(d.timetable.rows)){
+        // 신규 포맷 (schedule 객체) 여부 확인
+        if(d.timetable&&d.timetable.schedule&&typeof d.timetable.schedule==='object'){
           _childData.timetable=d.timetable;
         } else {
-          // 구형 데이터 → 기본값으로 초기화
-          _childData.timetable={rows:JSON.parse(JSON.stringify(CHILD_TT_DEFAULT_ROWS)),cells:{}};
+          _childData.timetable={schedule:{}};
         }
-        _childNextRowId=Math.max(10,...(_childData.timetable.rows||[]).map(r=>r.id||0))+1;
       }
     }
   }catch(e){}
@@ -2746,95 +2756,102 @@ function deleteChildMemo(id){
   _saveChildData();renderChildMemos();
 }
 
-// child 시간표
+// child 시간표 (세로 캘린더 형식)
+function _childToY(timeStr){
+  const [h,m]=(timeStr||'00:00').split(':').map(Number);
+  return (h-CHILD_TT_START)*CHILD_TT_HOUR_H+m;
+}
+function _childHourLabel(h){
+  if(h<12) return h+'시';
+  if(h===12) return '12시';
+  return '오후'+(h-12)+'시';
+}
 function renderChildTt(){
-  const tbody=document.getElementById('child-tt-body');if(!tbody) return;
-  if(!_childData.timetable||!Array.isArray(_childData.timetable.rows)||!_childData.timetable.rows.length)
-    _childData.timetable={rows:JSON.parse(JSON.stringify(CHILD_TT_DEFAULT_ROWS)),cells:{}};
-  const {rows,cells}=_childData.timetable;
-  tbody.innerHTML=rows.map(row=>{
-    const rc=row.color||'#E8E0FF';
-    const dayCells=CHILD_DAYS.map(day=>{
-      const key=`${row.id}_${day}`;
-      const raw=cells[key]||{};
-      const cell=typeof raw==='string'?{t:raw,s:'',e:''}:{t:raw.t||'',s:raw.s||raw.h||'',e:raw.e||''};
-      if(_childTtEdit){
-        const timeRange=cell.s&&cell.e?`${cell.s}~${cell.e}`:cell.s||cell.e||'';
-        return `<td style="padding:4px"><div style="display:flex;flex-direction:column;gap:2px">
-          <input class="child-tt-inp" value="${cell.t.replace(/"/g,'&quot;')}" placeholder="수업명" oninput="setChildCell(${row.id},'${day}','t',this.value)">
-          <div style="display:flex;gap:2px;align-items:center">
-            <input class="child-tt-inp" value="${cell.s.replace(/"/g,'&quot;')}" placeholder="시작" oninput="setChildCell(${row.id},'${day}','s',this.value)" style="color:#666;font-size:.65rem" type="time">
-            <span style="color:#BBB;font-size:.65rem">~</span>
-            <input class="child-tt-inp" value="${cell.e.replace(/"/g,'&quot;')}" placeholder="종료" oninput="setChildCell(${row.id},'${day}','e',this.value)" style="color:#666;font-size:.65rem" type="time">
-          </div>
-        </div></td>`;
-      }
-      if(!cell.t&&!cell.s&&!cell.e) return `<td><span class="child-tt-cell-empty">—</span></td>`;
-      const timeStr=cell.s&&cell.e?`${cell.s}~${cell.e}`:cell.s||cell.e||'';
-      return `<td style="padding:4px"><div class="child-tt-block" style="background:${rc}">
-        ${cell.t?`<span class="ctt-name">${cell.t}</span>`:''}
-        ${timeStr?`<span class="ctt-time">${timeStr}</span>`:''}
-      </div></td>`;
+  const wrap=document.getElementById('child-tt-wrap');if(!wrap) return;
+  if(!_childData.timetable) _childData.timetable={schedule:{}};
+  const sched=_childData.timetable.schedule||{};
+  const hours=Array.from({length:CHILD_TT_END-CHILD_TT_START},(_,i)=>CHILD_TT_START+i);
+  const totalPx=hours.length*CHILD_TT_HOUR_H;
+  const timeCol=`<div class="child-tt-time-col">
+    <div class="child-tt-time-hd"></div>
+    ${hours.map(h=>`<div class="child-tt-time-slot">${_childHourLabel(h)}</div>`).join('')}
+  </div>`;
+  const dayCols=CHILD_DAYS.map(day=>{
+    const events=(sched[day]||[]).slice().sort((a,b)=>a.start.localeCompare(b.start));
+    const evBlocks=events.map(ev=>{
+      const top=_childToY(ev.start);
+      const bot=_childToY(ev.end);
+      const h=Math.max(bot-top,24);
+      const btns=_childTtEdit?`<div class="child-tt-event-btns">
+        <button class="child-tt-ev-btn" onclick="event.stopPropagation();openChildEvModal('${day}',${ev.id})" title="수정">✏</button>
+        <button class="child-tt-ev-btn" onclick="event.stopPropagation();delChildEvent('${day}',${ev.id})" title="삭제">✕</button>
+      </div>`:'';
+      return `<div class="child-tt-event" style="top:${top}px;height:${h}px;background:${ev.color||CHILD_COLORS[0]}">
+        <span class="ctt-name">${ev.name||''}</span>
+        ${ev.start&&ev.end?`<span class="ctt-time">${ev.start}~${ev.end}</span>`:''}
+        ${btns}
+      </div>`;
     }).join('');
-    const colorSwatches=_childTtEdit?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${CHILD_COLORS.map(c=>`<span class="child-tt-color-sw${c===rc?' on':''}" style="background:${c}" onclick="setChildRowColor(${row.id},'${c}')"></span>`).join('')}</div>`:'';
-    const labelEdit=_childTtEdit
-      ?`<input class="child-tt-inp" value="${(row.time||'').replace(/"/g,'&quot;')}" placeholder="시간 (9:00~9:40)" oninput="setChildRowTime(${row.id},this.value)" style="font-weight:700;margin-bottom:3px">
-        <input class="child-tt-inp" value="${(row.label||'').replace(/"/g,'&quot;')}" placeholder="이름 선택 (1교시)" oninput="setChildRowLabel(${row.id},this.value)" style="color:#888;font-size:.68rem;margin-bottom:3px">
-        ${colorSwatches}`
-      :`<span class="child-tt-row-main">${row.time||row.label}</span>${row.time&&row.label?`<span class="child-tt-row-sub">${row.label}</span>`:''}`;
-    const delBtn=_childTtEdit?`<button class="child-tt-del-row" onclick="delChildRow(${row.id})" title="삭제">✕</button>`:'';
-    return `<tr>
-      <td style="padding:${_childTtEdit?'5px 6px':'8px 6px'};${_childTtEdit?`border-left:3px solid ${rc}`:''}">${labelEdit}${delBtn}</td>
-      ${dayCells}
-    </tr>`;
+    const addBtn=_childTtEdit?`<div class="child-tt-add-ev" onclick="openChildEvModal('${day}',null)" title="${day} 수업 추가">+</div>`:'';
+    const hourLines=hours.map(()=>`<div class="child-tt-hour-line"></div>`).join('');
+    return `<div class="child-tt-day-col">
+      <div class="child-tt-day-hd">${day}</div>
+      <div class="child-tt-day-body" style="height:${totalPx}px">${hourLines}${evBlocks}${addBtn}</div>
+    </div>`;
   }).join('');
-  if(_childTtEdit){
-    const addRow=document.createElement('tr');
-    addRow.innerHTML=`<td colspan="7"><button class="child-tt-add-row-btn" onclick="addChildRow()">+ 시간대 추가</button></td>`;
-    tbody.appendChild(addRow);
+  wrap.innerHTML=`<div class="child-tt-grid">${timeCol}${dayCols}</div>`;
+}
+// 이벤트 모달
+function _renderChildEvColors(){
+  const el=document.getElementById('child-ev-colors');if(!el) return;
+  el.innerHTML=CHILD_COLORS.map(c=>`<span class="child-tt-color-sw${c===_childEvColor?' on':''}" style="background:${c}" onclick="selChildEvColor('${c}')"></span>`).join('');
+}
+function selChildEvColor(c){_childEvColor=c;_renderChildEvColors();}
+function openChildEvModal(day,id){
+  _childEvDay=day;_childEvId=id;
+  const ev=id!==null?((_childData.timetable.schedule||{})[day]||[]).find(e=>e.id===id):null;
+  _childEvColor=ev?.color||CHILD_COLORS[0];
+  document.getElementById('child-ev-modal-title').textContent=id?'✏️ 수업 수정':'+ 수업 추가';
+  document.getElementById('child-ev-day-label').textContent=day+'요일';
+  document.getElementById('child-ev-name').value=ev?.name||'';
+  document.getElementById('child-ev-start').value=ev?.start||'';
+  document.getElementById('child-ev-end').value=ev?.end||'';
+  _renderChildEvColors();
+  document.getElementById('child-ev-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('child-ev-name').focus(),80);
+}
+function closeChildEvModal(){
+  document.getElementById('child-ev-overlay').classList.remove('open');
+  _childEvDay=null;_childEvId=null;
+}
+async function saveChildEvent(){
+  const name=document.getElementById('child-ev-name').value.trim();
+  const start=document.getElementById('child-ev-start').value;
+  const end=document.getElementById('child-ev-end').value;
+  if(!name||!start||!end){alert('수업명과 시작/종료 시간을 입력해주세요');return;}
+  if(!_childData.timetable.schedule) _childData.timetable.schedule={};
+  if(!_childData.timetable.schedule[_childEvDay]) _childData.timetable.schedule[_childEvDay]=[];
+  const sc=_childData.timetable.schedule[_childEvDay];
+  if(_childEvId!==null){
+    const ev=sc.find(e=>e.id===_childEvId);
+    if(ev){ev.name=name;ev.start=start;ev.end=end;ev.color=_childEvColor;}
+  } else {
+    sc.push({id:Date.now(),name,start,end,color:_childEvColor});
   }
+  closeChildEvModal();
+  await _saveChildData();
+  renderChildTt();
 }
-function setChildCell(rowId,day,field,val){
-  if(!_childData.timetable.cells) _childData.timetable.cells={};
-  const key=`${rowId}_${day}`;
-  const cur=_childData.timetable.cells[key];
-  const obj=(!cur||typeof cur==='string')?{t:typeof cur==='string'?cur:'',s:'',e:''}:{t:cur.t||'',s:cur.s||cur.h||'',e:cur.e||''};
-  obj[field]=val;
-  _childData.timetable.cells[key]=obj;
-  _childDebounceSave();
-}
-function setChildRowLabel(rowId,val){
-  const row=(_childData.timetable.rows||[]).find(r=>r.id===rowId);
-  if(row){row.label=val;_childDebounceSave();}
-}
-function setChildRowColor(rowId,color){
-  const row=(_childData.timetable.rows||[]).find(r=>r.id===rowId);
-  if(row){row.color=color;_childDebounceSave();renderChildTt();}
-}
-function setChildRowTime(rowId,val){
-  const row=(_childData.timetable.rows||[]).find(r=>r.id===rowId);
-  if(row){row.time=val;_childDebounceSave();}
-}
-function addChildRow(){
-  const time=prompt('시간을 입력하세요 (예: 14:00~15:00)');
-  if(!time||!time.trim()) return;
-  const label=prompt('이름을 입력하세요 (선택 — 예: 학원3, 비워도 됨)','');
-  const color=CHILD_COLORS[_childNextRowId%CHILD_COLORS.length];
-  _childData.timetable.rows.push({id:_childNextRowId++,label:(label||'').trim(),time:time.trim(),color});
-  _saveChildData();renderChildTt();
-}
-function delChildRow(id){
-  if(!confirm('이 시간대를 삭제할까요?')) return;
-  _childData.timetable.rows=(_childData.timetable.rows||[]).filter(r=>r.id!==id);
-  // 해당 행 cell 데이터도 삭제
-  for(const day of CHILD_DAYS) delete (_childData.timetable.cells||{})[`${id}_${day}`];
+function delChildEvent(day,id){
+  if(!confirm('삭제할까요?')) return;
+  const sc=(_childData.timetable.schedule||{})[day];
+  if(sc) _childData.timetable.schedule[day]=sc.filter(e=>e.id!==id);
   _saveChildData();renderChildTt();
 }
 function toggleChildTtEdit(){
   _childTtEdit=!_childTtEdit;
   const btn=document.getElementById('child-tt-edit-btn');
-  if(btn) btn.textContent=_childTtEdit?'💾 저장':'✏️ 편집';
-  if(!_childTtEdit) _saveChildData();
+  if(btn) btn.textContent=_childTtEdit?'✅ 완료':'✏️ 편집';
   renderChildTt();
 }
 
