@@ -330,8 +330,15 @@ a{text-decoration:none;color:inherit}
 .alarm-toggle input:checked+.alarm-toggle-sl:before{transform:translateX(16px)}
 .alarm-row-del{padding:4px 8px;border-radius:7px;border:none;background:#FFE8E8;color:#E03A3A;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .12s;flex-shrink:0}
 .alarm-row-del:hover{background:#FFD4D4}
+.alarm-btn-edit{padding:4px 8px;border-radius:7px;border:none;background:#E8F0FF;color:#3A7FE0;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .12s;flex-shrink:0}
+.alarm-btn-edit:hover{background:#D4E4FF}
+.alarm-row-edit-form{background:#FDF0EA;border-radius:12px;padding:10px 12px;border:1.5px solid #E8C4A8;display:flex;flex-direction:column;gap:7px}
+.alarm-edit-top{display:flex;gap:6px;align-items:center}
 .alarm-empty{text-align:center;padding:18px;color:#CCC;font-size:.8rem}
 .alarm-divider{border:none;border-top:1px solid #EDE8E1;margin:6px 0 20px}
+.alarm-day-section{margin-bottom:14px}
+.alarm-day-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#F5F0EB;border-radius:10px;margin-bottom:7px;font-size:.8rem;font-weight:800;color:#C4714A}
+.alarm-day-addrow{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
 /* ── 브라우저 알림 팝업 ── */
 .alarm-notify{
   position:fixed;bottom:20px;right:20px;z-index:9999;
@@ -440,13 +447,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <hr class="alarm-divider">
 
         <div class="alarm-section-title">📅 요일별 알람</div>
-        <div class="alarm-tabs" id="day-tabs"></div>
-        <div class="alarm-add-row">
-          <input type="time" class="alarm-time-input" id="day-time">
-          <input type="text" class="alarm-label-input" id="day-label" placeholder="알람 이름" maxlength="30">
-          <button class="alarm-add-btn" onclick="addAlarm('day')">+ 추가</button>
-        </div>
-        <div class="alarm-list" id="alarm-list-day"></div>
+        <div id="alarm-days-all"></div>
       </div>
     </div>
 
@@ -837,62 +838,119 @@ const firedSet = new Set();
 
 function saveAlarms(){ localStorage.setItem('boss_alarms', JSON.stringify(alarmData)); }
 
-function renderDayTabs(){
-  document.getElementById('day-tabs').innerHTML = DAY_NAMES.map((d,i)=>
-    `<button class="alarm-tab-day${i===activeDayIdx?' active':''}" onclick="selectDay(${i})">${d}</button>`
-  ).join('');
-}
-
-function selectDay(idx){
-  activeDayIdx = idx;
-  renderDayTabs();
-  renderAlarmList('day');
-}
-
-function renderAlarmList(type){
-  const listId = 'alarm-list-' + type;
-  const el = document.getElementById(listId);
+function renderDailyList(){
+  const el = document.getElementById('alarm-list-daily');
   if(!el) return;
-  const items = type==='daily' ? alarmData.daily : alarmData.day[activeDayIdx];
-  if(!items || !items.length){
-    el.innerHTML = '<div class="alarm-empty">알람이 없어요</div>';
-    return;
-  }
+  const items = alarmData.daily;
+  if(!items || !items.length){ el.innerHTML='<div class="alarm-empty">알람이 없어요</div>'; return; }
   el.innerHTML = items.map((a,i)=>`
     <div class="alarm-row">
       <span class="alarm-row-time">${a.time}</span>
       <span class="alarm-row-label">${a.label}</span>
-      <label class="alarm-toggle" title="${a.on?'켜짐':'꺼짐'}">
-        <input type="checkbox" ${a.on?'checked':''} onchange="${type==='daily'?`toggleDailyAlarm(${i},this.checked)`:`toggleDayAlarm(${activeDayIdx},${i},this.checked)`}">
+      <label class="alarm-toggle">
+        <input type="checkbox" ${a.on?'checked':''} onchange="toggleDailyAlarm(${i},this.checked)">
         <span class="alarm-toggle-sl"></span>
       </label>
-      <button class="alarm-row-del" onclick="${type==='daily'?`delDailyAlarm(${i})`:`delDayAlarm(${activeDayIdx},${i})`}">삭제</button>
-    </div>`
-  ).join('');
+      <button class="alarm-btn-edit" onclick="startAlarmEdit(this,'daily',null,${i})">수정</button>
+      <button class="alarm-row-del" onclick="delDailyAlarm(${i})">삭제</button>
+    </div>`).join('');
+}
+
+function renderAllDayAlarms(){
+  const container = document.getElementById('alarm-days-all');
+  if(!container) return;
+  container.innerHTML = DAY_NAMES.map((d,i)=>{
+    const items = alarmData.day[i];
+    const rows = items && items.length
+      ? items.map((a,j)=>`
+        <div class="alarm-row">
+          <span class="alarm-row-time">${a.time}</span>
+          <span class="alarm-row-label">${a.label}</span>
+          <label class="alarm-toggle">
+            <input type="checkbox" ${a.on?'checked':''} onchange="toggleDayAlarm(${i},${j},this.checked)">
+            <span class="alarm-toggle-sl"></span>
+          </label>
+          <button class="alarm-btn-edit" onclick="startAlarmEdit(this,'day',${i},${j})">수정</button>
+          <button class="alarm-row-del" onclick="delDayAlarm(${i},${j})">삭제</button>
+        </div>`).join('')
+      : '<div class="alarm-empty">알람 없음</div>';
+    return `
+      <div class="alarm-day-section">
+        <div class="alarm-day-header">${d}요일</div>
+        <div id="alarm-day-list-${i}">${rows}</div>
+        <div class="alarm-day-addrow">
+          <input type="time" class="alarm-time-input" id="day-time-${i}">
+          <input type="text" class="alarm-label-input" id="day-label-${i}" placeholder="알람 이름" maxlength="30">
+          <button class="alarm-add-btn" onclick="addDayAlarmFor(${i})">+ 추가</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function renderAllAlarmLists(){
-  renderDayTabs();
-  renderAlarmList('daily');
-  renderAlarmList('day');
+  renderDailyList();
+  renderAllDayAlarms();
 }
 
 function addAlarm(type){
-  const timeEl  = document.getElementById(type==='daily'?'daily-time':'day-time');
-  const labelEl = document.getElementById(type==='daily'?'daily-label':'day-label');
+  const timeEl  = document.getElementById('daily-time');
+  const labelEl = document.getElementById('daily-label');
   const time  = timeEl.value;
   const label = labelEl.value.trim() || '알람';
   if(!time){ alert('시간을 선택해주세요!'); return; }
-  const entry = {time, label, on:true};
-  if(type==='daily'){
-    alarmData.daily.push(entry);
-    alarmData.daily.sort((a,b)=>a.time.localeCompare(b.time));
-  } else {
-    alarmData.day[activeDayIdx].push(entry);
-    alarmData.day[activeDayIdx].sort((a,b)=>a.time.localeCompare(b.time));
-  }
-  saveAlarms(); renderAlarmList(type);
+  alarmData.daily.push({time, label, on:true});
+  alarmData.daily.sort((a,b)=>a.time.localeCompare(b.time));
+  saveAlarms(); renderDailyList();
   timeEl.value=''; labelEl.value='';
+}
+
+function addDayAlarmFor(dayIdx){
+  const timeEl  = document.getElementById('day-time-'+dayIdx);
+  const labelEl = document.getElementById('day-label-'+dayIdx);
+  const time  = timeEl.value;
+  const label = labelEl.value.trim() || '알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  alarmData.day[dayIdx].push({time, label, on:true});
+  alarmData.day[dayIdx].sort((a,b)=>a.time.localeCompare(b.time));
+  saveAlarms(); renderAllDayAlarms();
+}
+
+function startAlarmEdit(btn, type, dayIdx, idx){
+  const row = btn.closest('.alarm-row');
+  const a = type==='daily' ? alarmData.daily[idx] : alarmData.day[dayIdx][idx];
+  const saveStr = type==='daily'
+    ? `saveAlarmEdit('daily',null,${idx})`
+    : `saveAlarmEdit('day',${dayIdx},${idx})`;
+  row.outerHTML = `
+  <div class="alarm-row-edit-form">
+    <div class="alarm-edit-top">
+      <input type="time" class="alarm-time-input" id="ea-time" value="${a.time}">
+      <input type="text" class="alarm-label-input" id="ea-label" value="${a.label}" placeholder="알람 이름" maxlength="30">
+    </div>
+    <div class="inline-btns">
+      <button class="ibtn ibtn-cancel" onclick="cancelAlarmEdit('${type}')">취소</button>
+      <button class="ibtn ibtn-save" onclick="${saveStr}">저장</button>
+    </div>
+  </div>`;
+}
+
+function cancelAlarmEdit(type){
+  if(type==='daily') renderDailyList(); else renderAllDayAlarms();
+}
+
+function saveAlarmEdit(type, dayIdx, idx){
+  const time  = document.getElementById('ea-time').value;
+  const label = (document.getElementById('ea-label').value||'').trim() || '알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  if(type==='daily'){
+    alarmData.daily[idx] = {...alarmData.daily[idx], time, label};
+    alarmData.daily.sort((a,b)=>a.time.localeCompare(b.time));
+    saveAlarms(); renderDailyList();
+  } else {
+    alarmData.day[dayIdx][idx] = {...alarmData.day[dayIdx][idx], time, label};
+    alarmData.day[dayIdx].sort((a,b)=>a.time.localeCompare(b.time));
+    saveAlarms(); renderAllDayAlarms();
+  }
 }
 
 function toggleDailyAlarm(idx, on){ alarmData.daily[idx].on=on; saveAlarms(); }
@@ -900,11 +958,11 @@ function toggleDayAlarm(dayIdx, idx, on){ alarmData.day[dayIdx][idx].on=on; save
 
 function delDailyAlarm(idx){
   if(!confirm('알람을 삭제할까요?')) return;
-  alarmData.daily.splice(idx,1); saveAlarms(); renderAlarmList('daily');
+  alarmData.daily.splice(idx,1); saveAlarms(); renderDailyList();
 }
 function delDayAlarm(dayIdx, idx){
   if(!confirm('알람을 삭제할까요?')) return;
-  alarmData.day[dayIdx].splice(idx,1); saveAlarms(); renderAlarmList('day');
+  alarmData.day[dayIdx].splice(idx,1); saveAlarms(); renderAllDayAlarms();
 }
 
 function closeAlarmNotify(){
