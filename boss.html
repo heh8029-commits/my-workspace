@@ -180,6 +180,16 @@ a{text-decoration:none;color:inherit}
 .placeholder .ph-title{font-size:.95rem;font-weight:700;color:#BBA99A;margin-bottom:6px}
 .placeholder .ph-sub{font-size:.78rem;color:#CCBBAE}
 
+/* ── IFRAME 페이지 ── */
+.page-iframe-wrap{
+  display:flex;flex-direction:column;
+  height:calc(100vh - 82px);
+  margin:-22px -20px;
+}
+.page-iframe-wrap iframe{
+  flex:1;border:none;width:100%;
+}
+
 /* ── BOOKMARK POPUP (헤더 바로가기 아이콘) ── */
 .bm-overlay{
   display:none;position:fixed;inset:0;z-index:400;
@@ -365,6 +375,13 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- iframe 임베드 페이지 -->
+    <div class="page" id="page-iframe">
+      <div class="page-iframe-wrap">
+        <iframe id="embed-frame" src="" allowfullscreen></iframe>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -398,7 +415,7 @@ const MENUS = [
     {id:'profit',     label:'월별손익',         emoji:'📈'},
     {id:'tax',        label:'부가세/종소세/세금', emoji:'💰'},
     {id:'sales-ad',   label:'매출정리/광고비',   emoji:'📊'},
-    {id:'gross-time', label:'그로스시간별매출',  emoji:'⏰'},
+    {id:'gross-time', label:'그로스시간별매출',  emoji:'⏰', url:'https://heh8029-commits.github.io/my-workspace/coupang.html'},
     {id:'design',     label:'디자인관리',        emoji:'🎨'},
     {id:'copy',       label:'문구추천&CT이미지', emoji:'✍️'},
     {id:'product',    label:'상품관리',          emoji:'📦'},
@@ -529,8 +546,17 @@ function setMenu(id){
 function setSub(id, label){
   activeSubMenu=id;
   renderSidebar(); renderMobileSub();
-  document.getElementById('ph-title').textContent = label;
-  showPage('sub');
+
+  // URL이 있는 서브메뉴는 iframe으로 표시
+  const menu = MENUS.find(m=>m.id===activeMenu);
+  const subItem = menu && menu.sub ? menu.sub.find(s=>s.id===id) : null;
+  if(subItem && subItem.url){
+    document.getElementById('embed-frame').src = subItem.url;
+    showPage('iframe');
+  } else {
+    document.getElementById('ph-title').textContent = label;
+    showPage('sub');
+  }
 }
 
 function showPage(id){
