@@ -461,6 +461,14 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .travel-filter-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
 .tv-tab{padding:5px 11px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.74rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s}
 .tv-tab.on{background:#C4714A;border-color:#C4714A;color:#fff}
+.tv-cat-wrap{display:inline-flex;align-items:center;gap:1px}
+.tv-cat-del{width:14px;height:14px;border:none;background:rgba(200,70,70,.15);border-radius:50%;font-size:.52rem;cursor:pointer;color:#C04040;padding:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:-4px}
+.tv-cat-del:hover{background:#E03A3A;color:#fff}
+.tv-cat-edit-btn{padding:3px 8px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.72rem;cursor:pointer;color:#AAA;transition:all .13s}
+.tv-cat-edit-btn.on{background:#FFF3CC;border-color:#EED888;color:#AA8800}
+.tv-cat-add-row{display:flex;gap:5px;align-items:center;margin-top:7px;flex-wrap:wrap}
+.tv-cat-emoji-inp{width:36px;padding:4px 5px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.9rem;text-align:center;font-family:inherit}
+.tv-cat-emoji-inp:focus{border-color:#C4714A;outline:none}
 .tv-add-row{display:flex;gap:6px;margin-bottom:11px}
 .tv-cat-sel{padding:6px 7px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;background:#fff;color:#333;flex-shrink:0}
 .tv-inp{flex:1;padding:6px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit}
@@ -963,9 +971,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
           </div>
           <div class="travel-filter-tabs" id="tv-filter-tabs"></div>
           <div class="tv-add-row">
-            <select class="tv-cat-sel" id="tv-cat-sel">
-              <option>공통</option><option>은희</option><option>진우</option><option>민호</option><option>먹거리</option>
-            </select>
+            <select class="tv-cat-sel" id="tv-cat-sel"></select>
             <input class="tv-inp" id="tv-item-inp" placeholder="준비물..." maxlength="50" onkeydown="if(event.key==='Enter')addTvItem()">
             <button class="tv-add-btn" onclick="addTvItem()">+</button>
           </div>
@@ -3015,8 +3021,9 @@ const TV_DEFAULT_ITEMS = [
   {id:34,cat:'먹거리',text:'계란',done:false},{id:35,cat:'먹거리',text:'김자반',done:false},{id:36,cat:'먹거리',text:'김치',done:false},{id:37,cat:'먹거리',text:'라면',done:false},
   {id:38,cat:'먹거리',text:'비닐류 비닐장갑',done:false},{id:39,cat:'먹거리',text:'일회용수저들',done:false},{id:40,cat:'먹거리',text:'캠핑가면소금',done:false},{id:41,cat:'먹거리',text:'햇반',done:false},
 ];
-let _tvData = {items:[],trips:[],daily:{},prep_memos:[]};
+let _tvData = {items:[],trips:[],daily:{},prep_memos:[],cats:[]};
 let _tvFilter = '전체';
+let _tvCatEdit = false;
 let _tvSelTripId = null;
 let _tvSaveTimer = null;
 let tvPendingImgs = [];
@@ -3038,12 +3045,13 @@ async function fetchTravelData(){
           trips:Array.isArray(d.trips)?d.trips:[],
           daily:d.daily&&typeof d.daily==='object'?d.daily:{},
           prep_memos:memos,
+          cats:Array.isArray(d.cats)&&d.cats.length?d.cats:[...TV_CATS],
         };
         return;
       }
     }
   }catch(e){}
-  _tvData={items:[...TV_DEFAULT_ITEMS],trips:[],daily:{},prep_memos:[]};
+  _tvData={items:[...TV_DEFAULT_ITEMS],trips:[],daily:{},prep_memos:[],cats:[...TV_CATS]};
 }
 async function _saveTravelData(){
   try{await fetch(FB_TRAVEL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_tvData)});}catch(e){}
@@ -3060,17 +3068,62 @@ function renderTravel(){
   _tvRenderDaily();
   _tvRenderPrepMemos();
 }
+function _tvGetCats(){return _tvData.cats&&_tvData.cats.length?_tvData.cats:[...TV_CATS];}
 function _tvRenderFilterTabs(){
   const el=document.getElementById('tv-filter-tabs');
   if(!el) return;
-  const tabs=[{id:'전체',emoji:'🔍'},...TV_CATS];
-  el.innerHTML=tabs.map(t=>`<button class="tv-tab${_tvFilter===t.id?' on':''}" onclick="tvSetFilter('${t.id}')">${t.emoji} ${t.id}</button>`).join('');
+  const cats=_tvGetCats();
+  let html=`<button class="tv-tab${_tvFilter==='전체'?' on':''}" onclick="tvSetFilter('전체')">🔍 전체</button>`;
+  cats.forEach(t=>{
+    html+=`<span class="tv-cat-wrap">
+      <button class="tv-tab${_tvFilter===t.id?' on':''}" onclick="tvSetFilter('${t.id}')">${t.emoji} ${t.id}</button>
+      ${_tvCatEdit?`<button class="tv-cat-del" onclick="deleteTvCat('${t.id}')" title="${t.id} 삭제">✕</button>`:''}
+    </span>`;
+  });
+  html+=`<button class="tv-cat-edit-btn${_tvCatEdit?' on':''}" onclick="toggleTvCatEdit()" title="카테고리 편집">⚙️</button>`;
+  if(_tvCatEdit){
+    html+=`<div class="tv-cat-add-row">
+      <input id="tv-new-cat-emoji" class="tv-cat-emoji-inp" placeholder="😀" maxlength="2">
+      <input id="tv-new-cat-name" class="tv-inp" placeholder="카테고리 이름..." maxlength="10" style="flex:none;width:110px" onkeydown="if(event.key==='Enter')addTvCat()">
+      <button class="tv-add-btn" style="font-size:.75rem;padding:5px 10px" onclick="addTvCat()">+ 추가</button>
+    </div>`;
+  }
+  el.innerHTML=html;
+  _tvRenderCatSel();
+}
+function _tvRenderCatSel(){
+  const sel=document.getElementById('tv-cat-sel');
+  if(!sel) return;
+  const cats=_tvGetCats();
+  sel.innerHTML=cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.id}</option>`).join('');
 }
 function tvSetFilter(cat){_tvFilter=cat;_tvRenderFilterTabs();_tvRenderItems();}
+function toggleTvCatEdit(){_tvCatEdit=!_tvCatEdit;_tvRenderFilterTabs();}
+function addTvCat(){
+  const emoji=(document.getElementById('tv-new-cat-emoji')?.value||'📌').trim()||'📌';
+  const name=document.getElementById('tv-new-cat-name')?.value.trim();
+  if(!name) return;
+  if(!_tvData.cats||!_tvData.cats.length) _tvData.cats=[..._tvGetCats()];
+  if(_tvData.cats.find(c=>c.id===name)){alert('이미 있는 카테고리예요');return;}
+  _tvData.cats.push({id:name,emoji});
+  _tvDebounceSave();_tvRenderFilterTabs();
+}
+function deleteTvCat(id){
+  const cnt=_tvData.items.filter(i=>i.cat===id).length;
+  if(!confirm(`'${id}' 카테고리를 삭제할까요?${cnt?`\n(항목 ${cnt}개도 함께 삭제)`:''}`)) return;
+  if(!_tvData.cats||!_tvData.cats.length) _tvData.cats=[..._tvGetCats()];
+  _tvData.cats=_tvData.cats.filter(c=>c.id!==id);
+  _tvData.items=_tvData.items.filter(i=>i.cat!==id);
+  if(_tvFilter===id) _tvFilter='전체';
+  _tvDebounceSave();_tvRenderFilterTabs();_tvRenderItems();
+}
 function _tvRenderItems(){
   const el=document.getElementById('tv-item-grid');
   if(!el) return;
-  const list=_tvFilter==='전체'?_tvData.items:_tvData.items.filter(i=>i.cat===_tvFilter);
+  const catOrder=_tvGetCats().map(c=>c.id);
+  const list=_tvFilter==='전체'
+    ?[..._tvData.items].sort((a,b)=>(catOrder.indexOf(a.cat)-catOrder.indexOf(b.cat)))
+    :_tvData.items.filter(i=>i.cat===_tvFilter);
   if(!list.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:#CCC;font-size:.8rem">항목이 없어요</div>';return;}
   el.innerHTML=list.map(item=>`
     <div class="tv-item${item.done?' done':''}">
@@ -3085,7 +3138,10 @@ function addTvItem(){
   const text=document.getElementById('tv-item-inp').value.trim();
   if(!text) return;
   const newId=Math.max(0,..._tvData.items.map(i=>i.id||0))+1;
-  _tvData.items.push({id:newId,cat,text,done:false});
+  // 같은 카테고리 맨 마지막 위치에 삽입
+  const indices=_tvData.items.map((item,idx)=>item.cat===cat?idx:-1).filter(i=>i>=0);
+  const insertAt=indices.length?indices[indices.length-1]+1:_tvData.items.length;
+  _tvData.items.splice(insertAt,0,{id:newId,cat,text,done:false});
   document.getElementById('tv-item-inp').value='';
   _tvRenderItems();_tvDebounceSave();
 }
