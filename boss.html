@@ -452,10 +452,9 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .exp-note-title{font-size:.82rem;font-weight:800;color:#C4714A;margin-bottom:10px}
 /* ── 여행갈때 ── */
 .travel-wrap{max-width:1150px}
-.travel-layout{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
-@media(max-width:800px){.travel-layout{grid-template-columns:1fr}}
-.travel-card{background:#fff;border-radius:14px;padding:15px 15px 12px;border:1px solid #EDE8E1;margin-bottom:0}
-.travel-right{display:flex;flex-direction:column;gap:14px}
+.travel-card{background:#fff;border-radius:14px;padding:15px 15px 12px;border:1px solid #EDE8E1}
+.tv-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+@media(max-width:720px){.tv-bottom-grid{grid-template-columns:1fr}}
 .travel-sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
 .travel-sec-title{font-size:.86rem;font-weight:800;color:#333}
 .travel-reset-btn{padding:4px 11px;border-radius:8px;background:#FFF0EA;border:1px solid #F5B8A0;font-size:.71rem;font-weight:700;color:#C4714A;cursor:pointer}
@@ -903,35 +902,37 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="font-size:.9rem;font-weight:800;color:#555">✈️ 여행갈때</div>
           <button onclick="fetchTravelData().then(()=>renderTravel())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
-        <div class="travel-layout">
-          <!-- 왼쪽: 체크리스트 -->
-          <div class="travel-card">
-            <div class="travel-sec-hd">
-              <div class="travel-sec-title">🧳 준비물 체크리스트</div>
-              <button class="travel-reset-btn" onclick="resetTvChecks()">🔄 초기화</button>
-            </div>
-            <div class="travel-filter-tabs" id="tv-filter-tabs"></div>
-            <div class="tv-add-row">
-              <select class="tv-cat-sel" id="tv-cat-sel">
-                <option>공통</option><option>은희</option><option>진우</option><option>민호</option><option>먹거리</option>
-              </select>
-              <input class="tv-inp" id="tv-item-inp" placeholder="준비물..." maxlength="50" onkeydown="if(event.key==='Enter')addTvItem()">
-              <button class="tv-add-btn" onclick="addTvItem()">+</button>
-            </div>
-            <div class="tv-grid" id="tv-item-grid"></div>
+        <!-- 체크리스트 전체 폭 -->
+        <div class="travel-card" style="margin-bottom:14px">
+          <div class="travel-sec-hd">
+            <div class="travel-sec-title">🧳 준비물 체크리스트</div>
+            <button class="travel-reset-btn" onclick="resetTvChecks()">🔄 초기화</button>
           </div>
-          <!-- 오른쪽 -->
-          <div class="travel-right">
-            <!-- 준비 메모 -->
-            <div class="travel-card">
-              <div class="travel-sec-hd"><div class="travel-sec-title">📝 준비 메모</div></div>
-              <div class="tv-memo-row">
-                <input class="tv-memo-inp" id="tv-memo-inp" placeholder="메모 추가..." maxlength="200" onkeydown="if(event.key==='Enter')addTvMemo()">
-                <button class="tv-add-btn" onclick="addTvMemo()">+</button>
+          <div class="travel-filter-tabs" id="tv-filter-tabs"></div>
+          <div class="tv-add-row">
+            <select class="tv-cat-sel" id="tv-cat-sel">
+              <option>공통</option><option>은희</option><option>진우</option><option>민호</option><option>먹거리</option>
+            </select>
+            <input class="tv-inp" id="tv-item-inp" placeholder="준비물..." maxlength="50" onkeydown="if(event.key==='Enter')addTvItem()">
+            <button class="tv-add-btn" onclick="addTvItem()">+</button>
+          </div>
+          <div class="tv-grid" id="tv-item-grid"></div>
+        </div>
+        <!-- 아래: 2열 (준비메모 | 여행일정+날짜별) -->
+        <div class="tv-bottom-grid">
+          <!-- 준비 메모 (보스메모 스타일) -->
+          <div class="travel-card">
+            <div class="travel-sec-hd"><div class="travel-sec-title">📝 준비 메모</div></div>
+            <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px;margin-bottom:10px">
+              <div style="display:flex;gap:8px">
+                <input class="bm-input" id="tv-memo-inp" placeholder="메모 추가..." maxlength="300" onkeydown="if(event.key==='Enter')addTvMemo()">
+                <button class="bm-add-btn" onclick="addTvMemo()">➕</button>
               </div>
-              <div class="tv-memo-list" id="tv-memo-list"></div>
             </div>
-            <!-- 여행 일정 -->
+            <div class="bno-list" id="tv-memo-list"></div>
+          </div>
+          <!-- 여행일정 + 날짜별 -->
+          <div style="display:flex;flex-direction:column;gap:14px">
             <div class="travel-card">
               <div class="travel-sec-hd">
                 <div class="travel-sec-title">✈️ 여행 일정</div>
@@ -939,7 +940,6 @@ body.mode-mob .mobile-subnav{display:flex!important}
               </div>
               <div class="tv-trip-chips" id="tv-trip-chips"></div>
             </div>
-            <!-- 날짜별 일정 -->
             <div class="travel-card" id="tv-daily-card" style="display:none">
               <div class="travel-sec-hd"><div class="travel-sec-title">📅 날짜별 일정</div></div>
               <div id="tv-daily-cont"></div>
@@ -2575,11 +2575,14 @@ async function fetchTravelData(){
     if(r.ok){
       const d=await r.json();
       if(d&&typeof d==='object'){
+        let memos=Array.isArray(d.prep_memos)?d.prep_memos:[];
+        // 구형 문자열 배열 → 객체 변환
+        if(memos.length&&typeof memos[0]==='string') memos=memos.map((t,i)=>({id:i+1,text:t,done:false}));
         _tvData={
           items:Array.isArray(d.items)?d.items:[...TV_DEFAULT_ITEMS],
           trips:Array.isArray(d.trips)?d.trips:[],
           daily:d.daily&&typeof d.daily==='object'?d.daily:{},
-          prep_memos:Array.isArray(d.prep_memos)?d.prep_memos:[],
+          prep_memos:memos,
         };
         return;
       }
@@ -2715,27 +2718,35 @@ function saveTvDaily(date,text){
   _tvData.daily[date]=text;
   _tvDebounceSave();
 }
-// 준비 메모
+// 준비 메모 (보스메모 스타일)
 function _tvRenderPrepMemos(){
   const el=document.getElementById('tv-memo-list');
   if(!el) return;
-  if(!_tvData.prep_memos.length){el.innerHTML='<div style="text-align:center;padding:12px;color:#CCC;font-size:.75rem">메모를 추가해요</div>';return;}
-  el.innerHTML=_tvData.prep_memos.map((m,i)=>`
-    <div class="tv-memo-item">
-      <span style="flex:1;word-break:break-word">${m}</span>
-      <button class="tv-del" onclick="deleteTvMemo(${i})" style="margin-top:1px">✕</button>
+  if(!_tvData.prep_memos.length){el.innerHTML='<div style="padding:16px;text-align:center;color:#CCC;font-size:.78rem">메모를 추가해요</div>';return;}
+  el.innerHTML=_tvData.prep_memos.map(m=>`
+    <div class="bm-row${m.done?' done':''}">
+      <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="toggleTvMemo(${m.id},this.checked)">
+      <span class="bm-text">${(m.text||'').replace(/</g,'&lt;')}</span>
+      <div class="bm-actions">
+        <button class="bno-icon del" onclick="deleteTvMemo(${m.id})" title="삭제">🗑️</button>
+      </div>
     </div>`).join('');
 }
 function addTvMemo(){
   const inp=document.getElementById('tv-memo-inp');
   const text=inp.value.trim();
   if(!text) return;
-  _tvData.prep_memos.push(text);
+  const newId=Math.max(0,..._tvData.prep_memos.map(m=>m.id||0))+1;
+  _tvData.prep_memos.push({id:newId,text,done:false});
   inp.value='';
   _tvRenderPrepMemos();_tvDebounceSave();
 }
-function deleteTvMemo(i){
-  _tvData.prep_memos.splice(i,1);
+function toggleTvMemo(id,checked){
+  const m=_tvData.prep_memos.find(x=>x.id===id);
+  if(m){m.done=checked;_tvRenderPrepMemos();_tvDebounceSave();}
+}
+function deleteTvMemo(id){
+  _tvData.prep_memos=_tvData.prep_memos.filter(m=>m.id!==id);
   _tvRenderPrepMemos();_tvDebounceSave();
 }
 
