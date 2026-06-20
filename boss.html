@@ -654,6 +654,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <!-- 달력 페이지 -->
     <div class="page" id="page-calendar">
       <div class="boss-cal-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">📅 달력/일정</div>
+          <button onclick="Promise.all([fetchCalEvents(),fetchExpenses()]).then(()=>bossRenderCal())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
         <div class="boss-cal-header">
           <button class="boss-cal-nav" onclick="bossCalPrev()">‹</button>
           <div class="boss-cal-title" id="boss-cal-title"></div>
@@ -695,6 +699,26 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <button class="bm-attach-btn" onclick="document.getElementById('bcal-file-inp').click()">📎 이미지 첨부</button>
             <span id="bcal-img-status" style="font-size:.73rem;color:#C4714A;font-weight:600"></span>
           </div>
+          <div id="bcal-img-thumbs" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px"></div>
+          <!-- 알람 설정 -->
+          <div style="border-top:1px solid #EDE8E1;margin-top:10px;padding-top:10px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-size:.78rem;font-weight:700;color:#555">🔔 알람</span>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.74rem;color:#888">
+                <input type="checkbox" id="bcal-alarm-toggle" onchange="bcalToggleAlarm(this.checked)"> 알람 설정
+              </label>
+            </div>
+            <div id="bcal-alarm-opts" style="display:none;background:#FBF7F4;border-radius:8px;padding:9px 10px;border:1px solid #EDE8E1;flex-direction:column;gap:7px">
+              <label style="display:flex;align-items:center;gap:7px;font-size:.76rem;color:#444;cursor:pointer">
+                <input type="checkbox" id="bcal-alarm-d0" checked> 당일
+                <input type="time" id="bcal-alarm-d0t" value="09:00" style="padding:3px 6px;border-radius:6px;border:1px solid #DDD;font-size:.76rem;font-family:inherit;background:#fff">
+              </label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:.76rem;color:#444;cursor:pointer">
+                <input type="checkbox" id="bcal-alarm-d1"> 전날
+                <input type="time" id="bcal-alarm-d1t" value="21:00" style="padding:3px 6px;border-radius:6px;border:1px solid #DDD;font-size:.76rem;font-family:inherit;background:#fff">
+              </label>
+            </div>
+          </div>
           <button class="bcal-save" onclick="saveBcalEvent()">✅ 저장</button>
         </div>
       </div>
@@ -703,6 +727,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <!-- 알림설정 페이지 -->
     <div class="page" id="page-alarm">
       <div style="max-width:620px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">🔔 알림 설정</div>
+          <button onclick="renderAllAlarmLists()" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
         <!-- 알람 추가 폼 -->
         <div style="background:#FDF0EA;border-radius:14px;padding:16px;margin-bottom:18px;border:1px solid #E8C4A8">
           <div style="font-size:.85rem;font-weight:800;color:#C4714A;margin-bottom:12px">🔔 알람 추가</div>
@@ -728,6 +756,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <button onclick="refreshAlarms()" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #E8C4A8;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
         <div id="alarm-list-all"><div class="alarm-empty">불러오는 중...</div></div>
+        <!-- 일정 알람 섹션 -->
+        <div style="display:flex;align-items:center;margin-top:20px;margin-bottom:8px">
+          <div class="alarm-section-title" style="margin:0">📅 일정 알람</div>
+        </div>
+        <div id="cal-alarm-list"><div class="alarm-empty">불러오는 중...</div></div>
       </div>
     </div>
 
@@ -1438,7 +1471,32 @@ function fireNotify(label,hhmm){
   setTimeout(()=>{check();setInterval(check,60000);},msToNext);
 })();
 
-function renderAllAlarmLists(){ fetchAlarms().then(()=>renderAlarmList()); }
+function renderAllAlarmLists(){
+  Promise.all([fetchAlarms(),fetchCalEvents()]).then(()=>{renderAlarmList();renderCalAlarms();});
+}
+function renderCalAlarms(){
+  const el=document.getElementById('cal-alarm-list');
+  if(!el) return;
+  const today=new Date().toISOString().slice(0,10);
+  const evs=(_calEvents||[]).filter(ev=>ev.date>=today&&ev.alarms&&ev.alarms.length>0);
+  if(!evs.length){el.innerHTML='<div class="alarm-empty">등록된 일정 알람이 없어요</div>';return;}
+  evs.sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=evs.map(ev=>{
+    const lines=ev.alarms.map(a=>`${a.offset===0?'당일':'전날'} ${a.time}`).join(' / ');
+    return `<div class="alarm-row" style="align-items:center">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.82rem;font-weight:700;color:#333">${ev.emoji||'📅'} ${ev.title||''}</div>
+        <div style="font-size:.71rem;color:#888;margin-top:2px">📅 ${ev.date} &nbsp; ⏰ ${lines}</div>
+      </div>
+      <button onclick="delCalAlarm(${ev.id})" class="bno-icon del" title="알람 삭제">🗑️</button>
+    </div>`;
+  }).join('');
+}
+async function delCalAlarm(id){
+  if(!confirm('일정 알람을 삭제할까요?')) return;
+  const ev=_calEvents.find(e=>e.id===id);
+  if(ev){ev.alarms=[];await _saveCalEvents();renderCalAlarms();}
+}
 
 // ── 월별손익 메모 ────────────────────────────────────────────
 const FB_PNL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_memos.json';
@@ -2057,8 +2115,10 @@ function hardRefresh(){
   btn.classList.add('spinning');
   setTimeout(()=>btn.classList.remove('spinning'), 700);
   const pid = (document.querySelector('.page.active')||{}).id || '';
-  if(pid==='page-alarm'){
-    fetchAlarms().then(()=>renderAlarmList());
+  if(pid==='page-calendar'){
+    Promise.all([fetchCalEvents(),fetchExpenses()]).then(()=>bossRenderCal());
+  } else if(pid==='page-alarm'){
+    Promise.all([fetchAlarms(),fetchCalEvents()]).then(()=>{renderAlarmList();renderCalAlarms();});
   } else if(pid==='page-expense'){
     fetchExpenses().then(()=>renderExpenses());
   } else if(pid==='page-profit'){
@@ -2083,7 +2143,7 @@ let _calYear = new Date().getFullYear();
 let _calMonth = new Date().getMonth()+1;
 let _calSelDate = null;
 let _calEvents = [];
-let _bcalPendingImg = null;
+let _bcalPendingImgs = [];
 let _bcalSelEmoji = '📅';
 
 const KR_HOL = {
@@ -2219,7 +2279,7 @@ function _bossCalPanel(dateStr){
         <div style="flex:1;min-width:0">
           <div style="font-size:.83rem;font-weight:700;color:#222">${ev.title||''}</div>
           ${ev.memo?`<div style="font-size:.74rem;color:#666;line-height:1.4;margin-top:2px;word-break:break-word">${ev.memo}</div>`:''}
-          ${ev.img?`<img src="${ev.img.replace('/upload/','/upload/w_320/')}" style="max-width:100%;border-radius:8px;margin-top:5px;cursor:pointer" onclick="openImgModal('${ev.img}')">`: ''}
+          ${(()=>{const imgs=ev.imgs?.length?ev.imgs:(ev.img?[ev.img]:[]);return imgs.map(u=>`<img src="${u.replace('/upload/','/upload/w_320/')}" style="max-width:100%;border-radius:8px;margin-top:4px;cursor:pointer" onclick="openImgModal('${u}')">`).join('');})()}
         </div>
         <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
           <button onclick="editBcalEvent(${ev.id})" style="width:24px;height:24px;border-radius:6px;border:none;background:#F5F0EB;color:#C4714A;font-size:.75rem;cursor:pointer">✏️</button>
@@ -2243,12 +2303,19 @@ function _bcalRenderEmojiRow(sel){
   document.getElementById('bcal-emoji-row').innerHTML=BCAL_EMOJIS.map(e=>`<button class="bcal-emoji-btn${e===sel?' on':''}" onclick="bcalSelEmoji('${e}')">${e}</button>`).join('');
 }
 function openBcal(dateStr){
-  _bcalPendingImg=null;_bcalSelEmoji='📅';_bcalEditId=null;
+  _bcalPendingImgs=[];_bcalSelEmoji='📅';_bcalEditId=null;
   document.getElementById('bcal-date-inp').value=dateStr||'';
   document.getElementById('bcal-title-inp').value='';
   document.getElementById('bcal-memo-inp').value='';
   document.getElementById('bcal-emoji-inp').value='📅';
   document.getElementById('bcal-img-status').textContent='';
+  document.getElementById('bcal-img-thumbs').innerHTML='';
+  document.getElementById('bcal-alarm-toggle').checked=false;
+  document.getElementById('bcal-alarm-opts').style.display='none';
+  document.getElementById('bcal-alarm-d0').checked=true;
+  document.getElementById('bcal-alarm-d0t').value='09:00';
+  document.getElementById('bcal-alarm-d1').checked=false;
+  document.getElementById('bcal-alarm-d1t').value='21:00';
   document.getElementById('bcal-modal-ttl').textContent='📅 일정 추가';
   _bcalRenderEmojiRow('📅');
   document.getElementById('bcal-overlay').classList.add('open');
@@ -2257,18 +2324,32 @@ function openBcal(dateStr){
 function editBcalEvent(id){
   const ev=_calEvents.find(e=>e.id===id);
   if(!ev) return;
-  _bcalEditId=id;_bcalPendingImg=ev.img||null;_bcalSelEmoji=ev.emoji||'📅';
+  _bcalEditId=id;_bcalPendingImgs=ev.imgs?[...ev.imgs]:(ev.img?[ev.img]:[]);_bcalSelEmoji=ev.emoji||'📅';
   document.getElementById('bcal-date-inp').value=ev.date||'';
   document.getElementById('bcal-title-inp').value=ev.title||'';
   document.getElementById('bcal-memo-inp').value=ev.memo||'';
   document.getElementById('bcal-emoji-inp').value=ev.emoji||'📅';
-  document.getElementById('bcal-img-status').textContent=ev.img?'✅ 이미지 있음':'';
+  _bcalRenderThumbs();
+  const alarms=ev.alarms||[];
+  const hasAlarm=alarms.length>0;
+  document.getElementById('bcal-alarm-toggle').checked=hasAlarm;
+  document.getElementById('bcal-alarm-opts').style.display=hasAlarm?'flex':'none';
+  const d0=alarms.find(a=>a.offset===0);
+  const d1=alarms.find(a=>a.offset===-1);
+  document.getElementById('bcal-alarm-d0').checked=!!d0;
+  document.getElementById('bcal-alarm-d0t').value=d0?d0.time:'09:00';
+  document.getElementById('bcal-alarm-d1').checked=!!d1;
+  document.getElementById('bcal-alarm-d1t').value=d1?d1.time:'21:00';
   document.getElementById('bcal-modal-ttl').textContent='✏️ 일정 수정';
   _bcalRenderEmojiRow(ev.emoji||'📅');
   document.getElementById('bcal-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('bcal-title-inp').focus(),80);
 }
 function closeBcal(){document.getElementById('bcal-overlay').classList.remove('open');}
+function bcalToggleAlarm(on){
+  const el=document.getElementById('bcal-alarm-opts');
+  el.style.display=on?'flex':'none';
+}
 function bcalSelEmoji(e){
   _bcalSelEmoji=e;
   document.getElementById('bcal-emoji-inp').value=e;
@@ -2287,9 +2368,16 @@ async function _bcalUpload(file){
   try{
     const fd=new FormData();fd.append('file',file);fd.append('upload_preset','hwx2iwfz');
     const r=await(await fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})).json();
-    _bcalPendingImg=r.secure_url;st.textContent='✅ 이미지 첨부됨';
-  }catch(e){st.textContent='❌ 실패';_bcalPendingImg=null;}
+    _bcalPendingImgs.push(r.secure_url);
+    _bcalRenderThumbs();
+  }catch(e){st.textContent='❌ 실패';}
 }
+function _bcalRenderThumbs(){
+  const el=document.getElementById('bcal-img-thumbs');
+  el.innerHTML=_bcalPendingImgs.map((url,i)=>`<div style="position:relative"><img src="${url.replace('/upload/','/upload/w_60,h_60,c_fill/')}" style="width:60px;height:60px;border-radius:7px;object-fit:cover;cursor:pointer" onclick="openImgModal('${url}')"><button onclick="_bcalRemoveImg(${i})" style="position:absolute;top:-5px;right:-5px;width:17px;height:17px;background:#E03A3A;color:#fff;border:none;border-radius:50%;font-size:.55rem;cursor:pointer;padding:0;line-height:1">✕</button></div>`).join('');
+  document.getElementById('bcal-img-status').textContent=_bcalPendingImgs.length?`${_bcalPendingImgs.length}장 첨부됨`:'';
+}
+function _bcalRemoveImg(i){_bcalPendingImgs.splice(i,1);_bcalRenderThumbs();}
 async function saveBcalEvent(){
   const emoji=document.getElementById('bcal-emoji-inp').value.trim()||_bcalSelEmoji||'📅';
   const date=document.getElementById('bcal-date-inp').value;
@@ -2297,12 +2385,19 @@ async function saveBcalEvent(){
   const memo=document.getElementById('bcal-memo-inp').value.trim();
   if(!date){alert('날짜를 선택해주세요');return;}
   if(!title){alert('제목을 입력해주세요');return;}
+  const alarms=[];
+  if(document.getElementById('bcal-alarm-toggle').checked){
+    if(document.getElementById('bcal-alarm-d0').checked)
+      alarms.push({offset:0,time:document.getElementById('bcal-alarm-d0t').value});
+    if(document.getElementById('bcal-alarm-d1').checked)
+      alarms.push({offset:-1,time:document.getElementById('bcal-alarm-d1t').value});
+  }
   if(_bcalEditId!==null){
     const ev=_calEvents.find(e=>e.id===_bcalEditId);
-    if(ev){ev.emoji=emoji;ev.date=date;ev.title=title;ev.memo=memo;if(_bcalPendingImg)ev.img=_bcalPendingImg;}
+    if(ev){ev.emoji=emoji;ev.date=date;ev.title=title;ev.memo=memo;ev.imgs=[..._bcalPendingImgs];ev.alarms=alarms;delete ev.img;}
   } else {
     const newId=Math.max(0,..._calEvents.map(e=>e.id||0))+1;
-    _calEvents.push({id:newId,date,emoji,title,memo,img:_bcalPendingImg||null});
+    _calEvents.push({id:newId,date,emoji,title,memo,imgs:[..._bcalPendingImgs],alarms});
   }
   await _saveCalEvents();
   closeBcal();bossRenderCal();
