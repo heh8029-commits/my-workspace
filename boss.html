@@ -1548,8 +1548,13 @@ function renderExpenses(){
     <div>
       <div style="font-size:.71rem;color:#AAA;margin-bottom:2px">고정 지출 합계</div>
       <div class="exp-summary-total">${_fmtAmt(total)}원</div>
-      ${isFiltered ? `<div style="font-size:.76rem;font-weight:700;color:#C4714A;margin-top:4px">📌 ${expBankFilter!=='전체'?expBankFilter:'검색'} 합계 <span style="font-size:.92rem;font-weight:900">${_fmtAmt(filteredTotal)}원</span> <span style="color:#AAA;font-weight:500">(${filtered.length}건)</span></div>` : ''}
     </div>
+    ${isFiltered ? `
+    <div style="background:#FDF0E8;border:1.5px solid #EABD9E;border-radius:13px;padding:8px 18px;text-align:center;min-width:140px">
+      <div style="font-size:.68rem;color:#C4714A;font-weight:700;margin-bottom:3px">📌 ${expBankFilter!=='전체'?expBankFilter:'검색결과'} 합계</div>
+      <div style="font-size:1.1rem;font-weight:900;color:#C03030">${_fmtAmt(filteredTotal)}원</div>
+      <div style="font-size:.68rem;color:#AAA;margin-top:2px">${filtered.length}건</div>
+    </div>` : '<div></div>'}
     <div style="display:flex;align-items:center;gap:8px">
       <div class="exp-summary-count">${expItems.length}건</div>
       <input class="exp-inp" placeholder="🔍 검색" value="${expSearchQ}"
