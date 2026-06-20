@@ -2762,7 +2762,7 @@ function _childToY(timeStr){
   return (h-CHILD_TT_START)*CHILD_TT_HOUR_H+m;
 }
 function _childHourLabel(h){
-  if(h<12) return h+'시';
+  if(h<12) return '오전'+h+'시';
   if(h===12) return '12시';
   return '오후'+(h-12)+'시';
 }
