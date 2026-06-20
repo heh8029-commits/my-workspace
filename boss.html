@@ -2221,7 +2221,10 @@ function _bossCalPanel(dateStr){
           ${ev.memo?`<div style="font-size:.74rem;color:#666;line-height:1.4;margin-top:2px;word-break:break-word">${ev.memo}</div>`:''}
           ${ev.img?`<img src="${ev.img.replace('/upload/','/upload/w_320/')}" style="max-width:100%;border-radius:8px;margin-top:5px;cursor:pointer" onclick="openImgModal('${ev.img}')">`: ''}
         </div>
-        <button onclick="delBcalEvent(${ev.id})" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;border:none;background:#FFE8E8;color:#D03030;font-size:.75rem;cursor:pointer">🗑️</button>
+        <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+          <button onclick="editBcalEvent(${ev.id})" style="width:24px;height:24px;border-radius:6px;border:none;background:#F5F0EB;color:#C4714A;font-size:.75rem;cursor:pointer">✏️</button>
+          <button onclick="delBcalEvent(${ev.id})" style="width:24px;height:24px;border-radius:6px;border:none;background:#FFE8E8;color:#D03030;font-size:.75rem;cursor:pointer">🗑️</button>
+        </div>
       </div>`;
     });
   }
@@ -2233,17 +2236,35 @@ function _bossCalPanel(dateStr){
 function bossCalPrev(){_calMonth--;if(_calMonth<1){_calMonth=12;_calYear--;}bossRenderCal();}
 function bossCalNext(){_calMonth++;if(_calMonth>12){_calMonth=1;_calYear++;}bossRenderCal();}
 
-// ── 일정 추가 모달 ─────────────────────────────────────────────
+// ── 일정 추가/수정 모달 ─────────────────────────────────────────
 const BCAL_EMOJIS=['📅','⚡','💰','🏥','🎂','🎉','✈️','🚗','🛒','📦','💊','🏫','👨‍👩‍👧','🎮','💪','📝','🔔','❤️','⭐','🌿','🍽️','☕','🎵','🏃','📞','💼','🔧','🎁','🎯','💡'];
+let _bcalEditId=null;
+function _bcalRenderEmojiRow(sel){
+  document.getElementById('bcal-emoji-row').innerHTML=BCAL_EMOJIS.map(e=>`<button class="bcal-emoji-btn${e===sel?' on':''}" onclick="bcalSelEmoji('${e}')">${e}</button>`).join('');
+}
 function openBcal(dateStr){
-  _bcalPendingImg=null;_bcalSelEmoji='📅';
+  _bcalPendingImg=null;_bcalSelEmoji='📅';_bcalEditId=null;
   document.getElementById('bcal-date-inp').value=dateStr||'';
   document.getElementById('bcal-title-inp').value='';
   document.getElementById('bcal-memo-inp').value='';
   document.getElementById('bcal-emoji-inp').value='📅';
   document.getElementById('bcal-img-status').textContent='';
-  const row=document.getElementById('bcal-emoji-row');
-  row.innerHTML=BCAL_EMOJIS.map(e=>`<button class="bcal-emoji-btn${e==='📅'?' on':''}" onclick="bcalSelEmoji('${e}')">${e}</button>`).join('');
+  document.getElementById('bcal-modal-ttl').textContent='📅 일정 추가';
+  _bcalRenderEmojiRow('📅');
+  document.getElementById('bcal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('bcal-title-inp').focus(),80);
+}
+function editBcalEvent(id){
+  const ev=_calEvents.find(e=>e.id===id);
+  if(!ev) return;
+  _bcalEditId=id;_bcalPendingImg=ev.img||null;_bcalSelEmoji=ev.emoji||'📅';
+  document.getElementById('bcal-date-inp').value=ev.date||'';
+  document.getElementById('bcal-title-inp').value=ev.title||'';
+  document.getElementById('bcal-memo-inp').value=ev.memo||'';
+  document.getElementById('bcal-emoji-inp').value=ev.emoji||'📅';
+  document.getElementById('bcal-img-status').textContent=ev.img?'✅ 이미지 있음':'';
+  document.getElementById('bcal-modal-ttl').textContent='✏️ 일정 수정';
+  _bcalRenderEmojiRow(ev.emoji||'📅');
   document.getElementById('bcal-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('bcal-title-inp').focus(),80);
 }
@@ -2276,11 +2297,16 @@ async function saveBcalEvent(){
   const memo=document.getElementById('bcal-memo-inp').value.trim();
   if(!date){alert('날짜를 선택해주세요');return;}
   if(!title){alert('제목을 입력해주세요');return;}
-  const newId=Math.max(0,..._calEvents.map(e=>e.id||0))+1;
-  _calEvents.push({id:newId,date,emoji,title,memo,img:_bcalPendingImg||null});
+  if(_bcalEditId!==null){
+    const ev=_calEvents.find(e=>e.id===_bcalEditId);
+    if(ev){ev.emoji=emoji;ev.date=date;ev.title=title;ev.memo=memo;if(_bcalPendingImg)ev.img=_bcalPendingImg;}
+  } else {
+    const newId=Math.max(0,..._calEvents.map(e=>e.id||0))+1;
+    _calEvents.push({id:newId,date,emoji,title,memo,img:_bcalPendingImg||null});
+  }
   await _saveCalEvents();
   closeBcal();bossRenderCal();
-  if(_calSelDate===date)_bossCalPanel(date);
+  if(_calSelDate)_bossCalPanel(_calSelDate);
 }
 async function delBcalEvent(id){
   _calEvents=_calEvents.filter(e=>e.id!==id);
