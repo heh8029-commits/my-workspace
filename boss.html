@@ -450,6 +450,67 @@ body.mode-mob .mobile-subnav{display:flex!important}
 @media(max-width:700px){.exp-notes-grid{grid-template-columns:1fr}}
 .exp-note-panel{background:#fff;border-radius:14px;padding:14px 14px 10px;border:1px solid #EDE8E1}
 .exp-note-title{font-size:.82rem;font-weight:800;color:#C4714A;margin-bottom:10px}
+/* ── 여행갈때 ── */
+.travel-wrap{max-width:1150px}
+.travel-layout{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+@media(max-width:800px){.travel-layout{grid-template-columns:1fr}}
+.travel-card{background:#fff;border-radius:14px;padding:15px 15px 12px;border:1px solid #EDE8E1;margin-bottom:0}
+.travel-right{display:flex;flex-direction:column;gap:14px}
+.travel-sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.travel-sec-title{font-size:.86rem;font-weight:800;color:#333}
+.travel-reset-btn{padding:4px 11px;border-radius:8px;background:#FFF0EA;border:1px solid #F5B8A0;font-size:.71rem;font-weight:700;color:#C4714A;cursor:pointer}
+.travel-filter-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.tv-tab{padding:5px 11px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.74rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s}
+.tv-tab.on{background:#C4714A;border-color:#C4714A;color:#fff}
+.tv-add-row{display:flex;gap:6px;margin-bottom:11px}
+.tv-cat-sel{padding:6px 7px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;background:#fff;color:#333;flex-shrink:0}
+.tv-inp{flex:1;padding:6px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit}
+.tv-inp:focus,.tv-cat-sel:focus{border-color:#C4714A;outline:none}
+.tv-add-btn{padding:6px 12px;border-radius:8px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.tv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+@media(max-width:1000px){.tv-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.tv-grid{grid-template-columns:1fr}}
+.tv-item{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:7px;background:#FAFAF8;border:1px solid #EDE8E1;font-size:.75rem;min-width:0}
+.tv-item.done{background:#F3F3F1;border-color:#E8E8E4}
+.tv-item.done .tv-item-txt{text-decoration:line-through;color:#C0BEB8}
+.tv-item input[type=checkbox]{width:14px;height:14px;accent-color:#C4714A;flex-shrink:0;cursor:pointer}
+.tv-badge{font-size:.61rem;font-weight:800;padding:1px 5px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.tv-badge.cat-공통{background:#E0EEFF;color:#3366CC}
+.tv-badge.cat-은희{background:#FFE8EE;color:#CC3355}
+.tv-badge.cat-진우{background:#FFF0DC;color:#CC6600}
+.tv-badge.cat-민호{background:#FFFFF0;color:#AA8800}
+.tv-badge.cat-먹거리{background:#F0EDE8;color:#776655}
+.tv-item-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333}
+.tv-del{width:15px;height:15px;border:none;background:none;font-size:.6rem;cursor:pointer;color:#CCCCCC;flex-shrink:0;padding:0;line-height:1}
+.tv-del:hover{color:#E03A3A}
+/* 여행 일정 칩 */
+.tv-trip-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:28px}
+.tv-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;background:#EDE8E1;color:#666;font-size:.74rem;font-weight:700;cursor:pointer;border:none;transition:all .13s}
+.tv-chip.sel{background:#C4714A;color:#fff;box-shadow:0 2px 7px rgba(196,113,74,.28)}
+.tv-chip-del{width:14px;height:14px;background:rgba(0,0,0,.12);border:none;border-radius:50%;font-size:.55rem;cursor:pointer;color:inherit;padding:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.tv-chip.sel .tv-chip-del{background:rgba(255,255,255,.3);color:#fff}
+.tv-add-trip-btn{padding:5px 12px;border-radius:8px;background:#FFF0EA;border:1px solid #E8C4A8;font-size:.73rem;font-weight:700;color:#C4714A;cursor:pointer}
+/* 날짜별 일정 */
+.tv-day-hd{font-size:.78rem;font-weight:700;color:#555;margin-bottom:5px;margin-top:12px;display:flex;align-items:center;gap:5px}
+.tv-day-hd:first-child{margin-top:0}
+.tv-day-ta{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;resize:vertical;min-height:62px;color:#333;background:#FDFCFA;line-height:1.5}
+.tv-day-ta:focus{border-color:#C4714A;outline:none}
+/* 준비 메모 */
+.tv-memo-row{display:flex;gap:7px;margin-bottom:10px}
+.tv-memo-inp{flex:1;padding:7px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;color:#333}
+.tv-memo-inp:focus{border-color:#C4714A;outline:none}
+.tv-memo-list{display:flex;flex-direction:column;gap:5px}
+.tv-memo-item{display:flex;align-items:flex-start;gap:7px;padding:6px 9px;background:#FDF8F5;border-radius:8px;border:1px solid #EDE8E1;font-size:.75rem;color:#333;line-height:1.45}
+.tv-memo-item .tv-del{margin-top:1px;flex-shrink:0}
+/* 여행 추가 모달 */
+.tv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:900;display:none;align-items:center;justify-content:center}
+.tv-modal-overlay.open{display:flex}
+.tv-modal{background:#fff;border-radius:18px;padding:0;width:min(94vw,360px);box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden}
+.tv-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#FDF0EA;border-bottom:1px solid #EDE8E1;font-size:.88rem;font-weight:800;color:#C4714A}
+.tv-modal-body{padding:16px;display:flex;flex-direction:column;gap:11px}
+.tv-modal-inp{padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;width:100%;box-sizing:border-box}
+.tv-modal-inp:focus{border-color:#C4714A;outline:none}
+.tv-modal-save{width:100%;padding:10px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:800;cursor:pointer;margin-top:4px}
 /* ── 보스 달력 ── */
 .boss-cal-wrap{max-width:900px}
 .boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -835,7 +896,79 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- 여행갈때 페이지 -->
+    <div class="page" id="page-travel">
+      <div class="travel-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">✈️ 여행갈때</div>
+          <button onclick="fetchTravelData().then(()=>renderTravel())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div class="travel-layout">
+          <!-- 왼쪽: 체크리스트 -->
+          <div class="travel-card">
+            <div class="travel-sec-hd">
+              <div class="travel-sec-title">🧳 준비물 체크리스트</div>
+              <button class="travel-reset-btn" onclick="resetTvChecks()">🔄 초기화</button>
+            </div>
+            <div class="travel-filter-tabs" id="tv-filter-tabs"></div>
+            <div class="tv-add-row">
+              <select class="tv-cat-sel" id="tv-cat-sel">
+                <option>공통</option><option>은희</option><option>진우</option><option>민호</option><option>먹거리</option>
+              </select>
+              <input class="tv-inp" id="tv-item-inp" placeholder="준비물..." maxlength="50" onkeydown="if(event.key==='Enter')addTvItem()">
+              <button class="tv-add-btn" onclick="addTvItem()">+</button>
+            </div>
+            <div class="tv-grid" id="tv-item-grid"></div>
+          </div>
+          <!-- 오른쪽 -->
+          <div class="travel-right">
+            <!-- 준비 메모 -->
+            <div class="travel-card">
+              <div class="travel-sec-hd"><div class="travel-sec-title">📝 준비 메모</div></div>
+              <div class="tv-memo-row">
+                <input class="tv-memo-inp" id="tv-memo-inp" placeholder="메모 추가..." maxlength="200" onkeydown="if(event.key==='Enter')addTvMemo()">
+                <button class="tv-add-btn" onclick="addTvMemo()">+</button>
+              </div>
+              <div class="tv-memo-list" id="tv-memo-list"></div>
+            </div>
+            <!-- 여행 일정 -->
+            <div class="travel-card">
+              <div class="travel-sec-hd">
+                <div class="travel-sec-title">✈️ 여행 일정</div>
+                <button class="tv-add-trip-btn" onclick="openTripModal()">+ 여행 추가</button>
+              </div>
+              <div class="tv-trip-chips" id="tv-trip-chips"></div>
+            </div>
+            <!-- 날짜별 일정 -->
+            <div class="travel-card" id="tv-daily-card" style="display:none">
+              <div class="travel-sec-hd"><div class="travel-sec-title">📅 날짜별 일정</div></div>
+              <div id="tv-daily-cont"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
+</div>
+
+<!-- ── 여행 추가 모달 ── -->
+<div class="tv-modal-overlay" id="tv-trip-overlay" onclick="if(event.target===this)closeTripModal()">
+  <div class="tv-modal">
+    <div class="tv-modal-hd">
+      <span>✈️ 여행 추가</span>
+      <button onclick="closeTripModal()" style="border:none;background:none;font-size:1rem;cursor:pointer;color:#C4714A">✕</button>
+    </div>
+    <div class="tv-modal-body">
+      <input class="tv-modal-inp" id="tv-trip-name" placeholder="여행 이름 (예: 하이원리조트 2박3일)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="date" class="tv-modal-inp" id="tv-trip-start" style="flex:1">
+        <span style="color:#888;font-size:.82rem">~</span>
+        <input type="date" class="tv-modal-inp" id="tv-trip-end" style="flex:1">
+      </div>
+      <button class="tv-modal-save" onclick="saveTrip()">✅ 추가</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── 이미지 모달 ── -->
@@ -1054,6 +1187,9 @@ function setSub(id, label){
     showPage('profit');
     fetchPnlMemos().then(()=>renderPnlMemos());
     fetchCalcData().then(()=>renderCalc());
+  } else if(id==='travel'){
+    showPage('travel');
+    fetchTravelData().then(()=>renderTravel());
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -2115,7 +2251,9 @@ function hardRefresh(){
   btn.classList.add('spinning');
   setTimeout(()=>btn.classList.remove('spinning'), 700);
   const pid = (document.querySelector('.page.active')||{}).id || '';
-  if(pid==='page-calendar'){
+  if(pid==='page-travel'){
+    fetchTravelData().then(()=>renderTravel());
+  } else if(pid==='page-calendar'){
     Promise.all([fetchCalEvents(),fetchExpenses()]).then(()=>bossRenderCal());
   } else if(pid==='page-alarm'){
     Promise.all([fetchAlarms(),fetchCalEvents()]).then(()=>{renderAlarmList();renderCalAlarms();});
@@ -2407,6 +2545,198 @@ async function delBcalEvent(id){
   _calEvents=_calEvents.filter(e=>e.id!==id);
   await _saveCalEvents();bossRenderCal();
   if(_calSelDate)_bossCalPanel(_calSelDate);
+}
+
+// ── 여행갈때 ─────────────────────────────────────────────────
+const FB_TRAVEL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_travel.json';
+const TV_CATS = [{id:'공통',emoji:'🏠'},{id:'은희',emoji:'👩'},{id:'진우',emoji:'👦'},{id:'민호',emoji:'👨'},{id:'먹거리',emoji:'🍳'}];
+const TV_DEFAULT_ITEMS = [
+  {id:1,cat:'공통',text:'드라이기',done:false},{id:2,cat:'공통',text:'바디로션',done:false},{id:3,cat:'공통',text:'빗',done:false},{id:4,cat:'공통',text:'수유등',done:false},
+  {id:5,cat:'은희',text:'고데기',done:false},{id:6,cat:'은희',text:'노트북',done:false},{id:7,cat:'은희',text:'머리묶는거 알머리핀',done:false},{id:8,cat:'은희',text:'모자',done:false},
+  {id:9,cat:'은희',text:'속옷',done:false},{id:10,cat:'은희',text:'손탑끼기',done:false},{id:11,cat:'은희',text:'스킨,로션,크림',done:false},{id:12,cat:'은희',text:'앞머리볼 빗',done:false},
+  {id:13,cat:'은희',text:'잠옷',done:false},{id:14,cat:'은희',text:'치솔,치약',done:false},{id:15,cat:'은희',text:'헤어단백질,오일',done:false},{id:16,cat:'은희',text:'화장품-눈썸브로우',done:false},
+  {id:17,cat:'은희',text:'화장품-파데',done:false},{id:18,cat:'은희',text:'화장품-파데브러쉬',done:false},
+  {id:19,cat:'진우',text:'그림일기',done:false},{id:20,cat:'진우',text:'닌텐도',done:false},{id:21,cat:'진우',text:'도화지,연필(필통)',done:false},{id:22,cat:'진우',text:'로션',done:false},
+  {id:23,cat:'진우',text:'마데카솔약파우치',done:false},{id:24,cat:'진우',text:'물통',done:false},{id:25,cat:'진우',text:'속옷,양말',done:false},{id:26,cat:'진우',text:'수저 젓가락',done:false},
+  {id:27,cat:'진우',text:'체온계',done:false},{id:28,cat:'진우',text:'치솔,치약',done:false},{id:29,cat:'진우',text:'크록스 실내화',done:false},{id:30,cat:'진우',text:'타올,삼푸,바디워시',done:false},
+  {id:31,cat:'진우',text:'테블릿',done:false},{id:32,cat:'진우',text:'해열제,김기약',done:false},
+  {id:33,cat:'민호',text:'면도기',done:false},
+  {id:34,cat:'먹거리',text:'계란',done:false},{id:35,cat:'먹거리',text:'김자반',done:false},{id:36,cat:'먹거리',text:'김치',done:false},{id:37,cat:'먹거리',text:'라면',done:false},
+  {id:38,cat:'먹거리',text:'비닐류 비닐장갑',done:false},{id:39,cat:'먹거리',text:'일회용수저들',done:false},{id:40,cat:'먹거리',text:'캠핑가면소금',done:false},{id:41,cat:'먹거리',text:'햇반',done:false},
+];
+let _tvData = {items:[],trips:[],daily:{},prep_memos:[]};
+let _tvFilter = '전체';
+let _tvSelTripId = null;
+let _tvSaveTimer = null;
+
+async function fetchTravelData(){
+  try{
+    const r=await fetch(FB_TRAVEL+'?t='+Date.now());
+    if(r.ok){
+      const d=await r.json();
+      if(d&&typeof d==='object'){
+        _tvData={
+          items:Array.isArray(d.items)?d.items:[...TV_DEFAULT_ITEMS],
+          trips:Array.isArray(d.trips)?d.trips:[],
+          daily:d.daily&&typeof d.daily==='object'?d.daily:{},
+          prep_memos:Array.isArray(d.prep_memos)?d.prep_memos:[],
+        };
+        return;
+      }
+    }
+  }catch(e){}
+  _tvData={items:[...TV_DEFAULT_ITEMS],trips:[],daily:{},prep_memos:[]};
+}
+async function _saveTravelData(){
+  try{await fetch(FB_TRAVEL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_tvData)});}catch(e){}
+}
+function _tvDebounceSave(){
+  clearTimeout(_tvSaveTimer);
+  _tvSaveTimer=setTimeout(_saveTravelData,800);
+}
+
+function renderTravel(){
+  _tvRenderFilterTabs();
+  _tvRenderItems();
+  _tvRenderTrips();
+  _tvRenderDaily();
+  _tvRenderPrepMemos();
+}
+function _tvRenderFilterTabs(){
+  const el=document.getElementById('tv-filter-tabs');
+  if(!el) return;
+  const tabs=[{id:'전체',emoji:'🔍'},...TV_CATS];
+  el.innerHTML=tabs.map(t=>`<button class="tv-tab${_tvFilter===t.id?' on':''}" onclick="tvSetFilter('${t.id}')">${t.emoji} ${t.id}</button>`).join('');
+}
+function tvSetFilter(cat){_tvFilter=cat;_tvRenderFilterTabs();_tvRenderItems();}
+function _tvRenderItems(){
+  const el=document.getElementById('tv-item-grid');
+  if(!el) return;
+  const list=_tvFilter==='전체'?_tvData.items:_tvData.items.filter(i=>i.cat===_tvFilter);
+  if(!list.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:#CCC;font-size:.8rem">항목이 없어요</div>';return;}
+  el.innerHTML=list.map(item=>`
+    <div class="tv-item${item.done?' done':''}">
+      <input type="checkbox" ${item.done?'checked':''} onchange="toggleTvItem(${item.id})">
+      <span class="tv-badge cat-${item.cat}">${TV_CATS.find(c=>c.id===item.cat)?.emoji||''} ${item.cat}</span>
+      <span class="tv-item-txt">${item.text}</span>
+      <button class="tv-del" onclick="deleteTvItem(${item.id})">✕</button>
+    </div>`).join('');
+}
+function addTvItem(){
+  const cat=document.getElementById('tv-cat-sel').value;
+  const text=document.getElementById('tv-item-inp').value.trim();
+  if(!text) return;
+  const newId=Math.max(0,..._tvData.items.map(i=>i.id||0))+1;
+  _tvData.items.push({id:newId,cat,text,done:false});
+  document.getElementById('tv-item-inp').value='';
+  _tvRenderItems();_tvDebounceSave();
+}
+function toggleTvItem(id){
+  const item=_tvData.items.find(i=>i.id===id);
+  if(item){item.done=!item.done;_tvRenderItems();_tvDebounceSave();}
+}
+function deleteTvItem(id){
+  _tvData.items=_tvData.items.filter(i=>i.id!==id);
+  _tvRenderItems();_tvDebounceSave();
+}
+function resetTvChecks(){
+  if(!confirm('모든 체크를 초기화할까요?')) return;
+  _tvData.items.forEach(i=>i.done=false);
+  _tvRenderItems();_tvDebounceSave();
+}
+// 여행 일정
+function _tvRenderTrips(){
+  const el=document.getElementById('tv-trip-chips');
+  if(!el) return;
+  if(!_tvData.trips.length){el.innerHTML='<span style="font-size:.75rem;color:#CCC">등록된 여행이 없어요</span>';_tvRenderDaily();return;}
+  el.innerHTML=_tvData.trips.map(t=>`
+    <button class="tv-chip${_tvSelTripId===t.id?' sel':''}" onclick="tvSelectTrip(${t.id})">
+      ✈️ ${t.name}
+      <span style="font-size:.67rem;opacity:.8">(${_tvFmtDate(t.start)}~${_tvFmtDate(t.end)})</span>
+      <span class="tv-chip-del" onclick="event.stopPropagation();deleteTvTrip(${t.id})">✕</span>
+    </button>`).join('');
+  _tvRenderDaily();
+}
+function _tvFmtDate(d){
+  if(!d) return '';
+  const dt=new Date(d+'T00:00:00');
+  return `${dt.getMonth()+1}/${dt.getDate()}`;
+}
+function tvSelectTrip(id){
+  _tvSelTripId=_tvSelTripId===id?null:id;
+  _tvRenderTrips();
+}
+function deleteTvTrip(id){
+  if(!confirm('여행 일정을 삭제할까요?')) return;
+  _tvData.trips=_tvData.trips.filter(t=>t.id!==id);
+  if(_tvSelTripId===id) _tvSelTripId=null;
+  _tvRenderTrips();_tvDebounceSave();
+}
+function openTripModal(){
+  document.getElementById('tv-trip-name').value='';
+  document.getElementById('tv-trip-start').value='';
+  document.getElementById('tv-trip-end').value='';
+  document.getElementById('tv-trip-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('tv-trip-name').focus(),80);
+}
+function closeTripModal(){document.getElementById('tv-trip-overlay').classList.remove('open');}
+function saveTrip(){
+  const name=document.getElementById('tv-trip-name').value.trim();
+  const start=document.getElementById('tv-trip-start').value;
+  const end=document.getElementById('tv-trip-end').value;
+  if(!name||!start||!end){alert('이름과 날짜를 모두 입력해주세요');return;}
+  const newId=Math.max(0,..._tvData.trips.map(t=>t.id||0))+1;
+  _tvData.trips.push({id:newId,name,start,end});
+  closeTripModal();_tvRenderTrips();_tvDebounceSave();
+}
+// 날짜별 일정
+function _tvRenderDaily(){
+  const card=document.getElementById('tv-daily-card');
+  const cont=document.getElementById('tv-daily-cont');
+  if(!card||!cont) return;
+  const trip=_tvData.trips.find(t=>t.id===_tvSelTripId);
+  if(!trip){card.style.display='none';return;}
+  card.style.display='';
+  const DOW=['일','월','화','수','목','금','토'];
+  const dates=[];
+  const s=new Date(trip.start+'T00:00:00');
+  const e=new Date(trip.end+'T00:00:00');
+  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1))
+    dates.push(new Date(d).toISOString().slice(0,10));
+  cont.innerHTML=dates.map(date=>{
+    const dt=new Date(date+'T00:00:00');
+    const label=`📅 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]})`;
+    const memo=(_tvData.daily[date]||'').replace(/</g,'&lt;');
+    return `<div class="tv-day-hd">${label}</div>
+      <textarea class="tv-day-ta" placeholder="이날 뭐했는지 메모..." oninput="saveTvDaily('${date}',this.value)">${memo}</textarea>`;
+  }).join('');
+}
+function saveTvDaily(date,text){
+  _tvData.daily[date]=text;
+  _tvDebounceSave();
+}
+// 준비 메모
+function _tvRenderPrepMemos(){
+  const el=document.getElementById('tv-memo-list');
+  if(!el) return;
+  if(!_tvData.prep_memos.length){el.innerHTML='<div style="text-align:center;padding:12px;color:#CCC;font-size:.75rem">메모를 추가해요</div>';return;}
+  el.innerHTML=_tvData.prep_memos.map((m,i)=>`
+    <div class="tv-memo-item">
+      <span style="flex:1;word-break:break-word">${m}</span>
+      <button class="tv-del" onclick="deleteTvMemo(${i})" style="margin-top:1px">✕</button>
+    </div>`).join('');
+}
+function addTvMemo(){
+  const inp=document.getElementById('tv-memo-inp');
+  const text=inp.value.trim();
+  if(!text) return;
+  _tvData.prep_memos.push(text);
+  inp.value='';
+  _tvRenderPrepMemos();_tvDebounceSave();
+}
+function deleteTvMemo(i){
+  _tvData.prep_memos.splice(i,1);
+  _tvRenderPrepMemos();_tvDebounceSave();
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
