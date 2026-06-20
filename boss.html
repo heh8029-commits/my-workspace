@@ -1543,20 +1543,22 @@ function renderExpenses(){
 
   const filteredTotal = filtered.reduce((s,e)=>s+(+e.amount||0),0);
   const isFiltered = expBankFilter!=='전체' || expSearchQ;
+  const filterLabel = expBankFilter!=='전체' ? expBankFilter : '검색결과';
   const summaryHtml = `
   <div class="exp-summary-bar">
     <div>
       <div style="font-size:.71rem;color:#AAA;margin-bottom:2px">고정 지출 합계</div>
       <div class="exp-summary-total">${_fmtAmt(total)}원</div>
+      ${isFiltered ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+        <span style="font-size:.68rem;background:#EEE;color:#888;border-radius:6px;padding:1px 7px;font-weight:600">전체</span>
+        <span style="font-size:.68rem;color:#CCC">→</span>
+        <span style="font-size:.68rem;background:#C4714A;color:#fff;border-radius:6px;padding:1px 8px;font-weight:700">${filterLabel}</span>
+        <span style="font-size:.92rem;font-weight:900;color:#C03030">${_fmtAmt(filteredTotal)}원</span>
+        <span style="font-size:.68rem;color:#BBB">${filtered.length}건</span>
+      </div>` : ''}
     </div>
-    ${isFiltered ? `
-    <div style="background:#FDF0E8;border:1.5px solid #EABD9E;border-radius:13px;padding:8px 18px;text-align:center;min-width:140px">
-      <div style="font-size:.68rem;color:#C4714A;font-weight:700;margin-bottom:3px">📌 ${expBankFilter!=='전체'?expBankFilter:'검색결과'} 합계</div>
-      <div style="font-size:1.1rem;font-weight:900;color:#C03030">${_fmtAmt(filteredTotal)}원</div>
-      <div style="font-size:.68rem;color:#AAA;margin-top:2px">${filtered.length}건</div>
-    </div>` : '<div></div>'}
     <div style="display:flex;align-items:center;gap:8px">
-      <div class="exp-summary-count">${expItems.length}건</div>
+      <div class="exp-summary-count">${isFiltered ? filtered.length+'건' : expItems.length+'건'}</div>
       <input class="exp-inp" placeholder="🔍 검색" value="${expSearchQ}"
         style="width:120px;padding:4px 9px;font-size:.75rem"
         oninput="expSearchQ=this.value;renderExpenses()">
