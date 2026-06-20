@@ -489,26 +489,21 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .exp-cat-sel:focus{border-color:#C4714A}
 .exp-add-submit{padding:7px 15px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0}
 .exp-add-submit:hover{background:#B46040}
+/* 컬럼 헤더 */
+.exp-list-head{display:grid;grid-template-columns:70px 1.4fr 110px 2fr 100px 54px;align-items:center;gap:10px;padding:6px 14px;font-size:.68rem;font-weight:800;color:#BBB;letter-spacing:.02em;margin-bottom:4px}
 .exp-list{display:flex;flex-direction:column;gap:4px}
-.exp-row{display:flex;align-items:center;gap:7px;background:#fff;border-radius:10px;padding:9px 12px;border:1px solid #EDE8E1;transition:background .12s}
+.exp-row{display:grid;grid-template-columns:70px 1.4fr 110px 2fr 100px 54px;align-items:center;gap:10px;background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #EDE8E1;transition:background .12s}
 .exp-row:hover{background:#FDF5F1}
-.exp-row-day{width:28px;font-size:.75rem;font-weight:800;color:#AAA;flex-shrink:0;text-align:center}
-.exp-row-name{flex:1;font-size:.84rem;color:#333;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.exp-row-cat{padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;flex-shrink:0}
-.exp-row-note{font-size:.71rem;color:#999;flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px}
-.exp-row-amt{font-size:.88rem;font-weight:800;color:#333;flex-shrink:0;white-space:nowrap}
-.exp-row-actions{display:flex;gap:2px;flex-shrink:0}
+.exp-row-day{font-size:.76rem;font-weight:800;color:#C4714A}
+.exp-row-name{font-size:.85rem;font-weight:800;color:#222;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-row-bank{display:inline-block;padding:3px 9px;border-radius:10px;font-size:.69rem;font-weight:700;background:#F5F0EB;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-row-note{font-size:.72rem;color:#999;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-row-amt{font-size:.88rem;font-weight:800;color:#333;text-align:right;white-space:nowrap}
+.exp-row-actions{display:flex;gap:2px;justify-content:flex-end}
 .exp-row-btn{width:24px;height:24px;border-radius:6px;border:none;background:transparent;font-size:.72rem;cursor:pointer;color:#CCC;transition:all .12s;padding:0}
 .exp-row-btn:hover{background:#F0EBE5;color:#C4714A}
 .exp-row-btn.del:hover{background:#FFE8E8;color:#E03A3A}
 .exp-empty-msg{text-align:center;padding:28px;color:#CCC;font-size:.82rem}
-.exp-cat-식비{background:#FFF0E8;color:#C4714A}
-.exp-cat-교통{background:#E8EEFF;color:#4466CC}
-.exp-cat-생활{background:#EDFFF4;color:#2E9B5E}
-.exp-cat-의료{background:#FFE8F0;color:#CC4466}
-.exp-cat-교육{background:#F2E8FF;color:#7744CC}
-.exp-cat-여가{background:#FFFCE8;color:#AA8800}
-.exp-cat-기타{background:#F0F0F0;color:#888}
 </style>
 </head>
 <body>
@@ -1555,12 +1550,17 @@ function renderExpenses(){
     </div>
   </div>`;
 
+  const headHtml = `
+  <div class="exp-list-head">
+    <span>날짜</span><span>항목명</span><span>통장</span><span>메모</span><span style="text-align:right">금액</span><span></span>
+  </div>`;
+
   const listHtml = filtered.length ? filtered.map(e=>`
   <div class="exp-row">
     <span class="exp-row-day">${e.day||'-'}</span>
-    <span class="exp-row-name">${e.name}</span>
-    <span class="exp-row-cat" style="background:#F5F0EB;color:#888;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;flex-shrink:0">${e.bank||'기타'}</span>
-    <span class="exp-row-note">${e.note||''}</span>
+    <span class="exp-row-name" title="${e.name}">${e.name}</span>
+    <span class="exp-row-bank">${e.bank||'기타'}</span>
+    <span class="exp-row-note" title="${e.note||''}">${e.note||''}</span>
     <span class="exp-row-amt">${(+e.amount) ? _fmtAmt(+e.amount)+'원' : '-'}</span>
     <div class="exp-row-actions">
       <button class="exp-row-btn" onclick="startExpEdit(${e.id})">✏️</button>
@@ -1568,7 +1568,7 @@ function renderExpenses(){
     </div>
   </div>`).join('') : `<div class="exp-empty-msg">항목이 없어요</div>`;
 
-  cont.innerHTML = summaryHtml + bankHtml + formHtml + `<div class="exp-list">${listHtml}</div>`;
+  cont.innerHTML = summaryHtml + bankHtml + formHtml + headHtml + `<div class="exp-list">${listHtml}</div>`;
 
   if(expEditId !== null){
     const m = expItems.find(e=>e.id===expEditId);
