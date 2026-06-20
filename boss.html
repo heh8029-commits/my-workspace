@@ -510,6 +510,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tv-modal-inp{padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;width:100%;box-sizing:border-box}
 .tv-modal-inp:focus{border-color:#C4714A;outline:none}
 .tv-modal-save{width:100%;padding:10px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:800;cursor:pointer;margin-top:4px}
+.tv-trip-emoji-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:1.05rem;cursor:pointer;transition:all .12s}
+.tv-trip-emoji-btn.on{border-color:#C4714A;background:#FFF0EA;box-shadow:0 0 0 2px #F5B8A055}
 /* ── 보스 달력 ── */
 .boss-cal-wrap{max-width:900px}
 .boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -920,14 +922,19 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
         <!-- 아래: 2열 (준비메모 | 여행일정+날짜별) -->
         <div class="tv-bottom-grid">
-          <!-- 준비 메모 (보스메모 스타일) -->
+          <!-- 준비 메모 (월별손익 메모 스타일) -->
           <div class="travel-card">
-            <div class="travel-sec-hd"><div class="travel-sec-title">📝 준비 메모</div></div>
+            <div class="travel-sec-hd"><div class="travel-sec-title">📝 여행 메모</div></div>
             <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px;margin-bottom:10px">
               <div style="display:flex;gap:8px">
-                <input class="bm-input" id="tv-memo-inp" placeholder="메모 추가..." maxlength="300" onkeydown="if(event.key==='Enter')addTvMemo()">
-                <button class="bm-add-btn" onclick="addTvMemo()">➕</button>
+                <input class="bm-input" id="tv-memo-inp" placeholder="메모 입력... (URL 자동 링크, Ctrl+V 이미지 붙여넣기)" maxlength="500"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey)addTvMemo()"
+                  onpaste="handleTvMemoPaste(event)">
+                <input type="file" id="tv-file-inp" accept="image/*" style="display:none" onchange="handleTvMemoFile(this.files[0]);this.value=''">
+                <button class="bm-attach-btn" onclick="document.getElementById('tv-file-inp').click()" title="이미지 첨부">📎</button>
+                <button class="bm-add-btn" onclick="addTvMemo()">➕ 추가</button>
               </div>
+              <div id="tv-form-status"></div>
             </div>
             <div class="bno-list" id="tv-memo-list"></div>
           </div>
@@ -935,7 +942,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="display:flex;flex-direction:column;gap:14px">
             <div class="travel-card">
               <div class="travel-sec-hd">
-                <div class="travel-sec-title">✈️ 여행 일정</div>
+                <div class="travel-sec-title">🗺️ 여행 일정</div>
                 <button class="tv-add-trip-btn" onclick="openTripModal()">+ 여행 추가</button>
               </div>
               <div class="tv-trip-chips" id="tv-trip-chips"></div>
@@ -961,6 +968,19 @@ body.mode-mob .mobile-subnav{display:flex!important}
     </div>
     <div class="tv-modal-body">
       <input class="tv-modal-inp" id="tv-trip-name" placeholder="여행 이름 (예: 하이원리조트 2박3일)">
+      <div>
+        <div style="font-size:.73rem;color:#888;margin-bottom:6px">이동 수단</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button onclick="tvSelTripEmoji('🚗')" class="tv-trip-emoji-btn on" id="tveb-🚗">🚗</button>
+          <button onclick="tvSelTripEmoji('✈️')" class="tv-trip-emoji-btn" id="tveb-✈️">✈️</button>
+          <button onclick="tvSelTripEmoji('🚌')" class="tv-trip-emoji-btn" id="tveb-🚌">🚌</button>
+          <button onclick="tvSelTripEmoji('🚂')" class="tv-trip-emoji-btn" id="tveb-🚂">🚂</button>
+          <button onclick="tvSelTripEmoji('⛴️')" class="tv-trip-emoji-btn" id="tveb-⛴️">⛴️</button>
+          <button onclick="tvSelTripEmoji('🏕️')" class="tv-trip-emoji-btn" id="tveb-🏕️">🏕️</button>
+          <button onclick="tvSelTripEmoji('🏖️')" class="tv-trip-emoji-btn" id="tveb-🏖️">🏖️</button>
+          <button onclick="tvSelTripEmoji('🗻')" class="tv-trip-emoji-btn" id="tveb-🗻">🗻</button>
+        </div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px">
         <input type="date" class="tv-modal-inp" id="tv-trip-start" style="flex:1">
         <span style="color:#888;font-size:.82rem">~</span>
@@ -2568,6 +2588,9 @@ let _tvData = {items:[],trips:[],daily:{},prep_memos:[]};
 let _tvFilter = '전체';
 let _tvSelTripId = null;
 let _tvSaveTimer = null;
+let tvPendingImgs = [];
+let tvMemoEditId = null;
+let _tvTripEmoji = '🚗';
 
 async function fetchTravelData(){
   try{
@@ -2654,7 +2677,7 @@ function _tvRenderTrips(){
   if(!_tvData.trips.length){el.innerHTML='<span style="font-size:.75rem;color:#CCC">등록된 여행이 없어요</span>';_tvRenderDaily();return;}
   el.innerHTML=_tvData.trips.map(t=>`
     <button class="tv-chip${_tvSelTripId===t.id?' sel':''}" onclick="tvSelectTrip(${t.id})">
-      ✈️ ${t.name}
+      ${t.emoji||'🚗'} ${t.name}
       <span style="font-size:.67rem;opacity:.8">(${_tvFmtDate(t.start)}~${_tvFmtDate(t.end)})</span>
       <span class="tv-chip-del" onclick="event.stopPropagation();deleteTvTrip(${t.id})">✕</span>
     </button>`).join('');
@@ -2675,7 +2698,15 @@ function deleteTvTrip(id){
   if(_tvSelTripId===id) _tvSelTripId=null;
   _tvRenderTrips();_tvDebounceSave();
 }
+function tvSelTripEmoji(e){
+  _tvTripEmoji=e;
+  document.querySelectorAll('.tv-trip-emoji-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tveb-'+e)?.classList.add('on');
+}
 function openTripModal(){
+  _tvTripEmoji='🚗';
+  document.querySelectorAll('.tv-trip-emoji-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tveb-🚗')?.classList.add('on');
   document.getElementById('tv-trip-name').value='';
   document.getElementById('tv-trip-start').value='';
   document.getElementById('tv-trip-end').value='';
@@ -2689,7 +2720,7 @@ function saveTrip(){
   const end=document.getElementById('tv-trip-end').value;
   if(!name||!start||!end){alert('이름과 날짜를 모두 입력해주세요');return;}
   const newId=Math.max(0,..._tvData.trips.map(t=>t.id||0))+1;
-  _tvData.trips.push({id:newId,name,start,end});
+  _tvData.trips.push({id:newId,name,start,end,emoji:_tvTripEmoji});
   closeTripModal();_tvRenderTrips();_tvDebounceSave();
 }
 // 날짜별 일정
@@ -2718,27 +2749,78 @@ function saveTvDaily(date,text){
   _tvData.daily[date]=text;
   _tvDebounceSave();
 }
-// 준비 메모 (보스메모 스타일)
+// 준비 메모 (월별손익 메모 풀 스타일)
+function _tvSetFormStatus(html){const el=document.getElementById('tv-form-status');if(el)el.innerHTML=html;}
+function _tvRenderFormImgs(){
+  if(!tvPendingImgs.length){_tvSetFormStatus('');return;}
+  const p=tvPendingImgs.map((url,i)=>`
+    <div class="pnl-form-img-preview">
+      <img src="${url?url.replace('/upload/','/upload/w_160,h_160,c_fill/'):''}" alt="" style="${url?'':'opacity:.4'}">
+      <button class="pnl-form-img-del" onclick="clearTvImg(${i})" title="제거">✕</button>
+    </div>`).join('');
+  _tvSetFormStatus(`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">${p}</div>`);
+}
+async function _tvUploadImg(file){
+  const idx=tvPendingImgs.length;
+  tvPendingImgs.push(null);
+  _tvSetFormStatus(`<div class="pnl-uploading">⏳ 업로드 중...</div>`);
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const r=await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.secure_url){tvPendingImgs[idx]=d.secure_url;_tvRenderFormImgs();}
+    else{tvPendingImgs.splice(idx,1);_tvSetFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+  }catch(e){tvPendingImgs.splice(idx,1);_tvSetFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+}
+function handleTvMemoFile(file){if(file&&file.type.startsWith('image/'))_tvUploadImg(file);}
+function handleTvMemoPaste(e){
+  const items=e.clipboardData?.items;if(!items) return;
+  for(const it of items){if(it.type.startsWith('image/')){e.preventDefault();_tvUploadImg(it.getAsFile());return;}}
+}
+function clearTvImg(idx){tvPendingImgs.splice(idx,1);_tvRenderFormImgs();}
+
 function _tvRenderPrepMemos(){
   const el=document.getElementById('tv-memo-list');
   if(!el) return;
-  if(!_tvData.prep_memos.length){el.innerHTML='<div style="padding:16px;text-align:center;color:#CCC;font-size:.78rem">메모를 추가해요</div>';return;}
-  el.innerHTML=_tvData.prep_memos.map(m=>`
+  if(!_tvData.prep_memos.length){el.innerHTML='<div style="padding:20px;text-align:center;color:#CCC;font-size:.78rem">메모를 추가해요</div>';return;}
+  el.innerHTML=_tvData.prep_memos.map(m=>{
+    if(tvMemoEditId===m.id) return `
+    <div class="bm-row">
+      <div class="bm-edit-wrap">
+        <input class="bm-edit-input" id="tv-edit-${m.id}" value="${(m.text||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
+          onkeydown="if(event.key==='Enter')saveTvMemoEdit(${m.id});if(event.key==='Escape')cancelTvMemoEdit()">
+        <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="saveTvMemoEdit(${m.id})">저장</button>
+        <button class="bno-icon" onclick="cancelTvMemoEdit()">✕</button>
+      </div>
+    </div>`;
+    const imgs=m.images?.length?m.images:[];
+    const thumbHtml=imgs.map(url=>`
+      <div class="bm-thumb" onclick="openImgModal('${url}')">
+        <img class="bm-thumb-img" src="${url.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
+        <div class="bm-thumb-hover"><img src="${url.replace('/upload/','/upload/w_400/')}" alt=""></div>
+      </div>`).join('');
+    return `
     <div class="bm-row${m.done?' done':''}">
       <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="toggleTvMemo(${m.id},this.checked)">
-      <span class="bm-text">${(m.text||'').replace(/</g,'&lt;')}</span>
+      ${thumbHtml}
+      <span class="bm-text">${_linkify(m.text||'')}</span>
       <div class="bm-actions">
+        <button class="bno-icon" onclick="startTvMemoEdit(${m.id})" title="편집">✏️</button>
         <button class="bno-icon del" onclick="deleteTvMemo(${m.id})" title="삭제">🗑️</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function addTvMemo(){
   const inp=document.getElementById('tv-memo-inp');
-  const text=inp.value.trim();
-  if(!text) return;
+  const text=(inp.value||'').trim();
+  const validImgs=tvPendingImgs.filter(Boolean);
+  if(!text&&!validImgs.length) return;
   const newId=Math.max(0,..._tvData.prep_memos.map(m=>m.id||0))+1;
-  _tvData.prep_memos.push({id:newId,text,done:false});
-  inp.value='';
+  const item={id:newId,text:text||'',done:false,date:new Date().toISOString().slice(0,10)};
+  if(validImgs.length) item.images=validImgs;
+  _tvData.prep_memos.unshift(item);
+  inp.value='';tvPendingImgs=[];_tvSetFormStatus('');
   _tvRenderPrepMemos();_tvDebounceSave();
 }
 function toggleTvMemo(id,checked){
@@ -2748,6 +2830,15 @@ function toggleTvMemo(id,checked){
 function deleteTvMemo(id){
   _tvData.prep_memos=_tvData.prep_memos.filter(m=>m.id!==id);
   _tvRenderPrepMemos();_tvDebounceSave();
+}
+function startTvMemoEdit(id){tvMemoEditId=id;_tvRenderPrepMemos();setTimeout(()=>document.getElementById('tv-edit-'+id)?.focus(),40);}
+function cancelTvMemoEdit(){tvMemoEditId=null;_tvRenderPrepMemos();}
+function saveTvMemoEdit(id){
+  const inp=document.getElementById('tv-edit-'+id);
+  const text=(inp?.value||'').trim();
+  if(!text){cancelTvMemoEdit();return;}
+  const m=_tvData.prep_memos.find(x=>x.id===id);
+  if(m){m.text=text;tvMemoEditId=null;_tvRenderPrepMemos();_tvDebounceSave();}
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
