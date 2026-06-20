@@ -524,14 +524,17 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .child-note-card:hover .child-note-attach-btn{opacity:1}
 .child-note-del{position:absolute;top:5px;right:5px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.12);color:#555;font-size:.6rem;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;z-index:2}
 .child-note-del:hover{background:rgba(0,0,0,.25);color:#E03A3A}
-.child-note-imgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
-.child-note-img-wrap{position:relative;flex-shrink:0}
-.child-note-img-thumb{width:52px;height:52px;object-fit:cover;border-radius:7px;cursor:pointer;display:block}
-.child-note-img-del{position:absolute;top:-4px;right:-4px;width:14px;height:14px;border:none;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:.52rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;transition:opacity .1s}
+.child-note-imgs{display:flex;flex-direction:column;gap:4px;width:100%;flex-shrink:0;margin-bottom:4px}
+.child-note-img-wrap{position:relative;width:100%}
+.child-note-img-thumb{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;display:block}
+.child-note-img-del{position:absolute;top:4px;right:4px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;transition:opacity .1s}
 .child-note-img-wrap:hover .child-note-img-del{opacity:1}
-.child-note-ta{width:100%;border:none;background:transparent;resize:none;font-size:.9rem;font-weight:800;color:#333;font-family:inherit;line-height:1.55;padding:0;box-sizing:border-box;outline:none;flex:1;text-align:center;display:flex;align-items:center}
-.child-note-attach-btn{border:none;background:none;font-size:.8rem;cursor:pointer;color:#888;padding:0 2px;opacity:0;transition:opacity .15s}
+.child-note-body{flex:1;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;min-height:0}
+.child-note-ce{outline:none;font-size:.9rem;font-weight:800;color:#333;line-height:1.5;text-align:center;width:100%;word-break:break-word;cursor:text;font-family:inherit;white-space:pre-wrap}
+.child-note-ce:empty::before{content:'메모...';color:rgba(0,0,0,.22);font-weight:600}
+.child-note-attach-btn{border:none;background:none;font-size:.8rem;cursor:pointer;color:#888;padding:0 2px;opacity:0;transition:opacity .15s;flex-shrink:0}
 .child-note-attach-btn:hover{color:#C4714A}
+.child-note-card.drag-over{outline:2.5px dashed #C4714A;opacity:.75}
 .child-note-add{width:190px;height:180px;border:2px dashed rgba(0,0,0,.13);border-radius:14px;background:none;color:#AAA;font-size:.82rem;cursor:pointer;transition:all .13s;flex-shrink:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
 .child-note-add:hover{border-color:#C4714A;color:#C4714A;background:#FFF8F5}
 .child-tt-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #EDE8E1;margin-top:20px}
@@ -2724,24 +2727,54 @@ function renderChild(){renderChildMemos();renderChildTt();renderChildNotes();}
 
 // child 포스트잇
 const CHILD_NOTE_COLORS=['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
+let _childDragIdx=null;
 function renderChildNotes(){
   const el=document.getElementById('child-notes-grid');if(!el) return;
   const notes=_childData.notes||[];
-  el.innerHTML=notes.map(n=>{
+  el.innerHTML=notes.map((n,i)=>{
     const imgs=Array.isArray(n.images)?n.images.filter(Boolean):[];
-    const imgHtml=imgs.length?`<div class="child-note-imgs">${imgs.map((u,i)=>`<div class="child-note-img-wrap"><img class="child-note-img-thumb" src="${u.replace('/upload/','/upload/w_80,h_80,c_fill/')}" onclick="openImgModal('${u}')"><button class="child-note-img-del" onclick="deleteChildNoteImg(${n.id},${i})">✕</button></div>`).join('')}</div>`:'';
-    const taStyle=imgs.length?'':'flex:1;display:flex;align-items:center';
-    return `<div class="child-note-card" style="background:${n.color||CHILD_NOTE_COLORS[0]}" onpaste="handleChildNotePaste(event,${n.id})">
+    const imgHtml=imgs.length?`<div class="child-note-imgs">${imgs.map((u,j)=>`<div class="child-note-img-wrap"><img class="child-note-img-thumb" src="${u.replace('/upload/','/upload/w_400,c_fill/')}" onclick="openImgModal('${u}')"><button class="child-note-img-del" onclick="event.stopPropagation();deleteChildNoteImg(${n.id},${j})">✕</button></div>`).join('')}</div>`:'';
+    const safeText=(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    return `<div class="child-note-card" draggable="true" style="background:${n.color||CHILD_NOTE_COLORS[0]}"
+        ondragstart="childNoteDragStart(event,${i})"
+        ondragover="childNoteDragOver(event,${i})"
+        ondrop="childNoteDrop(event,${i})"
+        ondragend="childNoteDragEnd()"
+        onpaste="handleChildNotePaste(event,${n.id})">
       <button class="child-note-del" onclick="deleteChildNote(${n.id})" title="삭제">✕</button>
       ${imgHtml}
-      <textarea class="child-note-ta" style="${taStyle}" oninput="updateChildNote(${n.id},this.value)" onblur="_saveChildData()">${(n.text||'').replace(/</g,'&lt;')}</textarea>
-      <div style="text-align:right">
+      <div class="child-note-body">
+        <div class="child-note-ce" contenteditable="true" data-nid="${n.id}"
+             oninput="updateChildNote(${n.id},this.innerText)"
+             onblur="_saveChildData()">${safeText}</div>
+      </div>
+      <div style="text-align:right;width:100%;flex-shrink:0">
         <input type="file" id="child-note-file-${n.id}" accept="image/*" style="display:none" onchange="handleChildNoteFile(${n.id},this.files[0]);this.value=''">
-        <button class="child-note-attach-btn" onclick="document.getElementById('child-note-file-${n.id}').click()" title="이미지 첨부">📎</button>
+        <button class="child-note-attach-btn" onclick="event.stopPropagation();document.getElementById('child-note-file-${n.id}').click()" title="이미지 첨부">📎</button>
       </div>
     </div>`;
   }).join('')
   +`<button class="child-note-add" onclick="addChildNote()"><span style="font-size:1.4rem">+</span><span style="font-size:.75rem">메모 추가</span></button>`;
+}
+function childNoteDragStart(e,idx){
+  _childDragIdx=idx;e.dataTransfer.effectAllowed='move';
+}
+function childNoteDragOver(e,idx){
+  e.preventDefault();e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.child-note-card').forEach((c,i)=>c.classList.toggle('drag-over',i===idx&&i!==_childDragIdx));
+}
+function childNoteDrop(e,idx){
+  e.preventDefault();
+  document.querySelectorAll('.child-note-card').forEach(c=>c.classList.remove('drag-over'));
+  if(_childDragIdx===null||_childDragIdx===idx){_childDragIdx=null;return;}
+  const notes=_childData.notes||[];
+  const dragged=notes.splice(_childDragIdx,1)[0];
+  notes.splice(idx,0,dragged);
+  _childDragIdx=null;_saveChildData();renderChildNotes();
+}
+function childNoteDragEnd(){
+  _childDragIdx=null;
+  document.querySelectorAll('.child-note-card').forEach(c=>c.classList.remove('drag-over'));
 }
 function addChildNote(){
   if(!_childData.notes) _childData.notes=[];
@@ -2749,7 +2782,7 @@ function addChildNote(){
   const newId=Math.max(0,...(_childData.notes.map(n=>n.id||0)))+1;
   _childData.notes.push({id:newId,text:'',color:CHILD_NOTE_COLORS[colorIdx]});
   _saveChildData();renderChildNotes();
-  setTimeout(()=>{const tas=document.querySelectorAll('.child-note-ta');if(tas.length)tas[tas.length-2].focus();},60);
+  setTimeout(()=>{const ces=document.querySelectorAll('.child-note-ce');if(ces.length)ces[ces.length-1].focus();},60);
 }
 function updateChildNote(id,text){
   const n=(_childData.notes||[]).find(n=>n.id===id);
@@ -3164,11 +3197,12 @@ function _tvRenderDaily(){
   if(!trip){card.style.display='none';return;}
   card.style.display='';
   const DOW=['일','월','화','수','목','금','토'];
+  const _fmtLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const dates=[];
   const s=new Date(trip.start+'T00:00:00');
   const e=new Date(trip.end+'T00:00:00');
   for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1))
-    dates.push(new Date(d).toISOString().slice(0,10));
+    dates.push(_fmtLocal(d));
   cont.innerHTML=dates.map(date=>{
     const dt=new Date(date+'T00:00:00');
     const label=`📅 ${dt.getMonth()+1}월 ${dt.getDate()}일 (${DOW[dt.getDay()]})`;
