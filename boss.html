@@ -640,11 +640,18 @@ function setMenu(id){
 
 function setSub(id, label){
   activeSubMenu=id;
-  renderSidebar(); renderMobileSub();
 
-  // URL이 있는 서브메뉴는 iframe으로 표시
-  const menu = MENUS.find(m=>m.id===activeMenu);
-  const subItem = menu && menu.sub ? menu.sub.find(s=>s.id===id) : null;
+  // 어느 부모 메뉴에 속한 서브아이템인지 전체 탐색
+  let subItem = null;
+  for(const m of MENUS){
+    if(m.sub){
+      const found = m.sub.find(s=>s.id===id);
+      if(found){ subItem=found; activeMenu=m.id; break; }
+    }
+  }
+
+  renderTopMenu(); renderSidebar(); renderMobileSub();
+
   if(subItem && subItem.url){
     document.getElementById('embed-frame').src = subItem.url;
     showPage('iframe');
