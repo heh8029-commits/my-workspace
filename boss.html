@@ -2776,7 +2776,7 @@ function renderChildTt(){
     <div class="child-tt-time-hd"></div>
     ${hours.map(h=>`<div class="child-tt-time-slot">${_childHourLabel(h)}</div>`).join('')}
   </div>`;
-  const dayCols=CHILD_DAYS.map(day=>{
+  const dayCols=CHILD_DAYS.map((day,di)=>{
     const events=(sched[day]||[]).slice().sort((a,b)=>a.start.localeCompare(b.start));
     const evBlocks=events.map(ev=>{
       const top=_childToY(ev.start);
@@ -2794,8 +2794,13 @@ function renderChildTt(){
     }).join('');
     const addBtn=_childTtEdit?`<div class="child-tt-add-ev" onclick="openChildEvModal('${day}',null)" title="${day} 수업 추가">+</div>`:'';
     const hourLines=hours.map(()=>`<div class="child-tt-hour-line"></div>`).join('');
+    // 편집 모드: 다른 요일에서 복사 드롭다운
+    const copyOpts=_childTtEdit?`<select onchange="copyChildDay('${day}',this.value);this.value=''" style="font-size:.6rem;border:1px solid #EDE8E1;border-radius:5px;padding:1px 2px;color:#888;background:#FAFAFA;max-width:60px" title="다른 요일에서 복사">
+      <option value="">복사</option>
+      ${CHILD_DAYS.filter(d=>d!==day).map(d=>`<option value="${d}">${d}에서</option>`).join('')}
+    </select>`:'';
     return `<div class="child-tt-day-col">
-      <div class="child-tt-day-hd">${day}</div>
+      <div class="child-tt-day-hd" style="gap:4px">${day}${copyOpts}</div>
       <div class="child-tt-day-body" style="height:${totalPx}px">${hourLines}${evBlocks}${addBtn}</div>
     </div>`;
   }).join('');
@@ -2846,6 +2851,17 @@ function delChildEvent(day,id){
   if(!confirm('삭제할까요?')) return;
   const sc=(_childData.timetable.schedule||{})[day];
   if(sc) _childData.timetable.schedule[day]=sc.filter(e=>e.id!==id);
+  _saveChildData();renderChildTt();
+}
+function copyChildDay(toDay,fromDay){
+  if(!fromDay) return;
+  const src=((_childData.timetable.schedule||{})[fromDay]||[]);
+  if(!src.length){alert(fromDay+'요일에 등록된 수업이 없어요');return;}
+  if(!_childData.timetable.schedule) _childData.timetable.schedule={};
+  // 기존 항목에 추가 (겹침 허용, id는 새로 발급)
+  const dest=_childData.timetable.schedule[toDay]||[];
+  const copied=src.map(ev=>({...ev,id:Date.now()+Math.random()}));
+  _childData.timetable.schedule[toDay]=[...dest,...copied];
   _saveChildData();renderChildTt();
 }
 function toggleChildTtEdit(){
