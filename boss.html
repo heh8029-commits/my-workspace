@@ -306,6 +306,50 @@ a{text-decoration:none;color:inherit}
 .cswatch{width:26px;height:26px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .13s}
 .cswatch.sel{border-color:#333;transform:scale(1.18)}
 
+/* ── ALARM PAGE ── */
+.alarm-section-title{font-size:.88rem;font-weight:800;color:#555;margin-bottom:12px;margin-top:4px}
+.alarm-add-row{display:flex;gap:7px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.alarm-time-input{padding:7px 10px;border:1.5px solid #E8E0D8;border-radius:9px;font-size:.82rem;font-family:inherit;outline:none;background:#fff;transition:border .13s;flex-shrink:0}
+.alarm-time-input:focus{border-color:#C4714A}
+.alarm-label-input{flex:1;min-width:100px;padding:7px 10px;border:1.5px solid #E8E0D8;border-radius:9px;font-size:.82rem;font-family:inherit;outline:none;background:#fff;transition:border .13s}
+.alarm-label-input:focus{border-color:#C4714A}
+.alarm-add-btn{padding:7px 13px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .13s;flex-shrink:0}
+.alarm-add-btn:hover{background:#B46040}
+.alarm-tabs{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.alarm-tab-day{padding:6px 12px;border-radius:14px;border:none;font-size:.76rem;font-weight:700;color:#999;background:#F5F0EB;cursor:pointer;transition:all .13s}
+.alarm-tab-day.active{background:#C4714A;color:#fff}
+.alarm-list{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;min-height:42px}
+.alarm-row{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:12px;background:#F8F5F0}
+.alarm-row-time{font-size:.88rem;font-weight:800;color:#C4714A;flex-shrink:0;min-width:46px}
+.alarm-row-label{flex:1;font-size:.8rem;color:#444}
+.alarm-toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
+.alarm-toggle input{opacity:0;width:0;height:0;position:absolute}
+.alarm-toggle-sl{position:absolute;cursor:pointer;inset:0;background:#E0D8D0;border-radius:20px;transition:.2s}
+.alarm-toggle-sl:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.alarm-toggle input:checked+.alarm-toggle-sl{background:#C4714A}
+.alarm-toggle input:checked+.alarm-toggle-sl:before{transform:translateX(16px)}
+.alarm-row-del{padding:4px 8px;border-radius:7px;border:none;background:#FFE8E8;color:#E03A3A;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .12s;flex-shrink:0}
+.alarm-row-del:hover{background:#FFD4D4}
+.alarm-empty{text-align:center;padding:18px;color:#CCC;font-size:.8rem}
+.alarm-divider{border:none;border-top:1px solid #EDE8E1;margin:6px 0 20px}
+/* ── 브라우저 알림 팝업 ── */
+.alarm-notify{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:#fff;border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.18);
+  padding:14px 18px;min-width:230px;max-width:300px;
+  border-left:4px solid #C4714A;
+  transform:translateY(20px);opacity:0;
+  transition:transform .3s ease,opacity .3s ease;
+  pointer-events:none;
+}
+.alarm-notify.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.alarm-notify-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.alarm-notify-title{font-size:.82rem;font-weight:800;color:#C4714A}
+.alarm-notify-close{border:none;background:none;font-size:1rem;cursor:pointer;color:#CCC;padding:0;line-height:1}
+.alarm-notify-close:hover{color:#999}
+.alarm-notify-body{font-size:.9rem;color:#333;font-weight:600}
+.alarm-notify-time{font-size:.7rem;color:#BBB;margin-top:3px}
 /* ── VIEW MODE ── */
 /* 기본: 화면 너비로 자동 판단 */
 .mobile-subnav{display:none}
@@ -382,6 +426,30 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- 알림설정 페이지 -->
+    <div class="page" id="page-alarm">
+      <div style="max-width:520px">
+        <div class="alarm-section-title">🔔 매일 알람</div>
+        <div class="alarm-add-row">
+          <input type="time" class="alarm-time-input" id="daily-time">
+          <input type="text" class="alarm-label-input" id="daily-label" placeholder="알람 이름 (예: 광고비 확인)" maxlength="30">
+          <button class="alarm-add-btn" onclick="addAlarm('daily')">+ 추가</button>
+        </div>
+        <div class="alarm-list" id="alarm-list-daily"></div>
+
+        <hr class="alarm-divider">
+
+        <div class="alarm-section-title">📅 요일별 알람</div>
+        <div class="alarm-tabs" id="day-tabs"></div>
+        <div class="alarm-add-row">
+          <input type="time" class="alarm-time-input" id="day-time">
+          <input type="text" class="alarm-label-input" id="day-label" placeholder="알람 이름" maxlength="30">
+          <button class="alarm-add-btn" onclick="addAlarm('day')">+ 추가</button>
+        </div>
+        <div class="alarm-list" id="alarm-list-day"></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -407,6 +475,16 @@ body.mode-mob .mobile-subnav{display:flex!important}
   </div>
 </div>
 
+<!-- ── 알림 팝업 ── -->
+<div class="alarm-notify" id="alarm-notify">
+  <div class="alarm-notify-header">
+    <span class="alarm-notify-title">🔔 알림</span>
+    <button class="alarm-notify-close" onclick="closeAlarmNotify()">✕</button>
+  </div>
+  <div class="alarm-notify-body" id="alarm-notify-body"></div>
+  <div class="alarm-notify-time" id="alarm-notify-time"></div>
+</div>
+
 <script>
 // ── 메뉴 구조 ─────────────────────────────────────────────
 const MENUS = [
@@ -414,7 +492,7 @@ const MENUS = [
   {id:'miri', label:'미리제작소', emoji:'🏪', sub:[
     {id:'profit',     label:'월별손익',         emoji:'📈'},
     {id:'tax',        label:'부가세/종소세/세금', emoji:'💰'},
-    {id:'sales-ad',   label:'매출정리/광고비',   emoji:'📊'},
+    {id:'sales-ad',   label:'매출정리/광고비',   emoji:'📊', url:'https://heh8029-commits.github.io/my-workspace/coupang.html'},
     {id:'gross-time', label:'그로스시간별매출',  emoji:'⏰', url:'https://heh8029-commits.github.io/my-workspace/coupang.html'},
     {id:'design',     label:'디자인관리',        emoji:'🎨'},
     {id:'copy',       label:'문구추천&CT이미지', emoji:'✍️'},
@@ -539,8 +617,10 @@ function renderMobileSub(){
 function setMenu(id){
   activeMenu=id; activeSubMenu=null;
   renderTopMenu(); renderSidebar(); renderMobileSub();
-  showPage(id==='home'?'home':'sub');
-  if(id==='search') document.getElementById('ph-title').textContent='전체검색 — 준비 중';
+  if(id==='home'){ showPage('home'); }
+  else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
+  else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
+  else { showPage('sub'); }
 }
 
 function setSub(id, label){
@@ -553,6 +633,8 @@ function setSub(id, label){
   if(subItem && subItem.url){
     document.getElementById('embed-frame').src = subItem.url;
     showPage('iframe');
+  } else if(id==='alarm'){
+    showPage('alarm'); renderAllAlarmLists();
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -745,6 +827,120 @@ function delBm(id){
   if(!confirm('삭제할까요?')) return;
   bms=bms.filter(b=>b.id!==id); saveBm(); renderEditorList();
 }
+
+// ── 알림설정 ────────────────────────────────────────────────
+const DAY_NAMES = ['월','화','수','목','금','토','일'];
+let alarmData = JSON.parse(localStorage.getItem('boss_alarms') || 'null')
+  || {daily:[], day:[[],[],[],[],[],[],[]]};
+let activeDayIdx = 0;
+const firedSet = new Set();
+
+function saveAlarms(){ localStorage.setItem('boss_alarms', JSON.stringify(alarmData)); }
+
+function renderDayTabs(){
+  document.getElementById('day-tabs').innerHTML = DAY_NAMES.map((d,i)=>
+    `<button class="alarm-tab-day${i===activeDayIdx?' active':''}" onclick="selectDay(${i})">${d}</button>`
+  ).join('');
+}
+
+function selectDay(idx){
+  activeDayIdx = idx;
+  renderDayTabs();
+  renderAlarmList('day');
+}
+
+function renderAlarmList(type){
+  const listId = 'alarm-list-' + type;
+  const el = document.getElementById(listId);
+  if(!el) return;
+  const items = type==='daily' ? alarmData.daily : alarmData.day[activeDayIdx];
+  if(!items || !items.length){
+    el.innerHTML = '<div class="alarm-empty">알람이 없어요</div>';
+    return;
+  }
+  el.innerHTML = items.map((a,i)=>`
+    <div class="alarm-row">
+      <span class="alarm-row-time">${a.time}</span>
+      <span class="alarm-row-label">${a.label}</span>
+      <label class="alarm-toggle" title="${a.on?'켜짐':'꺼짐'}">
+        <input type="checkbox" ${a.on?'checked':''} onchange="${type==='daily'?`toggleDailyAlarm(${i},this.checked)`:`toggleDayAlarm(${activeDayIdx},${i},this.checked)`}">
+        <span class="alarm-toggle-sl"></span>
+      </label>
+      <button class="alarm-row-del" onclick="${type==='daily'?`delDailyAlarm(${i})`:`delDayAlarm(${activeDayIdx},${i})`}">삭제</button>
+    </div>`
+  ).join('');
+}
+
+function renderAllAlarmLists(){
+  renderDayTabs();
+  renderAlarmList('daily');
+  renderAlarmList('day');
+}
+
+function addAlarm(type){
+  const timeEl  = document.getElementById(type==='daily'?'daily-time':'day-time');
+  const labelEl = document.getElementById(type==='daily'?'daily-label':'day-label');
+  const time  = timeEl.value;
+  const label = labelEl.value.trim() || '알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  const entry = {time, label, on:true};
+  if(type==='daily'){
+    alarmData.daily.push(entry);
+    alarmData.daily.sort((a,b)=>a.time.localeCompare(b.time));
+  } else {
+    alarmData.day[activeDayIdx].push(entry);
+    alarmData.day[activeDayIdx].sort((a,b)=>a.time.localeCompare(b.time));
+  }
+  saveAlarms(); renderAlarmList(type);
+  timeEl.value=''; labelEl.value='';
+}
+
+function toggleDailyAlarm(idx, on){ alarmData.daily[idx].on=on; saveAlarms(); }
+function toggleDayAlarm(dayIdx, idx, on){ alarmData.day[dayIdx][idx].on=on; saveAlarms(); }
+
+function delDailyAlarm(idx){
+  if(!confirm('알람을 삭제할까요?')) return;
+  alarmData.daily.splice(idx,1); saveAlarms(); renderAlarmList('daily');
+}
+function delDayAlarm(dayIdx, idx){
+  if(!confirm('알람을 삭제할까요?')) return;
+  alarmData.day[dayIdx].splice(idx,1); saveAlarms(); renderAlarmList('day');
+}
+
+function closeAlarmNotify(){
+  document.getElementById('alarm-notify').classList.remove('show');
+}
+
+function fireNotify(label, hhmm){
+  document.getElementById('alarm-notify-body').textContent = label;
+  document.getElementById('alarm-notify-time').textContent = hhmm + ' 알람';
+  const el = document.getElementById('alarm-notify');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 8000);
+}
+
+(function initAlarmChecker(){
+  function check(){
+    const now = new Date();
+    const hhmm = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    const dayIdx = (now.getDay()+6)%7; // JS 0=일 → 변환: 0=월
+    const dateStr = now.toDateString();
+
+    alarmData.daily.forEach((a,i)=>{
+      if(!a.on || a.time!==hhmm) return;
+      const k = 'D_'+i+'_'+hhmm+'_'+dateStr;
+      if(!firedSet.has(k)){ firedSet.add(k); fireNotify(a.label, hhmm); }
+    });
+    alarmData.day[dayIdx].forEach((a,i)=>{
+      if(!a.on || a.time!==hhmm) return;
+      const k = 'W_'+dayIdx+'_'+i+'_'+hhmm+'_'+dateStr;
+      if(!firedSet.has(k)){ firedSet.add(k); fireNotify(a.label, hhmm); }
+    });
+  }
+  const now = new Date();
+  const msToNext = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  setTimeout(()=>{ check(); setInterval(check, 60000); }, msToNext);
+})();
 
 // ── PC/모바일 전환 ─────────────────────────────────────────
 function setMode(m){
