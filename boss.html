@@ -451,16 +451,31 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
     <!-- 알림설정 페이지 -->
     <div class="page" id="page-alarm">
-      <div style="max-width:560px">
-        <div style="background:#FDF0EA;border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;border:1px solid #E8C4A8">
-          <span style="font-size:1.4rem">📱</span>
-          <div>
-            <div style="font-size:.82rem;font-weight:800;color:#C4714A;margin-bottom:2px">알람은 사이트매니저봇에서 추가하세요</div>
-            <div style="font-size:.74rem;color:#AA8070">@boss_manager_bot → 🔔 알림설정 → 알람 추가</div>
+      <div style="max-width:620px">
+        <!-- 알람 추가 폼 -->
+        <div style="background:#FDF0EA;border-radius:14px;padding:16px;margin-bottom:18px;border:1px solid #E8C4A8">
+          <div style="font-size:.85rem;font-weight:800;color:#C4714A;margin-bottom:12px">🔔 알람 추가</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <input type="time" id="new-alarm-time" style="padding:7px 10px;border-radius:9px;border:1.5px solid #E8C4A8;font-size:.85rem;background:#fff;color:#333;font-family:inherit">
+            <input type="text" id="new-alarm-label" placeholder="알람 이름" maxlength="30" style="flex:1;min-width:120px;padding:7px 10px;border-radius:9px;border:1.5px solid #E8C4A8;font-size:.85rem;background:#fff;color:#333;font-family:inherit">
           </div>
-          <button onclick="refreshAlarms()" style="margin-left:auto;padding:6px 12px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.72rem;font-weight:700;cursor:pointer;flex-shrink:0">🔄 새로고침</button>
+          <div id="new-alarm-days" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'매일')">매일</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'월')">월</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'화')">화</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'수')">수</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'목')">목</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'금')">금</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'토')">토</span>
+            <span class="day-check-lbl" onclick="toggleNewDay(this,'일')">일</span>
+          </div>
+          <button onclick="addNewAlarm()" style="padding:8px 20px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.82rem;font-weight:700;cursor:pointer">➕ 추가</button>
         </div>
-        <div class="alarm-section-title">📋 등록된 알람</div>
+        <!-- 등록된 알람 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="alarm-section-title" style="margin:0">📋 등록된 알람</div>
+          <button onclick="refreshAlarms()" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #E8C4A8;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
         <div id="alarm-list-all"><div class="alarm-empty">불러오는 중...</div></div>
       </div>
     </div>
@@ -885,6 +900,17 @@ function refreshAlarms(){
 }
 
 const DAY_COLS = ['매일','월','화','수','목','금','토','일'];
+let alarmEditId = null;
+let editSelDays = new Set();
+
+async function saveAlarms(){
+  try{
+    await fetch(FB_ALARMS, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(alarmData)
+    });
+  }catch(e){ console.log('알람 저장 실패',e); }
+}
 
 function renderAlarmList(){
   const el = document.getElementById('alarm-list-all');
@@ -893,17 +919,27 @@ function renderAlarmList(){
     el.innerHTML='<div class="alarm-empty">등록된 알람이 없어요</div>'; return;
   }
   const tbody = alarmData.alarms.map(a=>{
+    if(alarmEditId===a.id) return _buildEditRow(a);
     const isDaily = a.days.includes('매일');
     const dots = DAY_COLS.map(d=>{
       const active = isDaily ? d==='매일' : a.days.includes(d);
       return `<td class="col-d">${active?`<span class="alarm-dot${d==='매일'?' daily':''}"></span>`:''}</td>`;
     }).join('');
-    const onOff = a.on ? '🔔' : '🔕';
     return `
     <tr>
       <td class="col-t">${a.time}</td>
-      <td class="col-n" title="${a.label}">${onOff} ${a.label}</td>
+      <td class="col-n" title="${a.label}">${a.label}</td>
       ${dots}
+      <td>
+        <div class="alarm-tbl-btns">
+          <label class="alarm-toggle">
+            <input type="checkbox" ${a.on?'checked':''} onchange="toggleAlarmOn(${a.id},this.checked)">
+            <span class="alarm-toggle-sl"></span>
+          </label>
+          <button class="alarm-btn-edit" onclick="startAlarmEdit(${a.id})">수정</button>
+          <button class="alarm-row-del"  onclick="delAlarm(${a.id})">삭제</button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 
@@ -914,10 +950,116 @@ function renderAlarmList(){
         <th class="col-t">시간</th>
         <th class="col-n">이름</th>
         <th>매일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th>
+        <th></th>
       </tr></thead>
       <tbody>${tbody}</tbody>
     </table>
   </div>`;
+}
+
+function _buildEditRow(a){
+  const dayBtns = DAY_COLS.map(d=>
+    `<span class="day-check-lbl${editSelDays.has(d)?' checked':''}" onclick="toggleEditDay(this,'${d}')">${d}</span>`
+  ).join('');
+  return `
+  <tr class="alarm-edit-colspan">
+    <td colspan="11">
+      <div class="alarm-row-edit-form">
+        <div class="alarm-edit-top">
+          <input type="time" class="alarm-time-input" id="ea-time" value="${a.time}">
+          <input type="text" class="alarm-label-input" id="ea-label" value="${a.label}" maxlength="30">
+        </div>
+        <div class="alarm-day-checks" id="ea-days">${dayBtns}</div>
+        <div class="inline-btns">
+          <button class="ibtn ibtn-cancel" onclick="cancelAlarmEdit()">취소</button>
+          <button class="ibtn ibtn-save"   onclick="saveAlarmEdit(${a.id})">저장</button>
+        </div>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function startAlarmEdit(id){
+  alarmEditId=id;
+  const a=alarmData.alarms.find(x=>x.id===id);
+  editSelDays=new Set(a?a.days:[]);
+  renderAlarmList();
+  setTimeout(()=>document.querySelector('.alarm-row-edit-form')?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+function toggleEditDay(el, day){
+  if(editSelDays.has(day)){
+    editSelDays.delete(day); el.classList.remove('checked');
+  } else {
+    if(day==='매일'){
+      ['월','화','수','목','금','토','일'].forEach(d=>editSelDays.delete(d));
+      document.querySelectorAll('#ea-days .day-check-lbl').forEach(e=>{if(e.textContent!=='매일')e.classList.remove('checked');});
+    } else {
+      editSelDays.delete('매일');
+      document.querySelectorAll('#ea-days .day-check-lbl').forEach(e=>{if(e.textContent==='매일')e.classList.remove('checked');});
+    }
+    editSelDays.add(day); el.classList.add('checked');
+  }
+}
+
+function cancelAlarmEdit(){ alarmEditId=null; renderAlarmList(); }
+
+async function saveAlarmEdit(id){
+  const time  = document.getElementById('ea-time').value;
+  const label = (document.getElementById('ea-label').value||'').trim()||'알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  if(!editSelDays.size){ alert('요일을 선택해주세요!'); return; }
+  const idx=alarmData.alarms.findIndex(a=>a.id===id);
+  if(idx>=0) alarmData.alarms[idx]={...alarmData.alarms[idx],time,label,days:[...editSelDays]};
+  alarmData.alarms.sort((a,b)=>a.time.localeCompare(b.time));
+  alarmEditId=null;
+  await saveAlarms();
+  renderAlarmList();
+}
+
+async function toggleAlarmOn(id,on){
+  const a=alarmData.alarms.find(x=>x.id===id);
+  if(a){ a.on=on; await saveAlarms(); }
+}
+
+async function delAlarm(id){
+  if(!confirm('알람을 삭제할까요?')) return;
+  alarmData.alarms=alarmData.alarms.filter(a=>a.id!==id);
+  await saveAlarms(); renderAlarmList();
+}
+
+// ── 알람 추가 폼 ──
+let newAlarmSelDays = new Set();
+
+function toggleNewDay(el, day){
+  if(newAlarmSelDays.has(day)){
+    newAlarmSelDays.delete(day); el.classList.remove('checked');
+  } else {
+    if(day==='매일'){
+      ['월','화','수','목','금','토','일'].forEach(d=>newAlarmSelDays.delete(d));
+      document.querySelectorAll('#new-alarm-days .day-check-lbl').forEach(e=>{if(e.textContent!=='매일')e.classList.remove('checked');});
+    } else {
+      newAlarmSelDays.delete('매일');
+      document.querySelectorAll('#new-alarm-days .day-check-lbl').forEach(e=>{if(e.textContent==='매일')e.classList.remove('checked');});
+    }
+    newAlarmSelDays.add(day); el.classList.add('checked');
+  }
+}
+
+async function addNewAlarm(){
+  const time  = document.getElementById('new-alarm-time').value;
+  const label = (document.getElementById('new-alarm-label').value||'').trim()||'알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  if(!newAlarmSelDays.size){ alert('요일을 선택해주세요!'); return; }
+  const newId = Math.max(0,...alarmData.alarms.map(a=>a.id),0)+1;
+  alarmData.alarms.push({id:newId, time, label, days:[...newAlarmSelDays], on:true});
+  alarmData.alarms.sort((a,b)=>a.time.localeCompare(b.time));
+  await saveAlarms();
+  document.getElementById('new-alarm-time').value='';
+  document.getElementById('new-alarm-label').value='';
+  newAlarmSelDays.clear();
+  document.querySelectorAll('#new-alarm-days .day-check-lbl').forEach(e=>e.classList.remove('checked'));
+  renderAlarmList();
 }
 
 function closeAlarmNotify(){ document.getElementById('alarm-notify').classList.remove('show'); }
