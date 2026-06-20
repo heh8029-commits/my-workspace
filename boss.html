@@ -433,6 +433,38 @@ body.mode-mob .mobile-subnav{display:flex!important}
 /* 메모 텍스트 링크 */
 .pnl-memo-text a{color:#1a5eff;text-decoration:none;word-break:break-all}
 .pnl-memo-text a:hover{text-decoration:underline}
+/* ── 손익 계산기 ── */
+.pnl-calc-divider{border:none;border-top:2px dashed #EDE8E1;margin:22px 0}
+.pnl-calc-title{font-size:.9rem;font-weight:800;color:#555;margin-bottom:14px}
+.pnl-summary-card{background:linear-gradient(135deg,#E8F8F0 0%,#F0FAF4 100%);border:1.5px solid #A8DFC0;border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.pnl-summary-row{display:flex;gap:10px;margin-bottom:10px}
+.pnl-summary-box{flex:1;background:#fff;border-radius:12px;padding:14px 10px;text-align:center;border:1px solid rgba(0,0,0,.05)}
+.pnl-summary-label{font-size:.68rem;font-weight:700;color:#888;margin-bottom:6px}
+.pnl-summary-amount{font-size:1.1rem;font-weight:800;white-space:nowrap}
+.pnl-summary-amount.inc{color:#2E9B5E}
+.pnl-summary-amount.exp{color:#E03A3A}
+.pnl-summary-amount.prf{color:#2266CC}
+.pnl-summary-sub{font-size:.67rem;color:#AAA;margin-top:3px}
+.pnl-summary-formula{text-align:center;font-size:.71rem;color:#888;padding-top:8px;border-top:1px solid rgba(0,0,0,.07)}
+.pnl-calc-block{background:#fff;border-radius:14px;border:1px solid #EDE8E1;padding:14px 14px 8px;margin-bottom:12px}
+.pnl-calc-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pnl-calc-block-label{font-size:.82rem;font-weight:800}
+.pnl-calc-block-label.inc{color:#2E9B5E}
+.pnl-calc-block-label.exp{color:#E03A3A}
+.pnl-calc-add-btn{padding:4px 13px;border-radius:8px;font-size:.72rem;font-weight:700;border:none;cursor:pointer;transition:all .12s}
+.pnl-calc-add-btn.inc{background:#E8F8F0;color:#2E9B5E}
+.pnl-calc-add-btn.inc:hover{background:#D0F0E0}
+.pnl-calc-add-btn.exp{background:#FFF0F0;color:#E03A3A}
+.pnl-calc-add-btn.exp:hover{background:#FFE0E0}
+.pnl-calc-row{display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid #F5F0EB}
+.pnl-calc-row:last-child{border-bottom:none}
+.pnl-calc-name{flex:1;padding:5px 7px;border-radius:7px;border:1px solid transparent;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:transparent;min-width:0}
+.pnl-calc-name:focus{border-color:#C4714A;background:#FFFDF9}
+.pnl-calc-amount{width:115px;padding:5px 7px;border-radius:7px;border:1px solid transparent;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:transparent;text-align:right;flex-shrink:0}
+.pnl-calc-amount:focus{border-color:#C4714A;background:#FFFDF9}
+.pnl-calc-pct{width:36px;font-size:.71rem;color:#E03A3A;font-weight:700;text-align:right;flex-shrink:0}
+.pnl-calc-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;font-size:.68rem;cursor:pointer;color:#D0D0D0;flex-shrink:0;transition:all .12s;padding:0}
+.pnl-calc-del:hover{background:#FFE8E8;color:#E03A3A}
 </style>
 </head>
 <body>
@@ -546,6 +578,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div id="pnl-form-status"></div>
         </div>
         <div class="pnl-memo-list" id="pnl-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
+
+        <hr class="pnl-calc-divider">
+        <div class="pnl-calc-title">📊 이번달 손익 요약</div>
+        <div id="pnl-calc-cont"><div style="text-align:center;padding:20px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
       </div>
     </div>
 
@@ -758,7 +794,9 @@ function setSub(id, label){
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
   } else if(id==='profit'){
-    showPage('profit'); fetchPnlMemos().then(()=>renderPnlMemos());
+    showPage('profit');
+    fetchPnlMemos().then(()=>renderPnlMemos());
+    fetchCalcData().then(()=>renderCalc());
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -1388,6 +1426,135 @@ function setMode(m){
   document.getElementById('btn-mob').classList.toggle('on',m==='mob');
 }
 
+// ── 손익 계산기 ─────────────────────────────────────────────
+const FB_CALC = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_calc.json';
+let calcData = null;
+const CALC_DEFAULT = {
+  income:[
+    {name:'쿠팡',amount:55000000},
+    {name:'네이버',amount:8000000}
+  ],
+  expenses:[
+    {name:'광고비+수수료등',amount:29000000},
+    {name:'카드값',amount:8000000},
+    {name:'부가세',amount:1000000},
+    {name:'택배비',amount:4500000},
+    {name:'인건비',amount:4200000},
+    {name:'종소세',amount:1000000},
+    {name:'건강보험연금',amount:1650000},
+    {name:'월세',amount:1202000},
+    {name:'직원퇴직금적립',amount:420000},
+    {name:'세무사',amount:80000},
+    {name:'관리비',amount:320000},
+    {name:'퇴직금적립',amount:220000},
+    {name:'풍경소리월세',amount:200000},
+    {name:'프로그램 사용료(토글블로우등)',amount:120000}
+  ]
+};
+
+async function fetchCalcData(){
+  try{
+    const r = await fetch(FB_CALC + '?t=' + Date.now());
+    if(r.ok){
+      const d = await r.json();
+      if(d && Array.isArray(d.income) && Array.isArray(d.expenses)){ calcData=d; return; }
+    }
+  }catch(e){ console.log('calc fetch 실패',e); }
+  calcData = JSON.parse(JSON.stringify(CALC_DEFAULT));
+}
+
+async function saveCalcData(){
+  try{
+    await fetch(FB_CALC,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(calcData)});
+  }catch(e){ console.log('calc 저장 실패',e); }
+}
+
+function _fmtAmt(n){ return Math.round(n).toLocaleString('ko-KR'); }
+
+function renderCalc(){
+  const cont = document.getElementById('pnl-calc-cont');
+  if(!cont || !calcData) return;
+  const totalInc = calcData.income.reduce((s,r)=>s+(+r.amount||0),0);
+  const totalExp = calcData.expenses.reduce((s,r)=>s+(+r.amount||0),0);
+  const profit = totalInc - totalExp;
+  const profitPct = totalInc ? Math.round(profit/totalInc*100) : 0;
+  const expPct = totalInc ? Math.round(totalExp/totalInc*100) : 0;
+  const incRows = calcData.income.map((r,i)=>`
+    <div class="pnl-calc-row">
+      <input class="pnl-calc-name" value="${r.name.replace(/"/g,'&quot;')}" placeholder="항목명"
+        onchange="calcData.income[${i}].name=this.value" onblur="saveCalcData()">
+      <input class="pnl-calc-amount" value="${_fmtAmt(+r.amount||0)}" placeholder="금액"
+        onchange="onCalcAmtChange('income',${i},this.value)" onblur="saveCalcData()">
+      <button class="pnl-calc-del" onclick="delCalcRow('income',${i})">✕</button>
+    </div>`).join('');
+  const expRows = calcData.expenses.map((r,i)=>{
+    const pct = totalExp ? Math.round((+r.amount||0)/totalExp*1000)/10 : 0;
+    return `
+    <div class="pnl-calc-row">
+      <input class="pnl-calc-name" value="${r.name.replace(/"/g,'&quot;')}" placeholder="항목명"
+        onchange="calcData.expenses[${i}].name=this.value" onblur="saveCalcData()">
+      <input class="pnl-calc-amount" value="${_fmtAmt(+r.amount||0)}" placeholder="금액"
+        onchange="onCalcAmtChange('expenses',${i},this.value)" onblur="saveCalcData()">
+      <span class="pnl-calc-pct">${pct}%</span>
+      <button class="pnl-calc-del" onclick="delCalcRow('expenses',${i})">✕</button>
+    </div>`;
+  }).join('');
+  cont.innerHTML = `
+  <div class="pnl-summary-card">
+    <div class="pnl-summary-row">
+      <div class="pnl-summary-box">
+        <div class="pnl-summary-label">💵 번 돈</div>
+        <div class="pnl-summary-amount inc">${_fmtAmt(totalInc)}원</div>
+      </div>
+      <div class="pnl-summary-box">
+        <div class="pnl-summary-label">💸 나간 돈</div>
+        <div class="pnl-summary-amount exp">${_fmtAmt(totalExp)}원</div>
+        <div class="pnl-summary-sub">${expPct}% 비중</div>
+      </div>
+      <div class="pnl-summary-box">
+        <div class="pnl-summary-label">🌿 순이익</div>
+        <div class="pnl-summary-amount prf">${_fmtAmt(profit)}원</div>
+        <div class="pnl-summary-sub">수익률 ${profitPct}%</div>
+      </div>
+    </div>
+    <div class="pnl-summary-formula">${_fmtAmt(totalInc)} - ${_fmtAmt(totalExp)} = ${_fmtAmt(profit)}원</div>
+  </div>
+  <div class="pnl-calc-block">
+    <div class="pnl-calc-block-head">
+      <span class="pnl-calc-block-label inc">💵 이번달 번 돈</span>
+      <button class="pnl-calc-add-btn inc" onclick="addCalcRow('income')">+ 추가</button>
+    </div>
+    ${incRows}
+  </div>
+  <div class="pnl-calc-block">
+    <div class="pnl-calc-block-head">
+      <span class="pnl-calc-block-label exp">💸 이번달 나간 돈</span>
+      <button class="pnl-calc-add-btn exp" onclick="addCalcRow('expenses')">+ 추가</button>
+    </div>
+    ${expRows}
+  </div>`;
+}
+
+function onCalcAmtChange(type, idx, val){
+  calcData[type][idx].amount = parseInt(val.replace(/,/g,'')) || 0;
+  renderCalc();
+}
+
+function addCalcRow(type){
+  calcData[type].push({name:'',amount:0});
+  renderCalc();
+  saveCalcData();
+  // 새 행 이름 input 포커스
+  const inputs = document.querySelectorAll(`#pnl-calc-cont .pnl-calc-name`);
+  if(inputs.length) inputs[inputs.length-1].focus();
+}
+
+function delCalcRow(type, idx){
+  calcData[type].splice(idx,1);
+  renderCalc();
+  saveCalcData();
+}
+
 // ── 소프트 새로고침 (현재 페이지 데이터만 다시 불러옴) ──────
 function hardRefresh(){
   const btn = document.getElementById('sync-btn');
@@ -1398,6 +1565,7 @@ function hardRefresh(){
     fetchAlarms().then(()=>renderAlarmList());
   } else if(pid==='page-profit'){
     fetchPnlMemos().then(()=>renderPnlMemos());
+    fetchCalcData().then(()=>renderCalc());
   } else if(pid==='page-iframe'){
     const fr=document.getElementById('embed-frame');
     if(fr){ const s=fr.src; fr.src=''; setTimeout(()=>fr.src=s,50); }
