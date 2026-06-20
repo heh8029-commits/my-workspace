@@ -495,7 +495,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .exp-row-day{width:28px;font-size:.75rem;font-weight:800;color:#AAA;flex-shrink:0;text-align:center}
 .exp-row-name{flex:1;font-size:.84rem;color:#333;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .exp-row-cat{padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;flex-shrink:0}
-.exp-row-note{font-size:.71rem;color:#BBB;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.exp-row-note{font-size:.71rem;color:#999;flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px}
 .exp-row-amt{font-size:.88rem;font-weight:800;color:#333;flex-shrink:0;white-space:nowrap}
 .exp-row-actions{display:flex;gap:2px;flex-shrink:0}
 .exp-row-btn{width:24px;height:24px;border-radius:6px;border:none;background:transparent;font-size:.72rem;cursor:pointer;color:#CCC;transition:all .12s;padding:0}
@@ -603,17 +603,12 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
-    <!-- 월별지출 페이지 -->
+    <!-- 고정지출 페이지 -->
     <div class="page" id="page-expense">
-      <div style="max-width:760px">
+      <div style="max-width:1100px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-size:.9rem;font-weight:800;color:#555">💳 월별지출</div>
+          <div style="font-size:.9rem;font-weight:800;color:#555">💳 고정 지출</div>
           <button onclick="fetchExpenses().then(()=>renderExpenses())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
-        </div>
-        <div class="exp-month-nav">
-          <button class="exp-month-btn" onclick="expPrevMonth()">‹</button>
-          <div class="exp-month-label" id="exp-month-label">-</div>
-          <button class="exp-month-btn" onclick="expNextMonth()">›</button>
         </div>
         <div id="exp-cont"><div class="exp-empty-msg">불러오는 중...</div></div>
       </div>
@@ -1489,12 +1484,12 @@ function setMode(m){
   document.getElementById('btn-mob').classList.toggle('on',m==='mob');
 }
 
-// ── 월별지출 ─────────────────────────────────────────────────
+// ── 고정 지출 ─────────────────────────────────────────────────
 const FB_EXPENSE = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_expenses.json';
-const EXP_CATS = ['식비','교통','생활','의료','교육','여가','기타'];
+const EXP_BANKS = ['미래에셋통장','농협301','농협312','카뱅','경기화폐카드','현대카드','신한카드','롯데카드','삼성카드','토스','기타'];
 let expItems = [];
-let expYearMonth = new Date().toISOString().slice(0,7);
-let expCatFilter = '전체';
+let expBankFilter = '전체';
+let expSearchQ = '';
 let expEditId = null;
 
 async function fetchExpenses(){
@@ -1510,45 +1505,48 @@ async function saveExpenses(){
   }catch(e){ console.log('지출 저장 실패',e); }
 }
 
-function _updateExpMonthLabel(){
-  const el = document.getElementById('exp-month-label');
-  if(!el) return;
-  const [y,m] = expYearMonth.split('-');
-  el.textContent = `${y}년 ${parseInt(m)}월`;
-}
-
 function renderExpenses(){
-  _updateExpMonthLabel();
   const cont = document.getElementById('exp-cont');
   if(!cont) return;
 
-  const monthAll = expItems.filter(e=>e.yearmonth===expYearMonth);
-  const total = monthAll.reduce((s,e)=>s+(+e.amount||0),0);
-  let filtered = expCatFilter==='전체' ? [...monthAll] : monthAll.filter(e=>e.cat===expCatFilter);
-  filtered.sort((a,b)=>(+a.day||0)-(+b.day||0));
+  const total = expItems.reduce((s,e)=>s+(+e.amount||0),0);
+  let filtered = expBankFilter==='전체' ? [...expItems] : expItems.filter(e=>e.bank===expBankFilter);
+  if(expSearchQ) filtered = filtered.filter(e=>(e.name||'').includes(expSearchQ)||(e.note||'').includes(expSearchQ));
+  filtered.sort((a,b)=>{
+    const da = parseInt((String(a.day||'0')).match(/\d+/)?.[0]||'0');
+    const db = parseInt((String(b.day||'0')).match(/\d+/)?.[0]||'0');
+    return da-db;
+  });
 
   const summaryHtml = `
   <div class="exp-summary-bar">
     <div>
-      <div style="font-size:.71rem;color:#AAA;margin-bottom:2px">이번달 총 지출</div>
+      <div style="font-size:.71rem;color:#AAA;margin-bottom:2px">고정 지출 합계</div>
       <div class="exp-summary-total">${_fmtAmt(total)}원</div>
     </div>
-    <div class="exp-summary-count">${monthAll.length}건</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="exp-summary-count">${expItems.length}건</div>
+      <input class="exp-inp" placeholder="🔍 검색" value="${expSearchQ}"
+        style="width:120px;padding:4px 9px;font-size:.75rem"
+        oninput="expSearchQ=this.value;renderExpenses()">
+    </div>
   </div>`;
 
-  const catHtml = `
+  const bankHtml = `
   <div class="exp-cat-filter">
-    ${['전체',...EXP_CATS].map(c=>`<button class="exp-cat-btn${expCatFilter===c?' on':''}" onclick="setExpCat('${c}')">${c}</button>`).join('')}
+    ${['전체',...EXP_BANKS].map(b=>`<button class="exp-cat-btn${expBankFilter===b?' on':''}" onclick="setExpBank('${b}')">${b}</button>`).join('')}
   </div>`;
 
   const formHtml = `
   <div class="exp-add-card">
     <div class="exp-add-row">
-      <input class="exp-inp exp-inp-day" id="exp-day" type="number" placeholder="날짜" min="1" max="31">
+      <input class="exp-inp exp-inp-day" id="exp-day" type="text" placeholder="날짜(예:10일)" style="width:80px">
       <input class="exp-inp exp-inp-name" id="exp-name" type="text" placeholder="항목명" onkeydown="if(event.key==='Enter')submitExpense()">
-      <input class="exp-inp exp-inp-amt" id="exp-amt" type="text" placeholder="금액" oninput="fmtExpAmt(this)" onkeydown="if(event.key==='Enter')submitExpense()">
-      <select class="exp-cat-sel" id="exp-cat">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
-      <input class="exp-inp exp-inp-note" id="exp-note" type="text" placeholder="메모" onkeydown="if(event.key==='Enter')submitExpense()">
+      <input class="exp-inp exp-inp-amt" id="exp-amt" type="text" placeholder="금액(변동이면 0)" oninput="fmtExpAmt(this)" onkeydown="if(event.key==='Enter')submitExpense()">
+      <select class="exp-cat-sel" id="exp-bank">
+        ${EXP_BANKS.map(b=>`<option>${b}</option>`).join('')}
+      </select>
+      <input class="exp-inp exp-inp-note" id="exp-note" type="text" placeholder="메모/계좌" onkeydown="if(event.key==='Enter')submitExpense()">
       <button class="exp-add-submit" id="exp-submit-btn" onclick="submitExpense()">➕ 추가</button>
     </div>
     <div id="exp-edit-bar" style="display:none;font-size:.72rem;color:#C4714A;margin-top:8px">
@@ -1559,26 +1557,26 @@ function renderExpenses(){
 
   const listHtml = filtered.length ? filtered.map(e=>`
   <div class="exp-row">
-    <span class="exp-row-day">${e.day}</span>
+    <span class="exp-row-day">${e.day||'-'}</span>
     <span class="exp-row-name">${e.name}</span>
-    <span class="exp-row-cat exp-cat-${e.cat||'기타'}">${e.cat||'기타'}</span>
+    <span class="exp-row-cat" style="background:#F5F0EB;color:#888;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;flex-shrink:0">${e.bank||'기타'}</span>
     <span class="exp-row-note">${e.note||''}</span>
-    <span class="exp-row-amt">${_fmtAmt(+e.amount||0)}원</span>
+    <span class="exp-row-amt">${(+e.amount) ? _fmtAmt(+e.amount)+'원' : '-'}</span>
     <div class="exp-row-actions">
       <button class="exp-row-btn" onclick="startExpEdit(${e.id})">✏️</button>
       <button class="exp-row-btn del" onclick="delExpense(${e.id})">🗑️</button>
     </div>
-  </div>`).join('') : `<div class="exp-empty-msg">지출 내역이 없어요</div>`;
+  </div>`).join('') : `<div class="exp-empty-msg">항목이 없어요</div>`;
 
-  cont.innerHTML = summaryHtml + catHtml + formHtml + `<div class="exp-list">${listHtml}</div>`;
+  cont.innerHTML = summaryHtml + bankHtml + formHtml + `<div class="exp-list">${listHtml}</div>`;
 
   if(expEditId !== null){
     const m = expItems.find(e=>e.id===expEditId);
     if(m){
-      document.getElementById('exp-day').value = m.day;
+      document.getElementById('exp-day').value = m.day||'';
       document.getElementById('exp-name').value = m.name;
-      document.getElementById('exp-amt').value = _fmtAmt(+m.amount||0);
-      document.getElementById('exp-cat').value = m.cat||'기타';
+      document.getElementById('exp-amt').value = m.amount ? _fmtAmt(+m.amount) : '';
+      document.getElementById('exp-bank').value = m.bank||'기타';
       document.getElementById('exp-note').value = m.note||'';
       document.getElementById('exp-submit-btn').textContent = '✏️ 수정';
       document.getElementById('exp-edit-bar').style.display = 'block';
@@ -1591,22 +1589,22 @@ function fmtExpAmt(el){
   if(raw) el.value = parseInt(raw).toLocaleString('ko-KR');
 }
 
-function setExpCat(cat){ expCatFilter=cat; renderExpenses(); }
+function setExpBank(bank){ expBankFilter=bank; renderExpenses(); }
 
 async function submitExpense(){
-  const day = parseInt(document.getElementById('exp-day').value)||0;
+  const day  = document.getElementById('exp-day').value.trim();
   const name = document.getElementById('exp-name').value.trim();
   const amount = parseInt((document.getElementById('exp-amt').value||'').replace(/,/g,''))||0;
-  const cat = document.getElementById('exp-cat').value||'기타';
+  const bank = document.getElementById('exp-bank').value||'기타';
   const note = document.getElementById('exp-note').value.trim();
-  if(!name||!amount) return;
+  if(!name) return;
   if(expEditId !== null){
     const idx = expItems.findIndex(e=>e.id===expEditId);
-    if(idx>=0) expItems[idx] = {...expItems[idx], day, name, amount, cat, note};
+    if(idx>=0) expItems[idx] = {...expItems[idx], day, name, amount, bank, note};
     expEditId = null;
   } else {
     const newId = Math.max(0,...expItems.map(e=>e.id),0)+1;
-    expItems.push({id:newId, yearmonth:expYearMonth, day, name, amount, cat, note});
+    expItems.push({id:newId, day, name, amount, bank, note});
   }
   await saveExpenses();
   renderExpenses();
@@ -1614,29 +1612,6 @@ async function submitExpense(){
 
 function startExpEdit(id){ expEditId=id; renderExpenses(); document.getElementById('exp-day').focus(); }
 function cancelExpEdit(){ expEditId=null; renderExpenses(); }
-
-async function delExpense(id){
-  if(!confirm('삭제할까요?')) return;
-  expItems = expItems.filter(e=>e.id!==id);
-  await saveExpenses();
-  renderExpenses();
-}
-
-function expPrevMonth(){
-  const [y,m] = expYearMonth.split('-').map(Number);
-  const d = new Date(y, m-2, 1);
-  expYearMonth = d.toISOString().slice(0,7);
-  expCatFilter = '전체';
-  renderExpenses();
-}
-
-function expNextMonth(){
-  const [y,m] = expYearMonth.split('-').map(Number);
-  const d = new Date(y, m, 1);
-  expYearMonth = d.toISOString().slice(0,7);
-  expCatFilter = '전체';
-  renderExpenses();
-}
 
 // ── 손익 계산기 ─────────────────────────────────────────────
 const FB_CALC = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_calc.json';
