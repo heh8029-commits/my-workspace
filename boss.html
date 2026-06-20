@@ -514,17 +514,23 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tv-trip-emoji-btn.on{border-color:#C4714A;background:#FFF0EA;box-shadow:0 0 0 2px #F5B8A055}
 /* ── 초딩진우 일정 ── */
 .child-wrap{max-width:1120px}
-.child-pg-grid{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start}
-@media(max-width:820px){.child-pg-grid{grid-template-columns:1fr}}
-.child-notes-area{padding-top:44px}
-@media(max-width:820px){.child-notes-area{padding-top:0}}
-.child-notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.child-note-card{border-radius:12px;padding:12px 11px 8px;position:relative;min-height:80px;box-shadow:0 2px 8px rgba(0,0,0,.07);cursor:default}
+.child-pg-grid{display:block}
+.child-notes-area{margin-top:20px}
+.child-notes-grid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.child-note-card{width:190px;height:180px;border-radius:14px;padding:10px 10px 6px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.09);cursor:default;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .child-note-card:hover .child-note-del{opacity:1}
-.child-note-del{position:absolute;top:5px;right:5px;width:17px;height:17px;border:none;border-radius:50%;background:rgba(0,0,0,.1);color:#555;font-size:.58rem;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
-.child-note-del:hover{background:rgba(0,0,0,.22);color:#E03A3A}
-.child-note-ta{width:100%;border:none;background:transparent;resize:none;font-size:.77rem;color:#333;font-family:inherit;line-height:1.6;min-height:64px;padding:0;box-sizing:border-box;outline:none}
-.child-note-add{width:100%;padding:12px 8px;border:1.5px dashed rgba(0,0,0,.13);border-radius:12px;background:none;color:#AAA;font-size:.8rem;cursor:pointer;grid-column:span 2;transition:all .13s}
+.child-note-card:hover .child-note-attach-btn{opacity:1}
+.child-note-del{position:absolute;top:5px;right:5px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.12);color:#555;font-size:.6rem;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;z-index:2}
+.child-note-del:hover{background:rgba(0,0,0,.25);color:#E03A3A}
+.child-note-imgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
+.child-note-img-wrap{position:relative;flex-shrink:0}
+.child-note-img-thumb{width:52px;height:52px;object-fit:cover;border-radius:7px;cursor:pointer;display:block}
+.child-note-img-del{position:absolute;top:-4px;right:-4px;width:14px;height:14px;border:none;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:.52rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;transition:opacity .1s}
+.child-note-img-wrap:hover .child-note-img-del{opacity:1}
+.child-note-ta{width:100%;border:none;background:transparent;resize:none;font-size:.9rem;font-weight:800;color:#333;font-family:inherit;line-height:1.55;padding:0;box-sizing:border-box;outline:none;flex:1;text-align:center;display:flex;align-items:center}
+.child-note-attach-btn{border:none;background:none;font-size:.8rem;cursor:pointer;color:#888;padding:0 2px;opacity:0;transition:opacity .15s}
+.child-note-attach-btn:hover{color:#C4714A}
+.child-note-add{width:190px;height:180px;border:2px dashed rgba(0,0,0,.13);border-radius:14px;background:none;color:#AAA;font-size:.82rem;cursor:pointer;transition:all .13s;flex-shrink:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
 .child-note-add:hover{border-color:#C4714A;color:#C4714A;background:#FFF8F5}
 .child-tt-card{background:#fff;border-radius:14px;padding:16px;border:1px solid #EDE8E1;margin-top:20px}
 .child-tt-grid{display:flex;min-width:480px}
@@ -1025,9 +1031,16 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <button onclick="fetchChildData().then(()=>renderChild())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
         <div class="child-pg-grid">
-          <!-- 왼쪽: 메모 + 시간표 -->
+          <!-- 시간표 + 메모 -->
           <div>
-            <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px">
+            <div class="child-tt-card" style="margin-top:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:.82rem;font-weight:800;color:#555">📋 주간 시간표</div>
+                <button id="child-tt-edit-btn" onclick="toggleChildTtEdit()" style="padding:4px 12px;border-radius:8px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">✏️ 편집</button>
+              </div>
+              <div style="overflow-x:auto"><div id="child-tt-wrap"></div></div>
+            </div>
+            <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:6px;margin-top:16px">
               <div style="display:flex;gap:8px">
                 <input class="bm-input" id="child-memo-input" placeholder="메모 입력... (URL 자동 링크, Ctrl+V 이미지 붙여넣기)" maxlength="500"
                   onkeydown="if(event.key==='Enter'&&!event.shiftKey)addChildMemo()"
@@ -1039,15 +1052,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
               <div id="child-form-status"></div>
             </div>
             <div class="bno-list" id="child-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
-            <div class="child-tt-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <div style="font-size:.82rem;font-weight:800;color:#555">📋 주간 시간표</div>
-                <button id="child-tt-edit-btn" onclick="toggleChildTtEdit()" style="padding:4px 12px;border-radius:8px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">✏️ 편집</button>
-              </div>
-              <div style="overflow-x:auto"><div id="child-tt-wrap"></div></div>
-            </div>
           </div>
-          <!-- 오른쪽: 포스트잇 -->
+          <!-- 포스트잇 (시간표 아래 전체 너비) -->
           <div class="child-notes-area">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <div style="font-size:.82rem;font-weight:800;color:#555">📌 포스트잇</div>
@@ -1160,7 +1166,6 @@ const MENUS = [
     {id:'card',       label:'카드관리',       emoji:'💴'},
     {id:'travel',     label:'여행갈때',       emoji:'✈️'},
     {id:'event',      label:'경조사 기록',    emoji:'🎊'},
-    {id:'alarm',      label:'알림설정',       emoji:'🔔'},
     {id:'beauty',     label:'뷰티관리',       emoji:'💄'},
   ]},
   {id:'asset', label:'자산', emoji:'💼', sub:[
@@ -2720,12 +2725,21 @@ const CHILD_NOTE_COLORS=['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE
 function renderChildNotes(){
   const el=document.getElementById('child-notes-grid');if(!el) return;
   const notes=_childData.notes||[];
-  el.innerHTML=notes.map(n=>`
-    <div class="child-note-card" style="background:${n.color||CHILD_NOTE_COLORS[0]}">
+  el.innerHTML=notes.map(n=>{
+    const imgs=Array.isArray(n.images)?n.images.filter(Boolean):[];
+    const imgHtml=imgs.length?`<div class="child-note-imgs">${imgs.map((u,i)=>`<div class="child-note-img-wrap"><img class="child-note-img-thumb" src="${u.replace('/upload/','/upload/w_80,h_80,c_fill/')}" onclick="openImgModal('${u}')"><button class="child-note-img-del" onclick="deleteChildNoteImg(${n.id},${i})">✕</button></div>`).join('')}</div>`:'';
+    const taStyle=imgs.length?'':'flex:1;display:flex;align-items:center';
+    return `<div class="child-note-card" style="background:${n.color||CHILD_NOTE_COLORS[0]}" onpaste="handleChildNotePaste(event,${n.id})">
       <button class="child-note-del" onclick="deleteChildNote(${n.id})" title="삭제">✕</button>
-      <textarea class="child-note-ta" oninput="updateChildNote(${n.id},this.value)" onblur="_saveChildData()">${(n.text||'').replace(/</g,'&lt;')}</textarea>
-    </div>`).join('')
-  +`<button class="child-note-add" onclick="addChildNote()">+ 메모 추가</button>`;
+      ${imgHtml}
+      <textarea class="child-note-ta" style="${taStyle}" oninput="updateChildNote(${n.id},this.value)" onblur="_saveChildData()">${(n.text||'').replace(/</g,'&lt;')}</textarea>
+      <div style="text-align:right">
+        <input type="file" id="child-note-file-${n.id}" accept="image/*" style="display:none" onchange="handleChildNoteFile(${n.id},this.files[0]);this.value=''">
+        <button class="child-note-attach-btn" onclick="document.getElementById('child-note-file-${n.id}').click()" title="이미지 첨부">📎</button>
+      </div>
+    </div>`;
+  }).join('')
+  +`<button class="child-note-add" onclick="addChildNote()"><span style="font-size:1.4rem">+</span><span style="font-size:.75rem">메모 추가</span></button>`;
 }
 function addChildNote(){
   if(!_childData.notes) _childData.notes=[];
@@ -2743,6 +2757,26 @@ function deleteChildNote(id){
   if(!confirm('포스트잇을 삭제할까요?')) return;
   _childData.notes=(_childData.notes||[]).filter(n=>n.id!==id);
   _saveChildData();renderChildNotes();
+}
+async function _childNoteUploadImg(noteId,file){
+  const n=(_childData.notes||[]).find(n=>n.id===noteId);if(!n) return;
+  if(!n.images) n.images=[];
+  n.images.push(null);renderChildNotes();
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const r=await fetch(CLOUDINARY_URL,{method:'POST',body:fd});const d=await r.json();
+    if(d.secure_url){const i=n.images.lastIndexOf(null);if(i>=0)n.images[i]=d.secure_url;await _saveChildData();renderChildNotes();}
+    else{n.images=n.images.filter(Boolean);renderChildNotes();}
+  }catch(e){n.images=n.images.filter(Boolean);renderChildNotes();}
+}
+function handleChildNoteFile(noteId,file){if(file&&file.type.startsWith('image/'))_childNoteUploadImg(noteId,file);}
+function handleChildNotePaste(e,noteId){
+  const items=e.clipboardData?.items;if(!items) return;
+  for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();_childNoteUploadImg(noteId,item.getAsFile());return;}}
+}
+function deleteChildNoteImg(noteId,idx){
+  const n=(_childData.notes||[]).find(n=>n.id===noteId);if(!n||!n.images) return;
+  n.images.splice(idx,1);_saveChildData();renderChildNotes();
 }
 
 // child 메모
