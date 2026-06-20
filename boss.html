@@ -386,6 +386,29 @@ body.mode-pc .mobile-subnav{display:none!important}
 /* 강제 모바일 모드 */
 body.mode-mob .sidebar{display:none!important}
 body.mode-mob .mobile-subnav{display:flex!important}
+/* ── 손익 메모 ── */
+.pnl-memo-add{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:14px;border:1px solid #EDE8E1;display:flex;gap:8px;align-items:center}
+.pnl-memo-input{flex:1;padding:8px 12px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.85rem;font-family:inherit;color:#333;outline:none;min-width:0}
+.pnl-memo-input:focus{border-color:#C4714A}
+.pnl-memo-add-btn{padding:8px 15px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.pnl-memo-add-btn:hover{background:#B46040}
+.pnl-memo-list{display:flex;flex-direction:column;gap:5px}
+.pnl-memo-row{display:flex;align-items:center;gap:7px;background:#fff;border-radius:10px;padding:9px 11px;border:1px solid #EDE8E1;transition:background .12s}
+.pnl-memo-row:hover{background:#FDF5F1}
+.pnl-memo-row.done{opacity:.6}
+.pnl-memo-row.done .pnl-memo-text{text-decoration:line-through;color:#BBB}
+.pnl-memo-check{width:16px;height:16px;cursor:pointer;accent-color:#C4714A;flex-shrink:0}
+.pnl-memo-text{flex:1;font-size:.83rem;color:#333;word-break:break-all;line-height:1.4;min-width:0}
+.pnl-memo-date{font-size:.66rem;color:#CCC;white-space:nowrap;flex-shrink:0}
+.pnl-memo-actions{display:flex;gap:2px;flex-shrink:0}
+.pnl-memo-icon{width:26px;height:26px;border-radius:6px;border:none;background:transparent;font-size:.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#BCBBBB;transition:all .12s;padding:0}
+.pnl-memo-icon:hover{background:#F0EBE5;color:#C4714A}
+.pnl-memo-icon.del:hover{background:#FFE8E8;color:#E03A3A}
+.pnl-memo-move{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.pnl-move-btn{width:16px;height:13px;border-radius:3px;border:none;background:transparent;font-size:.55rem;cursor:pointer;color:#D0D0D0;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s;line-height:1}
+.pnl-move-btn:hover{background:#EDE5DA;color:#C4714A}
+.pnl-memo-edit-wrap{flex:1;display:flex;gap:6px;align-items:center;min-width:0}
+.pnl-memo-edit-input{flex:1;padding:5px 9px;border-radius:8px;border:1.5px solid #C4714A;font-size:.83rem;font-family:inherit;color:#333;outline:none;min-width:0}
 </style>
 </head>
 <body>
@@ -477,6 +500,19 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <button onclick="refreshAlarms()" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #E8C4A8;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
         <div id="alarm-list-all"><div class="alarm-empty">불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <!-- 월별손익 메모 페이지 -->
+    <div class="page" id="page-profit">
+      <div style="max-width:660px">
+        <div style="font-size:.9rem;font-weight:800;color:#555;margin-bottom:14px">📈 월별손익 메모</div>
+        <div class="pnl-memo-add">
+          <input class="pnl-memo-input" id="pnl-memo-input" placeholder="메모 입력..." maxlength="300"
+            onkeydown="if(event.key==='Enter')addPnlMemo()">
+          <button class="pnl-memo-add-btn" onclick="addPnlMemo()">➕ 추가</button>
+        </div>
+        <div class="pnl-memo-list" id="pnl-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
       </div>
     </div>
 
@@ -672,6 +708,8 @@ function setSub(id, label){
     showPage('iframe');
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
+  } else if(id==='profit'){
+    showPage('profit'); fetchPnlMemos().then(()=>renderPnlMemos());
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -1090,6 +1128,109 @@ function fireNotify(label,hhmm){
 })();
 
 function renderAllAlarmLists(){ fetchAlarms().then(()=>renderAlarmList()); }
+
+// ── 월별손익 메모 ────────────────────────────────────────────
+const FB_PNL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_memos.json';
+let pnlMemos = [];
+let pnlEditId = null;
+
+async function fetchPnlMemos(){
+  try{
+    const r = await fetch(FB_PNL + '?t=' + Date.now());
+    if(r.ok){ const d = await r.json(); pnlMemos = (d && Array.isArray(d.memos)) ? d.memos : []; }
+  }catch(e){ console.log('손익메모 fetch 실패',e); }
+}
+
+async function savePnlMemos(){
+  try{
+    await fetch(FB_PNL, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({memos:pnlMemos})});
+  }catch(e){ console.log('손익메모 저장 실패',e); }
+}
+
+function _srcIcon(src){ return src==='bot' ? '🤖' : '💻'; }
+
+function renderPnlMemos(){
+  const el = document.getElementById('pnl-memo-list');
+  if(!el) return;
+  if(!pnlMemos.length){
+    el.innerHTML='<div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">등록된 메모가 없어요</div>';
+    return;
+  }
+  el.innerHTML = pnlMemos.map((m,i)=>{
+    const src = _srcIcon(m.source||'pc');
+    if(pnlEditId===m.id) return `
+    <div class="pnl-memo-row">
+      <input type="checkbox" class="pnl-memo-check" ${m.done?'checked':''} disabled>
+      <div class="pnl-memo-edit-wrap">
+        <input class="pnl-memo-edit-input" id="pnl-edit-${m.id}" value="${m.text.replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
+          onkeydown="if(event.key==='Enter')savePnlEdit(${m.id});if(event.key==='Escape')cancelPnlEdit()">
+        <button class="pnl-memo-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="savePnlEdit(${m.id})">저장</button>
+        <button class="pnl-memo-icon" onclick="cancelPnlEdit()">✕</button>
+      </div>
+    </div>`;
+    return `
+    <div class="pnl-memo-row${m.done?' done':''}">
+      <div class="pnl-memo-move">
+        <button class="pnl-move-btn" onclick="movePnlMemo(${i},-1)">▲</button>
+        <button class="pnl-move-btn" onclick="movePnlMemo(${i},1)">▼</button>
+      </div>
+      <input type="checkbox" class="pnl-memo-check" ${m.done?'checked':''} onchange="togglePnlDone(${m.id},this.checked)">
+      <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
+      <span class="pnl-memo-text">${m.text.replace(/</g,'&lt;')}</span>
+      <span class="pnl-memo-date">${m.date}</span>
+      <div class="pnl-memo-actions">
+        <button class="pnl-memo-icon" onclick="copyPnlMemo(${i})" title="복사">📋</button>
+        <button class="pnl-memo-icon" onclick="startPnlEdit(${m.id})" title="편집">✏️</button>
+        <button class="pnl-memo-icon del" onclick="deletePnlMemo(${m.id})" title="삭제">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addPnlMemo(){
+  const inp = document.getElementById('pnl-memo-input');
+  const text = (inp.value||'').trim();
+  if(!text) return;
+  const newId = Math.max(0,...pnlMemos.map(m=>m.id),0)+1;
+  const today = new Date().toISOString().slice(0,10);
+  pnlMemos.unshift({id:newId, text, done:false, date:today, source:'pc'});
+  await savePnlMemos();
+  inp.value=''; renderPnlMemos();
+}
+
+async function togglePnlDone(id, done){
+  const m=pnlMemos.find(x=>x.id===id);
+  if(m){ m.done=done; await savePnlMemos(); renderPnlMemos(); }
+}
+
+function copyPnlMemo(i){
+  const text = pnlMemos[i]?.text||'';
+  navigator.clipboard.writeText(text).catch(()=>{ prompt('복사:', text); });
+}
+
+function startPnlEdit(id){ pnlEditId=id; renderPnlMemos(); setTimeout(()=>document.getElementById('pnl-edit-'+id)?.focus(),40); }
+function cancelPnlEdit(){ pnlEditId=null; renderPnlMemos(); }
+
+async function savePnlEdit(id){
+  const inp = document.getElementById('pnl-edit-'+id);
+  const text = (inp?.value||'').trim();
+  if(!text){ cancelPnlEdit(); return; }
+  const m=pnlMemos.find(x=>x.id===id);
+  if(m){ m.text=text; pnlEditId=null; await savePnlMemos(); renderPnlMemos(); }
+}
+
+async function deletePnlMemo(id){
+  if(!confirm('삭제할까요?')) return;
+  pnlMemos=pnlMemos.filter(m=>m.id!==id);
+  await savePnlMemos(); renderPnlMemos();
+}
+
+async function movePnlMemo(i, dir){
+  const j=i+dir;
+  if(j<0||j>=pnlMemos.length) return;
+  [pnlMemos[i],pnlMemos[j]]=[pnlMemos[j],pnlMemos[i]];
+  await savePnlMemos(); renderPnlMemos();
+}
 
 // ── PC/모바일 전환 ─────────────────────────────────────────
 function setMode(m){
