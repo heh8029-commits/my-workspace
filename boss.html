@@ -506,7 +506,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <!-- 월별손익 메모 페이지 -->
     <div class="page" id="page-profit">
       <div style="max-width:660px">
-        <div style="font-size:.9rem;font-weight:800;color:#555;margin-bottom:14px">📈 월별손익 메모</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">📈 월별손익 메모</div>
+          <button onclick="fetchPnlMemos().then(()=>renderPnlMemos())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
         <div class="pnl-memo-add">
           <input class="pnl-memo-input" id="pnl-memo-input" placeholder="메모 입력..." maxlength="300"
             onkeydown="if(event.key==='Enter')addPnlMemo()">
@@ -1241,13 +1244,22 @@ function setMode(m){
   document.getElementById('btn-mob').classList.toggle('on',m==='mob');
 }
 
-// ── 강제 새로고침 (캐시 무시) ──────────────────────────────
+// ── 소프트 새로고침 (현재 페이지 데이터만 다시 불러옴) ──────
 function hardRefresh(){
   const btn = document.getElementById('sync-btn');
   btn.classList.add('spinning');
-  setTimeout(()=>{
+  setTimeout(()=>btn.classList.remove('spinning'), 700);
+  const pid = (document.querySelector('.page.active')||{}).id || '';
+  if(pid==='page-alarm'){
+    fetchAlarms().then(()=>renderAlarmList());
+  } else if(pid==='page-profit'){
+    fetchPnlMemos().then(()=>renderPnlMemos());
+  } else if(pid==='page-iframe'){
+    const fr=document.getElementById('embed-frame');
+    if(fr){ const s=fr.src; fr.src=''; setTimeout(()=>fr.src=s,50); }
+  } else {
     location.href = location.pathname + '?t=' + Date.now();
-  }, 400);
+  }
 }
 
 function gotoCalendar(){
