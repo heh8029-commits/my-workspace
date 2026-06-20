@@ -450,6 +450,57 @@ body.mode-mob .mobile-subnav{display:flex!important}
 @media(max-width:700px){.exp-notes-grid{grid-template-columns:1fr}}
 .exp-note-panel{background:#fff;border-radius:14px;padding:14px 14px 10px;border:1px solid #EDE8E1}
 .exp-note-title{font-size:.82rem;font-weight:800;color:#C4714A;margin-bottom:10px}
+/* ── 보스 달력 ── */
+.boss-cal-wrap{max-width:900px}
+.boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.boss-cal-title{font-size:1.1rem;font-weight:800;color:#C4714A}
+.boss-cal-nav{width:34px;height:34px;border-radius:50%;border:1.5px solid #EDE8E1;background:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#C4714A;transition:all .13s}
+.boss-cal-nav:hover{background:#C4714A;color:#fff;border-color:#C4714A}
+.boss-cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.boss-cal-dow-cell{text-align:center;font-size:.69rem;font-weight:700;color:#999;padding:4px 0}
+.boss-cal-dow-cell.sun{color:#D03030}
+.boss-cal-dow-cell.sat{color:#2266CC}
+.boss-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.boss-cal-cell{min-height:86px;background:#fff;border-radius:9px;border:1px solid #EDE8E1;padding:6px 6px 4px;cursor:pointer;transition:background .12s;display:flex;flex-direction:column;gap:2px}
+.boss-cal-cell:hover{background:#FDF5F1;border-color:#DDD}
+.boss-cal-cell.other-month{opacity:.28;pointer-events:none}
+.boss-cal-cell.today{background:linear-gradient(135deg,#FFF3EC,#FAE8DA);border-color:#C4714A}
+.boss-cal-cell.selected{background:#FDE8D8;border-color:#C4714A;border-width:2px}
+.boss-cal-day-num{font-size:.8rem;font-weight:700;color:#333;line-height:1.2;margin-bottom:1px}
+.boss-cal-cell.sun .boss-cal-day-num,.boss-cal-cell.holiday .boss-cal-day-num{color:#D03030}
+.boss-cal-cell.sat .boss-cal-day-num{color:#2266CC}
+.boss-cal-cell.today .boss-cal-day-num{background:#C4714A;color:#fff;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;margin-bottom:2px}
+.boss-cal-hol{font-size:.59rem;color:#D03030;font-weight:600;line-height:1.3}
+.boss-cal-ev{font-size:.61rem;background:#FDF0E8;color:#C4714A;border-radius:4px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;line-height:1.6}
+.boss-cal-exp-badge{font-size:.61rem;background:#E8F2FF;color:#2266CC;border-radius:4px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;line-height:1.6}
+.boss-cal-more{font-size:.58rem;color:#CCC;font-weight:600}
+/* 날짜 선택 패널 */
+.boss-cal-panel{background:#fff;border-radius:14px;border:1px solid #EDE8E1;margin-top:12px;padding:14px 16px}
+.boss-cal-panel-head{font-size:.88rem;font-weight:800;color:#C4714A;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.boss-cal-panel-exp-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #F5F0EB;font-size:.81rem}
+.boss-cal-panel-exp-name{flex:1;color:#333;font-weight:600}
+.boss-cal-panel-exp-amt{color:#C03030;font-weight:700;white-space:nowrap}
+.boss-cal-panel-exp-zero{color:#AAA;font-weight:500}
+.boss-cal-panel-total{display:flex;justify-content:space-between;padding-top:8px;font-size:.85rem;font-weight:800;color:#333}
+.boss-cal-panel-ev-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:9px;background:#FDF8F5;margin-bottom:5px;border:1px solid #EDE8E1}
+/* 일정 추가 모달 */
+.bcal-overlay{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.32);align-items:center;justify-content:center}
+.bcal-overlay.open{display:flex}
+.bcal-modal{background:#fff;border-radius:18px;width:min(460px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+.bcal-modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 11px;border-bottom:1px solid #EDE8E1}
+.bcal-modal-head span{font-size:.92rem;font-weight:800;color:#333}
+.bcal-x{width:28px;height:28px;border-radius:8px;border:none;background:#F5F0EB;color:#777;font-size:.88rem;cursor:pointer}
+.bcal-body{padding:14px 18px 18px}
+.bcal-label{font-size:.7rem;font-weight:700;color:#999;margin-bottom:4px;margin-top:10px}
+.bcal-emoji-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.bcal-emoji-btn{width:31px;height:31px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:1rem;cursor:pointer;transition:all .1s}
+.bcal-emoji-btn:hover,.bcal-emoji-btn.on{border-color:#C4714A;background:#FDF0E8}
+.bcal-inp{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.84rem;font-family:inherit;color:#333;outline:none;box-sizing:border-box}
+.bcal-inp:focus{border-color:#C4714A}
+.bcal-ta{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.8rem;font-family:inherit;color:#333;outline:none;box-sizing:border-box;resize:vertical;min-height:65px}
+.bcal-ta:focus{border-color:#C4714A}
+.bcal-save{width:100%;padding:11px;border-radius:11px;background:#C4714A;color:#fff;border:none;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:12px}
+.bcal-save:hover{background:#B46040}
 /* ── 손익 계산기 ── */
 .pnl-calc-divider{border:none;border-top:2px dashed #EDE8E1;margin:22px 0}
 .pnl-calc-title{font-size:.9rem;font-weight:800;color:#555;margin-bottom:14px}
@@ -597,6 +648,55 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <div class="page" id="page-iframe">
       <div class="page-iframe-wrap">
         <iframe id="embed-frame" src="" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <!-- 달력 페이지 -->
+    <div class="page" id="page-calendar">
+      <div class="boss-cal-wrap">
+        <div class="boss-cal-header">
+          <button class="boss-cal-nav" onclick="bossCalPrev()">‹</button>
+          <div class="boss-cal-title" id="boss-cal-title"></div>
+          <button class="boss-cal-nav" onclick="bossCalNext()">›</button>
+        </div>
+        <div class="boss-cal-dow">
+          <div class="boss-cal-dow-cell sun">일</div>
+          <div class="boss-cal-dow-cell">월</div>
+          <div class="boss-cal-dow-cell">화</div>
+          <div class="boss-cal-dow-cell">수</div>
+          <div class="boss-cal-dow-cell">목</div>
+          <div class="boss-cal-dow-cell">금</div>
+          <div class="boss-cal-dow-cell sat">토</div>
+        </div>
+        <div class="boss-cal-grid" id="boss-cal-grid"></div>
+        <div class="boss-cal-panel" id="boss-cal-panel" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- 일정 추가 모달 -->
+    <div class="bcal-overlay" id="bcal-overlay" onclick="if(event.target===this)closeBcal()">
+      <div class="bcal-modal">
+        <div class="bcal-modal-head">
+          <span id="bcal-modal-ttl">📅 일정 추가</span>
+          <button class="bcal-x" onclick="closeBcal()">✕</button>
+        </div>
+        <div class="bcal-body">
+          <div class="bcal-label">이모지</div>
+          <div class="bcal-emoji-row" id="bcal-emoji-row"></div>
+          <input class="bcal-inp" id="bcal-emoji-inp" placeholder="이모지 직접 입력" maxlength="4" style="width:70px;text-align:center;font-size:1.1rem;margin-bottom:2px">
+          <div class="bcal-label">날짜</div>
+          <input type="date" class="bcal-inp" id="bcal-date-inp">
+          <div class="bcal-label">제목</div>
+          <input class="bcal-inp" id="bcal-title-inp" placeholder="일정 제목" maxlength="50">
+          <div class="bcal-label">메모 (이미지 Ctrl+V 붙여넣기 가능)</div>
+          <textarea class="bcal-ta" id="bcal-memo-inp" placeholder="메모 (선택)" onpaste="bcalHandlePaste(event)"></textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <input type="file" id="bcal-file-inp" accept="image/*" style="display:none" onchange="bcalHandleFile(this.files[0]);this.value=''">
+            <button class="bm-attach-btn" onclick="document.getElementById('bcal-file-inp').click()">📎 이미지 첨부</button>
+            <span id="bcal-img-status" style="font-size:.73rem;color:#C4714A;font-weight:600"></span>
+          </div>
+          <button class="bcal-save" onclick="saveBcalEvent()">✅ 저장</button>
+        </div>
       </div>
     </div>
 
@@ -908,6 +1008,9 @@ function setSub(id, label){
       fr.src = subItem.url;
     }
     showPage('iframe');
+  } else if(id==='calendar'){
+    showPage('calendar');
+    Promise.all([fetchCalEvents(), fetchExpenses()]).then(()=>bossRenderCal());
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
   } else if(id==='expense'){
@@ -1972,6 +2075,217 @@ function hardRefresh(){
 function gotoCalendar(){
   setSub('calendar','달력/일정');
   setMenu('house');
+}
+
+// ── 보스 달력 ─────────────────────────────────────────────────
+const FB_CAL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_calendar.json';
+let _calYear = new Date().getFullYear();
+let _calMonth = new Date().getMonth()+1;
+let _calSelDate = null;
+let _calEvents = [];
+let _bcalPendingImg = null;
+let _bcalSelEmoji = '📅';
+
+const KR_HOL = {
+  '2024-01-01':'신정','2024-02-09':'설날연휴','2024-02-10':'설날','2024-02-11':'설날연휴','2024-02-12':'대체공휴일',
+  '2024-03-01':'삼일절','2024-05-05':'어린이날','2024-05-15':'부처님오신날','2024-06-06':'현충일',
+  '2024-08-15':'광복절','2024-09-16':'추석연휴','2024-09-17':'추석','2024-09-18':'추석연휴',
+  '2024-10-03':'개천절','2024-10-09':'한글날','2024-12-25':'성탄절',
+  '2025-01-01':'신정','2025-01-28':'설날연휴','2025-01-29':'설날','2025-01-30':'설날연휴',
+  '2025-03-01':'삼일절','2025-05-05':'어린이날','2025-05-06':'대체공휴일','2025-06-06':'현충일',
+  '2025-08-15':'광복절','2025-10-03':'개천절','2025-10-05':'추석연휴','2025-10-06':'추석',
+  '2025-10-07':'추석연휴','2025-10-08':'대체공휴일','2025-10-09':'한글날','2025-12-25':'성탄절',
+  '2026-01-01':'신정','2026-02-17':'설날연휴','2026-02-18':'설날','2026-02-19':'설날연휴',
+  '2026-03-01':'삼일절','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일',
+  '2026-06-06':'현충일','2026-08-15':'광복절','2026-09-24':'추석연휴','2026-09-25':'추석',
+  '2026-09-26':'추석연휴','2026-10-03':'개천절','2026-10-09':'한글날','2026-12-25':'성탄절',
+  '2027-01-01':'신정','2027-02-06':'설날연휴','2027-02-07':'설날','2027-02-08':'설날연휴','2027-02-09':'대체공휴일',
+  '2027-03-01':'삼일절','2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일',
+  '2027-08-15':'광복절','2027-09-14':'추석연휴','2027-09-15':'추석','2027-09-16':'추석연휴',
+  '2027-10-03':'개천절','2027-10-09':'한글날','2027-12-25':'성탄절'
+};
+const KR_FIXED = {
+  '01-01':'신정','03-01':'삼일절','05-05':'어린이날','06-06':'현충일',
+  '08-15':'광복절','10-03':'개천절','10-09':'한글날','12-25':'성탄절'
+};
+function _bossHol(y,m,d){
+  const k=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  return KR_HOL[k]||KR_FIXED[`${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`]||null;
+}
+
+async function fetchCalEvents(){
+  try{
+    const d=await(await fetch(FB_CAL)).json();
+    _calEvents=Array.isArray(d)?d:(d&&Array.isArray(d.events)?d.events:[]);
+  }catch(e){_calEvents=[];}
+}
+async function _saveCalEvents(){
+  try{await fetch(FB_CAL,{method:'PUT',body:JSON.stringify({events:_calEvents}),headers:{'Content-Type':'application/json'}});}catch(e){}
+}
+
+function bossRenderCal(){
+  const grid=document.getElementById('boss-cal-grid');
+  const ttl=document.getElementById('boss-cal-title');
+  if(!grid) return;
+  ttl.textContent=`${_calYear}년 ${_calMonth}월`;
+  const today=new Date();
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const firstDay=new Date(_calYear,_calMonth-1,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth,0).getDate();
+  const prevDays=new Date(_calYear,_calMonth-1,0).getDate();
+  const evByDate={};
+  _calEvents.forEach(ev=>{if(!evByDate[ev.date])evByDate[ev.date]=[];evByDate[ev.date].push(ev);});
+  const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+  let html='';
+  for(let c=0;c<totalCells;c++){
+    const dow=c%7;
+    let day,dateStr,isOther=false;
+    if(c<firstDay){
+      day=prevDays-firstDay+c+1;
+      const pm=_calMonth===1?12:_calMonth-1; const py=_calMonth===1?_calYear-1:_calYear;
+      dateStr=`${py}-${String(pm).padStart(2,'0')}-${String(day).padStart(2,'0')}`;isOther=true;
+    }else if(c>=firstDay+daysInMonth){
+      day=c-firstDay-daysInMonth+1;
+      const nm=_calMonth===12?1:_calMonth+1; const ny=_calMonth===12?_calYear+1:_calYear;
+      dateStr=`${ny}-${String(nm).padStart(2,'0')}-${String(day).padStart(2,'0')}`;isOther=true;
+    }else{
+      day=c-firstDay+1;
+      dateStr=`${_calYear}-${String(_calMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+    const hol=!isOther?_bossHol(_calYear,_calMonth,day):null;
+    const isHol=!!hol; const isToday=dateStr===todayStr; const isSel=_calSelDate===dateStr;
+    const dowCls=dow===0?'sun':dow===6?'sat':'';
+    const numCls=isHol?'sun':dowCls;
+    let cls='boss-cal-cell';
+    if(numCls)cls+=' '+numCls;
+    if(isHol)cls+=' holiday';
+    if(isToday)cls+=' today';
+    if(isOther)cls+=' other-month';
+    if(isSel)cls+=' selected';
+    const dayEvs=evByDate[dateStr]||[];
+    const dayExps=!isOther?expItems.filter(e=>{const n=parseInt((String(e.day||'')).match(/\d+/)?.[0]||'0');return n===day;}):[];
+    const allBadges=[...dayEvs.map(e=>`e:${e.emoji||'📅'}${e.title}`),...dayExps.map(e=>`x:💳 ${e.name}`)];
+    html+=`<div class="${cls}" onclick="bossCalSel('${dateStr}')">`;
+    if(isToday) html+=`<div style="margin-bottom:2px"><span class="boss-cal-day-num">${day}</span></div>`;
+    else html+=`<span class="boss-cal-day-num">${day}</span>`;
+    if(hol) html+=`<div class="boss-cal-hol">${hol}</div>`;
+    allBadges.slice(0,2).forEach(b=>{
+      if(b.startsWith('e:')) html+=`<div class="boss-cal-ev">${b.slice(2)}</div>`;
+      else html+=`<div class="boss-cal-exp-badge">${b.slice(2)}</div>`;
+    });
+    if(allBadges.length>2) html+=`<div class="boss-cal-more">+${allBadges.length-2}개</div>`;
+    html+='</div>';
+  }
+  grid.innerHTML=html;
+  if(_calSelDate) _bossCalPanel(_calSelDate);
+}
+
+function bossCalSel(dateStr){
+  _calSelDate=dateStr;
+  bossRenderCal();
+  _bossCalPanel(dateStr);
+}
+function _bossCalPanel(dateStr){
+  const panel=document.getElementById('boss-cal-panel');
+  if(!panel) return;
+  const d=new Date(dateStr+'T00:00:00');
+  const DOW=['일','월','화','수','목','금','토'];
+  const hol=_bossHol(d.getFullYear(),d.getMonth()+1,d.getDate());
+  const dayNum=d.getDate();
+  const dayExps=expItems.filter(e=>{const n=parseInt((String(e.day||'')).match(/\d+/)?.[0]||'0');return n===dayNum;});
+  const dayEvs=_calEvents.filter(e=>e.date===dateStr);
+  const holHtml=hol?` <span style="font-size:.78rem;color:#D03030;font-weight:700">${hol}</span>`:'';
+  let html=`<div class="boss-cal-panel-head">
+    <span>${_calYear}년 ${d.getMonth()+1}월 ${dayNum}일 (${DOW[d.getDay()]})${holHtml}</span>
+    <button onclick="openBcal('${dateStr}')" style="padding:5px 12px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.73rem;font-weight:700;cursor:pointer">➕ 일정 추가</button>
+  </div>`;
+  if(dayExps.length){
+    html+=`<div style="font-size:.72rem;font-weight:800;color:#2266CC;margin-bottom:6px">💳 이날 지출</div>`;
+    let total=0;
+    dayExps.forEach(e=>{
+      const amt=+e.amount;total+=amt;
+      html+=`<div class="boss-cal-panel-exp-row">
+        <span class="boss-cal-panel-exp-name">${e.name}</span>
+        <span class="${amt?'boss-cal-panel-exp-amt':'boss-cal-panel-exp-zero'}">${amt?_fmtAmt(amt)+'원':'-'}</span>
+      </div>`;
+    });
+    html+=`<div class="boss-cal-panel-total"><span>합계</span><span style="color:#C03030">${_fmtAmt(total)}원</span></div>`;
+  }
+  if(dayEvs.length){
+    html+=`<div style="font-size:.72rem;font-weight:800;color:#C4714A;margin:10px 0 6px">📅 일정</div>`;
+    dayEvs.forEach(ev=>{
+      html+=`<div class="boss-cal-panel-ev-row">
+        <span style="font-size:1.05rem;flex-shrink:0">${ev.emoji||'📅'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.83rem;font-weight:700;color:#222">${ev.title||''}</div>
+          ${ev.memo?`<div style="font-size:.74rem;color:#666;line-height:1.4;margin-top:2px;word-break:break-word">${ev.memo}</div>`:''}
+          ${ev.img?`<img src="${ev.img.replace('/upload/','/upload/w_320/')}" style="max-width:100%;border-radius:8px;margin-top:5px;cursor:pointer" onclick="openImgModal('${ev.img}')">`: ''}
+        </div>
+        <button onclick="delBcalEvent(${ev.id})" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;border:none;background:#FFE8E8;color:#D03030;font-size:.75rem;cursor:pointer">🗑️</button>
+      </div>`;
+    });
+  }
+  if(!dayExps.length&&!dayEvs.length) html+=`<div style="text-align:center;padding:18px;color:#CCC;font-size:.8rem">일정이 없어요</div>`;
+  panel.innerHTML=html;
+  panel.style.display='block';
+}
+
+function bossCalPrev(){_calMonth--;if(_calMonth<1){_calMonth=12;_calYear--;}bossRenderCal();}
+function bossCalNext(){_calMonth++;if(_calMonth>12){_calMonth=1;_calYear++;}bossRenderCal();}
+
+// ── 일정 추가 모달 ─────────────────────────────────────────────
+const BCAL_EMOJIS=['📅','⚡','💰','🏥','🎂','🎉','✈️','🚗','🛒','📦','💊','🏫','👨‍👩‍👧','🎮','💪','📝','🔔','❤️','⭐','🌿','🍽️','☕','🎵','🏃','📞','💼','🔧','🎁','🎯','💡'];
+function openBcal(dateStr){
+  _bcalPendingImg=null;_bcalSelEmoji='📅';
+  document.getElementById('bcal-date-inp').value=dateStr||'';
+  document.getElementById('bcal-title-inp').value='';
+  document.getElementById('bcal-memo-inp').value='';
+  document.getElementById('bcal-emoji-inp').value='📅';
+  document.getElementById('bcal-img-status').textContent='';
+  const row=document.getElementById('bcal-emoji-row');
+  row.innerHTML=BCAL_EMOJIS.map(e=>`<button class="bcal-emoji-btn${e==='📅'?' on':''}" onclick="bcalSelEmoji('${e}')">${e}</button>`).join('');
+  document.getElementById('bcal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('bcal-title-inp').focus(),80);
+}
+function closeBcal(){document.getElementById('bcal-overlay').classList.remove('open');}
+function bcalSelEmoji(e){
+  _bcalSelEmoji=e;
+  document.getElementById('bcal-emoji-inp').value=e;
+  document.querySelectorAll('.bcal-emoji-btn').forEach(b=>b.classList.remove('on'));
+  [...document.querySelectorAll('.bcal-emoji-btn')].find(b=>b.textContent===e)?.classList.add('on');
+}
+async function bcalHandlePaste(ev){
+  for(const item of (ev.clipboardData?.items||[])){
+    if(item.type.startsWith('image/')){ev.preventDefault();await _bcalUpload(item.getAsFile());return;}
+  }
+}
+async function bcalHandleFile(file){if(file)await _bcalUpload(file);}
+async function _bcalUpload(file){
+  const st=document.getElementById('bcal-img-status');
+  st.textContent='업로드 중...';
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset','hwx2iwfz');
+    const r=await(await fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})).json();
+    _bcalPendingImg=r.secure_url;st.textContent='✅ 이미지 첨부됨';
+  }catch(e){st.textContent='❌ 실패';_bcalPendingImg=null;}
+}
+async function saveBcalEvent(){
+  const emoji=document.getElementById('bcal-emoji-inp').value.trim()||_bcalSelEmoji||'📅';
+  const date=document.getElementById('bcal-date-inp').value;
+  const title=document.getElementById('bcal-title-inp').value.trim();
+  const memo=document.getElementById('bcal-memo-inp').value.trim();
+  if(!date){alert('날짜를 선택해주세요');return;}
+  if(!title){alert('제목을 입력해주세요');return;}
+  const newId=Math.max(0,..._calEvents.map(e=>e.id||0))+1;
+  _calEvents.push({id:newId,date,emoji,title,memo,img:_bcalPendingImg||null});
+  await _saveCalEvents();
+  closeBcal();bossRenderCal();
+  if(_calSelDate===date)_bossCalPanel(date);
+}
+async function delBcalEvent(id){
+  _calEvents=_calEvents.filter(e=>e.id!==id);
+  await _saveCalEvents();bossRenderCal();
+  if(_calSelDate)_bossCalPanel(_calSelDate);
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
