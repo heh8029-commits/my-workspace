@@ -522,7 +522,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .child-tt-table td:first-child{background:#F9F6F2;text-align:left;padding-left:8px;white-space:nowrap;min-width:82px}
 .child-tt-row-main{font-size:.78rem;font-weight:700;color:#444;display:block;line-height:1.3}
 .child-tt-row-sub{font-size:.72rem;color:#888;display:block;line-height:1.3;white-space:nowrap}
-.child-tt-cell-text{font-size:.75rem;color:#333;word-break:keep-all}
+.child-tt-cell-text{font-size:.75rem;color:#333;word-break:keep-all;display:block}
+.child-tt-cell-time{font-size:.67rem;color:#9999BB;display:block;margin-top:2px}
 .child-tt-cell-empty{font-size:.75rem;color:#D0D0D0}
 .child-tt-inp{width:100%;font-size:.73rem;padding:4px 3px;border:1.5px solid #CCBFB5;border-radius:5px;box-sizing:border-box;text-align:center;background:#FFFCFA}
 .child-tt-inp:focus{outline:none;border-color:#C4714A;background:#fff}
@@ -1002,7 +1003,6 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <table class="child-tt-table">
               <thead><tr>
                 <th style="text-align:left;min-width:76px">시간대</th>
-                <th style="min-width:80px;color:#555">시간</th>
                 <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
               </tr></thead>
               <tbody id="child-tt-body"></tbody>
@@ -2751,20 +2751,26 @@ function renderChildTt(){
   tbody.innerHTML=rows.map(row=>{
     const dayCells=CHILD_DAYS.map(day=>{
       const key=`${row.id}_${day}`;
-      const val=(cells[key]||'').replace(/"/g,'&quot;');
+      const cell=cells[key]||{};
+      const t=typeof cell==='string'?cell:(cell.t||'');
+      const h=typeof cell==='string'?'':(cell.h||'');
       if(_childTtEdit){
-        return `<td><input class="child-tt-inp" value="${val}" placeholder="—" oninput="setChildCell(${row.id},'${day}',this.value)"></td>`;
+        return `<td style="padding:4px"><div style="display:flex;flex-direction:column;gap:3px">
+          <input class="child-tt-inp" value="${t.replace(/"/g,'&quot;')}" placeholder="수업명" oninput="setChildCell(${row.id},'${day}','t',this.value)">
+          <input class="child-tt-inp" value="${h.replace(/"/g,'&quot;')}" placeholder="~15:10" oninput="setChildCell(${row.id},'${day}','h',this.value)" style="color:#9999BB;font-size:.67rem">
+        </div></td>`;
       }
-      const txt=cells[key]||'';
-      return `<td><span class="${txt?'child-tt-cell-text':'child-tt-cell-empty'}">${txt||'—'}</span></td>`;
+      if(!t&&!h) return `<td><span class="child-tt-cell-empty">—</span></td>`;
+      return `<td><span class="child-tt-cell-text">${t||''}</span>${h?`<span class="child-tt-cell-time">${h}</span>`:''}</td>`;
     }).join('');
-    const rowTime=_childTtEdit
-      ?`<input class="child-tt-inp" value="${(row.time||'').replace(/"/g,'&quot;')}" placeholder="9:00~9:40" oninput="setChildRowTime(${row.id},this.value)" style="max-width:80px">`
-      :`<span class="child-tt-row-sub">${row.time||''}</span>`;
+    const refTime=row.time?`<span class="child-tt-row-sub">${row.time}</span>`:'';
+    const labelEdit=_childTtEdit
+      ?`<input class="child-tt-inp" value="${(row.label||'').replace(/"/g,'&quot;')}" placeholder="교시/활동명" oninput="setChildRowLabel(${row.id},this.value)" style="font-weight:700;margin-bottom:3px">
+        <input class="child-tt-inp" value="${(row.time||'').replace(/"/g,'&quot;')}" placeholder="기준시간(선택)" oninput="setChildRowTime(${row.id},this.value)" style="color:#888;font-size:.68rem">`
+      :`<span class="child-tt-row-main">${row.label}</span>${refTime}`;
     const delBtn=_childTtEdit?`<button class="child-tt-del-row" onclick="delChildRow(${row.id})" title="삭제">✕</button>`:'';
     return `<tr>
-      <td><span class="child-tt-row-main">${row.label}</span>${delBtn}</td>
-      <td style="text-align:center;background:#F5F1EB;white-space:nowrap">${rowTime}</td>
+      <td style="padding:${_childTtEdit?'4px 6px':'8px 6px'}">${labelEdit}${delBtn}</td>
       ${dayCells}
     </tr>`;
   }).join('');
@@ -2774,10 +2780,18 @@ function renderChildTt(){
     tbody.appendChild(addRow);
   }
 }
-function setChildCell(rowId,day,val){
+function setChildCell(rowId,day,field,val){
   if(!_childData.timetable.cells) _childData.timetable.cells={};
-  _childData.timetable.cells[`${rowId}_${day}`]=val;
+  const key=`${rowId}_${day}`;
+  const cur=_childData.timetable.cells[key];
+  const obj=(!cur||typeof cur==='string')?{t:typeof cur==='string'?cur:'',h:''}:{...cur};
+  obj[field]=val;
+  _childData.timetable.cells[key]=obj;
   _childDebounceSave();
+}
+function setChildRowLabel(rowId,val){
+  const row=(_childData.timetable.rows||[]).find(r=>r.id===rowId);
+  if(row){row.label=val;_childDebounceSave();}
 }
 function setChildRowTime(rowId,val){
   const row=(_childData.timetable.rows||[]).find(r=>r.id===rowId);
