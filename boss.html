@@ -1184,7 +1184,7 @@ const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload';
 const UPLOAD_PRESET  = 'hwx2iwfz';
 let pnlMemos = [];
 let pnlEditId = null;
-let pendingMemoImg = null; // 추가 대기 중인 이미지 URL
+let pendingMemoImgs = []; // 추가 대기 중인 이미지 URL 배열
 
 async function fetchPnlMemos(){
   try{
@@ -1202,8 +1202,20 @@ async function savePnlMemos(){
 // ── Cloudinary 업로드 ─────────────────────────────────────
 function _setFormStatus(html){ const el=document.getElementById('pnl-form-status'); if(el) el.innerHTML=html; }
 
+function _renderFormImgs(){
+  if(!pendingMemoImgs.length){ _setFormStatus(''); return; }
+  const previews = pendingMemoImgs.map((url,i)=>`
+    <div class="pnl-form-img-preview">
+      <img src="${url.replace('/upload/','/upload/w_160,h_160,c_fill/')}" alt="">
+      <button class="pnl-form-img-del" onclick="clearMemoImg(${i})" title="제거">✕</button>
+    </div>`).join('');
+  _setFormStatus(`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">${previews}</div>`);
+}
+
 async function _uploadImg(file){
-  _setFormStatus('<div class="pnl-uploading">⏳ 업로드 중...</div>');
+  const idx = pendingMemoImgs.length;
+  pendingMemoImgs.push(null); // 자리 확보
+  _setFormStatus(`<div class="pnl-uploading">⏳ 업로드 중 (${idx+1}번째)...</div>`);
   try{
     const fd = new FormData();
     fd.append('file', file);
@@ -1211,13 +1223,17 @@ async function _uploadImg(file){
     const r = await fetch(CLOUDINARY_URL, {method:'POST', body:fd});
     const d = await r.json();
     if(d.secure_url){
-      pendingMemoImg = d.secure_url;
-      _setFormStatus(`<div class="pnl-form-img-preview">
-        <img src="${d.secure_url}" alt="">
-        <button class="pnl-form-img-del" onclick="clearMemoImg()" title="이미지 제거">✕</button>
-      </div>`);
-    } else { _setFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>'); }
-  }catch(e){ _setFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>'); console.log(e); }
+      pendingMemoImgs[idx] = d.secure_url;
+      _renderFormImgs();
+    } else {
+      pendingMemoImgs.splice(idx,1);
+      _setFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');
+    }
+  }catch(e){
+    pendingMemoImgs.splice(idx,1);
+    _setFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');
+    console.log(e);
+  }
 }
 
 function handleMemoFile(file){ if(file && file.type.startsWith('image/')) _uploadImg(file); }
@@ -1234,7 +1250,10 @@ function handleMemoPaste(e){
   }
 }
 
-function clearMemoImg(){ pendingMemoImg=null; _setFormStatus(''); }
+function clearMemoImg(idx){
+  pendingMemoImgs.splice(idx,1);
+  _renderFormImgs();
+}
 
 // ── URL 자동 링크 ─────────────────────────────────────────
 function _linkify(text){
@@ -1276,11 +1295,12 @@ function renderPnlMemos(){
         <button class="pnl-memo-icon" onclick="cancelPnlEdit()">✕</button>
       </div>
     </div>`;
-    const thumbHtml = m.image ? `
-      <div class="pnl-memo-thumb" onclick="openImgModal('${m.image}')">
-        <img class="pnl-thumb-img" src="${m.image.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
-        <div class="pnl-thumb-hover"><img src="${m.image.replace('/upload/','/upload/w_400/')}" alt=""></div>
-      </div>` : '';
+    const imgs = m.images?.length ? m.images : (m.image ? [m.image] : []);
+    const thumbHtml = imgs.length ? imgs.map(url=>`
+      <div class="pnl-memo-thumb" onclick="openImgModal('${url}')">
+        <img class="pnl-thumb-img" src="${url.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
+        <div class="pnl-thumb-hover"><img src="${url.replace('/upload/','/upload/w_400/')}" alt=""></div>
+      </div>`).join('') : '';
     return `
     <div class="pnl-memo-row${m.done?' done':''}">
       <div class="pnl-memo-move">
@@ -1304,14 +1324,15 @@ function renderPnlMemos(){
 async function addPnlMemo(){
   const inp = document.getElementById('pnl-memo-input');
   const text = (inp.value||'').trim();
-  if(!text && !pendingMemoImg) return;
+  const validImgs = pendingMemoImgs.filter(Boolean);
+  if(!text && !validImgs.length) return;
   const newId = Math.max(0,...pnlMemos.map(m=>m.id),0)+1;
   const today = new Date().toISOString().slice(0,10);
   const memo = {id:newId, text:text||'', done:false, date:today, source:'pc'};
-  if(pendingMemoImg) memo.image = pendingMemoImg;
+  if(validImgs.length) memo.images = validImgs;
   pnlMemos.unshift(memo);
   await savePnlMemos();
-  inp.value=''; clearMemoImg(); renderPnlMemos();
+  inp.value=''; pendingMemoImgs=[]; _setFormStatus(''); renderPnlMemos();
 }
 
 async function togglePnlDone(id, done){
