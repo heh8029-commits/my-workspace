@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boss</title>
+<style>
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','맑은 고딕',sans-serif;background:#F8F5F0;color:#2C2C2C;font-size:14px;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+a{text-decoration:none;color:inherit}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:sticky;top:0;z-index:300;
+  background:#fff;
+  border-bottom:1px solid #EDE8E1;
+  display:flex;align-items:center;
+  padding:0 10px;height:50px;gap:4px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.topbar-menus{display:flex;gap:3px;align-items:center;flex:1;overflow-x:auto;scrollbar-width:none}
+.topbar-menus::-webkit-scrollbar{display:none}
+.menu-tab{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 13px;border-radius:20px;
+  font-size:.8rem;font-weight:700;
+  color:#999;background:transparent;border:none;
+  cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.menu-tab:hover{background:#F5F0EB;color:#666}
+.menu-tab.active{background:#C4714A;color:#fff}
+.topbar-right{display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:6px}
+.top-icon-btn{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#F5F0EB;border:none;font-size:.95rem;
+  cursor:pointer;transition:all .15s;color:#888;flex-shrink:0;
+}
+.top-icon-btn:hover{background:#EDE5DA;color:#C4714A}
+.top-icon-btn.on{background:#C4714A;color:#fff}
+
+/* ── DATE BAR ── */
+.datebar{
+  background:linear-gradient(135deg,#C4714A 0%,#D4895E 100%);
+  color:#fff;padding:6px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.75rem;letter-spacing:.02em;
+}
+.datebar-l{font-weight:600}
+.datebar-r{opacity:.85;font-size:.72rem}
+
+/* ── MOBILE SUBNAV (서브메뉴 - 모바일) ── */
+.mobile-subnav{
+  background:#fff;border-bottom:1px solid #EDE8E1;
+  padding:7px 10px;display:flex;gap:6px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.mobile-subnav::-webkit-scrollbar{display:none}
+.mob-sub-item{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 11px;border-radius:14px;
+  font-size:.73rem;font-weight:600;color:#999;
+  background:#F5F0EB;border:none;white-space:nowrap;
+  cursor:pointer;transition:all .13s;flex-shrink:0;
+}
+.mob-sub-item:hover{color:#C4714A}
+.mob-sub-item.active{background:#C4714A;color:#fff}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:calc(100vh - 82px)}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:162px;flex-shrink:0;
+  background:#fff;border-right:1px solid #EDE8E1;
+  padding:10px 0;overflow-y:auto;
+  transition:width .2s;
+}
+.sidebar-group{font-size:.65rem;font-weight:700;color:#C4B0A0;
+  padding:10px 14px 4px;letter-spacing:.07em}
+.sid-item{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 14px;font-size:.78rem;color:#666;
+  border:none;background:transparent;width:100%;text-align:left;
+  border-left:3px solid transparent;cursor:pointer;transition:all .12s;
+}
+.sid-item:hover{background:#FDF5F1;color:#C4714A}
+.sid-item.active{background:#FDF0EA;color:#C4714A;border-left-color:#C4714A;font-weight:700}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:22px 20px;overflow-x:hidden;min-width:0}
+
+/* ── PAGE ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── HOME - 바로가기 ── */
+.bm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bm-title{font-size:.88rem;font-weight:800;color:#555}
+.bm-edit-btn{
+  padding:5px 13px;border-radius:12px;
+  background:#F5F0EB;border:1px solid #EDE8E1;
+  font-size:.72rem;font-weight:700;color:#999;
+  cursor:pointer;transition:all .13s;
+}
+.bm-edit-btn:hover{background:#EDE5DA;color:#C4714A}
+
+.bm-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(74px,1fr));
+  gap:14px;
+}
+.bm-item{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;
+}
+.bm-icon{
+  width:62px;height:62px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.7rem;
+  box-shadow:0 2px 10px rgba(0,0,0,.09);
+  transition:transform .13s;
+}
+.bm-item:hover .bm-icon{transform:scale(1.09)}
+.bm-name{
+  font-size:.63rem;color:#666;font-weight:600;
+  text-align:center;line-height:1.35;max-width:72px;
+  word-break:keep-all;
+}
+
+/* ── CONTENT PLACEHOLDER ── */
+.placeholder{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:70px 20px;
+  color:#CCC;text-align:center;
+}
+.placeholder .ph-icon{font-size:2.8rem;margin-bottom:14px}
+.placeholder .ph-title{font-size:.95rem;font-weight:700;color:#BBA99A;margin-bottom:6px}
+.placeholder .ph-sub{font-size:.78rem;color:#CCBBAE}
+
+/* ── BOOKMARK POPUP (헤더 바로가기 아이콘) ── */
+.bm-overlay{
+  display:none;position:fixed;inset:0;z-index:400;
+}
+.bm-overlay.open{display:block}
+.bm-popup{
+  position:absolute;top:54px;right:10px;
+  width:320px;max-height:440px;overflow-y:auto;
+  background:#fff;border-radius:18px;
+  box-shadow:0 8px 36px rgba(0,0,0,.16);
+  padding:16px;scrollbar-width:thin;
+}
+.bm-popup-title{
+  font-size:.72rem;font-weight:700;color:#BBA99A;
+  text-align:center;margin-bottom:12px;letter-spacing:.05em;
+}
+.bm-popup-backdrop{position:fixed;inset:0;z-index:-1}
+
+/* ── BOOKMARK EDITOR MODAL ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.38);
+  align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:#fff;border-radius:22px;
+  padding:24px;width:min(480px,94vw);
+  max-height:82vh;overflow-y:auto;
+  box-shadow:0 14px 44px rgba(0,0,0,.2);
+}
+.modal-head{font-size:.95rem;font-weight:800;color:#333;margin-bottom:16px}
+.bm-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.bm-row{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:12px;background:#F8F5F0;
+}
+.bm-row-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;flex-shrink:0;
+}
+.bm-row-info{flex:1;min-width:0}
+.bm-row-name{font-size:.78rem;font-weight:700;color:#333}
+.bm-row-url{font-size:.65rem;color:#BBB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-row-btns{display:flex;gap:5px;flex-shrink:0}
+.rbtn{padding:4px 9px;border-radius:8px;border:none;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .12s}
+.rbtn-e{background:#E8F0FF;color:#3A7FE0}
+.rbtn-e:hover{background:#D4E4FF}
+.rbtn-d{background:#FFE8E8;color:#E03A3A}
+.rbtn-d:hover{background:#FFD4D4}
+.add-bm-btn{
+  width:100%;padding:10px;border-radius:12px;
+  background:#F5F0EB;border:1.5px dashed #D4B8A8;
+  font-size:.78rem;font-weight:700;color:#C4714A;
+  cursor:pointer;transition:all .13s;
+}
+.add-bm-btn:hover{background:#EDE5DA}
+.modal-done-btn{
+  width:100%;padding:11px;border-radius:14px;background:#C4714A;
+  border:none;font-size:.82rem;font-weight:800;color:#fff;
+  cursor:pointer;margin-top:10px;transition:all .13s;
+}
+.modal-done-btn:hover{background:#B46040}
+
+/* ── BM FORM ── */
+.bm-form-wrap{
+  margin-top:12px;padding:14px;
+  background:#F8F5F0;border-radius:14px;
+  display:none;flex-direction:column;gap:10px;
+}
+.bm-form-wrap.open{display:flex}
+.form-label{font-size:.72rem;font-weight:700;color:#888;display:block;margin-bottom:3px}
+.form-input{
+  width:100%;padding:8px 11px;border:1.5px solid #E8E0D8;
+  border-radius:10px;font-size:.8rem;color:#333;background:#fff;
+  outline:none;transition:border .13s;font-family:inherit;
+}
+.form-input:focus{border-color:#C4714A}
+.color-swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+.cswatch{
+  width:28px;height:28px;border-radius:8px;cursor:pointer;
+  border:2px solid transparent;transition:all .13s;
+}
+.cswatch.sel{border-color:#333;transform:scale(1.18)}
+.form-btns{display:flex;gap:8px;margin-top:4px}
+.fbtn{flex:1;padding:9px;border-radius:10px;border:none;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .13s}
+.fbtn-save{background:#C4714A;color:#fff}
+.fbtn-save:hover{background:#B46040}
+.fbtn-cancel{background:#F0EBE5;color:#999}
+.fbtn-cancel:hover{background:#E5DDD6}
+
+/* ── VIEW MODE ── */
+/* 기본: 화면 너비로 자동 판단 */
+.mobile-subnav{display:none}
+@media(max-width:767px){
+  .sidebar{display:none}
+  .mobile-subnav{display:flex}
+}
+/* 강제 PC 모드 */
+body.mode-pc .sidebar{display:block!important}
+body.mode-pc .mobile-subnav{display:none!important}
+/* 강제 모바일 모드 */
+body.mode-mob .sidebar{display:none!important}
+body.mode-mob .mobile-subnav{display:flex!important}
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-menus" id="topbar-menus"></div>
+  <div class="topbar-right">
+    <button class="top-icon-btn" id="bm-popup-btn" onclick="toggleBmPopup()" title="바로가기">🔗</button>
+    <button class="top-icon-btn" onclick="gotoCalendar()" title="달력">📅</button>
+    <button class="top-icon-btn" id="btn-pc" onclick="setMode('pc')" title="PC 버전">🖥️</button>
+    <button class="top-icon-btn" id="btn-mob" onclick="setMode('mob')" title="모바일 버전">📱</button>
+  </div>
+</header>
+
+<!-- ── DATE BAR ── -->
+<div class="datebar">
+  <span class="datebar-l" id="datebar-l"></span>
+  <span class="datebar-r">Boss 🌿</span>
+</div>
+
+<!-- ── MOBILE SUBNAV ── -->
+<div class="mobile-subnav" id="mobile-subnav"></div>
+
+<!-- ── LAYOUT ── -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- 홈 -->
+    <div class="page active" id="page-home">
+      <div class="bm-header">
+        <span class="bm-title">⚡ 바로가기</span>
+        <button class="bm-edit-btn" onclick="openEditor()">✏️ 편집</button>
+      </div>
+      <div class="bm-grid" id="bm-grid-home"></div>
+    </div>
+
+    <!-- 서브메뉴 콘텐츠 (준비 중) -->
+    <div class="page" id="page-sub">
+      <div class="placeholder">
+        <div class="ph-icon">🚧</div>
+        <div class="ph-title" id="ph-title">준비 중이에요</div>
+        <div class="ph-sub">곧 채워질 거예요!</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── 바로가기 팝업 ── -->
+<div class="bm-overlay" id="bm-overlay">
+  <div class="bm-popup-backdrop" onclick="closeBmPopup()"></div>
+  <div class="bm-popup">
+    <div class="bm-popup-title">⚡ 바로가기</div>
+    <div class="bm-grid" id="bm-grid-popup"></div>
+  </div>
+</div>
+
+<!-- ── 편집 모달 ── -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-head">⚡ 바로가기 편집</div>
+    <div class="bm-list" id="bm-list"></div>
+    <button class="add-bm-btn" onclick="showForm()">+ 새 바로가기 추가</button>
+
+    <div class="bm-form-wrap" id="bm-form-wrap">
+      <div>
+        <label class="form-label">이름</label>
+        <input class="form-input" id="f-name" placeholder="이름 입력" maxlength="12">
+      </div>
+      <div>
+        <label class="form-label">URL</label>
+        <input class="form-input" id="f-url" placeholder="https://..." type="url">
+      </div>
+      <div>
+        <label class="form-label">이모지 아이콘</label>
+        <input class="form-input" id="f-emoji" placeholder="🔗" maxlength="2">
+      </div>
+      <div>
+        <label class="form-label">배경색</label>
+        <div class="color-swatches" id="color-swatches"></div>
+      </div>
+      <input type="hidden" id="f-id">
+      <div class="form-btns">
+        <button class="fbtn fbtn-cancel" onclick="hideForm()">취소</button>
+        <button class="fbtn fbtn-save" onclick="saveForm()">저장</button>
+      </div>
+    </div>
+
+    <button class="modal-done-btn" onclick="closeEditor()">완료</button>
+  </div>
+</div>
+
+<script>
+// ── 메뉴 구조 ─────────────────────────────────────────────
+const MENUS = [
+  {id:'home', label:'홈', emoji:'🏠'},
+  {id:'miri', label:'미리제작소', emoji:'🏪', sub:[
+    {id:'profit',     label:'월별손익',         emoji:'📈'},
+    {id:'tax',        label:'부가세/종소세/세금', emoji:'💰'},
+    {id:'sales-ad',   label:'매출정리/광고비',   emoji:'📊'},
+    {id:'gross-time', label:'그로스시간별매출',  emoji:'⏰'},
+    {id:'design',     label:'디자인관리',        emoji:'🎨'},
+    {id:'copy',       label:'문구추천&CT이미지', emoji:'✍️'},
+    {id:'product',    label:'상품관리',          emoji:'📦'},
+    {id:'ad-mgr',     label:'광고관리',          emoji:'📢'},
+    {id:'stock',      label:'재고관리(단가)',     emoji:'📋'},
+    {id:'cost',       label:'원가계산',          emoji:'🧮'},
+    {id:'staff',      label:'직원관리',          emoji:'👥'},
+    {id:'cs',         label:'CS실시간공유',      emoji:'💬'},
+  ]},
+  {id:'house', label:'우리집', emoji:'🏡', sub:[
+    {id:'calendar',   label:'달력/일정',     emoji:'📅'},
+    {id:'checklist',  label:'중요체크리스트', emoji:'✅'},
+    {id:'expense',    label:'월별지출',       emoji:'💳'},
+    {id:'child',      label:'초당진우 일정',  emoji:'🎒'},
+    {id:'card',       label:'카드관리',       emoji:'💴'},
+    {id:'travel',     label:'여행갈때',       emoji:'✈️'},
+    {id:'event',      label:'경조사 기록',    emoji:'🎊'},
+    {id:'alarm',      label:'알림설정',       emoji:'🔔'},
+    {id:'beauty',     label:'뷰티관리',       emoji:'💄'},
+  ]},
+  {id:'asset', label:'자산관리', emoji:'💼', sub:[
+    {id:'asset-info',  label:'현재자산정보',    emoji:'💰'},
+    {id:'auto-pay',    label:'자동이체&카드값', emoji:'🔄'},
+    {id:'invest',      label:'투자&연금',        emoji:'📈'},
+    {id:'health',      label:'건강/청결/지식',  emoji:'💊'},
+  ]},
+  {id:'recipe', label:'요리레시피', emoji:'🍳'},
+  {id:'info',   label:'정보',       emoji:'🔒'},
+  {id:'search', label:'전체검색',   emoji:'🔍'},
+];
+
+// ── 바로가기 기본값 ────────────────────────────────────────
+const DEFAULT_BM = [
+  {id:1,  name:'토글',          emoji:'💬', color:'#EDE0FF', url:''},
+  {id:2,  name:'카톡CS',        emoji:'⭐', color:'#FFF0CC', url:''},
+  {id:3,  name:'네이버톡톡',    emoji:'💚', color:'#D6F5E0', url:''},
+  {id:4,  name:'스마트스토어',  emoji:'🛒', color:'#D6F5E0', url:''},
+  {id:5,  name:'네이버광고',    emoji:'💲', color:'#D6EDFF', url:''},
+  {id:6,  name:'쿠팡관리자',   emoji:'❤️', color:'#FFD6D6', url:''},
+  {id:7,  name:'쿠팡광고센터', emoji:'🎀', color:'#FFD6EC', url:''},
+  {id:8,  name:'아이디어스',    emoji:'🧡', color:'#FFE8D6', url:''},
+  {id:9,  name:'미리토퍼(네이버)',emoji:'🏠',color:'#D6F5E0', url:''},
+  {id:10, name:'클로드ai',      emoji:'🤖', color:'#EDE0FF', url:''},
+  {id:11, name:'노션',          emoji:'📝', color:'#F0EEEA', url:''},
+  {id:12, name:'네이버쇼핑',    emoji:'🛍️', color:'#D6F5E0', url:''},
+  {id:13, name:'쿠팡쇼핑',      emoji:'📦', color:'#FFD6D6', url:''},
+  {id:14, name:'그로스재고',    emoji:'📊', color:'#D6EDFF', url:''},
+  {id:15, name:'쿠팡-미리제작소',emoji:'🏪',color:'#D6F5E0', url:''},
+  {id:16, name:'주문관리',      emoji:'📋', color:'#EDE0FF', url:''},
+  {id:17, name:'코드검색',      emoji:'🔍', color:'#F0EEEA', url:''},
+  {id:18, name:'WORK공유',      emoji:'🔥', color:'#FFE8D6', url:''},
+  {id:19, name:'새로운그로스',  emoji:'🌱', color:'#D6EDFF', url:''},
+  {id:20, name:'시순이(CS)',     emoji:'🐱', color:'#FFF0CC', url:''},
+];
+
+const COLORS = [
+  '#FFD6D6','#FFE8D6','#FFF0CC','#FFFDD6',
+  '#D6F5E0','#D6EDFF','#EDE0FF','#FFD6EC',
+  '#F0EEEA','#E0F0F8',
+];
+
+// ── State ──────────────────────────────────────────────────
+let activeMenu    = 'home';
+let activeSubMenu = null;
+let bms = JSON.parse(localStorage.getItem('boss_bm') || 'null') || DEFAULT_BM;
+let selColor = COLORS[0];
+let editId   = null;
+
+// ── 날짜 표시 ──────────────────────────────────────────────
+(function initDate(){
+  const DAYS = ['일','월','화','수','목','금','토'];
+  const now = new Date();
+  const y=now.getFullYear(), m=now.getMonth()+1, d=now.getDate(), w=DAYS[now.getDay()];
+  document.getElementById('datebar-l').textContent =
+    `🎀 ${y}년 ${m}월 ${d}일 (${w})`;
+})();
+
+// ── 상단 메뉴 렌더 ─────────────────────────────────────────
+function renderTopMenu(){
+  document.getElementById('topbar-menus').innerHTML = MENUS.map(m=>
+    `<button class="menu-tab${activeMenu===m.id?' active':''}" onclick="setMenu('${m.id}')">
+      ${m.emoji} ${m.label}
+    </button>`
+  ).join('');
+}
+
+// ── 사이드바 렌더 ──────────────────────────────────────────
+function renderSidebar(){
+  const m = MENUS.find(x=>x.id===activeMenu);
+  const el = document.getElementById('sidebar');
+  if(!m||!m.sub||!m.sub.length){el.innerHTML='';return;}
+  el.innerHTML = `<div class="sidebar-group">${m.label}</div>` +
+    m.sub.map(s=>
+      `<button class="sid-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
+        ${s.emoji} ${s.label}
+      </button>`
+    ).join('');
+}
+
+// ── 모바일 서브메뉴 렌더 ──────────────────────────────────
+function renderMobileSub(){
+  const m = MENUS.find(x=>x.id===activeMenu);
+  const el = document.getElementById('mobile-subnav');
+  if(!m||!m.sub||!m.sub.length){el.innerHTML='';return;}
+  el.innerHTML = m.sub.map(s=>
+    `<button class="mob-sub-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
+      ${s.emoji} ${s.label}
+    </button>`
+  ).join('');
+}
+
+// ── 메뉴 이동 ──────────────────────────────────────────────
+function setMenu(id){
+  activeMenu=id; activeSubMenu=null;
+  renderTopMenu(); renderSidebar(); renderMobileSub();
+  showPage(id==='home'?'home':'sub');
+  if(id==='search') document.getElementById('ph-title').textContent='전체검색 — 준비 중';
+}
+
+function setSub(id, label){
+  activeSubMenu=id;
+  renderSidebar(); renderMobileSub();
+  document.getElementById('ph-title').textContent = label;
+  showPage('sub');
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('page-'+id);
+  if(el) el.classList.add('active');
+}
+
+// ── 바로가기 그리드 렌더 ──────────────────────────────────
+function saveBm(){localStorage.setItem('boss_bm',JSON.stringify(bms));}
+
+function renderGrid(gridId, clickable=true){
+  const el = document.getElementById(gridId);
+  if(!el) return;
+  el.innerHTML = bms.map(b=>`
+    <a class="bm-item" ${b.url&&clickable?`href="${b.url}" target="_blank"`:'href="#" onclick="return false"'}>
+      <div class="bm-icon" style="background:${b.color}">${b.emoji}</div>
+      <span class="bm-name">${b.name}</span>
+    </a>`
+  ).join('');
+}
+
+function renderAllGrids(){
+  renderGrid('bm-grid-home'); renderGrid('bm-grid-popup');
+}
+
+// ── 바로가기 팝업 ──────────────────────────────────────────
+function toggleBmPopup(){
+  const ov = document.getElementById('bm-overlay');
+  const isOpen = ov.classList.contains('open');
+  if(isOpen){ov.classList.remove('open');}
+  else{renderGrid('bm-grid-popup'); ov.classList.add('open');}
+  document.getElementById('bm-popup-btn').classList.toggle('on',!isOpen);
+}
+function closeBmPopup(){
+  document.getElementById('bm-overlay').classList.remove('open');
+  document.getElementById('bm-popup-btn').classList.remove('on');
+}
+
+// ── 편집 모달 ──────────────────────────────────────────────
+function openEditor(){
+  renderEditorList();
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeEditor(){
+  document.getElementById('modal-bg').classList.remove('open');
+  hideForm(); renderAllGrids();
+}
+
+function renderEditorList(){
+  document.getElementById('bm-list').innerHTML = bms.map(b=>`
+    <div class="bm-row">
+      <div class="bm-row-icon" style="background:${b.color}">${b.emoji}</div>
+      <div class="bm-row-info">
+        <div class="bm-row-name">${b.name}</div>
+        <div class="bm-row-url">${b.url||'URL 없음'}</div>
+      </div>
+      <div class="bm-row-btns">
+        <button class="rbtn rbtn-e" onclick="editBm(${b.id})">수정</button>
+        <button class="rbtn rbtn-d" onclick="delBm(${b.id})">삭제</button>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function delBm(id){
+  if(!confirm('삭제할까요?')) return;
+  bms=bms.filter(b=>b.id!==id); saveBm(); renderEditorList();
+}
+
+function editBm(id){
+  const b=bms.find(x=>x.id===id); if(!b) return;
+  editId=id;
+  document.getElementById('f-name').value=b.name;
+  document.getElementById('f-url').value=b.url||'';
+  document.getElementById('f-emoji').value=b.emoji;
+  document.getElementById('f-id').value=id;
+  selColor=b.color; renderSwatches();
+  const fw=document.getElementById('bm-form-wrap');
+  fw.classList.add('open'); fw.scrollIntoView({behavior:'smooth'});
+}
+
+function showForm(){
+  editId=null;
+  document.getElementById('f-name').value='';
+  document.getElementById('f-url').value='';
+  document.getElementById('f-emoji').value='🔗';
+  document.getElementById('f-id').value='';
+  selColor=COLORS[0]; renderSwatches();
+  const fw=document.getElementById('bm-form-wrap');
+  fw.classList.add('open'); fw.scrollIntoView({behavior:'smooth'});
+}
+
+function hideForm(){
+  document.getElementById('bm-form-wrap').classList.remove('open');
+  editId=null;
+}
+
+function renderSwatches(){
+  document.getElementById('color-swatches').innerHTML = COLORS.map(c=>
+    `<div class="cswatch${c===selColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
+  ).join('');
+}
+
+function pickColor(c){selColor=c; renderSwatches();}
+
+function saveForm(){
+  const name=document.getElementById('f-name').value.trim();
+  const url=document.getElementById('f-url').value.trim();
+  const emoji=document.getElementById('f-emoji').value.trim()||'🔗';
+  if(!name){alert('이름을 입력해주세요!'); return;}
+  if(editId){
+    const idx=bms.findIndex(b=>b.id===editId);
+    if(idx>=0) bms[idx]={id:editId,name,url,emoji,color:selColor};
+  } else {
+    const newId=Math.max(0,...bms.map(b=>b.id))+1;
+    bms.push({id:newId,name,url,emoji,color:selColor});
+  }
+  saveBm(); hideForm(); renderEditorList();
+}
+
+// ── PC/모바일 전환 ─────────────────────────────────────────
+function setMode(m){
+  localStorage.setItem('boss_mode',m);
+  document.body.classList.remove('mode-pc','mode-mob');
+  document.body.classList.add('mode-'+m);
+  document.getElementById('btn-pc').classList.toggle('on',m==='pc');
+  document.getElementById('btn-mob').classList.toggle('on',m==='mob');
+}
+
+function gotoCalendar(){
+  setSub('calendar','달력/일정');
+  setMenu('house');
+}
+
+// ── 초기화 ─────────────────────────────────────────────────
+(function init(){
+  renderTopMenu();
+  renderSidebar();
+  renderMobileSub();
+  renderAllGrids();
+  renderSwatches();
+  const savedMode = localStorage.getItem('boss_mode');
+  if(savedMode) setMode(savedMode);
+})();
+</script>
+</body>
+</html>
