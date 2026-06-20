@@ -838,6 +838,11 @@ render = function() {
 
 loadAutoData();
 setInterval(loadAutoData, 60000);
+
+const _hashView = location.hash.replace('#', '');
+if (_hashView === 'sales' || _hashView === 'ad' || _hashView === 'log') {
+  setTimeout(() => setView(_hashView), 100);
+}
 </script>
 </body>
 </html>
