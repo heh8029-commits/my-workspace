@@ -839,9 +839,14 @@ render = function() {
 loadAutoData();
 setInterval(loadAutoData, 60000);
 
+function _applyHash() {
+  const h = location.hash.replace('#', '');
+  if (h === 'sales' || h === 'ad' || h === 'log') setView(h);
+}
+window.addEventListener('hashchange', _applyHash);
 const _hashView = location.hash.replace('#', '');
 if (_hashView === 'sales' || _hashView === 'ad' || _hashView === 'log') {
-  setTimeout(() => setView(_hashView), 100);
+  setTimeout(() => setView(_hashView), 300);
 }
 </script>
 </body>

@@ -422,7 +422,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-memo-thumb:hover .pnl-thumb-img{opacity:.85}
 .pnl-thumb-hover{display:none;position:absolute;left:48px;top:50%;transform:translateY(-50%);z-index:300;background:#fff;border-radius:11px;box-shadow:0 6px 28px rgba(0,0,0,.22);padding:5px;pointer-events:none}
 .pnl-memo-thumb:hover .pnl-thumb-hover{display:block}
-.pnl-thumb-hover img{width:220px;height:auto;border-radius:8px;display:block;max-height:200px;object-fit:contain}
+.pnl-thumb-hover img{width:320px;height:auto;border-radius:8px;display:block;max-height:300px;object-fit:contain}
 /* 이미지 모달 */
 .img-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:pointer}
 .img-modal.open{display:flex}
@@ -745,7 +745,15 @@ function setSub(id, label){
   renderTopMenu(); renderSidebar(); renderMobileSub();
 
   if(subItem && subItem.url){
-    document.getElementById('embed-frame').src = subItem.url;
+    const fr = document.getElementById('embed-frame');
+    const base = subItem.url.split('#')[0];
+    const hash = subItem.url.includes('#') ? '#' + subItem.url.split('#')[1] : '';
+    // 동일 페이지면 hash만 교체해서 hashchange 이벤트 발생 → 내부 탭 전환
+    if(fr.src && fr.src.split('#')[0] === base && fr.src.split('?')[0] === base){
+      fr.contentWindow && (fr.contentWindow.location.hash = hash.slice(1) || '');
+    } else {
+      fr.src = subItem.url;
+    }
     showPage('iframe');
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
@@ -1237,6 +1245,17 @@ function _linkify(text){
 
 function _srcIcon(src){ return src==='bot' ? '🤖' : '💻'; }
 
+const _DAY_KO = ['일','월','화','수','목','금','토'];
+function _fmtMemoDate(dateStr){
+  const today = new Date().toISOString().slice(0,10);
+  if(dateStr === today) return '오늘';
+  const d = new Date(dateStr + 'T00:00:00');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const day = _DAY_KO[d.getDay()];
+  return `${mm}.${dd}(${day})`;
+}
+
 // ── 렌더 ─────────────────────────────────────────────────
 function renderPnlMemos(){
   const el = document.getElementById('pnl-memo-list');
@@ -1260,7 +1279,7 @@ function renderPnlMemos(){
     const thumbHtml = m.image ? `
       <div class="pnl-memo-thumb" onclick="openImgModal('${m.image}')">
         <img class="pnl-thumb-img" src="${m.image.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
-        <div class="pnl-thumb-hover"><img src="${m.image.replace('/upload/','/upload/w_280/')}" alt=""></div>
+        <div class="pnl-thumb-hover"><img src="${m.image.replace('/upload/','/upload/w_400/')}" alt=""></div>
       </div>` : '';
     return `
     <div class="pnl-memo-row${m.done?' done':''}">
@@ -1272,7 +1291,7 @@ function renderPnlMemos(){
       <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
       ${thumbHtml}
       <span class="pnl-memo-text">${_linkify(m.text)}</span>
-      <span class="pnl-memo-date">${m.date}</span>
+      <span class="pnl-memo-date">${_fmtMemoDate(m.date)}</span>
       <div class="pnl-memo-actions">
         <button class="pnl-memo-icon" onclick="copyPnlMemo(${i})" title="복사">📋</button>
         <button class="pnl-memo-icon" onclick="startPnlEdit(${m.id})" title="편집">✏️</button>
