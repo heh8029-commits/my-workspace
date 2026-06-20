@@ -409,6 +409,30 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-move-btn:hover{background:#EDE5DA;color:#C4714A}
 .pnl-memo-edit-wrap{flex:1;display:flex;gap:6px;align-items:center;min-width:0}
 .pnl-memo-edit-input{flex:1;padding:5px 9px;border-radius:8px;border:1.5px solid #C4714A;font-size:.83rem;font-family:inherit;color:#333;outline:none;min-width:0}
+/* 이미지 첨부 */
+.pnl-attach-btn{padding:7px 11px;border-radius:9px;border:1.5px solid #EDE8E1;background:#F5F0EB;font-size:.82rem;cursor:pointer;flex-shrink:0;transition:all .13s;color:#888}
+.pnl-attach-btn:hover{border-color:#C4714A;color:#C4714A;background:#FDF0EA}
+.pnl-form-img-preview{position:relative;display:inline-flex;margin-top:8px}
+.pnl-form-img-preview img{width:80px;height:80px;object-fit:cover;border-radius:9px;border:1.5px solid #EDE8E1}
+.pnl-form-img-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#E03A3A;color:#fff;border:none;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.pnl-uploading{font-size:.75rem;color:#C4714A;padding:6px 0}
+/* 썸네일 */
+.pnl-memo-thumb{position:relative;flex-shrink:0;cursor:pointer}
+.pnl-thumb-img{width:42px;height:42px;object-fit:cover;border-radius:8px;border:1px solid #EDE8E1;display:block;transition:opacity .13s}
+.pnl-memo-thumb:hover .pnl-thumb-img{opacity:.85}
+.pnl-thumb-hover{display:none;position:absolute;left:48px;top:50%;transform:translateY(-50%);z-index:300;background:#fff;border-radius:11px;box-shadow:0 6px 28px rgba(0,0,0,.22);padding:5px;pointer-events:none}
+.pnl-memo-thumb:hover .pnl-thumb-hover{display:block}
+.pnl-thumb-hover img{width:220px;height:auto;border-radius:8px;display:block;max-height:200px;object-fit:contain}
+/* 이미지 모달 */
+.img-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:pointer}
+.img-modal.open{display:flex}
+.img-modal-inner{cursor:default;display:flex;align-items:center;justify-content:center;max-width:94vw;max-height:94vh}
+.img-modal-inner img{max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 8px 48px rgba(0,0,0,.5);object-fit:contain;display:block}
+.img-modal-close{position:fixed;top:16px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.img-modal-close:hover{background:rgba(255,255,255,.28)}
+/* 메모 텍스트 링크 */
+.pnl-memo-text a{color:#1a5eff;text-decoration:none;word-break:break-all}
+.pnl-memo-text a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -510,16 +534,30 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="font-size:.9rem;font-weight:800;color:#555">📈 월별손익 메모</div>
           <button onclick="fetchPnlMemos().then(()=>renderPnlMemos())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
-        <div class="pnl-memo-add">
-          <input class="pnl-memo-input" id="pnl-memo-input" placeholder="메모 입력..." maxlength="300"
-            onkeydown="if(event.key==='Enter')addPnlMemo()">
-          <button class="pnl-memo-add-btn" onclick="addPnlMemo()">➕ 추가</button>
+        <div class="pnl-memo-add" style="flex-direction:column;align-items:stretch;gap:6px">
+          <div style="display:flex;gap:8px">
+            <input class="pnl-memo-input" id="pnl-memo-input" placeholder="메모 입력... (URL 자동 링크, Ctrl+V 이미지 붙여넣기)" maxlength="500"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey)addPnlMemo()"
+              onpaste="handleMemoPaste(event)">
+            <input type="file" id="pnl-file-inp" accept="image/*" style="display:none" onchange="handleMemoFile(this.files[0]);this.value=''">
+            <button class="pnl-attach-btn" onclick="document.getElementById('pnl-file-inp').click()" title="이미지 첨부">📎</button>
+            <button class="pnl-memo-add-btn" onclick="addPnlMemo()">➕ 추가</button>
+          </div>
+          <div id="pnl-form-status"></div>
         </div>
         <div class="pnl-memo-list" id="pnl-memo-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
       </div>
     </div>
 
   </main>
+</div>
+
+<!-- ── 이미지 모달 ── -->
+<div class="img-modal" id="img-modal" onclick="closeImgModal()">
+  <button class="img-modal-close" onclick="closeImgModal()">✕</button>
+  <div class="img-modal-inner" onclick="event.stopPropagation()">
+    <img id="img-modal-img" src="" alt="">
+  </div>
 </div>
 
 <!-- ── 바로가기 팝업 ── -->
@@ -1134,8 +1172,11 @@ function renderAllAlarmLists(){ fetchAlarms().then(()=>renderAlarmList()); }
 
 // ── 월별손익 메모 ────────────────────────────────────────────
 const FB_PNL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_memos.json';
+const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload';
+const UPLOAD_PRESET  = 'hwx2iwfz';
 let pnlMemos = [];
 let pnlEditId = null;
+let pendingMemoImg = null; // 추가 대기 중인 이미지 URL
 
 async function fetchPnlMemos(){
   try{
@@ -1150,8 +1191,53 @@ async function savePnlMemos(){
   }catch(e){ console.log('손익메모 저장 실패',e); }
 }
 
+// ── Cloudinary 업로드 ─────────────────────────────────────
+function _setFormStatus(html){ const el=document.getElementById('pnl-form-status'); if(el) el.innerHTML=html; }
+
+async function _uploadImg(file){
+  _setFormStatus('<div class="pnl-uploading">⏳ 업로드 중...</div>');
+  try{
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    const r = await fetch(CLOUDINARY_URL, {method:'POST', body:fd});
+    const d = await r.json();
+    if(d.secure_url){
+      pendingMemoImg = d.secure_url;
+      _setFormStatus(`<div class="pnl-form-img-preview">
+        <img src="${d.secure_url}" alt="">
+        <button class="pnl-form-img-del" onclick="clearMemoImg()" title="이미지 제거">✕</button>
+      </div>`);
+    } else { _setFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>'); }
+  }catch(e){ _setFormStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>'); console.log(e); }
+}
+
+function handleMemoFile(file){ if(file && file.type.startsWith('image/')) _uploadImg(file); }
+
+function handleMemoPaste(e){
+  const items = e.clipboardData?.items;
+  if(!items) return;
+  for(const it of items){
+    if(it.type.startsWith('image/')){
+      e.preventDefault();
+      _uploadImg(it.getAsFile());
+      return;
+    }
+  }
+}
+
+function clearMemoImg(){ pendingMemoImg=null; _setFormStatus(''); }
+
+// ── URL 자동 링크 ─────────────────────────────────────────
+function _linkify(text){
+  const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/(https?:\/\/[^\s<>"']+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+
 function _srcIcon(src){ return src==='bot' ? '🤖' : '💻'; }
 
+// ── 렌더 ─────────────────────────────────────────────────
 function renderPnlMemos(){
   const el = document.getElementById('pnl-memo-list');
   if(!el) return;
@@ -1163,7 +1249,7 @@ function renderPnlMemos(){
     const src = _srcIcon(m.source||'pc');
     if(pnlEditId===m.id) return `
     <div class="pnl-memo-row">
-      <input type="checkbox" class="pnl-memo-check" ${m.done?'checked':''} disabled>
+      <input type="checkbox" class="pnl-memo-check" disabled>
       <div class="pnl-memo-edit-wrap">
         <input class="pnl-memo-edit-input" id="pnl-edit-${m.id}" value="${m.text.replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
           onkeydown="if(event.key==='Enter')savePnlEdit(${m.id});if(event.key==='Escape')cancelPnlEdit()">
@@ -1171,6 +1257,11 @@ function renderPnlMemos(){
         <button class="pnl-memo-icon" onclick="cancelPnlEdit()">✕</button>
       </div>
     </div>`;
+    const thumbHtml = m.image ? `
+      <div class="pnl-memo-thumb" onclick="openImgModal('${m.image}')">
+        <img class="pnl-thumb-img" src="${m.image.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
+        <div class="pnl-thumb-hover"><img src="${m.image.replace('/upload/','/upload/w_280/')}" alt=""></div>
+      </div>` : '';
     return `
     <div class="pnl-memo-row${m.done?' done':''}">
       <div class="pnl-memo-move">
@@ -1179,7 +1270,8 @@ function renderPnlMemos(){
       </div>
       <input type="checkbox" class="pnl-memo-check" ${m.done?'checked':''} onchange="togglePnlDone(${m.id},this.checked)">
       <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
-      <span class="pnl-memo-text">${m.text.replace(/</g,'&lt;')}</span>
+      ${thumbHtml}
+      <span class="pnl-memo-text">${_linkify(m.text)}</span>
       <span class="pnl-memo-date">${m.date}</span>
       <div class="pnl-memo-actions">
         <button class="pnl-memo-icon" onclick="copyPnlMemo(${i})" title="복사">📋</button>
@@ -1193,12 +1285,14 @@ function renderPnlMemos(){
 async function addPnlMemo(){
   const inp = document.getElementById('pnl-memo-input');
   const text = (inp.value||'').trim();
-  if(!text) return;
+  if(!text && !pendingMemoImg) return;
   const newId = Math.max(0,...pnlMemos.map(m=>m.id),0)+1;
   const today = new Date().toISOString().slice(0,10);
-  pnlMemos.unshift({id:newId, text, done:false, date:today, source:'pc'});
+  const memo = {id:newId, text:text||'', done:false, date:today, source:'pc'};
+  if(pendingMemoImg) memo.image = pendingMemoImg;
+  pnlMemos.unshift(memo);
   await savePnlMemos();
-  inp.value=''; renderPnlMemos();
+  inp.value=''; clearMemoImg(); renderPnlMemos();
 }
 
 async function togglePnlDone(id, done){
@@ -1233,6 +1327,16 @@ async function movePnlMemo(i, dir){
   if(j<0||j>=pnlMemos.length) return;
   [pnlMemos[i],pnlMemos[j]]=[pnlMemos[j],pnlMemos[i]];
   await savePnlMemos(); renderPnlMemos();
+}
+
+// ── 이미지 모달 ────────────────────────────────────────────
+function openImgModal(url){
+  document.getElementById('img-modal-img').src = url;
+  document.getElementById('img-modal').classList.add('open');
+}
+function closeImgModal(){
+  document.getElementById('img-modal').classList.remove('open');
+  document.getElementById('img-modal-img').src = '';
 }
 
 // ── PC/모바일 전환 ─────────────────────────────────────────
