@@ -521,7 +521,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .child-tt-table td{padding:8px 5px;border:1px solid #D0C8BE;text-align:center;vertical-align:middle}
 .child-tt-table td:first-child{background:#F9F6F2;text-align:left;padding-left:8px;white-space:nowrap;min-width:82px}
 .child-tt-row-main{font-size:.78rem;font-weight:700;color:#444;display:block;line-height:1.3}
-.child-tt-row-sub{font-size:.6rem;color:#AAAAAA;display:block;line-height:1.3}
+.child-tt-row-sub{font-size:.72rem;color:#888;display:block;line-height:1.3;white-space:nowrap}
 .child-tt-cell-text{font-size:.75rem;color:#333;word-break:keep-all}
 .child-tt-cell-empty{font-size:.75rem;color:#D0D0D0}
 .child-tt-inp{width:100%;font-size:.73rem;padding:4px 3px;border:1.5px solid #CCBFB5;border-radius:5px;box-sizing:border-box;text-align:center;background:#FFFCFA}
@@ -1002,7 +1002,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <table class="child-tt-table">
               <thead><tr>
                 <th style="text-align:left;min-width:76px">시간대</th>
-                <th style="min-width:72px;color:#999">시간</th>
+                <th style="min-width:80px;color:#555">시간</th>
                 <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
               </tr></thead>
               <tbody id="child-tt-body"></tbody>
@@ -2764,7 +2764,7 @@ function renderChildTt(){
     const delBtn=_childTtEdit?`<button class="child-tt-del-row" onclick="delChildRow(${row.id})" title="삭제">✕</button>`:'';
     return `<tr>
       <td><span class="child-tt-row-main">${row.label}</span>${delBtn}</td>
-      <td style="text-align:center;color:#999;font-size:.7rem;white-space:nowrap">${rowTime}</td>
+      <td style="text-align:center;background:#F5F1EB;white-space:nowrap">${rowTime}</td>
       ${dayCells}
     </tr>`;
   }).join('');
