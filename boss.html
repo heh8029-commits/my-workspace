@@ -314,48 +314,42 @@ a{text-decoration:none;color:inherit}
 
 /* ── ALARM PAGE ── */
 .alarm-section-title{font-size:.88rem;font-weight:800;color:#555;margin-bottom:12px;margin-top:4px}
-.alarm-add-row{display:flex;gap:7px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.alarm-add-card{background:#fff;border-radius:16px;padding:16px;border:1px solid #EDE8E1;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.alarm-add-top{display:flex;gap:7px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .alarm-time-input{padding:7px 10px;border:1.5px solid #E8E0D8;border-radius:9px;font-size:.82rem;font-family:inherit;outline:none;background:#fff;transition:border .13s;flex-shrink:0}
 .alarm-time-input:focus{border-color:#C4714A}
 .alarm-label-input{flex:1;min-width:100px;padding:7px 10px;border:1.5px solid #E8E0D8;border-radius:9px;font-size:.82rem;font-family:inherit;outline:none;background:#fff;transition:border .13s}
 .alarm-label-input:focus{border-color:#C4714A}
-.alarm-add-btn{padding:7px 13px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .13s;flex-shrink:0}
+.alarm-day-checks{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.day-check-lbl{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;background:#F5F0EB;font-size:.75rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s;user-select:none;border:2px solid transparent}
+.day-check-lbl.checked{background:#C4714A;color:#fff;border-color:#C4714A}
+.alarm-add-btn{width:100%;padding:9px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .13s}
 .alarm-add-btn:hover{background:#B46040}
-.alarm-tabs{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
-.alarm-tab-day{padding:6px 12px;border-radius:14px;border:none;font-size:.76rem;font-weight:700;color:#999;background:#F5F0EB;cursor:pointer;transition:all .13s}
-.alarm-tab-day.active{background:#C4714A;color:#fff}
-.alarm-list{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;min-height:42px}
-.alarm-row{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:12px;background:#F8F5F0}
-.alarm-row-time{font-size:.88rem;font-weight:800;color:#C4714A;flex-shrink:0;min-width:46px}
-.alarm-row-label{flex:1;font-size:.8rem;color:#444}
+.alarm-divider{border:none;border-top:1px solid #EDE8E1;margin:6px 0 18px}
+.alarm-list{display:flex;flex-direction:column;gap:8px}
+.alarm-row{display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:13px;background:#F8F5F0}
+.alarm-row-left{flex:1;min-width:0}
+.alarm-row-meta{display:flex;align-items:baseline;gap:7px}
+.alarm-row-time{font-size:.9rem;font-weight:800;color:#C4714A}
+.alarm-row-lbl{font-size:.8rem;color:#555}
+.alarm-day-tags{margin-top:4px;display:flex;gap:3px;flex-wrap:wrap}
+.alarm-day-tag{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:8px;background:#EDE0FF;color:#7A5CCB}
+.alarm-day-tag.daily{background:#FFE8D6;color:#C4714A}
 .alarm-toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
 .alarm-toggle input{opacity:0;width:0;height:0;position:absolute}
 .alarm-toggle-sl{position:absolute;cursor:pointer;inset:0;background:#E0D8D0;border-radius:20px;transition:.2s}
 .alarm-toggle-sl:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
 .alarm-toggle input:checked+.alarm-toggle-sl{background:#C4714A}
 .alarm-toggle input:checked+.alarm-toggle-sl:before{transform:translateX(16px)}
-.alarm-row-del{padding:4px 8px;border-radius:7px;border:none;background:#FFE8E8;color:#E03A3A;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .12s;flex-shrink:0}
-.alarm-row-del:hover{background:#FFD4D4}
-.alarm-btn-edit{padding:4px 8px;border-radius:7px;border:none;background:#E8F0FF;color:#3A7FE0;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .12s;flex-shrink:0}
+.alarm-btn-edit{padding:4px 8px;border-radius:7px;border:none;background:#E8F0FF;color:#3A7FE0;font-size:.68rem;font-weight:700;cursor:pointer;flex-shrink:0}
 .alarm-btn-edit:hover{background:#D4E4FF}
-.alarm-row-edit-form{background:#FDF0EA;border-radius:12px;padding:10px 12px;border:1.5px solid #E8C4A8;display:flex;flex-direction:column;gap:7px}
-.alarm-edit-top{display:flex;gap:6px;align-items:center}
-.alarm-empty{text-align:center;padding:18px;color:#CCC;font-size:.8rem}
-.alarm-divider{border:none;border-top:1px solid #EDE8E1;margin:6px 0 20px}
-.alarm-day-section{margin-bottom:14px}
-.alarm-day-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#F5F0EB;border-radius:10px;margin-bottom:7px;font-size:.8rem;font-weight:800;color:#C4714A}
-.alarm-day-addrow{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.alarm-row-del{padding:4px 8px;border-radius:7px;border:none;background:#FFE8E8;color:#E03A3A;font-size:.68rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.alarm-row-del:hover{background:#FFD4D4}
+.alarm-row-edit-form{background:#FDF0EA;border-radius:13px;padding:12px 14px;border:1.5px solid #E8C4A8;display:flex;flex-direction:column;gap:9px}
+.alarm-edit-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.alarm-empty{text-align:center;padding:24px;color:#CCC;font-size:.8rem}
 /* ── 브라우저 알림 팝업 ── */
-.alarm-notify{
-  position:fixed;bottom:20px;right:20px;z-index:9999;
-  background:#fff;border-radius:16px;
-  box-shadow:0 8px 30px rgba(0,0,0,.18);
-  padding:14px 18px;min-width:230px;max-width:300px;
-  border-left:4px solid #C4714A;
-  transform:translateY(20px);opacity:0;
-  transition:transform .3s ease,opacity .3s ease;
-  pointer-events:none;
-}
+.alarm-notify{position:fixed;bottom:20px;right:20px;z-index:9999;background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 18px;min-width:230px;max-width:300px;border-left:4px solid #C4714A;transform:translateY(20px);opacity:0;transition:transform .3s ease,opacity .3s ease;pointer-events:none}
 .alarm-notify.show{transform:translateY(0);opacity:1;pointer-events:auto}
 .alarm-notify-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
 .alarm-notify-title{font-size:.82rem;font-weight:800;color:#C4714A}
@@ -442,18 +436,27 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <!-- 알림설정 페이지 -->
     <div class="page" id="page-alarm">
       <div style="max-width:520px">
-        <div class="alarm-section-title">🔔 매일 알람</div>
-        <div class="alarm-add-row">
-          <input type="time" class="alarm-time-input" id="daily-time">
-          <input type="text" class="alarm-label-input" id="daily-label" placeholder="알람 이름 (예: 광고비 확인)" maxlength="30">
-          <button class="alarm-add-btn" onclick="addAlarm('daily')">+ 추가</button>
+        <div class="alarm-section-title">🔔 알람 추가</div>
+        <div class="alarm-add-card">
+          <div class="alarm-add-top">
+            <input type="time" class="alarm-time-input" id="new-alarm-time">
+            <input type="text" class="alarm-label-input" id="new-alarm-label" placeholder="알람 이름 (예: 광고비 확인)" maxlength="30">
+          </div>
+          <div class="alarm-day-checks" id="alarm-day-checks">
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'매일')">매일</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'월')">월</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'화')">화</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'수')">수</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'목')">목</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'금')">금</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'토')">토</span>
+            <span class="day-check-lbl" onclick="toggleDayCheck(this,'일')">일</span>
+          </div>
+          <button class="alarm-add-btn" onclick="addNewAlarm()">+ 추가</button>
         </div>
-        <div class="alarm-list" id="alarm-list-daily"></div>
-
         <hr class="alarm-divider">
-
-        <div class="alarm-section-title">📅 요일별 알람</div>
-        <div id="alarm-days-all"></div>
+        <div class="alarm-section-title">📋 등록된 알람</div>
+        <div class="alarm-list" id="alarm-list-all"></div>
       </div>
     </div>
 
@@ -849,175 +852,173 @@ function delBm(id){
 }
 
 // ── 알림설정 ────────────────────────────────────────────────
-const DAY_NAMES = ['월','화','수','목','금','토','일'];
-let alarmData = JSON.parse(localStorage.getItem('boss_alarms') || 'null')
-  || {daily:[], day:[[],[],[],[],[],[],[]]};
-let activeDayIdx = 0;
-const firedSet = new Set();
+const WDAY_NAMES = ['일','월','화','수','목','금','토']; // JS getDay() 순서
+let alarmData = (function(){
+  const raw = JSON.parse(localStorage.getItem('boss_alarms_v2')||'null');
+  return (raw && Array.isArray(raw.alarms)) ? raw : {alarms:[]};
+})();
+const firedSet    = new Set();
+let selectedDays  = new Set();
+let alarmEditId   = null;
+let editSelDays   = new Set();
 
-function saveAlarms(){ localStorage.setItem('boss_alarms', JSON.stringify(alarmData)); }
+function saveAlarms(){ localStorage.setItem('boss_alarms_v2', JSON.stringify(alarmData)); }
 
-function renderDailyList(){
-  const el = document.getElementById('alarm-list-daily');
-  if(!el) return;
-  const items = alarmData.daily;
-  if(!items || !items.length){ el.innerHTML='<div class="alarm-empty">알람이 없어요</div>'; return; }
-  el.innerHTML = items.map((a,i)=>`
-    <div class="alarm-row">
-      <span class="alarm-row-time">${a.time}</span>
-      <span class="alarm-row-label">${a.label}</span>
-      <label class="alarm-toggle">
-        <input type="checkbox" ${a.on?'checked':''} onchange="toggleDailyAlarm(${i},this.checked)">
-        <span class="alarm-toggle-sl"></span>
-      </label>
-      <button class="alarm-btn-edit" onclick="startAlarmEdit(this,'daily',null,${i})">수정</button>
-      <button class="alarm-row-del" onclick="delDailyAlarm(${i})">삭제</button>
-    </div>`).join('');
+function toggleDayCheck(el, day){
+  if(selectedDays.has(day)){
+    selectedDays.delete(day); el.classList.remove('checked');
+  } else {
+    if(day==='매일'){
+      ['월','화','수','목','금','토','일'].forEach(d=>selectedDays.delete(d));
+      document.querySelectorAll('#alarm-day-checks .day-check-lbl').forEach(e=>{
+        if(e.textContent!=='매일') e.classList.remove('checked');
+      });
+    } else {
+      selectedDays.delete('매일');
+      document.querySelectorAll('#alarm-day-checks .day-check-lbl').forEach(e=>{
+        if(e.textContent==='매일') e.classList.remove('checked');
+      });
+    }
+    selectedDays.add(day); el.classList.add('checked');
+  }
 }
 
-function renderAllDayAlarms(){
-  const container = document.getElementById('alarm-days-all');
-  if(!container) return;
-  container.innerHTML = DAY_NAMES.map((d,i)=>{
-    const items = alarmData.day[i];
-    const rows = items && items.length
-      ? items.map((a,j)=>`
-        <div class="alarm-row">
-          <span class="alarm-row-time">${a.time}</span>
-          <span class="alarm-row-label">${a.label}</span>
-          <label class="alarm-toggle">
-            <input type="checkbox" ${a.on?'checked':''} onchange="toggleDayAlarm(${i},${j},this.checked)">
-            <span class="alarm-toggle-sl"></span>
-          </label>
-          <button class="alarm-btn-edit" onclick="startAlarmEdit(this,'day',${i},${j})">수정</button>
-          <button class="alarm-row-del" onclick="delDayAlarm(${i},${j})">삭제</button>
-        </div>`).join('')
-      : '<div class="alarm-empty">알람 없음</div>';
+function addNewAlarm(){
+  const time  = document.getElementById('new-alarm-time').value;
+  const label = (document.getElementById('new-alarm-label').value||'').trim()||'알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  if(!selectedDays.size){ alert('요일을 선택해주세요!'); return; }
+  const newId = Math.max(0,...alarmData.alarms.map(a=>a.id),0)+1;
+  alarmData.alarms.push({id:newId, time, label, days:[...selectedDays], on:true});
+  alarmData.alarms.sort((a,b)=>a.time.localeCompare(b.time));
+  saveAlarms();
+  document.getElementById('new-alarm-time').value='';
+  document.getElementById('new-alarm-label').value='';
+  selectedDays.clear();
+  document.querySelectorAll('#alarm-day-checks .day-check-lbl').forEach(e=>e.classList.remove('checked'));
+  renderAlarmList();
+}
+
+function renderAlarmList(){
+  const el = document.getElementById('alarm-list-all');
+  if(!el) return;
+  if(!alarmData.alarms.length){
+    el.innerHTML='<div class="alarm-empty">등록된 알람이 없어요</div>'; return;
+  }
+  el.innerHTML = alarmData.alarms.map(a=>{
+    if(alarmEditId===a.id) return buildAlarmEditForm(a);
+    const isDaily = a.days.includes('매일');
+    const tags = isDaily
+      ? '<span class="alarm-day-tag daily">매일</span>'
+      : a.days.map(d=>`<span class="alarm-day-tag">${d}</span>`).join('');
     return `
-      <div class="alarm-day-section">
-        <div class="alarm-day-header">${d}요일</div>
-        <div id="alarm-day-list-${i}">${rows}</div>
-        <div class="alarm-day-addrow">
-          <input type="time" class="alarm-time-input" id="day-time-${i}">
-          <input type="text" class="alarm-label-input" id="day-label-${i}" placeholder="알람 이름" maxlength="30">
-          <button class="alarm-add-btn" onclick="addDayAlarmFor(${i})">+ 추가</button>
+    <div class="alarm-row">
+      <div class="alarm-row-left">
+        <div class="alarm-row-meta">
+          <span class="alarm-row-time">${a.time}</span>
+          <span class="alarm-row-lbl">${a.label}</span>
         </div>
-      </div>`;
+        <div class="alarm-day-tags">${tags}</div>
+      </div>
+      <label class="alarm-toggle">
+        <input type="checkbox" ${a.on?'checked':''} onchange="toggleAlarmOn(${a.id},this.checked)">
+        <span class="alarm-toggle-sl"></span>
+      </label>
+      <button class="alarm-btn-edit" onclick="startAlarmEdit(${a.id})">수정</button>
+      <button class="alarm-row-del"  onclick="delAlarm(${a.id})">삭제</button>
+    </div>`;
   }).join('');
 }
 
-function renderAllAlarmLists(){
-  renderDailyList();
-  renderAllDayAlarms();
-}
-
-function addAlarm(type){
-  const timeEl  = document.getElementById('daily-time');
-  const labelEl = document.getElementById('daily-label');
-  const time  = timeEl.value;
-  const label = labelEl.value.trim() || '알람';
-  if(!time){ alert('시간을 선택해주세요!'); return; }
-  alarmData.daily.push({time, label, on:true});
-  alarmData.daily.sort((a,b)=>a.time.localeCompare(b.time));
-  saveAlarms(); renderDailyList();
-  timeEl.value=''; labelEl.value='';
-}
-
-function addDayAlarmFor(dayIdx){
-  const timeEl  = document.getElementById('day-time-'+dayIdx);
-  const labelEl = document.getElementById('day-label-'+dayIdx);
-  const time  = timeEl.value;
-  const label = labelEl.value.trim() || '알람';
-  if(!time){ alert('시간을 선택해주세요!'); return; }
-  alarmData.day[dayIdx].push({time, label, on:true});
-  alarmData.day[dayIdx].sort((a,b)=>a.time.localeCompare(b.time));
-  saveAlarms(); renderAllDayAlarms();
-}
-
-function startAlarmEdit(btn, type, dayIdx, idx){
-  const row = btn.closest('.alarm-row');
-  const a = type==='daily' ? alarmData.daily[idx] : alarmData.day[dayIdx][idx];
-  const saveStr = type==='daily'
-    ? `saveAlarmEdit('daily',null,${idx})`
-    : `saveAlarmEdit('day',${dayIdx},${idx})`;
-  row.outerHTML = `
+function buildAlarmEditForm(a){
+  const dayBtns = ['매일','월','화','수','목','금','토','일'].map(d=>
+    `<span class="day-check-lbl${a.days.includes(d)?' checked':''}" onclick="toggleEditDay(this,'${d}')">${d}</span>`
+  ).join('');
+  return `
   <div class="alarm-row-edit-form">
     <div class="alarm-edit-top">
       <input type="time" class="alarm-time-input" id="ea-time" value="${a.time}">
-      <input type="text" class="alarm-label-input" id="ea-label" value="${a.label}" placeholder="알람 이름" maxlength="30">
+      <input type="text" class="alarm-label-input" id="ea-label" value="${a.label}" maxlength="30">
     </div>
+    <div class="alarm-day-checks" id="ea-days">${dayBtns}</div>
     <div class="inline-btns">
-      <button class="ibtn ibtn-cancel" onclick="cancelAlarmEdit('${type}')">취소</button>
-      <button class="ibtn ibtn-save" onclick="${saveStr}">저장</button>
+      <button class="ibtn ibtn-cancel" onclick="cancelAlarmEdit()">취소</button>
+      <button class="ibtn ibtn-save"   onclick="saveAlarmEdit(${a.id})">저장</button>
     </div>
   </div>`;
 }
 
-function cancelAlarmEdit(type){
-  if(type==='daily') renderDailyList(); else renderAllDayAlarms();
+function startAlarmEdit(id){
+  alarmEditId=id;
+  const a=alarmData.alarms.find(x=>x.id===id);
+  editSelDays=new Set(a?a.days:[]);
+  renderAlarmList();
+  setTimeout(()=>document.querySelector('.alarm-row-edit-form')?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
-function saveAlarmEdit(type, dayIdx, idx){
-  const time  = document.getElementById('ea-time').value;
-  const label = (document.getElementById('ea-label').value||'').trim() || '알람';
-  if(!time){ alert('시간을 선택해주세요!'); return; }
-  if(type==='daily'){
-    alarmData.daily[idx] = {...alarmData.daily[idx], time, label};
-    alarmData.daily.sort((a,b)=>a.time.localeCompare(b.time));
-    saveAlarms(); renderDailyList();
+function toggleEditDay(el, day){
+  if(editSelDays.has(day)){
+    editSelDays.delete(day); el.classList.remove('checked');
   } else {
-    alarmData.day[dayIdx][idx] = {...alarmData.day[dayIdx][idx], time, label};
-    alarmData.day[dayIdx].sort((a,b)=>a.time.localeCompare(b.time));
-    saveAlarms(); renderAllDayAlarms();
+    if(day==='매일'){
+      ['월','화','수','목','금','토','일'].forEach(d=>editSelDays.delete(d));
+      document.querySelectorAll('#ea-days .day-check-lbl').forEach(e=>{if(e.textContent!=='매일')e.classList.remove('checked');});
+    } else {
+      editSelDays.delete('매일');
+      document.querySelectorAll('#ea-days .day-check-lbl').forEach(e=>{if(e.textContent==='매일')e.classList.remove('checked');});
+    }
+    editSelDays.add(day); el.classList.add('checked');
   }
 }
 
-function toggleDailyAlarm(idx, on){ alarmData.daily[idx].on=on; saveAlarms(); }
-function toggleDayAlarm(dayIdx, idx, on){ alarmData.day[dayIdx][idx].on=on; saveAlarms(); }
+function cancelAlarmEdit(){ alarmEditId=null; renderAlarmList(); }
 
-function delDailyAlarm(idx){
+function saveAlarmEdit(id){
+  const time  = document.getElementById('ea-time').value;
+  const label = (document.getElementById('ea-label').value||'').trim()||'알람';
+  if(!time){ alert('시간을 선택해주세요!'); return; }
+  if(!editSelDays.size){ alert('요일을 선택해주세요!'); return; }
+  const idx=alarmData.alarms.findIndex(a=>a.id===id);
+  if(idx>=0) alarmData.alarms[idx]={...alarmData.alarms[idx],time,label,days:[...editSelDays]};
+  alarmData.alarms.sort((a,b)=>a.time.localeCompare(b.time));
+  alarmEditId=null; saveAlarms(); renderAlarmList();
+}
+
+function toggleAlarmOn(id,on){ const a=alarmData.alarms.find(x=>x.id===id); if(a){a.on=on;saveAlarms();} }
+
+function delAlarm(id){
   if(!confirm('알람을 삭제할까요?')) return;
-  alarmData.daily.splice(idx,1); saveAlarms(); renderDailyList();
-}
-function delDayAlarm(dayIdx, idx){
-  if(!confirm('알람을 삭제할까요?')) return;
-  alarmData.day[dayIdx].splice(idx,1); saveAlarms(); renderAllDayAlarms();
+  alarmData.alarms=alarmData.alarms.filter(a=>a.id!==id); saveAlarms(); renderAlarmList();
 }
 
-function closeAlarmNotify(){
-  document.getElementById('alarm-notify').classList.remove('show');
-}
+function closeAlarmNotify(){ document.getElementById('alarm-notify').classList.remove('show'); }
 
-function fireNotify(label, hhmm){
-  document.getElementById('alarm-notify-body').textContent = label;
-  document.getElementById('alarm-notify-time').textContent = hhmm + ' 알람';
-  const el = document.getElementById('alarm-notify');
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 8000);
+function fireNotify(label,hhmm){
+  document.getElementById('alarm-notify-body').textContent=label;
+  document.getElementById('alarm-notify-time').textContent=hhmm+' 알람';
+  const el=document.getElementById('alarm-notify');
+  el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),8000);
 }
 
 (function initAlarmChecker(){
   function check(){
-    const now = new Date();
-    const hhmm = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-    const dayIdx = (now.getDay()+6)%7; // JS 0=일 → 변환: 0=월
-    const dateStr = now.toDateString();
-
-    alarmData.daily.forEach((a,i)=>{
-      if(!a.on || a.time!==hhmm) return;
-      const k = 'D_'+i+'_'+hhmm+'_'+dateStr;
-      if(!firedSet.has(k)){ firedSet.add(k); fireNotify(a.label, hhmm); }
-    });
-    alarmData.day[dayIdx].forEach((a,i)=>{
-      if(!a.on || a.time!==hhmm) return;
-      const k = 'W_'+dayIdx+'_'+i+'_'+hhmm+'_'+dateStr;
-      if(!firedSet.has(k)){ firedSet.add(k); fireNotify(a.label, hhmm); }
+    const now=new Date();
+    const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    const todayName=WDAY_NAMES[now.getDay()];
+    const dateStr=now.toDateString();
+    alarmData.alarms.forEach(a=>{
+      if(!a.on||a.time!==hhmm) return;
+      if(!a.days.includes('매일')&&!a.days.includes(todayName)) return;
+      const k=a.id+'_'+hhmm+'_'+dateStr;
+      if(!firedSet.has(k)){firedSet.add(k);fireNotify(a.label,hhmm);}
     });
   }
-  const now = new Date();
-  const msToNext = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-  setTimeout(()=>{ check(); setInterval(check, 60000); }, msToNext);
+  const now=new Date();
+  const msToNext=(60-now.getSeconds())*1000-now.getMilliseconds();
+  setTimeout(()=>{check();setInterval(check,60000);},msToNext);
 })();
+
+function renderAllAlarmLists(){ renderAlarmList(); }
 
 // ── PC/모바일 전환 ─────────────────────────────────────────
 function setMode(m){
