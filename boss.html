@@ -1541,11 +1541,14 @@ function renderExpenses(){
     return da-db;
   });
 
+  const filteredTotal = filtered.reduce((s,e)=>s+(+e.amount||0),0);
+  const isFiltered = expBankFilter!=='전체' || expSearchQ;
   const summaryHtml = `
   <div class="exp-summary-bar">
     <div>
       <div style="font-size:.71rem;color:#AAA;margin-bottom:2px">고정 지출 합계</div>
       <div class="exp-summary-total">${_fmtAmt(total)}원</div>
+      ${isFiltered ? `<div style="font-size:.76rem;font-weight:700;color:#C4714A;margin-top:4px">📌 ${expBankFilter!=='전체'?expBankFilter:'검색'} 합계 <span style="font-size:.92rem;font-weight:900">${_fmtAmt(filteredTotal)}원</span> <span style="color:#AAA;font-weight:500">(${filtered.length}건)</span></div>` : ''}
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="exp-summary-count">${expItems.length}건</div>
