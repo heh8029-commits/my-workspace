@@ -17,10 +17,10 @@
     .bm-table-head { background: #f5f0a0; text-align: center; padding: 10px; font-size: .88rem; font-weight: 800; color: #555; border-bottom: 2px solid #d4c97a; display: flex; align-items: center; justify-content: space-between; }
     .bm-table-head-label { flex: 1; text-align: center; }
     .bm-table table { width: 100%; border-collapse: collapse; }
-    .bm-table td { border: 1px solid #e8e2a0; padding: 0; text-align: center; width: 20%; height: 44px; }
-    .bm-table td a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: .82rem; font-weight: 600; color: #1a6abf; text-decoration: none; padding: 4px 8px; transition: background .12s; }
+    .bm-table td { border: 1px solid #e8e2a0; padding: 0; text-align: center; width: 33.33%; height: 56px; }
+    .bm-table td a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1rem; font-weight: 700; color: #1a6abf; text-decoration: none; padding: 6px 12px; transition: background .12s; }
     .bm-table td a:hover { background: #fffacd; color: #e91e8c; }
-    .bm-table td.empty-cell { color: #ddd; font-size: .8rem; }
+    .bm-table td.empty-cell { color: #ddd; font-size: .9rem; }
     .bm-table td.empty-cell span { display: flex; align-items: center; justify-content: center; height: 100%; cursor: pointer; transition: background .12s; }
     .bm-table td.empty-cell span:hover { background: #fffacd; }
 
@@ -44,7 +44,7 @@
     .bm-add-row-btn:hover { border-color: #b8a800; color: #666; background: #fffacd; }
 
     /* 편집 모드일 때 td 높이 좀 크게 */
-    .edit-mode-active .bm-table td { height: 60px; }
+    .edit-mode-active .bm-table td { height: 72px; }
 
     /* ── toast ── */
     .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 24px; border-radius: 30px; font-size: .82rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 200; }
@@ -71,7 +71,7 @@
 
 <script>
 const FB_BM = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_bookmark.json';
-const COLS = 5;
+const COLS = 3;
 
 let _links = []; // [{id, name, url}]
 let _editMode = false;
