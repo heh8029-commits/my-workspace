@@ -104,15 +104,15 @@ function render(){
   // 총 슬롯 수: 내용이 있는 링크들 + 빈 셀들을 COLS 단위로 행 구성
   // 편집 모드면 맨 마지막에 빈 셀 하나 추가 (추가용)
   const slots = [..._links];
-  if(_editMode) slots.push(null); // 추가용 빈 슬롯
 
-  // COLS 단위로 행 구성, 각 행은 COLS 개의 셀
+  // 최소 10행(50슬롯) 보장
+  while(slots.length < 10 * COLS) slots.push(undefined);
+
+  // COLS 단위로 행 구성
   const rows = [];
   for(let i=0; i<slots.length; i+=COLS){
     rows.push(slots.slice(i, i+COLS));
   }
-  // 마지막 행이 없으면 빈 행 하나
-  if(rows.length === 0) rows.push([]);
 
   // 각 행을 COLS 개로 패딩
   const paddedRows = rows.map(row => {
@@ -127,11 +127,11 @@ function render(){
     html += '<tr>';
     row.forEach((item, ci) => {
       if(item === undefined){
-        // 빈 칸 (패딩)
-        html += `<td class="empty-cell"><span>—</span></td>`;
-      } else if(item === null){
-        // 추가용 빈 슬롯 (편집 모드)
-        html += `<td class="empty-cell"><span onclick="addCell()">＋</span></td>`;
+        if(_editMode){
+          html += `<td class="empty-cell"><span onclick="addCell()">＋</span></td>`;
+        } else {
+          html += `<td class="empty-cell"><span>—</span></td>`;
+        }
       } else {
         // 실제 링크
         const idx = _links.findIndex(l => l.id === item.id);
