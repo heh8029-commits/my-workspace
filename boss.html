@@ -588,6 +588,45 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .child-ev-save{width:100%;padding:10px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:800;cursor:pointer;margin-top:4px}
 .child-tt-color-sw{width:20px;height:20px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;display:inline-block;flex-shrink:0;transition:border .1s}
 .child-tt-color-sw.on{border-color:#444}
+/* ── 뷰티 관리 ── */
+.bt-wrap{max-width:1200px}
+.bt-section-tabs{display:flex;gap:6px;margin-bottom:12px}
+.bt-sec-btn{padding:8px 20px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s}
+.bt-sec-btn.on{background:#C4714A;border-color:#C4714A;color:#fff}
+.bt-cat-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.bt-cat-tab{padding:5px 13px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.74rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s}
+.bt-cat-tab.on{background:#C4714A;border-color:#C4714A;color:#fff}
+.bt-cat-wrap{display:inline-flex;align-items:center;gap:1px}
+.bt-cat-del{width:14px;height:14px;border:none;background:rgba(200,70,70,.15);border-radius:50%;font-size:.52rem;cursor:pointer;color:#C04040;padding:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;margin-left:-4px}
+.bt-cat-del:hover{background:#E03A3A;color:#fff}
+.bt-cat-edit-btn{padding:3px 8px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.72rem;cursor:pointer;color:#AAA;flex-shrink:0}
+.bt-cat-edit-btn.on{background:#FFF3CC;border-color:#EED888;color:#AA8800}
+.bt-cat-add-row{display:flex;gap:5px;align-items:center;margin-top:7px;flex-wrap:wrap;width:100%}
+.bt-cat-emoji-inp{width:36px;padding:4px 5px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.9rem;text-align:center;font-family:inherit}
+.bt-cat-emoji-inp:focus{border-color:#C4714A;outline:none}
+.bt-add-form{background:#FDFAF7;border-radius:14px;padding:12px;margin-bottom:14px;border:1px solid #EDE8E1}
+.bt-add-row{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-start}
+.bt-inp{padding:7px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.78rem;font-family:inherit;color:#333;background:#fff}
+.bt-inp:focus{border-color:#C4714A;outline:none}
+.bt-color-dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.bt-color-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;flex-shrink:0;transition:border .1s}
+.bt-color-dot.on{border-color:#444}
+.bt-grid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.bt-card{width:210px;min-height:130px;border-radius:14px;padding:13px 12px 10px;position:relative;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.07);transition:box-shadow .13s}
+.bt-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.bt-card-actions{position:absolute;top:6px;right:6px;display:flex;gap:3px;opacity:0;transition:opacity .13s}
+.bt-card:hover .bt-card-actions{opacity:1}
+.bt-card-action{width:20px;height:20px;border:none;border-radius:50%;background:rgba(0,0,0,.12);color:#444;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.bt-card-action:hover{background:rgba(0,0,0,.25)}
+.bt-card-title{font-size:.85rem;font-weight:800;color:#333;line-height:1.4;word-break:break-word;padding-right:46px}
+.bt-card-title a,.bt-card-title a:visited{color:#1a5eff;text-decoration:none}
+.bt-card-title a:hover{text-decoration:underline}
+.bt-card-memo{font-size:.76rem;color:#555;line-height:1.5;word-break:break-word;white-space:pre-wrap;flex:1}
+.bt-card-memo a{color:#1a5eff;text-decoration:none}
+.bt-card-url{font-size:.62rem;color:#999;word-break:break-all;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-card-cat{font-size:.62rem;font-weight:700;color:#AAA;margin-top:auto;padding-top:4px}
+.bt-card-edit-wrap{display:flex;flex-direction:column;gap:6px;width:100%}
+.bt-add-btn{padding:7px 14px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap}
 /* ── 보스 달력 ── */
 .boss-cal-wrap{max-width:900px}
 .boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -1122,6 +1161,20 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- 뷰티 관리 페이지 -->
+    <div class="page" id="page-beauty">
+      <div class="bt-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">💄 뷰티 관리</div>
+          <button onclick="fetchBtData().then(()=>renderBt())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div class="bt-section-tabs" id="bt-section-tabs"></div>
+        <div class="bt-cat-row" id="bt-cat-tabs"></div>
+        <div class="bt-add-form" id="bt-add-form"></div>
+        <div class="bt-grid" id="bt-grid"></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1380,6 +1433,9 @@ function setSub(id, label){
   } else if(id==='child'){
     showPage('child');
     fetchChildData().then(()=>renderChild());
+  } else if(id==='beauty'){
+    showPage('beauty');
+    fetchBtData().then(()=>renderBt());
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -2449,6 +2505,8 @@ function hardRefresh(){
     Promise.all([fetchCalEvents(),fetchExpenses(),fetchEvData()]).then(()=>{bossRenderCal();renderEventRec();});
   } else if(pid==='page-checklist'){
     fetchClData().then(()=>renderCl());
+  } else if(pid==='page-beauty'){
+    fetchBtData().then(()=>renderBt());
   } else if(pid==='page-alarm'){
     Promise.all([fetchAlarms(),fetchCalEvents()]).then(()=>{renderAlarmList();renderCalAlarms();});
   } else if(pid==='page-expense'){
@@ -3639,6 +3697,196 @@ function saveTvMemoEdit(id){
   if(!text){cancelTvMemoEdit();return;}
   const m=_tvData.prep_memos.find(x=>x.id===id);
   if(m){m.text=text;tvMemoEditId=null;_tvRenderPrepMemos();_tvDebounceSave();}
+}
+
+// ── 뷰티 관리 ─────────────────────────────────────────────────
+const FB_BEAUTY = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_beauty.json';
+const BT_COLORS = ['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
+const BT_DEFAULT_CATS = {
+  beauty:[{id:'face',name:'얼굴',emoji:'✨'},{id:'hair',name:'헤어',emoji:'💇'},{id:'body',name:'바디',emoji:'🧴'}],
+  shop:  [{id:'clothes',name:'의류',emoji:'👕'},{id:'shoes',name:'신발',emoji:'👟'},{id:'acc',name:'악세서리',emoji:'💍'}]
+};
+let _btData = {beauty:{cats:[...BT_DEFAULT_CATS.beauty],cards:[]},shop:{cats:[...BT_DEFAULT_CATS.shop],cards:[]}};
+let _btSection='beauty', _btFilter='전체', _btCatEdit=false, _btColor=BT_COLORS[0], _btSaveTimer=null;
+
+async function fetchBtData(){
+  try{
+    const r=await fetch(FB_BEAUTY+'?t='+Date.now());
+    if(r.ok){
+      const d=await r.json();
+      if(d&&typeof d==='object'){
+        ['beauty','shop'].forEach(s=>{
+          _btData[s]={
+            cats:Array.isArray(d[s]?.cats)?d[s].cats:[...BT_DEFAULT_CATS[s]],
+            cards:Array.isArray(d[s]?.cards)?d[s].cards:[]
+          };
+        });
+      }
+    }
+  }catch(e){}
+}
+async function _saveBtData(){
+  try{await fetch(FB_BEAUTY,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_btData)});}catch(e){}
+}
+function _btDebounceSave(){clearTimeout(_btSaveTimer);_btSaveTimer=setTimeout(_saveBtData,800);}
+
+function renderBt(){_btRenderSectionTabs();_btRenderCatTabs();_btRenderAddForm();_btRenderCards();}
+
+function _btRenderSectionTabs(){
+  const el=document.getElementById('bt-section-tabs');if(!el) return;
+  el.innerHTML=[{id:'beauty',label:'💄 뷰티 루틴'},{id:'shop',label:'🛍️ 쇼핑몰'}]
+    .map(s=>`<button class="bt-sec-btn${_btSection===s.id?' on':''}" onclick="btSetSection('${s.id}')">${s.label}</button>`).join('');
+}
+function _btRenderCatTabs(){
+  const el=document.getElementById('bt-cat-tabs');if(!el) return;
+  const cats=_btData[_btSection].cats;
+  let html=`<button class="bt-cat-tab${_btFilter==='전체'?' on':''}" onclick="btSetFilter('전체')">🔍 전체</button>`;
+  cats.forEach(c=>{
+    html+=`<span class="bt-cat-wrap">
+      <button class="bt-cat-tab${_btFilter===c.id?' on':''}" onclick="btSetFilter('${c.id}')">${c.emoji} ${c.name}</button>
+      ${_btCatEdit?`<button class="bt-cat-del" onclick="deleteBtCat('${c.id}')" title="삭제">✕</button>`:''}
+    </span>`;
+  });
+  html+=`<button class="bt-cat-edit-btn${_btCatEdit?' on':''}" onclick="toggleBtCatEdit()">⚙️</button>`;
+  if(_btCatEdit){
+    html+=`<div class="bt-cat-add-row">
+      <input id="bt-new-cat-emoji" class="bt-cat-emoji-inp" placeholder="✨" maxlength="2">
+      <input id="bt-new-cat-name" class="bt-inp" placeholder="카테고리 이름..." maxlength="12" style="width:120px" onkeydown="if(event.key==='Enter')addBtCat()">
+      <button class="bt-add-btn" style="font-size:.73rem;padding:5px 10px" onclick="addBtCat()">+ 추가</button>
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+function _btRenderAddForm(){
+  const el=document.getElementById('bt-add-form');if(!el) return;
+  const cats=_btData[_btSection].cats;
+  const catOpts=cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+  const dots=BT_COLORS.map(c=>`<span class="bt-color-dot${c===_btColor?' on':''}" style="background:${c}" onclick="btSelColor('${c}')"></span>`).join('');
+  el.innerHTML=`
+    <div class="bt-add-row">
+      <select id="bt-add-cat" class="bt-inp" style="flex-shrink:0">${catOpts}</select>
+      <input id="bt-add-title" class="bt-inp" placeholder="제목..." maxlength="80" style="flex:1;min-width:100px">
+      <input id="bt-add-url" class="bt-inp" placeholder="URL (선택)..." maxlength="500" style="flex:2;min-width:150px">
+    </div>
+    <div class="bt-add-row" style="margin-top:7px">
+      <textarea id="bt-add-memo" class="bt-inp" placeholder="메모 (선택)..." rows="2" style="flex:1;resize:vertical;min-height:46px"></textarea>
+      <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-end;flex-shrink:0">
+        <div class="bt-color-dots">${dots}</div>
+        <button class="bt-add-btn" onclick="addBtCard()">➕ 추가</button>
+      </div>
+    </div>`;
+}
+function _btCardHtml(card, sec){
+  if(card._editing){
+    const catOpts=sec.cats.map(c=>`<option value="${c.id}"${c.id===card.catId?' selected':''}>${c.emoji} ${c.name}</option>`).join('');
+    const dots=BT_COLORS.map(c=>`<span class="bt-color-dot${c===card.color?' on':''}" style="background:${c}" onclick="btCardEditColor('${card.id}','${c}')"></span>`).join('');
+    return `<div class="bt-card" style="background:${card.color||BT_COLORS[0]};width:280px">
+      <div class="bt-card-edit-wrap">
+        <select id="bted-cat-${card.id}" class="bt-inp" style="width:100%">${catOpts}</select>
+        <input id="bted-title-${card.id}" class="bt-inp" value="${(card.title||'').replace(/"/g,'&quot;')}" placeholder="제목..." style="width:100%;box-sizing:border-box">
+        <input id="bted-url-${card.id}" class="bt-inp" value="${(card.url||'').replace(/"/g,'&quot;')}" placeholder="URL..." style="width:100%;box-sizing:border-box">
+        <textarea id="bted-memo-${card.id}" class="bt-inp" rows="3" style="width:100%;box-sizing:border-box;resize:vertical">${(card.memo||'').replace(/</g,'&lt;')}</textarea>
+        <div class="bt-color-dots">${dots}</div>
+        <div style="display:flex;gap:5px">
+          <button onclick="saveBtEdit('${card.id}')" class="bt-add-btn" style="flex:1;padding:6px;font-size:.76rem">저장</button>
+          <button onclick="cancelBtEdit('${card.id}')" style="flex:1;padding:6px;border-radius:9px;border:none;background:rgba(0,0,0,.1);font-size:.76rem;cursor:pointer;font-weight:700">취소</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  const cat=sec.cats.find(c=>c.id===card.catId);
+  const catLabel=cat?`${cat.emoji} ${cat.name}`:'';
+  const titleHtml=card.title
+    ?(card.url?`<a href="${card.url.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">${(card.title||'').replace(/</g,'&lt;')}</a>`:`${(card.title||'').replace(/</g,'&lt;')}`)
+    :'';
+  const shortUrl=card.url?card.url.replace(/^https?:\/\/(www\.)?/,'').slice(0,38):'';
+  return `<div class="bt-card" style="background:${card.color||BT_COLORS[0]}">
+    <div class="bt-card-actions">
+      <button class="bt-card-action" onclick="startBtEdit('${card.id}')">✏️</button>
+      <button class="bt-card-action" onclick="deleteBtCard('${card.id}')" style="background:rgba(200,60,60,.18)">✕</button>
+    </div>
+    ${titleHtml?`<div class="bt-card-title">${titleHtml}</div>`:''}
+    ${card.memo?`<div class="bt-card-memo">${_linkify(card.memo)}</div>`:''}
+    ${catLabel?`<div class="bt-card-cat">${catLabel}</div>`:''}
+    ${shortUrl&&!card.title?`<div class="bt-card-url">🔗 ${shortUrl}</div>`:''}
+  </div>`;
+}
+function _btRenderCards(){
+  const el=document.getElementById('bt-grid');if(!el) return;
+  const sec=_btData[_btSection];
+  const cards=_btFilter==='전체'?sec.cards:sec.cards.filter(c=>c.catId===_btFilter);
+  if(!cards.length){el.innerHTML='<div style="padding:30px;text-align:center;color:#CCC;font-size:.82rem">카드를 추가해보세요 ➕</div>';return;}
+  el.innerHTML=cards.map(c=>_btCardHtml(c,sec)).join('');
+}
+function btSetSection(s){_btSection=s;_btFilter='전체';_btCatEdit=false;renderBt();}
+function btSetFilter(f){_btFilter=f;_btRenderCards();}
+function btSelColor(c){_btColor=c;_btRenderAddForm();}
+function toggleBtCatEdit(){_btCatEdit=!_btCatEdit;_btRenderCatTabs();}
+function addBtCat(){
+  const emoji=(document.getElementById('bt-new-cat-emoji')?.value||'📌').trim()||'📌';
+  const name=document.getElementById('bt-new-cat-name')?.value.trim();
+  if(!name) return;
+  const sec=_btData[_btSection];
+  if(sec.cats.find(c=>c.name===name)){alert('이미 있는 카테고리예요');return;}
+  sec.cats.push({id:'cat_'+Date.now(),name,emoji});
+  _btDebounceSave();_btRenderCatTabs();_btRenderAddForm();
+}
+function deleteBtCat(id){
+  const sec=_btData[_btSection];
+  const cat=sec.cats.find(c=>c.id===id);
+  const cnt=sec.cards.filter(c=>c.catId===id).length;
+  if(!confirm(`'${cat?.name}' 삭제할까요?${cnt?`\n(카드 ${cnt}개도 함께 삭제)`:''}`)) return;
+  sec.cats=sec.cats.filter(c=>c.id!==id);
+  sec.cards=sec.cards.filter(c=>c.catId!==id);
+  if(_btFilter===id) _btFilter='전체';
+  _btDebounceSave();renderBt();
+}
+function addBtCard(){
+  const catId=document.getElementById('bt-add-cat')?.value||'';
+  const title=(document.getElementById('bt-add-title')?.value||'').trim();
+  const url=(document.getElementById('bt-add-url')?.value||'').trim();
+  const memo=(document.getElementById('bt-add-memo')?.value||'').trim();
+  if(!title&&!url&&!memo){alert('제목, URL, 메모 중 하나는 입력해주세요');return;}
+  _btData[_btSection].cards.unshift({id:'bt_'+Date.now(),catId,title,url,memo,color:_btColor});
+  document.getElementById('bt-add-title').value='';
+  document.getElementById('bt-add-url').value='';
+  document.getElementById('bt-add-memo').value='';
+  _btDebounceSave();_btRenderCards();
+}
+function startBtEdit(id){
+  const sec=_btData[_btSection];
+  sec.cards.forEach(c=>delete c._editing);
+  const card=sec.cards.find(c=>c.id===id);
+  if(card) card._editing=true;
+  _btRenderCards();
+  setTimeout(()=>document.getElementById('bted-title-'+id)?.focus(),40);
+}
+function cancelBtEdit(id){
+  const card=_btData[_btSection].cards.find(c=>c.id===id);
+  if(card) delete card._editing;
+  _btRenderCards();
+}
+function saveBtEdit(id){
+  const card=_btData[_btSection].cards.find(c=>c.id===id);
+  if(card){
+    card.catId=document.getElementById('bted-cat-'+id)?.value||card.catId;
+    card.title=(document.getElementById('bted-title-'+id)?.value||'').trim();
+    card.url=(document.getElementById('bted-url-'+id)?.value||'').trim();
+    card.memo=(document.getElementById('bted-memo-'+id)?.value||'').trim();
+    delete card._editing;
+  }
+  _btDebounceSave();_btRenderCards();
+}
+function deleteBtCard(id){
+  if(!confirm('카드를 삭제할까요?')) return;
+  const sec=_btData[_btSection];
+  sec.cards=sec.cards.filter(c=>c.id!==id);
+  _btDebounceSave();_btRenderCards();
+}
+function btCardEditColor(id,color){
+  const card=_btData[_btSection].cards.find(c=>c.id===id);
+  if(card) card.color=color;
+  _btRenderCards();
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
