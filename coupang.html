@@ -38,6 +38,8 @@ td.today{background:#fffbe6!important}
 td.today.date-cell{color:#e8234a;font-weight:800}
 tr.sunday td.day-cell{color:#e8234a}
 tr.saturday td.day-cell{color:#1a5eff}
+tr.saturday{background:#eef6ff}
+tr.sunday{background:#fff0f0}
 tr.today-row{background:#fffbe6}
 
 .empty-msg{text-align:center;padding:60px;color:#ccc;font-size:.9rem}
@@ -82,6 +84,8 @@ tr.today-row{background:#fffbe6}
 .sales-table td.sd-col{color:#888}
 .sales-table tr.today-sales{background:#fffbe6}
 .sales-table tr.today-sales td.date-col{color:#e8234a}
+.sales-table tr.row-sat{background:#eef6ff}
+.sales-table tr.row-sun{background:#fff0f0}
 .sales-table tfoot td{padding:8px 14px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:right;font-size:.82rem;white-space:nowrap}
 .sales-table tfoot td:last-child{border-right:none}
 .sales-table tfoot tr.foot-sum{background:#f4f4f6;font-weight:800}
@@ -139,8 +143,8 @@ tr.today-row{background:#fffbe6}
 <body>
 
 <div class="brand-bar">
-  <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">그로스매출 미리토퍼</div>
-  <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">그로스매출 몽몽토퍼</div>
+  <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">그로스-미리토퍼</div>
+  <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">그로스-몽몽토퍼</div>
   <div class="view-tab" data-view="sales" onclick="setView('sales')">매출</div>
   <div class="view-tab" data-view="ad" onclick="setView('ad')">광고성과</div>
   <div class="view-tab" data-view="log" onclick="setView('log')">로그</div>
@@ -607,8 +611,10 @@ function renderSales() {
     const [mm, dd] = date.split('/');
     const dow = dayOfWeek(`2026-${mm}-${dd}`);
     const isWeekend = dow === '토' || dow === '일';
+    const isSat = dow === '토', isSun = dow === '일';
+    const trCls = [isToday?'today-sales':'', isSat?'row-sat':'', isSun?'row-sun':''].filter(Boolean).join(' ');
 
-    return `<tr class="${isToday ? 'today-sales' : ''}">
+    return `<tr class="${trCls}">
       <td class="date-col${isWeekend ? ' weekend' : ''}">${date} (${dow})</td>
       ${inputCell(date, 'manualRg', rg)}
       ${inputCell(date, 'manualSd', sd)}
