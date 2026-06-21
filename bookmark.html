@@ -25,6 +25,12 @@
     .bm-table td.empty-cell span.addable { cursor: pointer; transition: background .12s; }
     .bm-table td.empty-cell span.addable:hover { background: #fffacd; }
 
+    /* ── 타이틀 행 ── */
+    .bm-table tr.title-row td { background: #fffde8; height: 42px; border-bottom: 2px solid #e8e2a0; }
+    .bm-table tr.title-row td span { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1rem; font-weight: 800; color: #888; }
+    .bm-table tr.title-row td input { border: none; background: transparent; text-align: center; font-size: 1rem; font-weight: 800; color: #666; width: 100%; height: 100%; font-family: inherit; outline: none; padding: 0 8px; }
+    .bm-table tr.title-row td input::placeholder { color: #CCC; font-weight: 400; }
+
     /* ── 편집 버튼 ── */
     .edit-toggle-btn { padding: 4px 12px; border-radius: 20px; border: 1.5px solid #d4c97a; background: #fff; font-size: .75rem; font-weight: 700; cursor: pointer; color: #888; transition: all .13s; }
     .edit-toggle-btn:hover, .edit-toggle-btn.on { background: #f5f0a0; border-color: #b8a800; color: #555; }
@@ -75,6 +81,7 @@ const FB_BM = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_b
 const COLS = 3;
 
 let _links = []; // [{id, name, url}]
+let _colTitles = ['', '', '']; // 3열 타이틀
 let _editMode = false;
 let _saveTimer = null;
 
@@ -85,6 +92,7 @@ async function load(){
     const r = await fetch(FB_BM + '?t=' + Date.now());
     const d = await r.json();
     if(d && Array.isArray(d.links)) _links = d.links;
+    if(d && Array.isArray(d.colTitles)) _colTitles = d.colTitles;
     render();
   } catch(e){
     document.getElementById('bm-table').innerHTML = '<div style="padding:20px;text-align:center;color:#CCC">불러오기 실패 — 새로고침</div>';
@@ -95,7 +103,7 @@ function save(){
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(async ()=>{
     try{
-      await fetch(FB_BM, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({links: _links})});
+      await fetch(FB_BM, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({links: _links, colTitles: _colTitles})});
     } catch(e){ showToast('저장 실패'); }
   }, 600);
 }
@@ -124,6 +132,18 @@ function render(){
   const tableClass = _editMode ? 'edit-mode-active' : '';
 
   let html = `<table class="${tableClass}"><tbody>`;
+
+  // 타이틀 행
+  html += '<tr class="title-row">';
+  for(let c=0; c<COLS; c++){
+    if(_editMode){
+      html += `<td><input value="${esc(_colTitles[c]||'')}" placeholder="타이틀 입력" oninput="_colTitles[${c}]=this.value;save()"></td>`;
+    } else {
+      html += `<td><span>${esc(_colTitles[c]||'')}</span></td>`;
+    }
+  }
+  html += '</tr>';
+
   paddedRows.forEach(row => {
     html += '<tr>';
     row.forEach((item, ci) => {
