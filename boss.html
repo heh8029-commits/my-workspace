@@ -795,6 +795,18 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
         <div class="boss-cal-grid" id="boss-cal-grid"></div>
         <div class="boss-cal-panel" id="boss-cal-panel" style="display:none"></div>
+
+        <!-- 경조사 기록 -->
+        <div style="margin-top:28px;border-top:1.5px solid #EDE8E1;padding-top:18px">
+          <div style="font-size:.82rem;font-weight:800;color:#555;margin-bottom:12px">🎊 경조사 기록</div>
+          <div class="bm-add" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            <input class="bm-input" id="ev-rec-date" type="text" placeholder="날짜 (예: 2025.03.12)" style="max-width:140px;flex:none">
+            <input class="bm-input" id="ev-rec-name" type="text" placeholder="이름/관계" style="max-width:110px;flex:none">
+            <input class="bm-input" id="ev-rec-memo" type="text" placeholder="생일/결혼/기타..." style="flex:1;min-width:120px" onkeydown="if(event.key==='Enter')addEventRec()">
+            <button class="bm-add-btn" onclick="addEventRec()">➕ 추가</button>
+          </div>
+          <div id="ev-rec-list"></div>
+        </div>
       </div>
     </div>
 
@@ -1176,7 +1188,6 @@ const MENUS = [
     {id:'child',      label:'초당진우 일정',  emoji:'🎒'},
     {id:'card',       label:'카드관리',       emoji:'💴'},
     {id:'travel',     label:'여행갈때',       emoji:'✈️'},
-    {id:'event',      label:'경조사 기록',    emoji:'🎊'},
     {id:'beauty',     label:'뷰티관리',       emoji:'💄'},
   ]},
   {id:'asset', label:'자산', emoji:'💼', sub:[
@@ -1315,7 +1326,7 @@ function setSub(id, label){
     showPage('iframe');
   } else if(id==='calendar'){
     showPage('calendar');
-    Promise.all([fetchCalEvents(), fetchExpenses()]).then(()=>bossRenderCal());
+    Promise.all([fetchCalEvents(), fetchExpenses(), fetchEvData()]).then(()=>{bossRenderCal();renderEventRec();});
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
   } else if(id==='expense'){
@@ -2398,7 +2409,7 @@ function hardRefresh(){
   } else if(pid==='page-child'){
     fetchChildData().then(()=>renderChild());
   } else if(pid==='page-calendar'){
-    Promise.all([fetchCalEvents(),fetchExpenses()]).then(()=>bossRenderCal());
+    Promise.all([fetchCalEvents(),fetchExpenses(),fetchEvData()]).then(()=>{bossRenderCal();renderEventRec();});
   } else if(pid==='page-alarm'){
     Promise.all([fetchAlarms(),fetchCalEvents()]).then(()=>{renderAlarmList();renderCalAlarms();});
   } else if(pid==='page-expense'){
@@ -2420,7 +2431,72 @@ function gotoCalendar(){
 }
 
 // ── 보스 달력 ─────────────────────────────────────────────────
-const FB_CAL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_calendar.json';
+const FB_CAL    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_calendar.json';
+const FB_EVENTS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_events.json';
+let _evData = {list:[]};
+async function fetchEvData(){
+  try{
+    const r=await fetch(FB_EVENTS+'?t='+Date.now());
+    if(r.ok){const d=await r.json();if(d&&Array.isArray(d.list))_evData={list:d.list};}
+  }catch(e){}
+}
+async function _saveEvData(){
+  try{await fetch(FB_EVENTS,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_evData)});}catch(e){}
+}
+function renderEventRec(){
+  const el=document.getElementById('ev-rec-list');if(!el) return;
+  const items=[..._evData.list].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if(!items.length){el.innerHTML='<div style="text-align:center;padding:20px;color:#CCC;font-size:.8rem">기록을 추가해요 🎊</div>';return;}
+  el.innerHTML=items.map(it=>{
+    if(it._editing) return `<div style="display:flex;gap:6px;align-items:center;padding:8px 10px;border:1.5px solid #ffe080;border-radius:10px;margin-bottom:6px;background:#fffdf0;flex-wrap:wrap">
+      <input id="er-ed-date-${it.id}" type="text" value="${(it.date||'').replace(/</g,'&lt;')}" placeholder="날짜" style="border:1px solid #ffe080;border-radius:6px;padding:4px 8px;font-size:.78rem;font-family:inherit;outline:none;width:110px">
+      <input id="er-ed-name-${it.id}" type="text" value="${(it.name||'').replace(/</g,'&lt;')}" placeholder="이름/관계" style="border:1px solid #ffe080;border-radius:6px;padding:4px 8px;font-size:.78rem;font-family:inherit;outline:none;width:90px">
+      <input id="er-ed-memo-${it.id}" type="text" value="${(it.memo||'').replace(/</g,'&lt;')}" placeholder="메모" style="border:1px solid #ffe080;border-radius:6px;padding:4px 8px;font-size:.78rem;font-family:inherit;outline:none;flex:1;min-width:80px">
+      <button onclick="editSaveEventRec(${it.id})" style="background:#e0a800;border:none;border-radius:6px;padding:4px 10px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">저장</button>
+      <button onclick="editCancelEventRec(${it.id})" style="background:#eee;border:none;border-radius:6px;padding:4px 8px;color:#888;font-size:.78rem;cursor:pointer">취소</button>
+    </div>`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #f0e0a0;border-radius:10px;margin-bottom:6px;background:#fffdf5">
+      <span style="font-size:.74rem;color:#b08000;font-weight:700;flex-shrink:0;min-width:80px">${(it.date||'').replace(/</g,'&lt;')}</span>
+      <span style="font-size:.83rem;font-weight:700;color:#444;flex-shrink:0">${(it.name||'').replace(/</g,'&lt;')}</span>
+      <span style="font-size:.8rem;color:#888;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(it.memo||'').replace(/</g,'&lt;')}</span>
+      <button onclick="editStartEventRec(${it.id})" style="background:none;border:none;cursor:pointer;color:#CCC;font-size:.75rem" onmouseover="this.style.color='#e0a800'" onmouseout="this.style.color='#CCC'">✏️</button>
+      <button onclick="deleteEventRec(${it.id})" style="background:none;border:none;cursor:pointer;color:#CCC;font-size:.75rem" onmouseover="this.style.color='#E03A3A'" onmouseout="this.style.color='#CCC'">✕</button>
+    </div>`;
+  }).join('');
+}
+function addEventRec(){
+  const date=document.getElementById('ev-rec-date').value.trim();
+  const name=document.getElementById('ev-rec-name').value.trim();
+  const memo=document.getElementById('ev-rec-memo').value.trim();
+  if(!memo&&!name) return;
+  _evData.list.push({id:Date.now(),date,name,memo});
+  document.getElementById('ev-rec-date').value='';
+  document.getElementById('ev-rec-name').value='';
+  document.getElementById('ev-rec-memo').value='';
+  _saveEvData();renderEventRec();
+}
+function deleteEventRec(id){
+  _evData.list=_evData.list.filter(x=>x.id!==id);
+  _saveEvData();renderEventRec();
+}
+function editStartEventRec(id){
+  _evData.list.forEach(x=>x._editing=(x.id===id));
+  renderEventRec();
+}
+function editCancelEventRec(id){
+  _evData.list.forEach(x=>delete x._editing);
+  renderEventRec();
+}
+function editSaveEventRec(id){
+  _evData.list=_evData.list.map(x=>{
+    if(x.id!==id) return x;
+    return {id:x.id,
+      date:document.getElementById('er-ed-date-'+id).value.trim(),
+      name:document.getElementById('er-ed-name-'+id).value.trim(),
+      memo:document.getElementById('er-ed-memo-'+id).value.trim()};
+  });
+  _saveEvData();renderEventRec();
+}
 let _calYear = new Date().getFullYear();
 let _calMonth = new Date().getMonth()+1;
 let _calSelDate = null;
