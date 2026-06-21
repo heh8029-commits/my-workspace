@@ -1122,35 +1122,18 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
         <!-- 탭2: 정산손익 -->
         <div id="profit-tab-settle" style="display:none">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div style="font-size:.9rem;font-weight:800;color:#555">💳 월별 정산손익</div>
+          <!-- 월 선택 -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px">
+            <button onclick="stlMoveMonth(-1)" style="width:30px;height:30px;border-radius:50%;border:none;background:#F5F0EB;color:#C4714A;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
+            <div id="stl-month-label" style="font-size:.9rem;font-weight:800;color:#555;min-width:90px;text-align:center"></div>
+            <button onclick="stlMoveMonth(1)" style="width:30px;height:30px;border-radius:50%;border:none;background:#F5F0EB;color:#C4714A;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">›</button>
           </div>
-          <div class="stl-wrap">
-            <table class="stl-tbl">
-              <thead>
-                <tr>
-                  <th rowspan="2">월</th>
-                  <th colspan="3" class="stl-h-settle">정산금액</th>
-                  <th colspan="4" class="stl-h-cost">비용</th>
-                  <th colspan="2" class="stl-h-profit">손익</th>
-                </tr>
-                <tr>
-                  <th class="stl-h-settle">쿠팡</th>
-                  <th class="stl-h-settle">네이버</th>
-                  <th class="stl-h-settle">합계</th>
-                  <th class="stl-h-cost">원가</th>
-                  <th class="stl-h-cost">쿠팡광고</th>
-                  <th class="stl-h-cost">네이버광고</th>
-                  <th class="stl-h-cost">기타</th>
-                  <th class="stl-h-profit">순이익</th>
-                  <th class="stl-h-profit">이익률</th>
-                </tr>
-              </thead>
-              <tbody id="stl-body"></tbody>
-              <tfoot id="stl-foot"></tfoot>
-            </table>
-          </div>
-          <div style="font-size:.7rem;color:#CCC;margin-top:4px">직접 입력하면 자동 저장됩니다</div>
+          <!-- 요약 카드 -->
+          <div id="stl-summary-card"></div>
+          <!-- 번 돈 -->
+          <div id="stl-income-block"></div>
+          <!-- 나간 돈 -->
+          <div id="stl-expense-block"></div>
         </div>
       </div>
     </div>
@@ -2698,108 +2681,153 @@ function delCalcRow(type, idx){
 }
 
 // ── 정산손익 탭 ─────────────────────────────────────────────
+// data: { "2026-06": { income:[{name,amount}], expenses:[{name,amount}] } }
 let _stlData = {};
 const FB_STL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_pnl_settle.json';
 let _stlSaveTimer = null;
+let _stlYM = (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; })();
 
 function setProfitTab(tab){
   document.getElementById('profit-tab-memo').style.display = tab==='memo' ? '' : 'none';
   document.getElementById('profit-tab-settle').style.display = tab==='settle' ? '' : 'none';
   document.getElementById('ptab-memo').classList.toggle('active', tab==='memo');
   document.getElementById('ptab-settle').classList.toggle('active', tab==='settle');
-  if(tab==='settle') renderStl();
+  if(tab==='settle'){ _stlEnsureLoaded().then(()=>renderStl()); }
 }
 
-async function _loadStlData(){
-  try{
-    const r = await fetch(FB_STL+'?t='+Date.now());
-    const d = await r.json();
-    if(d && typeof d==='object') _stlData = d;
-  }catch(e){ _stlData = {}; }
+async function _stlEnsureLoaded(){
+  if(Object.keys(_stlData).length===0){
+    try{
+      const r=await fetch(FB_STL+'?t='+Date.now());
+      const d=await r.json();
+      if(d&&typeof d==='object') _stlData=d;
+    }catch(e){}
+  }
 }
 
 function _saveStlData(){
   clearTimeout(_stlSaveTimer);
-  _stlSaveTimer = setTimeout(async()=>{
-    try{ await fetch(FB_STL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_stlData)}); }
-    catch(e){}
-  }, 700);
+  _stlSaveTimer=setTimeout(async()=>{
+    try{ await fetch(FB_STL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_stlData)}); }catch(e){}
+  },600);
 }
 
-function updateStl(ym, field, rawVal){
-  if(!_stlData[ym]) _stlData[ym]={};
-  _stlData[ym][field] = parseInt(String(rawVal).replace(/[^\d]/g,''))||0;
+function stlMoveMonth(delta){
+  const [y,m]=_stlYM.split('-').map(Number);
+  const d=new Date(y,m-1+delta,1);
+  _stlYM=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderStl();
+}
+
+function _stlMonth(){ return (_stlData[_stlYM]||{income:[],expenses:{}}); }
+function _stlIncome(){ return _stlMonth().income||[]; }
+function _stlExpenses(){ return _stlMonth().expenses||[]; }
+
+function _stlSet(key,val){
+  if(!_stlData[_stlYM]) _stlData[_stlYM]={income:[],expenses:[]};
+  _stlData[_stlYM][key]=val;
   _saveStlData();
-  _stlRefreshCalc(ym);
-  _stlRefreshFoot();
 }
 
-function _stlRefreshCalc(ym){
-  const d=_stlData[ym]||{};
-  const cp=d.cp||0, nv=d.nv||0, cogs=d.cogs||0, cpad=d.cpad||0, nvad=d.nvad||0, other=d.other||0;
-  const settle=cp+nv, cost=cogs+cpad+nvad+other, net=settle-cost;
-  const rate=settle?(net/settle*100):0;
-  const fmtN=n=>n?n.toLocaleString('ko-KR'):'-';
-  const netCls=net>0?'stl-pos':net<0?'stl-neg':'stl-auto';
-  const row=document.querySelector(`tr[data-stl="${ym}"]`);
-  if(!row) return;
-  row.querySelector('.s-settle').textContent=fmtN(settle);
-  row.querySelector('.s-cost').textContent=fmtN(cost);
-  row.querySelector('.s-net').className='s-net '+netCls;
-  row.querySelector('.s-net').textContent=fmtN(net);
-  row.querySelector('.s-rate').className='s-rate '+netCls;
-  row.querySelector('.s-rate').textContent=settle?rate.toFixed(1)+'%':'-';
+function stlAddRow(type){
+  const arr=type==='income'?[..._stlIncome()]:[..._stlExpenses()];
+  arr.push({id:'s'+Date.now(),name:'',amount:0});
+  _stlSet(type,arr); renderStl();
+  // 마지막 이름 input 포커스
+  setTimeout(()=>{
+    const inputs=document.querySelectorAll(`.stl-${type}-name`);
+    if(inputs.length) inputs[inputs.length-1].focus();
+  },40);
+}
+function stlDelRow(type,id){
+  const arr=(type==='income'?_stlIncome():_stlExpenses()).filter(r=>r.id!==id);
+  _stlSet(type,arr); renderStl();
+}
+function stlUpdateRow(type,id,field,rawVal){
+  const arr=type==='income'?[..._stlIncome()]:[..._stlExpenses()];
+  const row=arr.find(r=>r.id===id); if(!row) return;
+  if(field==='amount') row.amount=parseInt(String(rawVal).replace(/[^\d]/g,''))||0;
+  else row[field]=rawVal;
+  _stlSet(type,arr); renderStl();
 }
 
-function _stlRefreshFoot(){
-  let tcp=0,tnv=0,tcogs=0,tcpad=0,tnvad=0,tother=0;
-  for(const d of Object.values(_stlData)){
-    tcp+=d.cp||0;tnv+=d.nv||0;tcogs+=d.cogs||0;tcpad+=d.cpad||0;tnvad+=d.nvad||0;tother+=d.other||0;
-  }
-  const gs=tcp+tnv,gc=tcogs+tcpad+tnvad+tother,gn=gs-gc,gr=gs?(gn/gs*100):0;
-  const fmtN=n=>n?n.toLocaleString('ko-KR'):'-';
-  const nc=gn>0?'stl-pos':gn<0?'stl-neg':'stl-auto';
-  document.getElementById('stl-foot').innerHTML=`<tr>
-    <td class="stl-month-td">합계</td>
-    <td>${fmtN(tcp)}</td><td>${fmtN(tnv)}</td><td class="stl-auto">${fmtN(gs)}</td>
-    <td>${fmtN(tcogs)}</td><td>${fmtN(tcpad)}</td><td>${fmtN(tnvad)}</td><td>${fmtN(tother)}</td>
-    <td class="stl-auto">${fmtN(gc)}</td>
-    <td class="${nc}">${fmtN(gn)}</td><td class="${nc}">${gs?gr.toFixed(1)+'%':'-'}</td>
-  </tr>`;
-}
+function renderStl(){
+  const [y,m]=_stlYM.split('-');
+  const label=document.getElementById('stl-month-label');
+  if(label) label.textContent=`${y}년 ${parseInt(m)}월`;
 
-async function renderStl(){
-  if(Object.keys(_stlData).length===0) await _loadStlData();
-  const now=new Date();
-  const thisYM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const months=[];
-  for(let i=11;i>=0;i--){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
-  }
-  const fmtN=n=>n?n.toLocaleString('ko-KR'):'-';
-  const inp=(ym,field,val)=>`<input class="stl-inp" type="text" inputmode="numeric"
-    value="${val?Number(val).toLocaleString('ko-KR'):''}" placeholder="0"
-    oninput="this.value=this.value.replace(/[^\\d]/g,'').replace(/\\B(?=(\\d{3})+(?!\\d))/g,',')"
-    onchange="updateStl('${ym}','${field}',this.value)">`;
-  const rows=months.map(ym=>{
-    const d=_stlData[ym]||{};
-    const cp=d.cp||0,nv=d.nv||0,cogs=d.cogs||0,cpad=d.cpad||0,nvad=d.nvad||0,other=d.other||0;
-    const settle=cp+nv,cost=cogs+cpad+nvad+other,net=settle-cost,rate=settle?(net/settle*100):0;
-    const [y,m]=ym.split('-');
-    const nc=net>0?'stl-pos':net<0?'stl-neg':'stl-auto';
-    return `<tr data-stl="${ym}" class="${ym===thisYM?'stl-thismonth':''}">
-      <td class="stl-month-td">${y}.${parseInt(m)}${ym===thisYM?' ★':''}</td>
-      <td>${inp(ym,'cp',cp)}</td><td>${inp(ym,'nv',nv)}</td>
-      <td class="stl-auto s-settle">${fmtN(settle)}</td>
-      <td>${inp(ym,'cogs',cogs)}</td><td>${inp(ym,'cpad',cpad)}</td><td>${inp(ym,'nvad',nvad)}</td><td>${inp(ym,'other',other)}</td>
-      <td class="stl-auto s-cost">${fmtN(cost)}</td>
-      <td class="s-net ${nc}">${fmtN(net)}</td>
-      <td class="s-rate ${nc}">${settle?rate.toFixed(1)+'%':'-'}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('stl-body').innerHTML=rows;
-  _stlRefreshFoot();
+  const income=_stlIncome(), expenses=_stlExpenses();
+  const totalInc=income.reduce((s,r)=>s+(+r.amount||0),0);
+  const totalExp=expenses.reduce((s,r)=>s+(+r.amount||0),0);
+  const profit=totalInc-totalExp;
+  const profitPct=totalInc?Math.round(profit/totalInc*100):0;
+  const expPct=totalInc?Math.round(totalExp/totalInc*100):0;
+  const fmtA=n=>Math.round(n).toLocaleString('ko-KR');
+
+  // 요약 카드 (기존 스타일 그대로)
+  const sumEl=document.getElementById('stl-summary-card');
+  if(sumEl) sumEl.innerHTML=`
+    <div class="pnl-summary-card">
+      <div class="pnl-summary-row">
+        <div class="pnl-summary-box">
+          <div class="pnl-summary-label">💵 번 돈</div>
+          <div class="pnl-summary-amount inc">${fmtA(totalInc)}원</div>
+        </div>
+        <div class="pnl-summary-box">
+          <div class="pnl-summary-label">💸 나간 돈</div>
+          <div class="pnl-summary-amount exp">${fmtA(totalExp)}원</div>
+          <div class="pnl-summary-sub">${expPct}% 비중</div>
+        </div>
+        <div class="pnl-summary-box">
+          <div class="pnl-summary-label">🌿 순이익</div>
+          <div class="pnl-summary-amount prf">${fmtA(profit)}원</div>
+          <div class="pnl-summary-sub">수익률 ${profitPct}%</div>
+        </div>
+      </div>
+      <div class="pnl-summary-formula">${fmtA(totalInc)} - ${fmtA(totalExp)} = ${fmtA(profit)}원</div>
+    </div>`;
+
+  // 번 돈 블록
+  const incEl=document.getElementById('stl-income-block');
+  if(incEl) incEl.innerHTML=`
+    <div class="pnl-calc-block">
+      <div class="pnl-calc-block-head">
+        <div class="pnl-calc-block-label inc">💵 이번달 번 돈</div>
+        <button class="pnl-calc-add-btn inc" onclick="stlAddRow('income')">+ 추가</button>
+      </div>
+      ${income.map(r=>`
+        <div class="pnl-calc-row">
+          <input class="pnl-calc-name stl-income-name" value="${(r.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
+            onchange="stlUpdateRow('income','${r.id}','name',this.value)" onblur="stlUpdateRow('income','${r.id}','name',this.value)">
+          <input class="pnl-calc-amount" value="${r.amount?Number(r.amount).toLocaleString('ko-KR'):''}" placeholder="금액"
+            oninput="this.value=this.value.replace(/[^\\d]/g,'').replace(/\\B(?=(\\d{3})+(?!\\d))/g,',')"
+            onchange="stlUpdateRow('income','${r.id}','amount',this.value)">
+          <button class="pnl-calc-del" onclick="stlDelRow('income','${r.id}')">✕</button>
+        </div>`).join('')}
+    </div>`;
+
+  // 나간 돈 블록
+  const expEl=document.getElementById('stl-expense-block');
+  if(expEl) expEl.innerHTML=`
+    <div class="pnl-calc-block">
+      <div class="pnl-calc-block-head">
+        <div class="pnl-calc-block-label exp">💸 이번달 나간 돈</div>
+        <button class="pnl-calc-add-btn exp" onclick="stlAddRow('expenses')">+ 추가</button>
+      </div>
+      ${expenses.map(r=>{
+        const pct=totalExp?Math.round((+r.amount||0)/totalExp*1000)/10:0;
+        return `
+        <div class="pnl-calc-row">
+          <input class="pnl-calc-name stl-expense-name" value="${(r.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
+            onchange="stlUpdateRow('expenses','${r.id}','name',this.value)" onblur="stlUpdateRow('expenses','${r.id}','name',this.value)">
+          <input class="pnl-calc-amount" value="${r.amount?Number(r.amount).toLocaleString('ko-KR'):''}" placeholder="금액"
+            oninput="this.value=this.value.replace(/[^\\d]/g,'').replace(/\\B(?=(\\d{3})+(?!\\d))/g,',')"
+            onchange="stlUpdateRow('expenses','${r.id}','amount',this.value)">
+          <span class="pnl-calc-pct">${pct}%</span>
+          <button class="pnl-calc-del" onclick="stlDelRow('expenses','${r.id}')">✕</button>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 // ── 재고관리 ─────────────────────────────────────────────────
