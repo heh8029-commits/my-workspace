@@ -459,6 +459,23 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .travel-sec-title{font-size:.86rem;font-weight:800;color:#333}
 .travel-reset-btn{padding:4px 11px;border-radius:8px;background:#FFF0EA;border:1px solid #F5B8A0;font-size:.71rem;font-weight:700;color:#C4714A;cursor:pointer}
 .travel-filter-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+/* ── 중요 체크리스트 ── */
+.cl-wrap{max-width:760px}
+.cl-filter-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.cl-tab{padding:5px 13px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.74rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s}
+.cl-tab.on{background:#C4714A;border-color:#C4714A;color:#fff}
+.cl-cat-wrap{display:inline-flex;align-items:center;gap:1px}
+.cl-cat-del{width:14px;height:14px;border:none;background:rgba(200,70,70,.15);border-radius:50%;font-size:.52rem;cursor:pointer;color:#C04040;padding:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;margin-left:-4px}
+.cl-cat-del:hover{background:#E03A3A;color:#fff}
+.cl-cat-edit-btn{padding:3px 8px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.72rem;cursor:pointer;color:#AAA}
+.cl-cat-edit-btn.on{background:#FFF3CC;border-color:#EED888;color:#AA8800}
+.cl-cat-add-row{display:flex;gap:5px;align-items:center;margin-top:7px;flex-wrap:wrap}
+.cl-cat-emoji-inp{width:36px;padding:4px 5px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.9rem;text-align:center;font-family:inherit}
+.cl-cat-emoji-inp:focus{border-color:#C4714A;outline:none}
+.cl-cat-sel{padding:6px 7px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;background:#fff;color:#333;flex-shrink:0}
+.cl-cat-sel:focus{border-color:#C4714A;outline:none}
+.cl-cat-hd{font-size:.77rem;font-weight:800;color:#C4714A;padding:6px 0 4px;margin-top:8px;border-bottom:1.5px solid #F5EFE9;display:flex;align-items:center;gap:5px}
+.cl-cat-hd:first-child{margin-top:0}
 .tv-tab{padding:5px 11px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.74rem;font-weight:700;color:#888;cursor:pointer;transition:all .13s}
 .tv-tab.on{background:#C4714A;border-color:#C4714A;color:#fff}
 .tv-cat-wrap{display:inline-flex;align-items:center;gap:1px}
@@ -807,6 +824,23 @@ body.mode-mob .mobile-subnav{display:flex!important}
           </div>
           <div id="ev-rec-list"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- 중요 체크리스트 페이지 -->
+    <div class="page" id="page-checklist">
+      <div class="cl-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">✅ 중요 체크리스트</div>
+          <button onclick="fetchClData().then(()=>renderCl())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div id="cl-filter-tabs" class="cl-filter-row"></div>
+        <div class="bm-add" style="gap:6px;margin-bottom:12px">
+          <select class="cl-cat-sel" id="cl-cat-sel"></select>
+          <input class="bm-input" id="cl-inp" placeholder="항목 추가..." maxlength="300" onkeydown="if(event.key==='Enter')addClItem()">
+          <button class="bm-add-btn" onclick="addClItem()">➕ 추가</button>
+        </div>
+        <div id="cl-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
       </div>
     </div>
 
@@ -1327,6 +1361,9 @@ function setSub(id, label){
   } else if(id==='calendar'){
     showPage('calendar');
     Promise.all([fetchCalEvents(), fetchExpenses(), fetchEvData()]).then(()=>{bossRenderCal();renderEventRec();});
+  } else if(id==='checklist'){
+    showPage('checklist');
+    fetchClData().then(()=>renderCl());
   } else if(id==='alarm'){
     showPage('alarm'); renderAllAlarmLists();
   } else if(id==='expense'){
@@ -2410,6 +2447,8 @@ function hardRefresh(){
     fetchChildData().then(()=>renderChild());
   } else if(pid==='page-calendar'){
     Promise.all([fetchCalEvents(),fetchExpenses(),fetchEvData()]).then(()=>{bossRenderCal();renderEventRec();});
+  } else if(pid==='page-checklist'){
+    fetchClData().then(()=>renderCl());
   } else if(pid==='page-alarm'){
     Promise.all([fetchAlarms(),fetchCalEvents()]).then(()=>{renderAlarmList();renderCalAlarms();});
   } else if(pid==='page-expense'){
@@ -2432,7 +2471,142 @@ function gotoCalendar(){
 
 // ── 보스 달력 ─────────────────────────────────────────────────
 const FB_CAL    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_calendar.json';
-const FB_EVENTS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_events.json';
+const FB_EVENTS    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_events.json';
+const FB_CHECKLIST = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_checklist.json';
+// ── 중요 체크리스트 ─────────────────────────────────────────────
+let _clData = {cats:[], items:[]};
+let _clFilter = '전체';
+let _clCatEdit = false;
+let _clSaveTimer = null;
+async function fetchClData(){
+  try{
+    const r=await fetch(FB_CHECKLIST+'?t='+Date.now());
+    if(r.ok){const d=await r.json();if(d&&typeof d==='object'){
+      _clData={cats:Array.isArray(d.cats)?d.cats:[],items:Array.isArray(d.items)?d.items:[]};
+    }}
+  }catch(e){}
+}
+async function _saveClData(){
+  try{await fetch(FB_CHECKLIST,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_clData)});}catch(e){}
+}
+function _clDebounceSave(){clearTimeout(_clSaveTimer);_clSaveTimer=setTimeout(_saveClData,800);}
+
+function renderCl(){_clRenderTabs();_clRenderCatSel();_clRenderItems();}
+
+function _clRenderTabs(){
+  const el=document.getElementById('cl-filter-tabs');if(!el) return;
+  let html=`<button class="cl-tab${_clFilter==='전체'?' on':''}" onclick="clSetFilter('전체')">🔍 전체</button>`;
+  _clData.cats.forEach(c=>{
+    html+=`<span class="cl-cat-wrap">
+      <button class="cl-tab${_clFilter===c.id?' on':''}" onclick="clSetFilter('${c.id}')">${c.emoji} ${c.name}</button>
+      ${_clCatEdit?`<button class="cl-cat-del" onclick="deleteClCat('${c.id}')" title="삭제">✕</button>`:''}
+    </span>`;
+  });
+  html+=`<button class="cl-cat-edit-btn${_clCatEdit?' on':''}" onclick="toggleClCatEdit()">⚙️</button>`;
+  if(_clCatEdit){
+    html+=`<div class="cl-cat-add-row">
+      <input id="cl-new-cat-emoji" class="cl-cat-emoji-inp" placeholder="📌" maxlength="2">
+      <input id="cl-new-cat-name" class="bm-input" placeholder="카테고리 이름..." maxlength="12" style="flex:none;width:120px" onkeydown="if(event.key==='Enter')addClCat()">
+      <button class="bm-add-btn" style="font-size:.75rem;padding:5px 10px" onclick="addClCat()">+ 추가</button>
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+function _clRenderCatSel(){
+  const sel=document.getElementById('cl-cat-sel');if(!sel) return;
+  sel.innerHTML=_clData.cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+}
+function clSetFilter(id){_clFilter=id;renderCl();}
+function toggleClCatEdit(){_clCatEdit=!_clCatEdit;_clRenderTabs();}
+function addClCat(){
+  const emoji=(document.getElementById('cl-new-cat-emoji')?.value||'📌').trim()||'📌';
+  const name=document.getElementById('cl-new-cat-name')?.value.trim();
+  if(!name) return;
+  if(_clData.cats.find(c=>c.name===name)){alert('이미 있는 카테고리예요');return;}
+  const id='cat_'+Date.now();
+  _clData.cats.push({id,name,emoji});
+  _clDebounceSave();_clRenderTabs();_clRenderCatSel();
+}
+function deleteClCat(id){
+  const cat=_clData.cats.find(c=>c.id===id);
+  const cnt=_clData.items.filter(i=>i.catId===id).length;
+  if(!confirm(`'${cat?.name}' 카테고리를 삭제할까요?${cnt?`\n(항목 ${cnt}개도 함께 삭제)`:''}`)) return;
+  _clData.cats=_clData.cats.filter(c=>c.id!==id);
+  _clData.items=_clData.items.filter(i=>i.catId!==id);
+  if(_clFilter===id) _clFilter='전체';
+  _clDebounceSave();renderCl();
+}
+
+function _clRenderItems(){
+  const el=document.getElementById('cl-list');if(!el) return;
+  const cats=_clFilter==='전체'?_clData.cats:_clData.cats.filter(c=>c.id===_clFilter);
+  if(!_clData.cats.length){
+    el.innerHTML='<div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">⚙️ 버튼으로 카테고리를 먼저 추가해요</div>';return;
+  }
+  let html='';
+  cats.forEach(cat=>{
+    const items=_clData.items.filter(i=>i.catId===cat.id);
+    if(_clFilter==='전체'||items.length){
+      html+=`<div class="cl-cat-hd">${cat.emoji} ${cat.name}<span style="font-size:.67rem;color:#CCC;font-weight:600;margin-left:4px">${items.filter(i=>!i.done).length}/${items.length}</span></div>`;
+    }
+    if(!items.length){
+      html+=`<div style="font-size:.75rem;color:#CCC;padding:6px 0 8px;text-align:center">항목 없음</div>`;
+    } else {
+      items.forEach(item=>{
+        if(item._editing){
+          html+=`<div class="bm-row" style="gap:6px;flex-wrap:wrap">
+            <input id="cl-edit-${item.id}" class="bm-input" value="${(item.text||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:120px" onkeydown="if(event.key==='Enter')saveClEdit('${item.id}')">
+            <button onclick="saveClEdit('${item.id}')" style="background:#C4714A;color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">저장</button>
+            <button onclick="cancelClEdit('${item.id}')" style="background:#eee;border:none;border-radius:7px;padding:4px 8px;font-size:.75rem;cursor:pointer">취소</button>
+          </div>`;
+        } else {
+          html+=`<div class="bm-row">
+            <input type="checkbox" class="bm-check" ${item.done?'checked':''} onchange="toggleClItem('${item.id}',this.checked)">
+            <div class="bm-text-wrap" style="flex:1;min-width:0">
+              <span class="bm-text"${item.done?' style="text-decoration:line-through;color:#BBB"':''}>${_linkify((item.text||'').replace(/</g,'&lt;'))}</span>
+            </div>
+            <span class="bno-icon" style="font-size:.65rem;color:#CCC;white-space:nowrap;flex-shrink:0">${item.date||''}</span>
+            <button class="bno-icon edit" onclick="startClEdit('${item.id}')">✏️</button>
+            <button class="bno-icon del" onclick="deleteClItem('${item.id}')">🗑️</button>
+          </div>`;
+        }
+      });
+    }
+  });
+  el.innerHTML=html||'<div style="text-align:center;padding:24px;color:#CCC;font-size:.8rem">항목이 없어요</div>';
+}
+
+function addClItem(){
+  const catId=document.getElementById('cl-cat-sel')?.value;
+  const text=document.getElementById('cl-inp')?.value.trim();
+  if(!text||!catId) return;
+  const today=new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}).replace(/ /g,'').replace('.','월 ').replace('.','일');
+  const id='cl_'+Date.now();
+  _clData.items.push({id,catId,text,done:false,date:today});
+  document.getElementById('cl-inp').value='';
+  _clDebounceSave();_clRenderItems();
+}
+function toggleClItem(id,checked){
+  const item=_clData.items.find(i=>i.id===id);
+  if(item){item.done=checked;_clDebounceSave();_clRenderItems();}
+}
+function deleteClItem(id){
+  _clData.items=_clData.items.filter(i=>i.id!==id);
+  _clDebounceSave();_clRenderItems();
+}
+function startClEdit(id){
+  _clData.items.forEach(i=>i._editing=(i.id===id));
+  _clRenderItems();
+}
+function cancelClEdit(id){
+  _clData.items.forEach(i=>delete i._editing);
+  _clRenderItems();
+}
+function saveClEdit(id){
+  const item=_clData.items.find(i=>i.id===id);
+  if(item){item.text=document.getElementById('cl-edit-'+id)?.value.trim()||item.text;delete item._editing;}
+  _clDebounceSave();_clRenderItems();
+}
 let _evData = {list:[]};
 async function fetchEvData(){
   try{
