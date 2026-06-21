@@ -44,6 +44,9 @@
     .cell-edit-wrap .cell-save-btn { flex: 1; padding: 2px; border-radius: 4px; border: none; background: #f5f0a0; font-size: .65rem; font-weight: 700; cursor: pointer; color: #666; }
     .cell-edit-wrap .cell-save-btn:hover { background: #d4c97a; }
     .cell-edit-wrap .cell-del-btn { padding: 2px 5px; border-radius: 4px; border: none; background: #ffe0e0; font-size: .65rem; cursor: pointer; color: #e03a3a; }
+    .drag-handle { text-align: center; color: #CCC; font-size: .85rem; cursor: grab; user-select: none; line-height: 1; padding: 1px 0; }
+    .drag-handle:active { cursor: grabbing; }
+    .bm-table td.drag-over-cell { background: #fffacd !important; outline: 2px dashed #d4c97a; outline-offset: -2px; }
 
     /* ── 행 추가/편집 컨트롤 ── */
     .bm-controls { max-width: 900px; margin: 10px auto 0; display: flex; gap: 8px; justify-content: flex-end; }
@@ -84,6 +87,7 @@ let _links = []; // [{id, name, url}]
 let _colTitles = ['', '', '']; // 3열 타이틀
 let _editMode = false;
 let _saveTimer = null;
+let _dragIdx = null;
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -157,8 +161,10 @@ function render(){
         // 실제 링크
         const idx = _links.findIndex(l => l.id === item.id);
         if(_editMode){
-          html += `<td class="edit-mode">
+          const idx = _links.findIndex(l => l.id === item.id);
+          html += `<td class="edit-mode" ondragover="cellDragOver(event,${idx})" ondrop="cellDrop(event,${idx})" ondragleave="cellDragLeave(event)">
             <div class="cell-edit-wrap">
+              <div class="drag-handle" draggable="true" ondragstart="cellDragStart(event,${idx})" ondragend="cellDragEnd()">⠿</div>
               <input id="n_${item.id}" value="${esc(item.name)}" placeholder="이름" onkeydown="if(event.key==='Enter')saveCell('${item.id}')">
               <input id="u_${item.id}" value="${esc(item.url)}" placeholder="URL" onkeydown="if(event.key==='Enter')saveCell('${item.id}')">
               <div class="cell-btns">
@@ -181,6 +187,27 @@ function render(){
   const editBtn = document.getElementById('edit-btn');
   editBtn.textContent = _editMode ? '✅ 완료' : '✏️ 편집';
   editBtn.classList.toggle('on', _editMode);
+}
+
+function cellDragStart(e, idx){ _dragIdx=idx; e.dataTransfer.effectAllowed='move'; }
+function cellDragOver(e, idx){
+  e.preventDefault();
+  document.querySelectorAll('.bm-table td').forEach(td=>td.classList.remove('drag-over-cell'));
+  e.currentTarget.classList.add('drag-over-cell');
+}
+function cellDragLeave(e){ e.currentTarget.classList.remove('drag-over-cell'); }
+function cellDrop(e, idx){
+  e.preventDefault();
+  document.querySelectorAll('.bm-table td').forEach(td=>td.classList.remove('drag-over-cell'));
+  if(_dragIdx===null || _dragIdx===idx) return;
+  const [moved]=_links.splice(_dragIdx,1);
+  _links.splice(idx,0,moved);
+  _dragIdx=null;
+  save(); render();
+}
+function cellDragEnd(){
+  _dragIdx=null;
+  document.querySelectorAll('.bm-table td').forEach(td=>td.classList.remove('drag-over-cell'));
 }
 
 function toggleEdit(){
