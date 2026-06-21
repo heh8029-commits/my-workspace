@@ -2659,8 +2659,8 @@ function renderEventRec(){
     </div>`;
     return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #f0e0a0;border-radius:10px;margin-bottom:6px;background:#fffdf5">
       <span style="font-size:.74rem;color:#b08000;font-weight:700;flex-shrink:0;min-width:80px">${(it.date||'').replace(/</g,'&lt;')}</span>
-      <span style="font-size:.83rem;font-weight:700;color:#444;flex-shrink:0">${(it.name||'').replace(/</g,'&lt;')}</span>
-      <span style="font-size:.8rem;color:#888;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(it.memo||'').replace(/</g,'&lt;')}</span>
+      <span style="font-size:.83rem;font-weight:700;color:#444;flex-shrink:0">${_linkify(it.name||'')}</span>
+      <span style="font-size:.8rem;color:#888;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_linkify(it.memo||'')}</span>
       <button onclick="editStartEventRec(${it.id})" style="background:none;border:none;cursor:pointer;color:#CCC;font-size:.75rem" onmouseover="this.style.color='#e0a800'" onmouseout="this.style.color='#CCC'">✏️</button>
       <button onclick="deleteEventRec(${it.id})" style="background:none;border:none;cursor:pointer;color:#CCC;font-size:.75rem" onmouseover="this.style.color='#E03A3A'" onmouseout="this.style.color='#CCC'">✕</button>
     </div>`;
@@ -2838,7 +2838,7 @@ function _bossCalPanel(dateStr){
         <span style="font-size:1.05rem;flex-shrink:0">${ev.emoji||'📅'}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:.83rem;font-weight:700;color:#222">${ev.title||''}</div>
-          ${ev.memo?`<div style="font-size:.74rem;color:#666;line-height:1.4;margin-top:2px;word-break:break-word">${ev.memo}</div>`:''}
+          ${ev.memo?`<div style="font-size:.74rem;color:#666;line-height:1.4;margin-top:2px;word-break:break-word">${_linkify(ev.memo)}</div>`:''}
           ${(()=>{const imgs=ev.imgs?.length?ev.imgs:(ev.img?[ev.img]:[]);return imgs.map(u=>`<img src="${u.replace('/upload/','/upload/w_320/')}" style="max-width:100%;border-radius:8px;margin-top:4px;cursor:pointer" onclick="openImgModal('${u}')">`).join('');})()}
         </div>
         <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
@@ -3407,7 +3407,7 @@ function _tvRenderItems(){
     <div class="tv-item${item.done?' done':''}">
       <input type="checkbox" ${item.done?'checked':''} onchange="toggleTvItem(${item.id})">
       <span class="tv-badge cat-${item.cat}">${TV_CATS.find(c=>c.id===item.cat)?.emoji||''} ${item.cat}</span>
-      <span class="tv-item-txt">${item.text}</span>
+      <span class="tv-item-txt">${_linkify(item.text||'')}</span>
       <button class="tv-del" onclick="deleteTvItem(${item.id})">✕</button>
     </div>`).join('');
 }
