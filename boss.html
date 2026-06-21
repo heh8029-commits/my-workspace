@@ -2502,6 +2502,8 @@ function _clRenderTabs(){
       ${_clCatEdit?`<button class="cl-cat-del" onclick="deleteClCat('${c.id}')" title="삭제">✕</button>`:''}
     </span>`;
   });
+  if(_clData.items.some(i=>!i.catId))
+    html+=`<button class="cl-tab${_clFilter===''?' on':''}" onclick="clSetFilter('')">📝 기타</button>`;
   html+=`<button class="cl-cat-edit-btn${_clCatEdit?' on':''}" onclick="toggleClCatEdit()">⚙️</button>`;
   if(_clCatEdit){
     html+=`<div class="cl-cat-add-row">
@@ -2514,7 +2516,8 @@ function _clRenderTabs(){
 }
 function _clRenderCatSel(){
   const sel=document.getElementById('cl-cat-sel');if(!sel) return;
-  sel.innerHTML=_clData.cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+  sel.innerHTML=`<option value="">📝 기타</option>`
+    +_clData.cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
 }
 function clSetFilter(id){_clFilter=id;renderCl();}
 function toggleClCatEdit(){_clCatEdit=!_clCatEdit;_clRenderTabs();}
@@ -2539,14 +2542,13 @@ function deleteClCat(id){
 
 function _clRenderItems(){
   const el=document.getElementById('cl-list');if(!el) return;
-  const cats=_clFilter==='전체'?_clData.cats:_clData.cats.filter(c=>c.id===_clFilter);
-  if(!_clData.cats.length){
-    el.innerHTML='<div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">⚙️ 버튼으로 카테고리를 먼저 추가해요</div>';return;
-  }
+  const showAll=_clFilter==='전체';
+  const showOther=_clFilter==='';
+  const cats=showAll?_clData.cats:showOther?[]:_clData.cats.filter(c=>c.id===_clFilter);
   let html='';
   cats.forEach(cat=>{
     const items=_clData.items.filter(i=>i.catId===cat.id);
-    if(_clFilter==='전체'||items.length){
+    if(showAll||items.length){
       html+=`<div class="cl-cat-hd">${cat.emoji} ${cat.name}<span style="font-size:.67rem;color:#CCC;font-weight:600;margin-left:4px">${items.filter(i=>!i.done).length}/${items.length}</span></div>`;
     }
     if(!items.length){
@@ -2573,13 +2575,39 @@ function _clRenderItems(){
       });
     }
   });
+  // 기타(카테고리 없는 항목)
+  if(showAll||showOther){
+    const others=_clData.items.filter(i=>!i.catId);
+    if(others.length){
+      html+=`<div class="cl-cat-hd">📝 기타<span style="font-size:.67rem;color:#CCC;font-weight:600;margin-left:4px">${others.filter(i=>!i.done).length}/${others.length}</span></div>`;
+      others.forEach(item=>{
+        if(item._editing){
+          html+=`<div class="bm-row" style="gap:6px;flex-wrap:wrap">
+            <input id="cl-edit-${item.id}" class="bm-input" value="${(item.text||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:120px" onkeydown="if(event.key==='Enter')saveClEdit('${item.id}')">
+            <button onclick="saveClEdit('${item.id}')" style="background:#C4714A;color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">저장</button>
+            <button onclick="cancelClEdit('${item.id}')" style="background:#eee;border:none;border-radius:7px;padding:4px 8px;font-size:.75rem;cursor:pointer">취소</button>
+          </div>`;
+        } else {
+          html+=`<div class="bm-row">
+            <input type="checkbox" class="bm-check" ${item.done?'checked':''} onchange="toggleClItem('${item.id}',this.checked)">
+            <div class="bm-text-wrap" style="flex:1;min-width:0">
+              <span class="bm-text"${item.done?' style="text-decoration:line-through;color:#BBB"':''}>${_linkify((item.text||'').replace(/</g,'&lt;'))}</span>
+            </div>
+            <span class="bno-icon" style="font-size:.65rem;color:#CCC;white-space:nowrap;flex-shrink:0">${item.date||''}</span>
+            <button class="bno-icon edit" onclick="startClEdit('${item.id}')">✏️</button>
+            <button class="bno-icon del" onclick="deleteClItem('${item.id}')">🗑️</button>
+          </div>`;
+        }
+      });
+    }
+  }
   el.innerHTML=html||'<div style="text-align:center;padding:24px;color:#CCC;font-size:.8rem">항목이 없어요</div>';
 }
 
 function addClItem(){
   const catId=document.getElementById('cl-cat-sel')?.value;
   const text=document.getElementById('cl-inp')?.value.trim();
-  if(!text||!catId) return;
+  if(!text) return;
   const today=new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}).replace(/ /g,'').replace('.','월 ').replace('.','일');
   const id='cl_'+Date.now();
   _clData.items.push({id,catId,text,done:false,date:today});
