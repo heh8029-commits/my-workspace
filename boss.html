@@ -2724,7 +2724,7 @@ function stlMoveMonth(delta){
   renderStl();
 }
 
-function _stlMonth(){ return (_stlData[_stlYM]||{income:[],expenses:{}}); }
+function _stlMonth(){ return (_stlData[_stlYM]||{income:[],expenses:[]}); }
 function _stlIncome(){ return _stlMonth().income||[]; }
 function _stlExpenses(){ return _stlMonth().expenses||[]; }
 
