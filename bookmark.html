@@ -6,46 +6,47 @@
   <title>미리토퍼 북마크</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <style>
-    :root {
-      --pink: #e91e8c;
-      --border: #d4c97a;
-      --yellow: #fffacd;
-      --yellow-hdr: #f5f0a0;
-      --hover-bg: #fff7e6;
-    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #fafafa; color: #333; padding: 32px 20px 80px; }
 
-    h1 { text-align: center; font-size: 1.3rem; font-weight: 700; color: var(--pink); margin-bottom: 24px; letter-spacing: 2px; }
+    h1 { text-align: center; font-size: 1.3rem; font-weight: 700; color: #e91e8c; margin-bottom: 24px; letter-spacing: 2px; }
     h1::before, h1::after { content: "♥"; margin: 0 6px; }
 
-    a { color: #1a6abf; text-decoration: none; transition: color .13s; }
-    a:hover { color: #e91e8c; text-decoration: underline; }
+    /* ── 표 영역 ── */
+    .bm-table-wrap { max-width: 900px; margin: 0 auto; border: 2px solid #d4c97a; border-radius: 10px; overflow: hidden; background: #fff; }
+    .bm-table-head { background: #f5f0a0; text-align: center; padding: 10px; font-size: .88rem; font-weight: 800; color: #555; border-bottom: 2px solid #d4c97a; display: flex; align-items: center; justify-content: space-between; }
+    .bm-table-head-label { flex: 1; text-align: center; }
+    .bm-table table { width: 100%; border-collapse: collapse; }
+    .bm-table td { border: 1px solid #e8e2a0; padding: 0; text-align: center; width: 20%; height: 44px; }
+    .bm-table td a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: .82rem; font-weight: 600; color: #1a6abf; text-decoration: none; padding: 4px 8px; transition: background .12s; }
+    .bm-table td a:hover { background: #fffacd; color: #e91e8c; }
+    .bm-table td.empty-cell { color: #ddd; font-size: .8rem; }
+    .bm-table td.empty-cell span { display: flex; align-items: center; justify-content: center; height: 100%; cursor: pointer; transition: background .12s; }
+    .bm-table td.empty-cell span:hover { background: #fffacd; }
 
-    /* ── 바로가기 아이콘 그리드 ── */
-    .section-title { font-size: .82rem; font-weight: 800; color: #888; margin: 20px 0 10px; letter-spacing: 1px; }
-    .bm-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
-      gap: 10px;
-      max-width: 960px;
-      margin: 0 auto;
-    }
-    .bm-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-    .bm-icon { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .13s; }
-    .bm-item:hover .bm-icon { transform: scale(1.09); }
-    .bm-name { font-size: .6rem; color: #666; font-weight: 600; text-align: center; line-height: 1.3; max-width: 66px; word-break: keep-all; }
+    /* ── 편집 버튼 ── */
+    .edit-toggle-btn { padding: 4px 12px; border-radius: 20px; border: 1.5px solid #d4c97a; background: #fff; font-size: .75rem; font-weight: 700; cursor: pointer; color: #888; transition: all .13s; }
+    .edit-toggle-btn:hover, .edit-toggle-btn.on { background: #f5f0a0; border-color: #b8a800; color: #555; }
 
-    /* ── 행 섹션 ── */
-    .rows-wrap { max-width: 960px; margin: 0 auto; }
-    .row-block { margin-bottom: 20px; }
-    .row-block-hd { font-size: .82rem; font-weight: 800; color: #555; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1.5px solid #F0ECE8; }
-    .row-sites { display: flex; flex-wrap: wrap; gap: 10px; }
+    /* ── 편집 모드 셀 ── */
+    .bm-table td.edit-mode { padding: 4px; }
+    .cell-edit-wrap { display: flex; flex-direction: column; gap: 2px; height: 100%; }
+    .cell-edit-wrap input { border: 1px solid #e0daa0; border-radius: 4px; padding: 2px 4px; font-size: .72rem; font-family: inherit; width: 100%; background: #fffff8; }
+    .cell-edit-wrap input::placeholder { color: #CCC; }
+    .cell-edit-wrap .cell-btns { display: flex; gap: 2px; }
+    .cell-edit-wrap .cell-save-btn { flex: 1; padding: 2px; border-radius: 4px; border: none; background: #f5f0a0; font-size: .65rem; font-weight: 700; cursor: pointer; color: #666; }
+    .cell-edit-wrap .cell-save-btn:hover { background: #d4c97a; }
+    .cell-edit-wrap .cell-del-btn { padding: 2px 5px; border-radius: 4px; border: none; background: #ffe0e0; font-size: .65rem; cursor: pointer; color: #e03a3a; }
 
-    /* ── 로딩/빈 상태 ── */
-    .empty { text-align: center; color: #CCC; padding: 40px; font-size: .85rem; }
+    /* ── 행 추가/편집 컨트롤 ── */
+    .bm-controls { max-width: 900px; margin: 10px auto 0; display: flex; gap: 8px; justify-content: flex-end; }
+    .bm-add-row-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px dashed #d4c97a; background: none; font-size: .76rem; font-weight: 700; color: #999; cursor: pointer; transition: all .13s; }
+    .bm-add-row-btn:hover { border-color: #b8a800; color: #666; background: #fffacd; }
 
-    /* toast */
+    /* 편집 모드일 때 td 높이 좀 크게 */
+    .edit-mode-active .bm-table td { height: 60px; }
+
+    /* ── toast ── */
     .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 24px; border-radius: 30px; font-size: .82rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 200; }
     .toast.show { opacity: 1; }
   </style>
@@ -54,57 +55,159 @@
 
 <h1>미리토퍼 북마크</h1>
 
-<div id="bm-grid-wrap" style="max-width:960px;margin:0 auto"></div>
-<div class="rows-wrap" id="rows-wrap"></div>
+<div class="bm-table-wrap">
+  <div class="bm-table-head">
+    <div style="width:80px"></div>
+    <div class="bm-table-head-label">⚡ 바로가기</div>
+    <button class="edit-toggle-btn" id="edit-btn" onclick="toggleEdit()">✏️ 편집</button>
+  </div>
+  <div class="bm-table" id="bm-table"></div>
+</div>
+<div class="bm-controls" id="bm-controls" style="display:none">
+  <button class="bm-add-row-btn" onclick="addRow()">+ 행 추가</button>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const FB_SHORTCUTS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_shortcuts.json';
+const FB_BM = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_bookmark.json';
+const COLS = 5;
 
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let _links = []; // [{id, name, url}]
+let _editMode = false;
+let _saveTimer = null;
 
-async function render(){
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function load(){
   try{
-    const r = await fetch(FB_SHORTCUTS + '?t=' + Date.now());
+    const r = await fetch(FB_BM + '?t=' + Date.now());
     const d = await r.json();
-    const shortcuts = Array.isArray(d?.shortcuts) ? d.shortcuts.filter(b => b.showInBookmark !== false) : [];
-    const rows = Array.isArray(d?.rows) ? d.rows : [];
-
-    // 바로가기 아이콘 그리드
-    const gridEl = document.getElementById('bm-grid-wrap');
-    if(shortcuts.length){
-      gridEl.innerHTML = `<div class="section-title">⚡ 바로가기</div>
-        <div class="bm-grid">${shortcuts.map(b=>`
-          <a class="bm-item" ${b.url?`href="${esc(b.url)}" target="_blank"`:'href="#" onclick="return false"'}>
-            <div class="bm-icon" style="background:${esc(b.color)}">${esc(b.emoji)}</div>
-            <span class="bm-name">${esc(b.name)}</span>
-          </a>`).join('')}
-        </div>`;
-    } else {
-      gridEl.innerHTML = '<div class="empty">boss.html에서 바로가기를 추가하면 여기에 표시됩니다</div>';
-    }
-
-    // 행 섹션
-    const rowsEl = document.getElementById('rows-wrap');
-    const filledRows = rows.filter(row => row.title || (row.sites && row.sites.length));
-    if(filledRows.length){
-      rowsEl.innerHTML = filledRows.map(row => `
-        <div class="row-block">
-          ${row.title ? `<div class="row-block-hd">${esc(row.title)}</div>` : ''}
-          <div class="row-sites">${(row.sites||[]).map(s=>`
-            <a class="bm-item" ${s.url?`href="${esc(s.url)}" target="_blank"`:'href="#" onclick="return false"'}>
-              <div class="bm-icon" style="background:${esc(s.color)}">${esc(s.emoji)}</div>
-              <span class="bm-name">${esc(s.name)}</span>
-            </a>`).join('')}
-          </div>
-        </div>`).join('');
-    } else {
-      rowsEl.innerHTML = '';
-    }
+    if(d && Array.isArray(d.links)) _links = d.links;
+    render();
   } catch(e){
-    document.getElementById('bm-grid-wrap').innerHTML = '<div class="empty">불러오기 실패 — 새로고침 해주세요</div>';
+    document.getElementById('bm-table').innerHTML = '<div style="padding:20px;text-align:center;color:#CCC">불러오기 실패 — 새로고침</div>';
   }
+}
+
+function save(){
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async ()=>{
+    try{
+      await fetch(FB_BM, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({links: _links})});
+    } catch(e){ showToast('저장 실패'); }
+  }, 600);
+}
+
+function render(){
+  const tableEl = document.getElementById('bm-table');
+  // 총 슬롯 수: 내용이 있는 링크들 + 빈 셀들을 COLS 단위로 행 구성
+  // 편집 모드면 맨 마지막에 빈 셀 하나 추가 (추가용)
+  const slots = [..._links];
+  if(_editMode) slots.push(null); // 추가용 빈 슬롯
+
+  // COLS 단위로 행 구성, 각 행은 COLS 개의 셀
+  const rows = [];
+  for(let i=0; i<slots.length; i+=COLS){
+    rows.push(slots.slice(i, i+COLS));
+  }
+  // 마지막 행이 없으면 빈 행 하나
+  if(rows.length === 0) rows.push([]);
+
+  // 각 행을 COLS 개로 패딩
+  const paddedRows = rows.map(row => {
+    while(row.length < COLS) row.push(undefined);
+    return row;
+  });
+
+  const tableClass = _editMode ? 'edit-mode-active' : '';
+
+  let html = `<table class="${tableClass}"><tbody>`;
+  paddedRows.forEach(row => {
+    html += '<tr>';
+    row.forEach((item, ci) => {
+      if(item === undefined){
+        // 빈 칸 (패딩)
+        html += `<td class="empty-cell"><span>—</span></td>`;
+      } else if(item === null){
+        // 추가용 빈 슬롯 (편집 모드)
+        html += `<td class="empty-cell"><span onclick="addCell()">＋</span></td>`;
+      } else {
+        // 실제 링크
+        const idx = _links.findIndex(l => l.id === item.id);
+        if(_editMode){
+          html += `<td class="edit-mode">
+            <div class="cell-edit-wrap">
+              <input id="n_${item.id}" value="${esc(item.name)}" placeholder="이름" onkeydown="if(event.key==='Enter')saveCell('${item.id}')">
+              <input id="u_${item.id}" value="${esc(item.url)}" placeholder="URL" onkeydown="if(event.key==='Enter')saveCell('${item.id}')">
+              <div class="cell-btns">
+                <button class="cell-save-btn" onclick="saveCell('${item.id}')">저장</button>
+                <button class="cell-del-btn" onclick="delCell('${item.id}')">✕</button>
+              </div>
+            </div></td>`;
+        } else {
+          const href = item.url ? (item.url.match(/^https?:\/\//) ? item.url : 'https://'+item.url) : '#';
+          html += `<td><a href="${esc(href)}" target="_blank">${esc(item.name)}</a></td>`;
+        }
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  tableEl.innerHTML = html;
+
+  document.getElementById('bm-controls').style.display = _editMode ? 'flex' : 'none';
+  const editBtn = document.getElementById('edit-btn');
+  editBtn.textContent = _editMode ? '✅ 완료' : '✏️ 편집';
+  editBtn.classList.toggle('on', _editMode);
+}
+
+function toggleEdit(){
+  _editMode = !_editMode;
+  render();
+}
+
+function addCell(){
+  const id = 'bm_' + Date.now();
+  _links.push({id, name:'', url:''});
+  render();
+  // 방금 추가된 셀의 이름 input에 포커스
+  setTimeout(()=>{
+    const el = document.getElementById('n_'+id);
+    if(el) el.focus();
+  }, 50);
+}
+
+function addRow(){
+  // 빈 슬롯이 없으면 새 행(COLS개) 추가
+  const remainder = _links.length % COLS;
+  const toAdd = remainder === 0 ? COLS : (COLS - remainder);
+  for(let i=0; i<toAdd; i++){
+    _links.push({id:'bm_'+Date.now()+'_'+i, name:'', url:''});
+  }
+  save();
+  render();
+}
+
+function saveCell(id){
+  const link = _links.find(l => l.id === id);
+  if(!link) return;
+  const nameEl = document.getElementById('n_'+id);
+  const urlEl = document.getElementById('u_'+id);
+  link.name = nameEl ? nameEl.value.trim() : link.name;
+  link.url = urlEl ? urlEl.value.trim() : link.url;
+  // 이름+URL 둘 다 없으면 삭제
+  if(!link.name && !link.url){
+    _links = _links.filter(l => l.id !== id);
+  }
+  save();
+  render();
+}
+
+function delCell(id){
+  _links = _links.filter(l => l.id !== id);
+  save();
+  render();
 }
 
 function showToast(msg){
@@ -114,9 +217,7 @@ function showToast(msg){
   t._timer = setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-render();
-// 30초마다 자동 갱신
-setInterval(()=>render(), 30000);
+load();
 </script>
 </body>
 </html>
