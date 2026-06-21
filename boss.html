@@ -4118,7 +4118,7 @@ let _bmRowSelColor = COLORS[0];
 
 function renderBmRows(){
   const el=document.getElementById('bm-rows-section');if(!el) return;
-  let html=bmRows.map(row=>{
+  let html=bmRows.filter(row=>row.title||(row.sites&&row.sites.length)||_bmRowAddingId===row.id).map(row=>{
     const sitesHtml=row.sites.map(s=>`
       <div class="bm-row-site-wrap">
         <button class="bm-row-site-del" onclick="deleteBmRowSite(${row.id},'${s.id}')">✕</button>
