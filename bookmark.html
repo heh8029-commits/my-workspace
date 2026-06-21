@@ -21,8 +21,9 @@
     .bm-table td a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.3rem; font-weight: 700; color: #1a6abf; text-decoration: none; padding: 6px 12px; transition: background .12s; }
     .bm-table td a:hover { background: #fffacd; color: #e91e8c; }
     .bm-table td.empty-cell { color: #ddd; font-size: .9rem; }
-    .bm-table td.empty-cell span { display: flex; align-items: center; justify-content: center; height: 100%; cursor: pointer; transition: background .12s; }
-    .bm-table td.empty-cell span:hover { background: #fffacd; }
+    .bm-table td.empty-cell span { display: flex; align-items: center; justify-content: center; height: 100%; }
+    .bm-table td.empty-cell span.addable { cursor: pointer; transition: background .12s; }
+    .bm-table td.empty-cell span.addable:hover { background: #fffacd; }
 
     /* ── 편집 버튼 ── */
     .edit-toggle-btn { padding: 4px 12px; border-radius: 20px; border: 1.5px solid #d4c97a; background: #fff; font-size: .75rem; font-weight: 700; cursor: pointer; color: #888; transition: all .13s; }
@@ -128,7 +129,7 @@ function render(){
     row.forEach((item, ci) => {
       if(item === undefined){
         if(_editMode){
-          html += `<td class="empty-cell"><span onclick="addCell()">＋</span></td>`;
+          html += `<td class="empty-cell"><span class="addable" onclick="addCell()">＋</span></td>`;
         } else {
           html += `<td class="empty-cell"><span>—</span></td>`;
         }
