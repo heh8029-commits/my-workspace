@@ -656,6 +656,31 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bt-color-dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .bt-color-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;flex-shrink:0;transition:border .1s}
 .bt-color-dot.on{border-color:#444}
+/* ── 바로가기 행 ── */
+.bm-rows-section{margin-top:22px}
+.bm-row-block{margin-bottom:18px}
+.bm-row-block-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;border-bottom:1.5px solid #F0ECE8;padding-bottom:5px}
+.bm-row-block-title{font-size:.82rem;font-weight:800;color:#555;outline:none;border:none;background:none;font-family:inherit;cursor:text;min-width:40px;padding:1px 3px;border-radius:5px;transition:background .1s}
+.bm-row-block-title:hover,.bm-row-block-title:focus{background:#F5F0EB}
+.bm-row-block-title:empty::before{content:'타이틀 입력...';color:#CCC;pointer-events:none}
+.bm-row-block-del{width:18px;height:18px;border:none;background:none;font-size:.62rem;cursor:pointer;color:#CCC;padding:0;opacity:0;transition:opacity .1s;line-height:1;margin-left:auto}
+.bm-row-block-hd:hover .bm-row-block-del{opacity:1}
+.bm-row-block-del:hover{color:#E03A3A}
+.bm-row-block-icons{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.bm-row-site-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bm-row-site-del{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border:none;border-radius:50%;background:#E03A3A;color:#fff;font-size:.52rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;transition:opacity .1s;z-index:1}
+.bm-row-site-wrap:hover .bm-row-site-del{opacity:1}
+.bm-row-add-btn{width:54px;height:54px;border-radius:14px;border:2px dashed rgba(0,0,0,.12);background:none;color:#CCC;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .13s;flex-shrink:0}
+.bm-row-add-btn:hover{border-color:#C4714A;color:#C4714A;background:#FFF8F5}
+.bm-row-add-form{background:#FDFAF7;border-radius:12px;border:1px solid #EDE8E1;padding:11px;display:flex;flex-direction:column;gap:8px;min-width:220px;max-width:320px}
+.bm-row-add-form-row{display:flex;gap:6px;align-items:center}
+.bm-row-form-inp{padding:6px 9px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;color:#333;background:#fff}
+.bm-row-form-inp:focus{border-color:#C4714A;outline:none}
+.bm-row-color-row{display:flex;gap:4px;flex-wrap:wrap}
+.bm-row-color-sw{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0}
+.bm-row-color-sw.on{border-color:#333}
+.bm-rows-add-row-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1.5px dashed rgba(0,0,0,.12);background:none;color:#AAA;font-size:.78rem;cursor:pointer;transition:all .13s;margin-top:4px}
+.bm-rows-add-row-btn:hover{border-color:#C4714A;color:#C4714A;background:#FFF8F5}
 /* ── 보스 달력 ── */
 .boss-cal-wrap{max-width:900px}
 .boss-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -839,6 +864,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <button class="bm-edit-btn" onclick="openEditor()">✏️ 편집</button>
       </div>
       <div class="bm-grid" id="bm-grid-home"></div>
+      <div id="bm-rows-section"></div>
     </div>
 
     <!-- 서브메뉴 콘텐츠 (준비 중) -->
@@ -1348,12 +1374,35 @@ const COLORS = [
   '#F0EEEA','#E0F0F8',
 ];
 
+const FB_SHORTCUTS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_shortcuts.json';
+const BM_DEFAULT_ROWS = Array.from({length:10},(_,i)=>({id:i+1,title:'',sites:[]}));
+
 // ── State ──────────────────────────────────────────────────
 let activeMenu    = 'home';
 let activeSubMenu = null;
-let bms = JSON.parse(localStorage.getItem('boss_bm') || 'null') || DEFAULT_BM;
+let bms = [...DEFAULT_BM];
+let bmRows = BM_DEFAULT_ROWS.map(r=>({...r,sites:[...r.sites]}));
 let selColor = COLORS[0];
 let editId   = null;
+let _bmSaveTimer = null;
+
+async function fetchBmData(){
+  try{
+    const r=await fetch(FB_SHORTCUTS+'?t='+Date.now());
+    if(r.ok){
+      const d=await r.json();
+      if(d&&typeof d==='object'){
+        if(Array.isArray(d.shortcuts)&&d.shortcuts.length) bms=d.shortcuts;
+        if(Array.isArray(d.rows)&&d.rows.length) bmRows=d.rows;
+        else if(!Array.isArray(d.rows)) bmRows=BM_DEFAULT_ROWS.map(r=>({...r,sites:[]}));
+      }
+    }
+  }catch(e){}
+}
+async function _saveBmData(){
+  try{await fetch(FB_SHORTCUTS,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({shortcuts:bms,rows:bmRows})});}catch(e){}
+}
+function _bmDebounceSave(){clearTimeout(_bmSaveTimer);_bmSaveTimer=setTimeout(_saveBmData,800);}
 
 // ── 날짜 표시 ──────────────────────────────────────────────
 (function initDate(){
@@ -1478,7 +1527,7 @@ function showPage(id){
 }
 
 // ── 바로가기 그리드 렌더 ──────────────────────────────────
-function saveBm(){localStorage.setItem('boss_bm',JSON.stringify(bms));}
+function saveBm(){_bmDebounceSave();}
 
 function renderGrid(gridId, clickable=true){
   const el = document.getElementById(gridId);
@@ -1492,7 +1541,7 @@ function renderGrid(gridId, clickable=true){
 }
 
 function renderAllGrids(){
-  renderGrid('bm-grid-home'); renderGrid('bm-grid-popup');
+  renderGrid('bm-grid-home'); renderGrid('bm-grid-popup'); renderBmRows();
 }
 
 // ── 바로가기 팝업 ──────────────────────────────────────────
@@ -4063,14 +4112,99 @@ function deleteBtCat(id){
   _btDebounceSave();renderBt();
 }
 
+// ── 바로가기 행 ─────────────────────────────────────────────
+let _bmRowAddingId = null; // 어느 행에 사이트 추가 중인지
+let _bmRowSelColor = COLORS[0];
+
+function renderBmRows(){
+  const el=document.getElementById('bm-rows-section');if(!el) return;
+  let html=bmRows.map(row=>{
+    const sitesHtml=row.sites.map(s=>`
+      <div class="bm-row-site-wrap">
+        <button class="bm-row-site-del" onclick="deleteBmRowSite(${row.id},'${s.id}')">✕</button>
+        <a class="bm-item" ${s.url?`href="${s.url}" target="_blank"`:'href="#" onclick="return false"'}>
+          <div class="bm-icon" style="background:${s.color}">${s.emoji}</div>
+          <span class="bm-name">${s.name}</span>
+        </a>
+      </div>`).join('');
+    const addForm=_bmRowAddingId===row.id?`
+      <div class="bm-row-add-form">
+        <div class="bm-row-add-form-row">
+          <input id="bra-emoji-${row.id}" class="bm-row-form-inp" value="🔗" placeholder="🔗" maxlength="2" style="width:40px;text-align:center">
+          <input id="bra-name-${row.id}" class="bm-row-form-inp" placeholder="이름..." maxlength="12" style="flex:1">
+        </div>
+        <input id="bra-url-${row.id}" class="bm-row-form-inp" placeholder="https://..." style="width:100%;box-sizing:border-box" onkeydown="if(event.key==='Enter')addBmRowSite(${row.id})">
+        <div class="bm-row-color-row" id="bra-colors-${row.id}">${COLORS.map(c=>`<span class="bm-row-color-sw${c===_bmRowSelColor?' on':''}" style="background:${c}" onclick="_bmRowPickColor('${c}',${row.id})"></span>`).join('')}</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="addBmRowSite(${row.id})" style="flex:1;padding:6px;border-radius:8px;background:#C4714A;color:#fff;border:none;font-size:.76rem;font-weight:700;cursor:pointer">추가</button>
+          <button onclick="_bmRowAddingId=null;renderBmRows()" style="flex:1;padding:6px;border-radius:8px;background:#EEE;border:none;font-size:.76rem;font-weight:700;cursor:pointer">취소</button>
+        </div>
+      </div>`
+      :`<button class="bm-row-add-btn" onclick="_bmRowAddingId=${row.id};_bmRowSelColor=COLORS[0];renderBmRows()" title="사이트 추가">+</button>`;
+    return `<div class="bm-row-block">
+      <div class="bm-row-block-hd">
+        <span class="bm-row-block-title" contenteditable="true"
+          onblur="saveBmRowTitle(${row.id},this.innerText)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        >${(row.title||'').replace(/</g,'&lt;')}</span>
+        <button class="bm-row-block-del" onclick="deleteBmRow(${row.id})" title="행 삭제">🗑️</button>
+      </div>
+      <div class="bm-row-block-icons">${sitesHtml}${addForm}</div>
+    </div>`;
+  }).join('');
+  html+=`<button class="bm-rows-add-row-btn" onclick="addBmRow()">+ 행 추가</button>`;
+  el.innerHTML=html;
+}
+function _bmRowPickColor(c,rowId){
+  _bmRowSelColor=c;
+  const el=document.getElementById('bra-colors-'+rowId);
+  if(el) el.innerHTML=COLORS.map(x=>`<span class="bm-row-color-sw${x===c?' on':''}" style="background:${x}" onclick="_bmRowPickColor('${x}',${rowId})"></span>`).join('');
+}
+function saveBmRowTitle(id,text){
+  const row=bmRows.find(r=>r.id===id);
+  if(row) row.title=text.trim();
+  _bmDebounceSave();
+}
+function addBmRowSite(rowId){
+  const row=bmRows.find(r=>r.id===rowId);
+  if(!row) return;
+  const name=(document.getElementById('bra-name-'+rowId)?.value||'').trim();
+  const url=(document.getElementById('bra-url-'+rowId)?.value||'').trim();
+  const emoji=(document.getElementById('bra-emoji-'+rowId)?.value||'🔗').trim()||'🔗';
+  if(!name){alert('이름을 입력해주세요');return;}
+  const fixedUrl=url&&!url.match(/^https?:\/\//)?'https://'+url:url;
+  row.sites.push({id:'rs_'+Date.now(),name,url:fixedUrl,emoji,color:_bmRowSelColor});
+  _bmRowAddingId=null;
+  _bmDebounceSave();renderBmRows();
+}
+function deleteBmRowSite(rowId,siteId){
+  const row=bmRows.find(r=>r.id===rowId);
+  if(row) row.sites=row.sites.filter(s=>s.id!==siteId);
+  _bmDebounceSave();renderBmRows();
+}
+function addBmRow(){
+  const newId=Math.max(0,...bmRows.map(r=>r.id))+1;
+  bmRows.push({id:newId,title:'',sites:[]});
+  _bmDebounceSave();renderBmRows();
+  setTimeout(()=>{
+    const titles=document.querySelectorAll('.bm-row-block-title');
+    if(titles.length) titles[titles.length-1].focus();
+  },60);
+}
+function deleteBmRow(id){
+  if(!confirm('이 행을 삭제할까요?')) return;
+  bmRows=bmRows.filter(r=>r.id!==id);
+  _bmDebounceSave();renderBmRows();
+}
+
 // ── 초기화 ─────────────────────────────────────────────────
 (function init(){
   renderTopMenu();
   renderSidebar();
   renderMobileSub();
-  renderAllGrids();
   const savedMode = localStorage.getItem('boss_mode');
   if(savedMode) setMode(savedMode);
+  fetchBmData().then(()=>{renderAllGrids();renderBmRows();});
   fetchAlarms().then(()=>renderAlarmList());
   fetchExpenses().then(()=>updateDatebar());
 })();
