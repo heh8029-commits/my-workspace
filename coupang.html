@@ -120,32 +120,6 @@ tr.today-row{background:#fffbe6}
 .view-tab[data-view="ad"]{color:#f4830a}
 .view-tab[data-view="ad"].active{color:#f4830a;border-color:#f4830a}
 
-/* 정산손익 패널 */
-#settlement-view{display:none;padding:16px}
-#settlement-view.active{display:block}
-.view-tab[data-view="settlement"]{color:#7c3aed}
-.view-tab[data-view="settlement"].active{color:#7c3aed;border-color:#7c3aed}
-.stl-table-wrap{overflow-x:auto}
-.stl-table{border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);width:100%;border:1px solid #e0e0e0}
-.stl-table thead th{background:#f8f8f8;color:#888;font-size:.72rem;font-weight:600;padding:9px 14px;text-align:center;border-bottom:2px solid #d0d0d0;border-right:1px solid #e0e0e0;white-space:nowrap}
-.stl-table thead th:last-child{border-right:none}
-.stl-table th.stl-settle{background:#eef6ff;color:#1a5eff}
-.stl-table th.stl-cost{background:#fff0f7;color:#e0316b}
-.stl-table th.stl-profit{background:#f0fdf4;color:#0f9960}
-.stl-table tbody td{padding:7px 12px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:right;font-size:.82rem;color:#444;white-space:nowrap}
-.stl-table tbody td:last-child,.stl-table tfoot td:last-child{border-right:none}
-.stl-table tbody td.stl-month{text-align:center;font-weight:700;color:#333;background:inherit;position:sticky;left:0;border-right:2px solid #d0d0d0;min-width:80px}
-.stl-table tbody tr:hover{background:#fafafa}
-.stl-table tbody tr.stl-this-month{background:#f5f0ff}
-.stl-table tfoot td{padding:8px 12px;border-bottom:1px solid #e8e8e8;border-right:1px solid #e8e8e8;text-align:right;font-size:.82rem;white-space:nowrap}
-.stl-table tfoot tr.stl-sum{background:#f4f4f6;font-weight:800}
-.stl-table tfoot td.stl-month{text-align:center;position:sticky;left:0;border-right:2px solid #d0d0d0}
-.stl-input{width:90px;text-align:right;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:.8rem;font-family:inherit}
-.stl-input:focus{outline:none;border-color:#7c3aed;background:#faf5ff}
-.stl-profit-pos{color:#0f9960;font-weight:800}
-.stl-profit-neg{color:#e0316b;font-weight:800}
-.stl-total{font-weight:700;color:#111}
-.stl-group-label{text-align:center;font-size:.72rem;font-weight:700;padding:5px;border-bottom:1px solid #d0d0d0;border-right:1px solid #e0e0e0}
 .ad-brand-section{margin-bottom:24px}
 .ad-brand-title{font-size:.9rem;font-weight:800;margin-bottom:10px;padding:6px 12px;border-radius:8px;display:inline-block}
 .ad-brand-title.miri{background:#eef2ff;color:#1a5eff}
@@ -173,7 +147,6 @@ tr.today-row{background:#fffbe6}
   <div class="brand-tab active" data-brand="미리토퍼" onclick="setBrand('미리토퍼')">그로스-미리토퍼</div>
   <div class="brand-tab" data-brand="몽몽토퍼" onclick="setBrand('몽몽토퍼')">그로스-몽몽토퍼</div>
   <div class="view-tab" data-view="sales" onclick="setView('sales')">매출</div>
-  <div class="view-tab" data-view="settlement" onclick="setView('settlement')">정산손익</div>
   <div class="view-tab" data-view="ad" onclick="setView('ad')">광고성과</div>
   <div class="view-tab" data-view="log" onclick="setView('log')">로그</div>
   <div class="sync-area">
@@ -234,34 +207,6 @@ tr.today-row{background:#fffbe6}
   </div>
 </div>
 
-<div id="settlement-view">
-  <div class="stl-table-wrap">
-    <table class="stl-table">
-      <thead>
-        <tr>
-          <th rowspan="2" class="stl-month" style="position:sticky;left:0;background:#f8f8f8;z-index:5">월</th>
-          <th colspan="3" class="stl-group-label stl-settle">정산금액</th>
-          <th colspan="4" class="stl-group-label stl-cost">비용</th>
-          <th colspan="2" class="stl-group-label stl-profit">손익</th>
-        </tr>
-        <tr>
-          <th class="stl-settle">쿠팡 정산</th>
-          <th class="stl-settle">네이버 정산</th>
-          <th class="stl-settle">정산 합계</th>
-          <th class="stl-cost">원가</th>
-          <th class="stl-cost">쿠팡 광고비</th>
-          <th class="stl-cost">네이버 광고비</th>
-          <th class="stl-cost">기타비용</th>
-          <th class="stl-profit">순이익</th>
-          <th class="stl-profit">이익률</th>
-        </tr>
-      </thead>
-      <tbody id="settlement-body"></tbody>
-      <tfoot id="settlement-foot"></tfoot>
-    </table>
-  </div>
-  <div style="padding:12px 0;font-size:.72rem;color:#bbb">정산금액·비용 직접 입력 → 순이익 자동 계산 | 데이터는 이 브라우저에 저장됩니다</div>
-</div>
 
 <div id="log-view">
   <div class="sales-table-wrap" style="padding:16px">
@@ -463,107 +408,6 @@ function renderLog() {
     '<tr><td colspan="4" style="text-align:center;padding:40px;color:#ccc">실패 기록이 없습니다 (전부 정상)</td></tr>';
 }
 
-// ── 정산손익 ─────────────────────────────────────────────────
-let _stlData = {}; // { "2026-01": { cpSettle, naverSettle, cogs, cpAd, naverAd, other } }
-
-function _stlKey() { return 'settlement_pl_' + currentBrand; }
-function _loadStl() {
-  try { _stlData = JSON.parse(localStorage.getItem(_stlKey()) || '{}'); } catch(e) { _stlData = {}; }
-}
-function _saveStl() { localStorage.setItem(_stlKey(), JSON.stringify(_stlData)); }
-
-function updateSettlement(ym, field, rawVal) {
-  if (!_stlData[ym]) _stlData[ym] = {};
-  _stlData[ym][field] = Number(String(rawVal).replace(/[^\d.-]/g, '')) || 0;
-  _saveStl();
-  _stlRefreshRow(ym);
-}
-
-function _stlRefreshRow(ym) {
-  const d = _stlData[ym] || {};
-  const cpSettle = d.cpSettle||0, naverSettle = d.naverSettle||0;
-  const cogs = d.cogs||0, cpAd = d.cpAd||0, naverAd = d.naverAd||0, other = d.other||0;
-  const totalSettle = cpSettle + naverSettle;
-  const totalCost = cogs + cpAd + naverAd + other;
-  const net = totalSettle - totalCost;
-  const rate = totalSettle ? (net/totalSettle*100) : 0;
-  const fmtN = n => n ? Number(n).toLocaleString('ko-KR') : '-';
-  const netCls = net > 0 ? 'stl-profit-pos' : net < 0 ? 'stl-profit-neg' : '';
-  const row = document.querySelector(`tr[data-stl-ym="${ym}"]`);
-  if (!row) return;
-  row.querySelector('.stl-calc-settle').textContent = fmtN(totalSettle);
-  row.querySelector('.stl-calc-cost').textContent = fmtN(totalCost);
-  row.querySelector('.stl-calc-net').className = 'stl-calc-net ' + netCls;
-  row.querySelector('.stl-calc-net').textContent = fmtN(net);
-  row.querySelector('.stl-calc-rate').className = 'stl-calc-rate ' + netCls;
-  row.querySelector('.stl-calc-rate').textContent = totalSettle ? rate.toFixed(1)+'%' : '-';
-  _stlUpdateFoot();
-}
-
-function _stlUpdateFoot() {
-  let tCp=0,tNaver=0,tCogs=0,tCpAd=0,tNaverAd=0,tOther=0;
-  for (const d of Object.values(_stlData)) {
-    tCp+=d.cpSettle||0; tNaver+=d.naverSettle||0;
-    tCogs+=d.cogs||0; tCpAd+=d.cpAd||0; tNaverAd+=d.naverAd||0; tOther+=d.other||0;
-  }
-  const gSettle=tCp+tNaver, gCost=tCogs+tCpAd+tNaverAd+tOther, gNet=gSettle-gCost;
-  const gRate=gSettle?(gNet/gSettle*100):0;
-  const fmtN = n => n ? Number(n).toLocaleString('ko-KR') : '-';
-  const netCls = gNet>0?'stl-profit-pos':gNet<0?'stl-profit-neg':'';
-  document.getElementById('settlement-foot').innerHTML = `
-    <tr class="stl-sum">
-      <td class="stl-month">합계</td>
-      <td>${fmtN(tCp)}</td><td>${fmtN(tNaver)}</td>
-      <td class="stl-total">${fmtN(gSettle)}</td>
-      <td>${fmtN(tCogs)}</td><td>${fmtN(tCpAd)}</td><td>${fmtN(tNaverAd)}</td><td>${fmtN(tOther)}</td>
-      <td class="stl-total">${fmtN(gCost)}</td>
-      <td class="${netCls}">${fmtN(gNet)}</td>
-      <td class="${netCls}">${gSettle?gRate.toFixed(1)+'%':'-'}</td>
-    </tr>`;
-}
-
-function renderSettlement() {
-  _loadStl();
-  const now = new Date();
-  const months = [];
-  for (let i=11; i>=0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
-  }
-  const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const fmtN = n => n ? Number(n).toLocaleString('ko-KR') : '-';
-  const inp = (ym, field, val) =>
-    `<input class="stl-input" type="text" inputmode="numeric"
-      value="${val ? Number(val).toLocaleString('ko-KR') : ''}" placeholder="0"
-      oninput="formatInputCommas(this)"
-      onchange="updateSettlement('${ym}','${field}',this.value)">`;
-
-  const rows = months.map(ym => {
-    const d = _stlData[ym]||{};
-    const cp=d.cpSettle||0, naver=d.naverSettle||0, cogs=d.cogs||0, cpAd=d.cpAd||0, naverAd=d.naverAd||0, other=d.other||0;
-    const totalSettle=cp+naver, totalCost=cogs+cpAd+naverAd+other, net=totalSettle-totalCost;
-    const rate=totalSettle?(net/totalSettle*100):0;
-    const [y,m]=ym.split('-');
-    const netCls=net>0?'stl-profit-pos':net<0?'stl-profit-neg':'';
-    const isThis=ym===thisYM;
-    return `<tr data-stl-ym="${ym}" class="${isThis?'stl-this-month':''}">
-      <td class="stl-month">${y}년 ${parseInt(m)}월${isThis?' ★':''}</td>
-      <td>${inp(ym,'cpSettle',cp)}</td>
-      <td>${inp(ym,'naverSettle',naver)}</td>
-      <td class="stl-total stl-calc-settle">${fmtN(totalSettle)}</td>
-      <td>${inp(ym,'cogs',cogs)}</td>
-      <td>${inp(ym,'cpAd',cpAd)}</td>
-      <td>${inp(ym,'naverAd',naverAd)}</td>
-      <td>${inp(ym,'other',other)}</td>
-      <td class="stl-total stl-calc-cost">${fmtN(totalCost)}</td>
-      <td class="stl-calc-net ${netCls}">${fmtN(net)}</td>
-      <td class="stl-calc-rate ${netCls}">${totalSettle?rate.toFixed(1)+'%':'-'}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('settlement-body').innerHTML = rows;
-  _stlUpdateFoot();
-}
-
 function manualSync() {
   const btn = document.getElementById('sync-btn');
   btn.classList.add('spinning');
@@ -578,23 +422,17 @@ function setView(v) {
   const salesEl = document.getElementById('sales-view');
   const logEl = document.getElementById('log-view');
   const adEl = document.getElementById('ad-perf-view');
-  const stlEl = document.getElementById('settlement-view');
   document.querySelectorAll('.brand-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
   mainEl.classList.add('hidden');
   salesEl.classList.remove('active');
   logEl.classList.remove('active');
   adEl.classList.remove('active');
-  stlEl.classList.remove('active');
 
   if (v === 'sales') {
     salesEl.classList.add('active');
     document.querySelector('.view-tab[data-view="sales"]').classList.add('active');
     renderSales();
-  } else if (v === 'settlement') {
-    stlEl.classList.add('active');
-    document.querySelector('.view-tab[data-view="settlement"]').classList.add('active');
-    renderSettlement();
   } else if (v === 'ad') {
     adEl.classList.add('active');
     document.querySelector('.view-tab[data-view="ad"]').classList.add('active');
@@ -869,18 +707,12 @@ function dayOfWeek(dateStr) {
 function setBrand(brand) {
   currentBrand = brand;
   currentMonth = null;
-  if (currentView === 'settlement') {
-    document.querySelectorAll('.brand-tab').forEach(t => t.classList.toggle('active', t.dataset.brand === brand));
-    renderSettlement();
-    return;
-  }
   currentView = 'main';
   document.querySelectorAll('.brand-tab').forEach(t => t.classList.toggle('active', t.dataset.brand === brand));
   document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('main-view').classList.remove('hidden');
   document.getElementById('sales-view').classList.remove('active');
   document.getElementById('log-view').classList.remove('active');
-  document.getElementById('settlement-view').classList.remove('active');
   render();
 }
 
