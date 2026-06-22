@@ -1,7 +1,7 @@
 {
   "last_updated": "2026-06-22 15:20",
   "sales_data": {
-    "last_updated": "2026-06-21",
+    "last_updated": "2026-06-22",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -476,6 +476,18 @@
         "rocket_growth": 1475810,
         "seller_delivery": 143700,
         "total": 1619510
+      },
+      {
+        "date": "06/20",
+        "rocket_growth": 1092430,
+        "seller_delivery": 185320,
+        "total": 1277750
+      },
+      {
+        "date": "06/21",
+        "rocket_growth": 773380,
+        "seller_delivery": 175700,
+        "total": 949080
       }
     ],
     "몽몽토퍼": [
