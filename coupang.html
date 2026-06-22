@@ -150,8 +150,10 @@ tr.today-row{background:#fffbe6}
   <div class="view-tab" data-view="ad" onclick="setView('ad')">광고성과</div>
   <div class="view-tab" data-view="log" onclick="setView('log')">로그</div>
   <div class="sync-area">
+    <span id="save-status" style="font-size:.75rem;color:#888;margin-right:6px"></span>
     <span class="sync-time" id="sync-time"></span>
     <div class="sync-btn" id="sync-btn" onclick="manualSync()"><span class="icon">⟳</span>새로고침</div>
+    <div class="sync-btn" onclick="showPatDialog()" title="GitHub 저장 설정" style="margin-left:4px">⚙</div>
   </div>
 </div>
 
@@ -292,6 +294,10 @@ const MANUAL = {
 const HOURS = ["오전0시","오전1시","오전2시","오전3시","오전4시","오전5시","오전6시","오전7시","오전8시","오전9시","오전10시","오전11시","오후12시","오후1시","오후2시","오후3시","오후4시","오후5시","오후6시","오후7시","오후8시","오후9시","오후10시","오후11시"];
 const DAYS = ["일","월","화","수","목","금","토"];
 
+const GITHUB_OWNER = 'heh8029-commits';
+const GITHUB_REPO = 'my-workspace';
+const GITHUB_FILE = 'coupang_data.json';
+
 let adPerformance = {};
 let currentBrand = "미리토퍼";
 let currentMonth = null; // null = 전체
@@ -328,12 +334,11 @@ async function loadAutoData() {
     salesData['미리토퍼'] = sd['미리토퍼'] || [];
     salesData['몽몽토퍼'] = sd['몽몽토퍼'] || [];
 
-    // 광고비/네이버 매출: 서버(JSON)에 저장된 값을 기본값으로, 이 브라우저에서 직접 수정한 값(localStorage)이 있으면 그게 우선
+    // 광고비/네이버 매출: JSON 기본값 위에 수동 입력값(manualAdData) 덮어쓰기 (필드 단위 병합)
     const jsonAdData = d.ad_data || {};
-    const localAdData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
     adData = {};
-    for (const date of new Set([...Object.keys(jsonAdData), ...Object.keys(localAdData)])) {
-      adData[date] = Object.assign({}, jsonAdData[date] || {}, localAdData[date] || {});
+    for (const date of new Set([...Object.keys(jsonAdData), ...Object.keys(manualAdData)])) {
+      adData[date] = Object.assign({}, jsonAdData[date] || {}, manualAdData[date] || {});
     }
 
     adPerformance = d.ad_performance || {};
@@ -454,10 +459,81 @@ function setView(v) {
   }
 }
 
-let adData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
+let manualAdData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
+let adData = {};
 
 function saveAdData() {
-  localStorage.setItem('coupangAdData', JSON.stringify(adData));
+  localStorage.setItem('coupangAdData', JSON.stringify(manualAdData));
+  scheduleGitHubSave();
+}
+
+// ── GitHub API 저장 ──────────────────────────────────────────────
+let _saveTimer = null;
+let _isSaving = false;
+
+function getGithubToken() { return localStorage.getItem('githubPAT') || ''; }
+
+function showPatDialog() {
+  const cur = getGithubToken();
+  const t = prompt('GitHub Personal Access Token 입력\n(fine-grained PAT, contents:write 권한)\n\n비워두면 GitHub 저장 비활성화', cur);
+  if (t !== null) {
+    localStorage.setItem('githubPAT', t.trim());
+    setSaveStatus(t.trim() ? 'PAT 저장됨' : 'GitHub 저장 비활성화');
+    setTimeout(() => setSaveStatus(''), 3000);
+  }
+}
+
+function setSaveStatus(msg) {
+  const el = document.getElementById('save-status');
+  if (el) el.textContent = msg;
+}
+
+function scheduleGitHubSave() {
+  if (!getGithubToken()) return;
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(doGitHubSave, 2000);
+}
+
+async function doGitHubSave() {
+  const token = getGithubToken();
+  if (!token || _isSaving) return;
+  _isSaving = true;
+  setSaveStatus('저장 중...');
+  try {
+    const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' };
+
+    const getResp = await fetch(apiUrl, { headers });
+    if (!getResp.ok) throw new Error(`읽기 실패 ${getResp.status}`);
+    const fileInfo = await getResp.json();
+    const current = JSON.parse(atob(fileInfo.content.replace(/\n/g, '')));
+
+    if (!current.ad_data) current.ad_data = {};
+    for (const [date, fields] of Object.entries(manualAdData)) {
+      if (!current.ad_data[date]) current.ad_data[date] = {};
+      Object.assign(current.ad_data[date], fields);
+    }
+
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(current, null, 2))));
+    const putResp = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'coupang: 매출 수동 입력 저장', content: encoded, sha: fileInfo.sha })
+    });
+
+    if (putResp.ok) {
+      setSaveStatus('✓ GitHub 저장됨');
+      setTimeout(() => setSaveStatus(''), 4000);
+    } else {
+      const err = await putResp.json();
+      throw new Error(err.message || putResp.status);
+    }
+  } catch(e) {
+    setSaveStatus('저장 오류: ' + e.message);
+    console.error('GitHub save error:', e);
+  } finally {
+    _isSaving = false;
+  }
 }
 
 function formatInputCommas(el) {
@@ -482,6 +558,8 @@ function setSalesMonth(mm) {
 
 function updateAdField(date, field, value) {
   const n = Number(String(value).replace(/[^\d.-]/g, '')) || 0;
+  if (!manualAdData[date]) manualAdData[date] = {};
+  manualAdData[date][field] = n;
   if (!adData[date]) adData[date] = {};
   adData[date][field] = n;
   saveAdData();
