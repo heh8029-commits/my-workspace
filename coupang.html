@@ -153,7 +153,6 @@ tr.today-row{background:#fffbe6}
     <span id="save-status" style="font-size:.75rem;color:#888;margin-right:6px"></span>
     <span class="sync-time" id="sync-time"></span>
     <div class="sync-btn" id="sync-btn" onclick="manualSync()"><span class="icon">⟳</span>새로고침</div>
-    <div class="sync-btn" onclick="showPatDialog()" title="GitHub 저장 설정" style="margin-left:4px">⚙</div>
   </div>
 </div>
 
@@ -294,9 +293,7 @@ const MANUAL = {
 const HOURS = ["오전0시","오전1시","오전2시","오전3시","오전4시","오전5시","오전6시","오전7시","오전8시","오전9시","오전10시","오전11시","오후12시","오후1시","오후2시","오후3시","오후4시","오후5시","오후6시","오후7시","오후8시","오후9시","오후10시","오후11시"];
 const DAYS = ["일","월","화","수","목","금","토"];
 
-const GITHUB_OWNER = 'heh8029-commits';
-const GITHUB_REPO = 'my-workspace';
-const GITHUB_FILE = 'coupang_data.json';
+const FB_MANUAL_AD = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/coupang_manual_ad.json';
 
 let adPerformance = {};
 let currentBrand = "미리토퍼";
@@ -309,10 +306,17 @@ let salesUpdated = '';
 let runLog = []; // [{time, account, status, amount, reason}]
 let currentView = 'main'; // 'main' | 'sales' | 'log'
 
-// coupang_data.json 로드
+// coupang_data.json + Firebase 수동 데이터 동시 로드
 async function loadAutoData() {
   try {
-    const r = await fetch('coupang_data.json?t=' + Date.now());
+    const [r, fbR] = await Promise.all([
+      fetch('coupang_data.json?t=' + Date.now()),
+      fetch(FB_MANUAL_AD + '?t=' + Date.now()).catch(() => null)
+    ]);
+    if (fbR && fbR.ok) {
+      const fb = await fbR.json();
+      if (fb && typeof fb === 'object') manualAdData = fb;
+    }
     const d = await r.json();
     const accs = d.accounts || {};
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -464,80 +468,37 @@ function setView(v) {
   }
 }
 
-let manualAdData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
+let manualAdData = {};
 let adData = {};
 
-function saveAdData() {
-  localStorage.setItem('coupangAdData', JSON.stringify(manualAdData));
-  scheduleGitHubSave();
-}
-
-// ── GitHub API 저장 ──────────────────────────────────────────────
+// ── Firebase 저장 ──────────────────────────────────────────────
 let _saveTimer = null;
-let _isSaving = false;
-
-function getGithubToken() { return localStorage.getItem('githubPAT') || ''; }
-
-function showPatDialog() {
-  const cur = getGithubToken();
-  const t = prompt('GitHub Personal Access Token 입력\n(fine-grained PAT, contents:write 권한)\n\n비워두면 GitHub 저장 비활성화', cur);
-  if (t !== null) {
-    localStorage.setItem('githubPAT', t.trim());
-    setSaveStatus(t.trim() ? 'PAT 저장됨' : 'GitHub 저장 비활성화');
-    setTimeout(() => setSaveStatus(''), 3000);
-  }
-}
 
 function setSaveStatus(msg) {
   const el = document.getElementById('save-status');
   if (el) el.textContent = msg;
 }
 
-function scheduleGitHubSave() {
-  if (!getGithubToken()) return;
+function saveAdData() {
   if (_saveTimer) clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(doGitHubSave, 2000);
+  _saveTimer = setTimeout(doFirebaseSave, 800);
 }
 
-async function doGitHubSave() {
-  const token = getGithubToken();
-  if (!token || _isSaving) return;
-  _isSaving = true;
+async function doFirebaseSave() {
   setSaveStatus('저장 중...');
   try {
-    const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
-    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' };
-
-    const getResp = await fetch(apiUrl, { headers });
-    if (!getResp.ok) throw new Error(`읽기 실패 ${getResp.status}`);
-    const fileInfo = await getResp.json();
-    const current = JSON.parse(atob(fileInfo.content.replace(/\n/g, '')));
-
-    if (!current.ad_data) current.ad_data = {};
-    for (const [date, fields] of Object.entries(manualAdData)) {
-      if (!current.ad_data[date]) current.ad_data[date] = {};
-      Object.assign(current.ad_data[date], fields);
-    }
-
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(current, null, 2))));
-    const putResp = await fetch(apiUrl, {
+    const r = await fetch(FB_MANUAL_AD, {
       method: 'PUT',
-      headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'coupang: 매출 수동 입력 저장', content: encoded, sha: fileInfo.sha })
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(manualAdData)
     });
-
-    if (putResp.ok) {
-      setSaveStatus('✓ GitHub 저장됨');
-      setTimeout(() => setSaveStatus(''), 4000);
-    } else {
-      const err = await putResp.json();
-      throw new Error(err.message || putResp.status);
-    }
+    if (r.ok) {
+      setSaveStatus('✓ 저장됨');
+      setTimeout(() => setSaveStatus(''), 3000);
+    } else throw new Error(r.status);
   } catch(e) {
-    setSaveStatus('저장 오류: ' + e.message);
-    console.error('GitHub save error:', e);
-  } finally {
-    _isSaving = false;
+    setSaveStatus('저장 오류');
+    console.error('Firebase save error:', e);
   }
 }
 
