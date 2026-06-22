@@ -338,7 +338,12 @@ async function loadAutoData() {
     const jsonAdData = d.ad_data || {};
     adData = {};
     for (const date of new Set([...Object.keys(jsonAdData), ...Object.keys(manualAdData)])) {
-      adData[date] = Object.assign({}, jsonAdData[date] || {}, manualAdData[date] || {});
+      const merged = Object.assign({}, jsonAdData[date] || {});
+      // 0인 manual값은 무시 → JSON 원래값 유지
+      for (const [k, v] of Object.entries(manualAdData[date] || {})) {
+        if (v !== 0 && v !== null && v !== undefined) merged[k] = v;
+      }
+      adData[date] = merged;
     }
 
     adPerformance = d.ad_performance || {};
@@ -558,8 +563,16 @@ function setSalesMonth(mm) {
 
 function updateAdField(date, field, value) {
   const n = Number(String(value).replace(/[^\d.-]/g, '')) || 0;
-  if (!manualAdData[date]) manualAdData[date] = {};
-  manualAdData[date][field] = n;
+  if (n === 0) {
+    // 0이면 manual override 삭제 → JSON 원래값 사용
+    if (manualAdData[date]) {
+      delete manualAdData[date][field];
+      if (Object.keys(manualAdData[date]).length === 0) delete manualAdData[date];
+    }
+  } else {
+    if (!manualAdData[date]) manualAdData[date] = {};
+    manualAdData[date][field] = n;
+  }
   if (!adData[date]) adData[date] = {};
   adData[date][field] = n;
   saveAdData();
