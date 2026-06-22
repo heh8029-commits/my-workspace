@@ -294,6 +294,7 @@ const HOURS = ["오전0시","오전1시","오전2시","오전3시","오전4시",
 const DAYS = ["일","월","화","수","목","금","토"];
 
 const FB_MANUAL_AD = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/coupang_manual_ad.json';
+const FB_MANUAL_HOURLY = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/coupang_manual_hourly.json';
 
 let adPerformance = {};
 let currentBrand = "미리토퍼";
@@ -309,13 +310,18 @@ let currentView = 'main'; // 'main' | 'sales' | 'log'
 // coupang_data.json + Firebase 수동 데이터 동시 로드
 async function loadAutoData() {
   try {
-    const [r, fbR] = await Promise.all([
+    const [r, fbR, fbHR] = await Promise.all([
       fetch('coupang_data.json?t=' + Date.now()),
-      fetch(FB_MANUAL_AD + '?t=' + Date.now()).catch(() => null)
+      fetch(FB_MANUAL_AD + '?t=' + Date.now()).catch(() => null),
+      fetch(FB_MANUAL_HOURLY + '?t=' + Date.now()).catch(() => null)
     ]);
     if (fbR && fbR.ok) {
       const fb = await fbR.json();
       if (fb && typeof fb === 'object') manualAdData = fb;
+    }
+    if (fbHR && fbHR.ok) {
+      const fbH = await fbHR.json();
+      if (fbH && typeof fbH === 'object') manualHourlyData = fbH;
     }
     const d = await r.json();
     const accs = d.accounts || {};
@@ -331,6 +337,16 @@ async function loadAutoData() {
       }
       const todayVals = Object.values(autoData[brand][todayStr] || {});
       currentAmount[brand] = todayVals.length ? Math.max(...todayVals) : 0;
+    }
+    // 수동 입력 hourly 데이터 merge
+    for (const [brand, dates] of Object.entries(manualHourlyData)) {
+      if (!autoData[brand]) autoData[brand] = {};
+      for (const [date, hours] of Object.entries(dates)) {
+        if (!autoData[brand][date]) autoData[brand][date] = {};
+        for (const [h, v] of Object.entries(hours)) {
+          if (v) autoData[brand][date][h] = v;
+        }
+      }
     }
     // 매출 데이터 로드
     const sd = d.sales_data || {};
@@ -470,6 +486,7 @@ function setView(v) {
 
 let manualAdData = {};
 let adData = {};
+let manualHourlyData = {};
 
 // ── Firebase 저장 ──────────────────────────────────────────────
 let _saveTimer = null;
@@ -500,6 +517,29 @@ async function doFirebaseSave() {
     setSaveStatus('저장 오류');
     console.error('Firebase save error:', e);
   }
+}
+
+async function saveManualHour(el) {
+  const n = Number(el.value.replace(/[^\d]/g, '')) || 0;
+  if (!n) return;
+  const brand = el.dataset.brand, date = el.dataset.date, hour = el.dataset.hour;
+  if (!manualHourlyData[brand]) manualHourlyData[brand] = {};
+  if (!manualHourlyData[brand][date]) manualHourlyData[brand][date] = {};
+  manualHourlyData[brand][date][hour] = n;
+  if (!autoData[brand]) autoData[brand] = {};
+  if (!autoData[brand][date]) autoData[brand][date] = {};
+  autoData[brand][date][hour] = n;
+  setSaveStatus('저장 중...');
+  try {
+    await fetch(FB_MANUAL_HOURLY, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(manualHourlyData)
+    });
+    setSaveStatus('✓ 저장됨');
+    setTimeout(() => setSaveStatus(''), 3000);
+  } catch(e) { setSaveStatus('저장 오류'); }
+  render();
 }
 
 function formatInputCommas(el) {
@@ -842,10 +882,12 @@ function render() {
   }
 
   // 바디
+  const yesterdayStr = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
   const rows = dates.map(dateStr => {
     const row = data[dateStr] || {};
     const dow = dayOfWeek(dateStr);
     const isToday = dateStr === todayStr;
+    const isRecent = dateStr >= yesterdayStr;
     const isSun = dow === '일', isSat = dow === '토';
     const mm = dateStr.slice(5, 7), dd = dateStr.slice(8, 10);
     const trClass = [isToday ? 'today-row' : '', isSun ? 'sunday' : '', isSat ? 'saturday' : ''].filter(Boolean).join(' ');
@@ -861,6 +903,9 @@ function render() {
           const up = diffPct >= 0;
           badge = `<br><span style="font-size:.62rem;font-weight:700;color:${up ? '#0ea5e9' : '#e0316b'}">${up ? '▲' : '▼'}${Math.abs(diffPct).toFixed(0)}%</span>`;
         }
+      }
+      if (!v && isRecent) {
+        return `<td class="amount"><input type="text" class="manual-hour-input" data-brand="${currentBrand}" data-date="${dateStr}" data-hour="${h}" placeholder="-" onblur="saveManualHour(this)" style="width:48px;font-size:.68rem;text-align:center;border:1px solid #ddd;border-radius:3px;padding:1px 2px;background:#fafafa;color:#666"></td>`;
       }
       return `<td class="amount">${v ? fmt(v) : ''}${badge}</td>`;
     }).join('');
