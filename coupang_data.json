@@ -562,6 +562,18 @@
         "rocket_growth": 330900,
         "seller_delivery": 0,
         "total": 330900
+      },
+      {
+        "date": "06/20",
+        "rocket_growth": 160000,
+        "seller_delivery": 0,
+        "total": 160000
+      },
+      {
+        "date": "06/21",
+        "rocket_growth": 129200,
+        "seller_delivery": 0,
+        "total": 129200
       }
     ]
   },
