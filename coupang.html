@@ -331,7 +331,10 @@ async function loadAutoData() {
     // 광고비/네이버 매출: 서버(JSON)에 저장된 값을 기본값으로, 이 브라우저에서 직접 수정한 값(localStorage)이 있으면 그게 우선
     const jsonAdData = d.ad_data || {};
     const localAdData = JSON.parse(localStorage.getItem('coupangAdData') || '{}');
-    adData = Object.assign({}, jsonAdData, localAdData);
+    adData = {};
+    for (const date of new Set([...Object.keys(jsonAdData), ...Object.keys(localAdData)])) {
+      adData[date] = Object.assign({}, jsonAdData[date] || {}, localAdData[date] || {});
+    }
 
     adPerformance = d.ad_performance || {};
     runLog = d.run_log || [];
