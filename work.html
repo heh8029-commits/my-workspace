@@ -10094,6 +10094,11 @@ function workSync() {
     });
   // 자동 동기화
   workSync();
+  // URL ?tab=cs 파라미터로 CS탭 자동 이동 (boss.html iframe용)
+  if(new URLSearchParams(location.search).get('tab')==='cs'){
+    var csTabBtn=document.querySelector('.work-tab');
+    if(csTabBtn) workSwitchTab(0,csTabBtn);
+  }
 })();
 </script>
 <div class="toast" id="toast"></div>
