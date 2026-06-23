@@ -864,14 +864,14 @@ function renderMonthBar() {
 function render() {
   renderMonthBar();
   const data = getMergedData(currentBrand);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr();
 
   // 날짜 범위: 데이터 있는 날짜 기준 최솟값 ~ 오늘, 빈 날짜도 행 표시
   const dataKeys = Object.keys(data);
   const minDate = dataKeys.length ? dataKeys.sort()[0] : todayStr;
   const allDates = [];
-  for (let d = new Date(minDate); d <= new Date(todayStr); d.setDate(d.getDate() + 1)) {
-    allDates.push(d.toISOString().slice(0, 10));
+  for (let d = new Date(minDate + 'T12:00:00'); d <= new Date(todayStr + 'T12:00:00'); d.setDate(d.getDate() + 1)) {
+    allDates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
   }
   let dates = allDates
     .filter(d => currentMonth === null || d.startsWith(currentMonth))
