@@ -1524,48 +1524,51 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
     <!-- CS 실시간공유 페이지 -->
     <div class="page" id="page-cs">
-      <div style="max-width:1100px;margin:0 auto">
-        <!-- 등록 영역 -->
-        <div style="background:#fff;border-radius:16px;border:2px solid #b0c8f8;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(74,128,208,.08)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
-            <button onclick="bCsCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="7일 지난 글 삭제">🗑️ 7일정리</button>
-            <button onclick="bCsRefresh()" style="background:white;border:1.5px solid #C4714A;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
-            <div style="display:flex;gap:5px;align-items:center">
-              <button type="button" onclick="bCsSetAuthor('사장')" class="bcs-author-btn" data-author="사장" style="padding:5px 12px;border-radius:14px;border:2px solid #C4714A;background:#C4714A;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">사장</button>
+      <div style="display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start">
+        <!-- 왼쪽: 등록 영역 -->
+        <div style="position:sticky;top:0">
+          <div style="background:#fff;border-radius:16px;border:2px solid #b0c8f8;padding:16px;box-shadow:0 2px 10px rgba(74,128,208,.08)">
+            <div style="font-size:.92rem;font-weight:800;color:#1050a0;margin-bottom:10px">💬 CS 등록</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+              <button type="button" onclick="bCsSetAuthor('수')" class="bcs-author-btn" data-author="수" style="padding:5px 12px;border-radius:14px;border:2px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
               <button type="button" onclick="bCsSetAuthor('은')" class="bcs-author-btn" data-author="은" style="padding:5px 12px;border-radius:14px;border:2px solid #f7a8c0;background:white;color:#c04070;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-              <button type="button" onclick="bCsSetAuthor('수')" class="bcs-author-btn" data-author="수" style="padding:5px 12px;border-radius:14px;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
               <button type="button" onclick="bCsSetAuthor('슬')" class="bcs-author-btn" data-author="슬" style="padding:5px 12px;border-radius:14px;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
             </div>
-            <div style="display:flex;gap:5px">
+            <div style="display:flex;gap:5px;margin-bottom:10px">
               <button type="button" onclick="bCsSetCategory('CS')" id="bcs-cat-cs" style="padding:6px 16px;border-radius:14px;border:2px solid #4a80d0;background:#4a80d0;color:white;font-size:.82rem;font-weight:900;cursor:pointer;transition:all .15s">💬 CS</button>
               <button type="button" onclick="bCsSetCategory('그로스')" id="bcs-cat-gross" style="padding:6px 16px;border-radius:14px;border:2px solid #e0a000;background:white;color:#e0a000;font-size:.82rem;font-weight:900;cursor:pointer;transition:all .15s">📋 그로스</button>
             </div>
-          </div>
-          <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;min-height:36px;margin-bottom:6px">
-            <div id="bcs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-            <div onclick="bCsImgModalOpen()" tabindex="0" style="width:54px;height:54px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none">
-              <span style="font-size:1.1rem;color:#b0c0e0;line-height:1">+</span>
-              <span style="font-size:.55rem;color:#b0c0e0">이미지</span>
+            <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;min-height:36px;margin-bottom:6px">
+              <div id="bcs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+              <div onclick="bCsImgModalOpen()" tabindex="0" style="width:54px;height:54px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none">
+                <span style="font-size:1.1rem;color:#b0c0e0;line-height:1">+</span>
+                <span style="font-size:.55rem;color:#b0c0e0">이미지</span>
+              </div>
+              <input type="file" id="bcs-file-inp" accept="image/*" multiple style="display:none" onchange="bCsHandleFile(event)">
             </div>
-            <input type="file" id="bcs-file-inp" accept="image/*" multiple style="display:none" onchange="bCsHandleFile(event)">
+            <textarea id="bcs-inp" rows="5" placeholder="CS 내용 입력... (Shift+Enter 등록)"
+              style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;outline:none;resize:none;line-height:1.7;background:#f8fbff"
+              onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();bCsAdd()}"></textarea>
+            <button onclick="bCsAdd()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
+            <div style="display:flex;gap:6px;margin-top:10px">
+              <button onclick="bCsCleanOld()" style="flex:1;background:white;border:1.5px solid #ddd;border-radius:8px;padding:5px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer">🗑️ 7일정리</button>
+              <button onclick="bCsRefresh()" style="flex:1;background:white;border:1.5px solid #C4714A;border-radius:8px;padding:5px;font-size:.75rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+            </div>
           </div>
-          <textarea id="bcs-inp" rows="3" placeholder="CS 내용 입력... (Shift+Enter 등록)"
-            style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;outline:none;resize:none;line-height:1.7;background:#f8fbff"
-            onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();bCsAdd()}"></textarea>
-          <button onclick="bCsAdd()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
         </div>
-        <!-- 필터 + 검색 -->
-        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
-          <div style="display:flex;gap:5px">
-            <button onclick="bCsSetFilter('전체',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
-            <button onclick="bCsSetFilter('미완료',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
-            <button onclick="bCsSetFilter('완료',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+        <!-- 오른쪽: 필터 + 리스트 -->
+        <div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+            <div style="display:flex;gap:5px">
+              <button onclick="bCsSetFilter('전체',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
+              <button onclick="bCsSetFilter('미완료',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
+              <button onclick="bCsSetFilter('완료',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+            </div>
+            <input id="bcs-search" type="text" placeholder="🔍 검색..." oninput="bCsRender()"
+              style="flex:1;min-width:120px;border:1.5px solid #d0e0f8;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:inherit;outline:none">
           </div>
-          <input id="bcs-search" type="text" placeholder="🔍 검색..." oninput="bCsRender()"
-            style="flex:1;min-width:120px;border:1.5px solid #d0e0f8;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:inherit;outline:none">
+          <div id="bcs-list"></div>
         </div>
-        <div id="bcs-list"></div>
       </div>
     </div>
 
@@ -5446,7 +5449,7 @@ function boRender(){
 }
 
 // ── CS 실시간공유 ─────────────────────────────────────────
-var _bCsAuthor = '사장';
+var _bCsAuthor = '수';
 var _bCsCategory = 'CS';
 var _bCsFilter = '전체';
 var _bCsImgs = [];
@@ -5484,8 +5487,8 @@ function bCsSetCategory(cat) {
 }
 function bCsSetAuthor(a) {
   _bCsAuthor = a;
-  var AC={'사장':'#C4714A','은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
-  var TC={'사장':'white','은':'#c04070','수':'#4a80d0','슬':'#3dbb8f'};
+  var AC={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var TC={'은':'#c04070','수':'#4a80d0','슬':'#3dbb8f'};
   document.querySelectorAll('.bcs-author-btn').forEach(function(b){
     var n=b.getAttribute('data-author'), on=n===a;
     b.style.background=on?AC[n]:'white'; b.style.color=on?TC[n]:TC[n];
@@ -5651,8 +5654,8 @@ function bCsRender() {
   if(_bCsFilter==='미완료')list=list.filter(function(it){return!it.done;});
   if(_bCsFilter==='완료')list=list.filter(function(it){return it.done;});
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;padding:40px;font-size:.95rem">CS 내용이 없어요 💬</div>';return;}
-  var AC={'사장':'#C4714A','은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
-  var AT={'사장':'#8B4E35','은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+  var AC={'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var AT={'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
   el.innerHTML='';
   list.forEach(function(it){
     var ac=AC[it.author]||'#eee', atc=AT[it.author]||'#333';
@@ -5663,7 +5666,7 @@ function bCsRender() {
     var card=document.createElement('div');
     card.style.cssText='background:'+(it.done?'#f5f5f5':'white')+';border:2px solid '+(it.done?'#ddd':'#b0c8f8')+';border-radius:14px;margin-bottom:14px;overflow:hidden;opacity:'+(it.done?'0.55':'1');
     var hdr=document.createElement('div'); hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px 0;flex-wrap:wrap';
-    var ab=document.createElement('span'); ab.style.cssText='width:38px;height:38px;border-radius:50%;background:'+ac+';color:white;font-size:.95rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc; ab.textContent=it.author||'?';
+    var ab=document.createElement('span'); ab.style.cssText='width:38px;height:38px;border-radius:50%;background:'+ac+';color:'+atc+';font-size:.95rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc; ab.textContent=it.author||'?';
     var dtWrap=document.createElement('div'); dtWrap.style.cssText='display:flex;flex-direction:column;gap:1px';
     var dateEl=document.createElement('div'); dateEl.style.cssText='font-size:.9rem;font-weight:900;color:#222'; dateEl.textContent=dateStr;
     var timeEl=document.createElement('div'); timeEl.style.cssText='font-size:1rem;font-weight:900;color:#1050a0'; timeEl.textContent=timeStr;
@@ -5704,20 +5707,6 @@ function bCsRender() {
         var nameEl=document.createElement('span'); nameEl.style.cssText='font-size:.95rem;font-weight:900;color:'+(AT[name]||'#333'); nameEl.textContent=name;
         lbl.appendChild(chk); lbl.appendChild(nameEl); chkWrap.appendChild(lbl);
       });
-      // 사장 확인 체크
-      var blbl=document.createElement('label'); blbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
-      var bchk=document.createElement('input'); bchk.type='checkbox'; bchk.checked=confirmed.indexOf('사장')!==-1;
-      bchk.style.cssText='width:28px;height:28px;accent-color:#C4714A;cursor:pointer';
-      bchk.onchange=(function(id,c){return function(){
-        bCsUpdateItem(id,function(item){
-          item.confirmed=item.confirmed||[];
-          var idx=item.confirmed.indexOf('사장');
-          if(c.checked){if(idx===-1)item.confirmed.push('사장');}
-          else{if(idx!==-1)item.confirmed.splice(idx,1);}
-        });
-      };})(it.id,bchk);
-      var bnameEl=document.createElement('span'); bnameEl.style.cssText='font-size:.95rem;font-weight:900;color:#8B4E35'; bnameEl.textContent='사장';
-      blbl.appendChild(bchk); blbl.appendChild(bnameEl); chkWrap.appendChild(blbl);
     }
     card.appendChild(chkWrap);
     // 바디
