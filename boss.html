@@ -966,10 +966,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span class="bmg-title-badge" id="btodo-badge"></span>
           </div>
           <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:8px;flex-shrink:0">
-            <div style="display:flex;gap:6px">
-              <input class="bm-input" id="btodo-inp" placeholder="메모... (Ctrl+V 이미지 붙여넣기)" maxlength="500"
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey)memoAdd('todo')"
-                onpaste="handleMemoPasteEv('todo',event)">
+            <div style="display:flex;gap:6px;align-items:flex-start">
+              <textarea class="bm-input" id="btodo-inp" placeholder="메모... (Ctrl+V 이미지, Shift+Enter 줄바꿈)" maxlength="500" rows="2"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();memoAdd('todo')}"
+                onpaste="handleMemoPasteEv('todo',event)"
+                style="resize:none;line-height:1.5"></textarea>
               <input type="file" id="btodo-file-inp" accept="image/*" style="display:none"
                 onchange="handleMemoFilePick('todo',this.files[0]);this.value=''">
               <button class="bm-attach-btn" onclick="document.getElementById('btodo-file-inp').click()" title="이미지 첨부">📎</button>
@@ -1030,10 +1031,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span class="bmg-title-badge" id="bimprove-badge"></span>
           </div>
           <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:8px;flex-shrink:0">
-            <div style="display:flex;gap:6px">
-              <input class="bm-input" id="bimprove-inp" placeholder="메모... (Ctrl+V 이미지 붙여넣기)" maxlength="500"
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey)memoAdd('improve')"
-                onpaste="handleMemoPasteEv('improve',event)">
+            <div style="display:flex;gap:6px;align-items:flex-start">
+              <textarea class="bm-input" id="bimprove-inp" placeholder="메모... (Ctrl+V 이미지, Shift+Enter 줄바꿈)" maxlength="500" rows="2"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();memoAdd('improve')}"
+                onpaste="handleMemoPasteEv('improve',event)"
+                style="resize:none;line-height:1.5"></textarea>
               <input type="file" id="bimprove-file-inp" accept="image/*" style="display:none"
                 onchange="handleMemoFilePick('improve',this.files[0]);this.value=''">
               <button class="bm-attach-btn" onclick="document.getElementById('bimprove-file-inp').click()" title="이미지 첨부">📎</button>
