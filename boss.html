@@ -4855,6 +4855,117 @@ function deleteBmRow(id){
   _bmDebounceSave();renderBmRows();
 }
 
+// ── 기본 업무 순서 플로우 (전역 — onclick에서 접근 가능) ────
+const FB_BOSS_FLOW = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_flow.json';
+const BOSS_FLOW_SLOTS = [
+  {val:'07:00',label:'오전7시~8시'},{val:'08:00',label:'오전8시~9시'},
+  {val:'09:00',label:'오전9시~10시'},{val:'10:00',label:'오전10시~11시'},
+  {val:'11:00',label:'오전11시~12시'},{val:'12:00',label:'오후12시~1시'},
+  {val:'13:00',label:'오후1시~2시'},{val:'14:00',label:'오후2시~3시'},
+  {val:'15:00',label:'오후3시~4시'},{val:'16:00',label:'오후4시~5시'},
+  {val:'17:00',label:'오후5시~6시'},{val:'18:00',label:'오후6시~7시'},
+  {val:'19:00',label:'오후7시~8시'},{val:'20:00',label:'오후8시~9시'},
+  {val:'21:00',label:'오후9시~10시'},
+];
+let bfData = [];
+let _bfSaveTimer = null;
+async function bfFetch(){
+  try{const r=await fetch(FB_BOSS_FLOW+'?t='+Date.now());if(r.ok){const d=await r.json();if(Array.isArray(d))bfData=d;}bfRender();}catch(e){bfRender();}
+}
+async function _bfSaveNow(){
+  try{await fetch(FB_BOSS_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(bfData)});}catch(e){}
+}
+function bfSave(){clearTimeout(_bfSaveTimer);_bfSaveTimer=setTimeout(_bfSaveNow,600);}
+function bfEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function bfIsNow(v){if(!v)return false;const n=new Date(),tot=n.getHours()*60+n.getMinutes(),h=parseInt(v);return tot>=h*60&&tot<(h+1)*60;}
+function bfRender(){
+  const wrap=document.getElementById('boss-flow');if(!wrap)return;
+  let h='';
+  bfData.forEach((item,i)=>{
+    if(i>0)h+=`<span class="flow-arrow">→</span>`;
+    const now=bfIsNow(item.time);
+    const nowBadge=now?`<span class="flow-time-now">⏰ 지금</span>`:'';
+    h+=`<div class="flow-item${now?' now-active':''}" draggable="true"
+      ondragstart="bfDragStart(event,${item.id})"
+      ondragover="event.preventDefault();this.style.outline='2px dashed #C4714A'"
+      ondragleave="this.style.outline=''"
+      ondrop="bfDrop(event,${item.id});this.style.outline=''">
+      <span class="fi-drag">⠿</span>
+      <span contenteditable="true"
+        onblur="bfEdit(${item.id},this.textContent)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        style="outline:none;min-width:30px">${bfEsc(item.text)}</span>
+      ${nowBadge}
+      <button class="fi-edit" onclick="bfEditPopup(${item.id})">✏️</button>
+      <button class="fi-del" onclick="bfDel(${item.id})">✕</button>
+    </div>`;
+  });
+  h+=`<span class="flow-arrow"${bfData.length===0?' style="display:none"':''}>→</span>
+    <div class="flow-add" onclick="bfAdd()">＋ 추가</div>`;
+  wrap.innerHTML=h;
+}
+function bfAdd(){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}">${t.label}</option>`).join('');
+  ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
+    <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">📋 업무 추가</div>
+    <input id="bf-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <select id="bf-add-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+      <option value="">시간대 없음</option>${opts}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+      <button id="bf-add-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#D4895E,#C4714A);color:white;font-weight:700;cursor:pointer;font-size:.85rem">추가</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#bf-add-txt');inp.focus();
+  ov.querySelector('#bf-add-ok').onclick=function(){
+    const t=inp.value.trim();if(!t){inp.focus();return;}
+    bfData.push({id:Date.now(),text:t,time:ov.querySelector('#bf-add-time').value});
+    bfSave();bfRender();ov.remove();
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#bf-add-ok').click();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+function bfDel(id){bfData=bfData.filter(i=>i.id!==id);bfSave();bfRender();}
+function bfEdit(id,val){const item=bfData.find(i=>i.id===id);if(item&&val.trim()){item.text=val.trim();bfSave();}}
+function bfEditPopup(id){
+  const item=bfData.find(i=>i.id===id);if(!item)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}"${item.time===t.val?' selected':''}>${t.label}</option>`).join('');
+  ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
+    <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">✏️ 업무 편집</div>
+    <input id="bf-edit-txt" type="text" value="${bfEsc(item.text)}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <select id="bf-edit-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+      <option value=""${!item.time?' selected':''}>시간대 없음</option>${opts}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+      <button id="bf-edit-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#D4895E,#C4714A);color:white;font-weight:700;cursor:pointer;font-size:.85rem">저장</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#bf-edit-txt');inp.focus();inp.select();
+  ov.querySelector('#bf-edit-ok').onclick=function(){
+    const t=inp.value.trim();if(!t){inp.focus();return;}
+    item.text=t;item.time=ov.querySelector('#bf-edit-time').value;
+    bfSave();bfRender();ov.remove();
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#bf-edit-ok').click();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+let _bfDragId=null;
+function bfDragStart(e,id){_bfDragId=id;e.dataTransfer.effectAllowed='move';}
+function bfDrop(e,targetId){
+  e.preventDefault();if(_bfDragId===targetId)return;
+  const fi=bfData.findIndex(i=>i.id===_bfDragId),ti=bfData.findIndex(i=>i.id===targetId);
+  if(fi<0||ti<0)return;
+  const[m]=bfData.splice(fi,1);bfData.splice(ti,0,m);
+  bfSave();bfRender();
+}
+setInterval(bfRender,60000);
+
 // ── 초기화 ─────────────────────────────────────────────────
 (function init(){
   renderTopMenu();
@@ -4865,125 +4976,7 @@ function deleteBmRow(id){
   fetchBmData().then(()=>{renderAllGrids();renderBmRows();});
   fetchAlarms().then(()=>renderAlarmList());
   fetchExpenses().then(()=>updateDatebar());
-
-  // ── 기본 업무 순서 플로우 ──────────────────────────────
-  const FB_BOSS_FLOW = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_flow.json';
-  const BOSS_FLOW_SLOTS = [
-    {val:'07:00',label:'오전7시~8시'},{val:'08:00',label:'오전8시~9시'},
-    {val:'09:00',label:'오전9시~10시'},{val:'10:00',label:'오전10시~11시'},
-    {val:'11:00',label:'오전11시~12시'},{val:'12:00',label:'오후12시~1시'},
-    {val:'13:00',label:'오후1시~2시'},{val:'14:00',label:'오후2시~3시'},
-    {val:'15:00',label:'오후3시~4시'},{val:'16:00',label:'오후4시~5시'},
-    {val:'17:00',label:'오후5시~6시'},{val:'18:00',label:'오후6시~7시'},
-    {val:'19:00',label:'오후7시~8시'},{val:'20:00',label:'오후8시~9시'},
-    {val:'21:00',label:'오후9시~10시'},
-  ];
-  let _bfSaveTimer = null;
-  async function bfFetch(){
-    try{const r=await fetch(FB_BOSS_FLOW+'?t='+Date.now());if(r.ok){const d=await r.json();if(Array.isArray(d))bfData=d;}bfRender();}catch(e){bfRender();}
-  }
-  async function _bfSaveNow(){
-    try{await fetch(FB_BOSS_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(bfData)});}catch(e){}
-  }
-  function bfSave(){clearTimeout(_bfSaveTimer);_bfSaveTimer=setTimeout(_bfSaveNow,600);}
-  function bfEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  function bfIsNow(v){if(!v)return false;const n=new Date(),tot=n.getHours()*60+n.getMinutes(),h=parseInt(v);return tot>=h*60&&tot<(h+1)*60;}
-  let bfData = [];
-
-  function bfRender(){
-    const wrap=document.getElementById('boss-flow');if(!wrap)return;
-    let h='';
-    bfData.forEach((item,i)=>{
-      if(i>0)h+=`<span class="flow-arrow">→</span>`;
-      const now=bfIsNow(item.time);
-      const nowBadge=now?`<span class="flow-time-now">⏰ 지금</span>`:'';
-      h+=`<div class="flow-item${now?' now-active':''}" draggable="true"
-        ondragstart="bfDragStart(event,${item.id})"
-        ondragover="event.preventDefault();this.style.outline='2px dashed #C4714A'"
-        ondragleave="this.style.outline=''"
-        ondrop="bfDrop(event,${item.id});this.style.outline=''">
-        <span class="fi-drag">⠿</span>
-        <span contenteditable="true"
-          onblur="bfEdit(${item.id},this.textContent)"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
-          style="outline:none;min-width:30px">${bfEsc(item.text)}</span>
-        ${nowBadge}
-        <button class="fi-edit" onclick="bfEditPopup(${item.id})">✏️</button>
-        <button class="fi-del" onclick="bfDel(${item.id})">✕</button>
-      </div>`;
-    });
-    h+=`<span class="flow-arrow"${bfData.length===0?' style="display:none"':''}>→</span>
-      <div class="flow-add" onclick="bfAdd()">＋ 추가</div>`;
-    wrap.innerHTML=h;
-  }
-
-  function bfAdd(){
-    const ov=document.createElement('div');
-    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-    const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}">${t.label}</option>`).join('');
-    ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
-      <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">📋 업무 추가</div>
-      <input id="bf-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
-      <select id="bf-add-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
-        <option value="">시간대 없음</option>${opts}
-      </select>
-      <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
-        <button id="bf-add-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#D4895E,#C4714A);color:white;font-weight:700;cursor:pointer;font-size:.85rem">추가</button>
-      </div></div>`;
-    document.body.appendChild(ov);
-    const inp=ov.querySelector('#bf-add-txt');inp.focus();
-    ov.querySelector('#bf-add-ok').onclick=function(){
-      const t=inp.value.trim();if(!t){inp.focus();return;}
-      bfData.push({id:Date.now(),text:t,time:ov.querySelector('#bf-add-time').value});
-      bfSave();bfRender();ov.remove();
-    };
-    inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#bf-add-ok').click();};
-    ov.onclick=e=>{if(e.target===ov)ov.remove();};
-  }
-
-  function bfDel(id){bfData=bfData.filter(i=>i.id!==id);bfSave();bfRender();}
-
-  function bfEdit(id,val){const item=bfData.find(i=>i.id===id);if(item&&val.trim()){item.text=val.trim();bfSave(bfData);}}
-
-  function bfEditPopup(id){
-    const item=bfData.find(i=>i.id===id);if(!item)return;
-    const ov=document.createElement('div');
-    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-    const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}"${item.time===t.val?' selected':''}>${t.label}</option>`).join('');
-    ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
-      <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">✏️ 업무 편집</div>
-      <input id="bf-edit-txt" type="text" value="${bfEsc(item.text)}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
-      <select id="bf-edit-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
-        <option value=""${!item.time?' selected':''}>시간대 없음</option>${opts}
-      </select>
-      <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
-        <button id="bf-edit-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#D4895E,#C4714A);color:white;font-weight:700;cursor:pointer;font-size:.85rem">저장</button>
-      </div></div>`;
-    document.body.appendChild(ov);
-    const inp=ov.querySelector('#bf-edit-txt');inp.focus();inp.select();
-    ov.querySelector('#bf-edit-ok').onclick=function(){
-      const t=inp.value.trim();if(!t){inp.focus();return;}
-      item.text=t;item.time=ov.querySelector('#bf-edit-time').value;
-      bfSave();bfRender();ov.remove();
-    };
-    inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#bf-edit-ok').click();};
-    ov.onclick=e=>{if(e.target===ov)ov.remove();};
-  }
-
-  let _bfDragId=null;
-  function bfDragStart(e,id){_bfDragId=id;e.dataTransfer.effectAllowed='move';}
-  function bfDrop(e,targetId){
-    e.preventDefault();if(_bfDragId===targetId)return;
-    const fi=bfData.findIndex(i=>i.id===_bfDragId),ti=bfData.findIndex(i=>i.id===targetId);
-    if(fi<0||ti<0)return;
-    const[m]=bfData.splice(fi,1);bfData.splice(ti,0,m);
-    bfSave();bfRender();
-  }
-
-  bfFetch(); // Firebase에서 로드 후 렌더
-  setInterval(bfRender, 60000); // 1분마다 now-active 갱신
+  bfFetch();
 })();
 </script>
 </body>
