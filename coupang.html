@@ -82,6 +82,10 @@ tr.today-row{background:#fffbe6}
 .sales-table td.total-col{font-weight:700;color:#111}
 .sales-table td.rg-col{color:#1a5eff}
 .sales-table td.sd-col{color:#888}
+.sales-brand-bar{display:flex;gap:8px;padding:0 0 10px;margin-bottom:6px}
+.sales-brand-btn{padding:5px 16px;border-radius:20px;border:1.5px solid #ddd;background:#f5f5f5;color:#999;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s}
+.sales-brand-btn.active[data-brand="미리토퍼"]{background:#e8f0ff;color:#1a5eff;border-color:#1a5eff}
+.sales-brand-btn.active[data-brand="몽몽토퍼"]{background:#fff0f7;color:#e91e8c;border-color:#e91e8c}
 .sales-table tr.today-sales{background:#fffbe6}
 .sales-table tr.today-sales td.date-col{color:#e8234a}
 .sales-table tr.row-sat{background:#eef6ff}
@@ -168,6 +172,10 @@ tr.today-row{background:#fffbe6}
 </div>
 
 <div id="sales-view">
+  <div class="sales-brand-bar">
+    <button class="sales-brand-btn active" data-brand="미리토퍼" onclick="setSalesBrand('미리토퍼')">미리토퍼</button>
+    <button class="sales-brand-btn" data-brand="몽몽토퍼" onclick="setSalesBrand('몽몽토퍼')">몽몽토퍼</button>
+  </div>
   <div class="month-bar" id="sales-month-bar"></div>
   <div class="sales-updated" id="sales-updated"></div>
   <div class="sales-summary" id="sales-summary"></div>
@@ -300,6 +308,7 @@ let adPerformance = {};
 let currentBrand = "미리토퍼";
 let currentMonth = null; // null = 전체
 let currentSalesMonth = null; // null = 전체 (매출 탭 월별 필터, "MM" 형식)
+let currentSalesBrand = '미리토퍼';
 let autoData = {};
 let currentAmount = {}; // brand → 실시간 매출 (오늘 최신값)
 let salesData = {}; // brand → [{date, rocket_growth, seller_delivery, total}]
@@ -325,7 +334,7 @@ async function loadAutoData() {
     }
     const d = await r.json();
     const accs = d.accounts || {};
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = localDateStr();
     for (const brand of Object.keys(accs)) {
       autoData[brand] = {};
       for (const h of (accs[brand].history || [])) {
@@ -562,6 +571,15 @@ function setSalesMonth(mm) {
   renderSales();
 }
 
+function setSalesBrand(brand) {
+  currentSalesBrand = brand;
+  currentSalesMonth = null;
+  document.querySelectorAll('.sales-brand-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.brand === brand);
+  });
+  renderSales();
+}
+
 function updateAdField(date, field, value) {
   const n = Number(String(value).replace(/[^\d.-]/g, '')) || 0;
   if (n === 0) {
@@ -625,25 +643,33 @@ function renderSales() {
 
   const todayMD = `${String(new Date().getMonth()+1).padStart(2,'0')}/${String(new Date().getDate()).padStart(2,'0')}`;
 
-  const miriMap = {};
-  for (const row of (salesData['미리토퍼'] || [])) miriMap[row.date] = row;
+  const isMong = currentSalesBrand === '몽몽토퍼';
+  const fRg   = isMong ? 'mongRg'          : 'manualRg';
+  const fSd   = isMong ? 'mongSd'          : 'manualSd';
+  const fCp   = isMong ? 'mongCpAdCost'    : 'cpAdCost';
+  const fNvS  = isMong ? 'mongNaverSales'  : 'naverSales';
+  const fNvSe = isMong ? 'mongNaverSearch' : 'naverSearchAd';
+  const fNvAi = isMong ? 'mongNaverAi'     : 'naverAiAd';
 
-  renderSalesMonthBar(Object.keys(miriMap));
+  const brandMap = {};
+  for (const row of (salesData[currentSalesBrand] || [])) brandMap[row.date] = row;
+
+  renderSalesMonthBar(Object.keys(brandMap));
 
   // 실제 데이터가 있는 날짜 (합계/평균 계산용)
-  const dataDates = Object.keys(miriMap)
+  const dataDates = Object.keys(brandMap)
     .filter(d => currentSalesMonth === null || d.split('/')[0] === currentSalesMonth);
 
   // 화면에 표시할 날짜: 입력 안 된 날도 포함해서 해당 달 전체를 채움
   const monthsInScope = currentSalesMonth !== null
     ? [currentSalesMonth]
-    : Array.from(new Set(Object.keys(miriMap).map(d => d.split('/')[0]))).sort();
+    : Array.from(new Set(Object.keys(brandMap).map(d => d.split('/')[0]))).sort();
   const todayMM = String(new Date().getMonth() + 1).padStart(2, '0');
   const todayDD = new Date().getDate();
   const allDates = [];
   for (const mm of monthsInScope) {
     let dCount = new Date(2026, parseInt(mm), 0).getDate();
-    if (mm === todayMM) dCount = Math.min(dCount, todayDD); // 오늘 이후 미래 날짜는 표시 안 함
+    if (mm === todayMM) dCount = Math.min(dCount, todayDD);
     for (let day = 1; day <= dCount; day++) {
       allDates.push(`${mm}/${String(day).padStart(2, '0')}`);
     }
@@ -651,10 +677,10 @@ function renderSales() {
   allDates.sort().reverse();
 
   const getRgSd = (date) => {
-    const m = miriMap[date] || {};
+    const m = brandMap[date] || {};
     const ad = adData[date] || {};
-    const rg = (ad.manualRg !== undefined && ad.manualRg !== null && ad.manualRg !== '') ? ad.manualRg : (m.rocket_growth || 0);
-    const sd = (ad.manualSd !== undefined && ad.manualSd !== null && ad.manualSd !== '') ? ad.manualSd : (m.seller_delivery || 0);
+    const rg = (ad[fRg] !== undefined && ad[fRg] !== null && ad[fRg] !== '') ? ad[fRg] : (m.rocket_growth || 0);
+    const sd = (ad[fSd] !== undefined && ad[fSd] !== null && ad[fSd] !== '') ? ad[fSd] : (m.seller_delivery || 0);
     return { rg, sd };
   };
 
@@ -667,10 +693,10 @@ function renderSales() {
     sumRow.rocket_growth += rg;
     sumRow.seller_delivery += sd;
     sumRow.total += rg + sd;
-    sumAd.cpAdCost += ad.cpAdCost || 0;
-    sumAd.naverSales += ad.naverSales || 0;
-    sumAd.naverSearchAd += ad.naverSearchAd || 0;
-    sumAd.naverAiAd += ad.naverAiAd || 0;
+    sumAd.cpAdCost     += ad[fCp]   || 0;
+    sumAd.naverSales   += ad[fNvS]  || 0;
+    sumAd.naverSearchAd += ad[fNvSe] || 0;
+    sumAd.naverAiAd    += ad[fNvAi] || 0;
   }
   renderSalesSummary(dataDates.length ? 'sum' : null, sumRow, sumAd, dataDates.length);
 
@@ -694,18 +720,18 @@ function renderSales() {
 
     const { rg, sd } = getRgSd(date);
     const cpTotal = rg + sd;
-    const cpAdCost = ad.cpAdCost || 0;
+    const cpAdCost = ad[fCp] || 0;
     const cpAdPct = cpTotal ? (cpAdCost / cpTotal * 100) : 0;
 
-    const naverSales = ad.naverSales || 0;
-    const naverSearchAd = ad.naverSearchAd || 0;
-    const naverAiAd = ad.naverAiAd || 0;
-    const naverAdTotal = naverSearchAd + naverAiAd;
-    const naverAdPct = naverSales ? (naverAdTotal / naverSales * 100) : 0;
+    const naverSales    = ad[fNvS]  || 0;
+    const naverSearchAd = ad[fNvSe] || 0;
+    const naverAiAd     = ad[fNvAi] || 0;
+    const naverAdTotal  = naverSearchAd + naverAiAd;
+    const naverAdPct    = naverSales ? (naverAdTotal / naverSales * 100) : 0;
 
-    const totalSales = cpTotal + naverSales;
+    const totalSales  = cpTotal + naverSales;
     const totalAdCost = cpAdCost + naverAdTotal;
-    const totalAdPct = totalSales ? (totalAdCost / totalSales * 100) : 0;
+    const totalAdPct  = totalSales ? (totalAdCost / totalSales * 100) : 0;
 
     const [mm, dd] = date.split('/');
     const dow = dayOfWeek(`2026-${mm}-${dd}`);
@@ -715,14 +741,14 @@ function renderSales() {
 
     return `<tr class="${trCls}">
       <td class="date-col${isWeekend ? ' weekend' : ''}">${date} (${dow})</td>
-      ${inputCell(date, 'manualRg', rg)}
-      ${inputCell(date, 'manualSd', sd)}
+      ${inputCell(date, fRg, rg)}
+      ${inputCell(date, fSd, sd)}
       <td class="total-col">${fmtNum(cpTotal)}</td>
-      ${inputCell(date, 'cpAdCost', cpAdCost)}
+      ${inputCell(date, fCp, cpAdCost)}
       <td class="sd-col">${fmtPct(cpAdPct)}</td>
-      ${inputCell(date, 'naverSales', naverSales)}
-      ${inputCell(date, 'naverSearchAd', naverSearchAd)}
-      ${inputCell(date, 'naverAiAd', naverAiAd)}
+      ${inputCell(date, fNvS, naverSales)}
+      ${inputCell(date, fNvSe, naverSearchAd)}
+      ${inputCell(date, fNvAi, naverAiAd)}
       <td class="sd-col">${fmtPct(naverAdPct)}</td>
       <td class="total-col">${fmtNum(totalSales)}</td>
       <td class="total-col">${fmtNum(totalAdCost)}</td>
@@ -797,6 +823,12 @@ function monthLabel(ym) {
 }
 
 function fmt(n) { return n ? Number(n).toLocaleString('ko-KR') : ''; }
+
+function localDateStr(offsetDays = 0) {
+  const d = new Date();
+  if (offsetDays) d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 function dayOfWeek(dateStr) {
   return DAYS[new Date(dateStr).getDay()];
@@ -897,7 +929,7 @@ function render() {
   }
 
   // 바디
-  const yesterdayStr = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const yesterdayStr = localDateStr(-1);
   const rows = dates.map(dateStr => {
     const row = data[dateStr] || {};
     const dow = dayOfWeek(dateStr);
