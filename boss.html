@@ -4867,7 +4867,7 @@ function deleteBmRow(id){
   fetchExpenses().then(()=>updateDatebar());
 
   // ── 기본 업무 순서 플로우 ──────────────────────────────
-  const BOSS_FLOW_KEY = 'boss_flow_v1';
+  const FB_BOSS_FLOW = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_flow.json';
   const BOSS_FLOW_SLOTS = [
     {val:'07:00',label:'오전7시~8시'},{val:'08:00',label:'오전8시~9시'},
     {val:'09:00',label:'오전9시~10시'},{val:'10:00',label:'오전10시~11시'},
@@ -4878,11 +4878,17 @@ function deleteBmRow(id){
     {val:'19:00',label:'오후7시~8시'},{val:'20:00',label:'오후8시~9시'},
     {val:'21:00',label:'오후9시~10시'},
   ];
-  function bfLoad(){try{return JSON.parse(localStorage.getItem(BOSS_FLOW_KEY))||[];}catch{return[];}}
-  function bfSave(a){localStorage.setItem(BOSS_FLOW_KEY,JSON.stringify(a));}
+  let _bfSaveTimer = null;
+  async function bfFetch(){
+    try{const r=await fetch(FB_BOSS_FLOW+'?t='+Date.now());if(r.ok){const d=await r.json();if(Array.isArray(d))bfData=d;}bfRender();}catch(e){bfRender();}
+  }
+  async function _bfSaveNow(){
+    try{await fetch(FB_BOSS_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(bfData)});}catch(e){}
+  }
+  function bfSave(){clearTimeout(_bfSaveTimer);_bfSaveTimer=setTimeout(_bfSaveNow,600);}
   function bfEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function bfIsNow(v){if(!v)return false;const n=new Date(),tot=n.getHours()*60+n.getMinutes(),h=parseInt(v);return tot>=h*60&&tot<(h+1)*60;}
-  let bfData = bfLoad();
+  let bfData = [];
 
   function bfRender(){
     const wrap=document.getElementById('boss-flow');if(!wrap)return;
@@ -4930,13 +4936,13 @@ function deleteBmRow(id){
     ov.querySelector('#bf-add-ok').onclick=function(){
       const t=inp.value.trim();if(!t){inp.focus();return;}
       bfData.push({id:Date.now(),text:t,time:ov.querySelector('#bf-add-time').value});
-      bfSave(bfData);bfRender();ov.remove();
+      bfSave();bfRender();ov.remove();
     };
     inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#bf-add-ok').click();};
     ov.onclick=e=>{if(e.target===ov)ov.remove();};
   }
 
-  function bfDel(id){bfData=bfData.filter(i=>i.id!==id);bfSave(bfData);bfRender();}
+  function bfDel(id){bfData=bfData.filter(i=>i.id!==id);bfSave();bfRender();}
 
   function bfEdit(id,val){const item=bfData.find(i=>i.id===id);if(item&&val.trim()){item.text=val.trim();bfSave(bfData);}}
 
@@ -4960,7 +4966,7 @@ function deleteBmRow(id){
     ov.querySelector('#bf-edit-ok').onclick=function(){
       const t=inp.value.trim();if(!t){inp.focus();return;}
       item.text=t;item.time=ov.querySelector('#bf-edit-time').value;
-      bfSave(bfData);bfRender();ov.remove();
+      bfSave();bfRender();ov.remove();
     };
     inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#bf-edit-ok').click();};
     ov.onclick=e=>{if(e.target===ov)ov.remove();};
@@ -4973,10 +4979,10 @@ function deleteBmRow(id){
     const fi=bfData.findIndex(i=>i.id===_bfDragId),ti=bfData.findIndex(i=>i.id===targetId);
     if(fi<0||ti<0)return;
     const[m]=bfData.splice(fi,1);bfData.splice(ti,0,m);
-    bfSave(bfData);bfRender();
+    bfSave();bfRender();
   }
 
-  bfRender();
+  bfFetch(); // Firebase에서 로드 후 렌더
   setInterval(bfRender, 60000); // 1분마다 now-active 갱신
 })();
 </script>
