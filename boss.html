@@ -468,6 +468,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bm-row.done .bm-text{text-decoration:line-through;color:#BBB}
 .bm-check{width:16px;height:16px;cursor:pointer;accent-color:#C4714A;flex-shrink:0}
 .bm-text{flex:1;font-size:.83rem;color:#333;word-break:break-all;line-height:1.4;min-width:0}
+.bm-text-wrap{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bm-text-clamp{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.bm-expand-btn{font-size:.7rem;color:#C4714A;background:none;border:none;cursor:pointer;padding:0;text-align:left;font-weight:700}
+.bm-expand-btn:hover{text-decoration:underline}
 .bm-date{font-size:.66rem;color:#CCC;white-space:nowrap;flex-shrink:0}
 .bm-actions{display:flex;gap:2px;flex-shrink:0}
 .bno-icon{width:26px;height:26px;border-radius:6px;border:none;background:transparent;font-size:.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#BCBBBB;transition:all .12s;padding:0}
@@ -5274,7 +5278,10 @@ function memoRender(k){
       <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="memoToggle('${k}',${m.id},this.checked)">
       <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
       ${thumbHtml}
-      <span class="bm-text">${_linkify(m.text||'')}</span>
+      <div class="bm-text-wrap">
+        <span class="bm-text bm-text-clamp" id="bmt-${k}-${m.id}">${_linkify(m.text||'')}</span>
+        <button class="bm-expand-btn" id="bmx-${k}-${m.id}" style="display:none" onclick="memoToggleExpand('${k}',${m.id})">더보기 ▼</button>
+      </div>
       <span class="bm-date">${_fmtMemoDate(m.date)}</span>
       <div class="bm-actions">
         <button class="bno-icon" onclick="memoCopy('${k}',${i})" title="복사">📋</button>
@@ -5283,9 +5290,26 @@ function memoRender(k){
       </div>
     </div>`;
   }).join('');
+  setTimeout(()=>memoCheckClamp(k),30);
 }
-async function btodoFetch(){await memoFetch('todo');}
-async function bimproveFetch(){await memoFetch('improve');}
+function memoCheckClamp(k){
+  _MW[k].data.forEach(m=>{
+    const txt=document.getElementById('bmt-'+k+'-'+m.id);
+    const btn=document.getElementById('bmx-'+k+'-'+m.id);
+    if(!txt||!btn)return;
+    if(txt.scrollHeight>txt.clientHeight+4){btn.style.display='block';}
+  });
+}
+function memoToggleExpand(k,id){
+  const txt=document.getElementById('bmt-'+k+'-'+id);
+  const btn=document.getElementById('bmx-'+k+'-'+id);
+  if(!txt||!btn)return;
+  const expanded=!txt.classList.contains('bm-text-clamp');
+  txt.classList.toggle('bm-text-clamp',expanded);
+  btn.textContent=expanded?'더보기 ▼':'접기 ▲';
+}
+async function btodoFetch(){await memoFetch('todo'); setTimeout(()=>memoCheckClamp('todo'),50);}
+async function bimproveFetch(){await memoFetch('improve'); setTimeout(()=>memoCheckClamp('improve'),50);}
 
 // ── 주문제작요청 ──────────────────────────────────────────────
 const BO_ST=[
