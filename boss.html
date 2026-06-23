@@ -942,10 +942,13 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <!-- 홈 -->
     <div class="page active" id="page-home">
       <div class="bm-header">
-        <span class="bm-title">⚡ 바로가기</span>
+        <span class="bm-title" style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="toggleBmGrid()">
+          ⚡ 바로가기
+          <span id="bm-grid-toggle-arrow" style="font-size:.75rem;color:#BBB;transition:transform .2s">▼</span>
+        </span>
         <button class="bm-edit-btn" onclick="openEditor()">✏️ 편집</button>
       </div>
-      <div class="bm-grid" id="bm-grid-home"></div>
+      <div class="bm-grid" id="bm-grid-home" style="display:none"></div>
 
       <!-- 기본 업무 순서 -->
       <div class="boss-flow-section">
@@ -1834,6 +1837,15 @@ function renderGrid(gridId, clickable=true){
 
 function renderAllGrids(){
   renderGrid('bm-grid-home'); renderGrid('bm-grid-popup'); renderBmRows();
+}
+
+// ── 바로가기 그리드 접기/펼치기 ─────────────────────────────
+function toggleBmGrid(){
+  const grid = document.getElementById('bm-grid-home');
+  const arrow = document.getElementById('bm-grid-toggle-arrow');
+  const isHidden = grid.style.display === 'none';
+  grid.style.display = isHidden ? '' : 'none';
+  arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
 }
 
 // ── 바로가기 팝업 ──────────────────────────────────────────
