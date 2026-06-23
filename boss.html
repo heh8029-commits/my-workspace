@@ -1522,6 +1522,53 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- CS 실시간공유 페이지 -->
+    <div class="page" id="page-cs">
+      <div style="max-width:680px;margin:0 auto">
+        <!-- 등록 영역 -->
+        <div style="background:#fff;border-radius:16px;border:2px solid #b0c8f8;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(74,128,208,.08)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 CS 등록</div>
+            <button onclick="bCsCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="7일 지난 글 삭제">🗑️ 7일정리</button>
+            <button onclick="bCsRefresh()" style="background:white;border:1.5px solid #C4714A;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+            <div style="display:flex;gap:5px;align-items:center">
+              <button type="button" onclick="bCsSetAuthor('사장')" class="bcs-author-btn" data-author="사장" style="padding:5px 12px;border-radius:14px;border:2px solid #C4714A;background:#C4714A;color:white;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">사장</button>
+              <button type="button" onclick="bCsSetAuthor('은')" class="bcs-author-btn" data-author="은" style="padding:5px 12px;border-radius:14px;border:2px solid #f7a8c0;background:white;color:#c04070;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
+              <button type="button" onclick="bCsSetAuthor('수')" class="bcs-author-btn" data-author="수" style="padding:5px 12px;border-radius:14px;border:2px solid #a0c8f8;background:white;color:#4a80d0;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">수</button>
+              <button type="button" onclick="bCsSetAuthor('슬')" class="bcs-author-btn" data-author="슬" style="padding:5px 12px;border-radius:14px;border:2px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.8rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button type="button" onclick="bCsSetCategory('CS')" id="bcs-cat-cs" style="padding:6px 16px;border-radius:14px;border:2px solid #4a80d0;background:#4a80d0;color:white;font-size:.82rem;font-weight:900;cursor:pointer;transition:all .15s">💬 CS</button>
+              <button type="button" onclick="bCsSetCategory('그로스')" id="bcs-cat-gross" style="padding:6px 16px;border-radius:14px;border:2px solid #e0a000;background:white;color:#e0a000;font-size:.82rem;font-weight:900;cursor:pointer;transition:all .15s">📋 그로스</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;min-height:36px;margin-bottom:6px">
+            <div id="bcs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            <div onclick="bCsImgModalOpen()" tabindex="0" style="width:54px;height:54px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none">
+              <span style="font-size:1.1rem;color:#b0c0e0;line-height:1">+</span>
+              <span style="font-size:.55rem;color:#b0c0e0">이미지</span>
+            </div>
+            <input type="file" id="bcs-file-inp" accept="image/*" multiple style="display:none" onchange="bCsHandleFile(event)">
+          </div>
+          <textarea id="bcs-inp" rows="3" placeholder="CS 내용 입력... (Shift+Enter 등록)"
+            style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;outline:none;resize:none;line-height:1.7;background:#f8fbff"
+            onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();bCsAdd()}"></textarea>
+          <button onclick="bCsAdd()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
+        </div>
+        <!-- 필터 + 검색 -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;gap:5px">
+            <button onclick="bCsSetFilter('전체',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
+            <button onclick="bCsSetFilter('미완료',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
+            <button onclick="bCsSetFilter('완료',this)" class="bcs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+          </div>
+          <input id="bcs-search" type="text" placeholder="🔍 검색..." oninput="bCsRender()"
+            style="flex:1;min-width:120px;border:1.5px solid #d0e0f8;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:inherit;outline:none">
+        </div>
+        <div id="bcs-list"></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1809,6 +1856,10 @@ function setSub(id, label){
   } else if(id==='beauty'){
     showPage('beauty');
     fetchBtData().then(()=>renderBt());
+  } else if(id==='cs'){
+    showPage('cs');
+    bCsRefresh();
+    bCsAlarmStart();
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -5392,6 +5443,353 @@ function boRender(){
       </div>
     </div>`;
   }).join('');
+}
+
+// ── CS 실시간공유 ─────────────────────────────────────────
+var _bCsAuthor = '사장';
+var _bCsCategory = 'CS';
+var _bCsFilter = '전체';
+var _bCsImgs = [];
+var _bCsLastSeenId = 0;
+var _bCsAlarmInterval = null;
+var _bCsFB = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5';
+
+function bCsLoadCs() {
+  try { var d=JSON.parse(localStorage.getItem('ws5_cs_share')||'{}'); return d.list||[]; } catch(e){ return []; }
+}
+function bCsSaveCs(list) {
+  localStorage.setItem('ws5_cs_share', JSON.stringify({list:list}));
+}
+function bCsToast(msg) {
+  var el=document.createElement('div');
+  el.textContent=msg;
+  el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(30,30,50,.88);color:white;padding:10px 20px;border-radius:20px;font-size:.85rem;font-weight:700;z-index:99999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)';
+  document.body.appendChild(el);
+  setTimeout(function(){el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(function(){el.remove();},400);},2000);
+}
+function bCsRefresh() {
+  fetch(_bCsFB+'/cs_share.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data&&data.list) localStorage.setItem('ws5_cs_share',JSON.stringify(data));
+      bCsRender(); bCsToast('🔄 새로고침 완료!');
+    }).catch(function(){ bCsToast('❌ 새로고침 실패'); });
+}
+function bCsSetCategory(cat) {
+  _bCsCategory = cat;
+  var csBtn=document.getElementById('bcs-cat-cs'), grBtn=document.getElementById('bcs-cat-gross');
+  if(!csBtn||!grBtn)return;
+  if(cat==='CS'){ csBtn.style.background='#4a80d0';csBtn.style.color='white';grBtn.style.background='white';grBtn.style.color='#e0a000'; }
+  else{ grBtn.style.background='#e0a000';grBtn.style.color='white';csBtn.style.background='white';csBtn.style.color='#4a80d0'; }
+}
+function bCsSetAuthor(a) {
+  _bCsAuthor = a;
+  var AC={'사장':'#C4714A','은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var TC={'사장':'white','은':'#c04070','수':'#4a80d0','슬':'#3dbb8f'};
+  document.querySelectorAll('.bcs-author-btn').forEach(function(b){
+    var n=b.getAttribute('data-author'), on=n===a;
+    b.style.background=on?AC[n]:'white'; b.style.color=on?TC[n]:TC[n];
+    b.style.borderColor=AC[n];
+  });
+}
+function bCsSetFilter(f, el) {
+  _bCsFilter=f;
+  document.querySelectorAll('.bcs-filter-btn').forEach(function(b){ b.style.background='white'; b.style.color=b.style.borderColor||'#333'; });
+  if(el){ el.style.background=el.style.borderColor; el.style.color='white'; }
+  bCsRender();
+}
+function bCsImgModalOpen() {
+  var old=document.getElementById('bcs-img-modal'); if(old)old.remove();
+  var m=document.createElement('div'); m.id='bcs-img-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:white;border-radius:20px;padding:22px 20px 18px;width:100%;max-width:300px';
+  var ttl=document.createElement('div'); ttl.style.cssText='font-size:.88rem;font-weight:800;color:#333;margin-bottom:14px'; ttl.textContent='📎 이미지 추가';
+  var pasteArea=document.createElement('div'); pasteArea.tabIndex=0;
+  pasteArea.style.cssText='border:2px dashed #c0b8f0;border-radius:14px;padding:28px 20px;text-align:center;cursor:pointer;background:#faf8ff;margin-bottom:12px;outline:none';
+  pasteArea.innerHTML='<div style="font-size:2rem;margin-bottom:8px">📋</div><div style="font-size:.85rem;font-weight:700;color:#7040c0">여기 클릭 후 Ctrl+V</div><div style="font-size:.75rem;color:#bbb">또는 이미지 드래그</div>';
+  pasteArea.onpaste=function(e){ var items=e.clipboardData&&e.clipboardData.items; if(!items)return; for(var i=0;i<items.length;i++){if(items[i].type.startsWith('image/')){e.preventDefault();m.remove();bCsUploadImg(items[i].getAsFile());return;}} };
+  pasteArea.ondrop=function(e){e.preventDefault();m.remove();var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))bCsUploadImg(f);};
+  pasteArea.ondragover=function(e){e.preventDefault();}; pasteArea.onclick=function(){pasteArea.focus();};
+  setTimeout(function(){pasteArea.focus();},100);
+  var btnRow=document.createElement('div'); btnRow.style.cssText='display:flex;gap:8px';
+  var cancelBtn=document.createElement('button'); cancelBtn.textContent='취소';
+  cancelBtn.style.cssText='flex:1;padding:11px;background:#f0f0f0;border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer';
+  cancelBtn.onclick=function(){m.remove();};
+  var fileBtn=document.createElement('button'); fileBtn.textContent='이미지 첨부';
+  fileBtn.style.cssText='flex:1.5;padding:11px;background:linear-gradient(135deg,#c0a0f8,#7040c0);border:none;border-radius:12px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
+  fileBtn.onclick=function(){m.remove();document.getElementById('bcs-file-inp').click();};
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(fileBtn);
+  box.appendChild(ttl); box.appendChild(pasteArea); box.appendChild(btnRow);
+  m.appendChild(box); document.body.appendChild(m);
+}
+function bCsHandleFile(e) { var files=e.target.files; if(files)Array.from(files).forEach(function(f){bCsUploadImg(f);}); e.target.value=''; }
+function bCsUploadImg(file) {
+  bCsToast('⬆️ 업로드 중...');
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1200,maxH=1200,w=img.width,h=img.height,ratio=Math.min(1,maxW/w,maxH/h);
+      var canvas=document.createElement('canvas'); canvas.width=Math.round(w*ratio); canvas.height=Math.round(h*ratio);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      canvas.toBlob(function(blob){
+        var fd=new FormData(); fd.append('file',blob,'img.jpg'); fd.append('upload_preset','hwx2iwfz');
+        fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd})
+          .then(function(r){return r.json();})
+          .then(function(data){ if(data.secure_url){_bCsImgs.push(data.secure_url);bCsRenderImgPreview();bCsToast('✅ 이미지 추가 ('+_bCsImgs.length+'장)');} else bCsToast('❌ 업로드 실패'); })
+          .catch(function(){bCsToast('❌ 업로드 오류');});
+      },'image/jpeg',0.85);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function bCsRenderImgPreview() {
+  var prev=document.getElementById('bcs-img-preview'); if(!prev)return;
+  prev.innerHTML='';
+  _bCsImgs.forEach(function(url,i){
+    var wrap=document.createElement('div'); wrap.style.cssText='position:relative;display:inline-block;width:60px;height:60px;flex-shrink:0';
+    var img=document.createElement('img'); img.src=url; img.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #b0c8f8;cursor:pointer';
+    var del=document.createElement('button'); del.textContent='✕'; del.type='button';
+    del.style.cssText='position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:#e03c6e;border:none;border-radius:50%;color:white;font-size:.6rem;cursor:pointer;font-weight:700;z-index:2';
+    del.onclick=(function(idx){return function(e){e.stopPropagation();_bCsImgs.splice(idx,1);bCsRenderImgPreview();};})(i);
+    wrap.appendChild(img); wrap.appendChild(del); prev.appendChild(wrap);
+  });
+}
+function bCsAdd() {
+  var inpEl=document.getElementById('bcs-inp');
+  var txt=inpEl?inpEl.value.trim():'';
+  if(!txt&&_bCsImgs.length===0){bCsToast('내용 또는 이미지를 입력해요 💬');return;}
+  var newItem={id:Date.now(),type:'',category:_bCsCategory||'CS',author:_bCsAuthor,text:txt,imgs:_bCsImgs.slice(),img:_bCsImgs[0]||'',done:false,createdAt:Date.now(),replies:[],confirmed:[]};
+  _bCsLastSeenId=newItem.id;
+  fetch(_bCsFB+'/cs_share.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var list=(data&&data.list)?data.list:[];
+      list=list.filter(function(x){return x.id!==newItem.id;}); list.unshift(newItem);
+      localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
+      return fetch(_bCsFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})});
+    })
+    .then(function(){bCsRender();})
+    .catch(function(){
+      var list=bCsLoadCs(); list.unshift(newItem);
+      localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
+      fetch(_bCsFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})}).catch(function(){});
+      bCsRender();
+    });
+  if(inpEl)inpEl.value=''; _bCsImgs=[]; bCsRenderImgPreview();
+  bCsToast('📤 등록됐어요!');
+  setTimeout(function(){bCsRender();},100);
+}
+function bCsUpdateItem(id, updater) {
+  fetch(_bCsFB+'/cs_share.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var list=(data&&data.list)?data.list:bCsLoadCs();
+      var item=list.find(function(x){return x.id===id;}); if(!item)return;
+      updater(item,list);
+      localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
+      fetch(_bCsFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})}).catch(function(){});
+      bCsRender();
+    }).catch(function(){
+      var list=bCsLoadCs(); var item=list.find(function(x){return x.id===id;});
+      if(item){updater(item,list);bCsSaveCs(list);}
+      bCsRender();
+    });
+}
+function bCsToggleDone(id) { bCsUpdateItem(id,function(item){item.done=!item.done;}); }
+function bCsDelete(id) {
+  if(!confirm('이 CS 항목을 삭제할까요?'))return;
+  var list=bCsLoadCs().filter(function(x){return x.id!==id;});
+  localStorage.setItem('ws5_cs_share',JSON.stringify({list:list}));
+  fetch(_bCsFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list})}).catch(function(){});
+  bCsRender(); bCsToast('🗑️ 삭제됐어요');
+}
+function bCsEditOpen(id) {
+  var list=bCsLoadCs(); var item=list.find(function(x){return x.id===id;}); if(!item)return;
+  var old=document.getElementById('bcs-edit-modal'); if(old)old.remove();
+  var m=document.createElement('div'); m.id='bcs-edit-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  var box=document.createElement('div'); box.style.cssText='background:white;border-radius:18px;padding:22px 20px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px';
+  var ttl=document.createElement('div'); ttl.style.cssText='font-size:.95rem;font-weight:800;color:#1050a0'; ttl.textContent='✏️ CS 수정';
+  var ta=document.createElement('textarea'); ta.value=item.text||''; ta.rows=4;
+  ta.style.cssText='width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;outline:none;resize:none;line-height:1.7';
+  var btnRow=document.createElement('div'); btnRow.style.cssText='display:flex;gap:8px';
+  var cancelBtn=document.createElement('button'); cancelBtn.textContent='취소';
+  cancelBtn.style.cssText='flex:1;padding:10px;background:#f0f0f0;border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:#888;cursor:pointer';
+  cancelBtn.onclick=function(){m.remove();};
+  var saveBtn=document.createElement('button'); saveBtn.textContent='💾 저장';
+  saveBtn.style.cssText='flex:1.5;padding:10px;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;font-size:.88rem;font-weight:700;color:white;cursor:pointer';
+  saveBtn.onclick=function(){
+    bCsUpdateItem(id,function(i2){i2.text=ta.value.trim();});
+    m.remove(); bCsToast('✅ 수정됐어요!');
+  };
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
+  box.appendChild(ttl); box.appendChild(ta); box.appendChild(btnRow);
+  m.appendChild(box); document.body.appendChild(m);
+  setTimeout(function(){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);},50);
+}
+function bCsCleanOld() {
+  var cutoff=Date.now()-7*24*60*60*1000;
+  var list=bCsLoadCs(); var before=list.length;
+  var filtered=list.filter(function(x){return(x.createdAt||x.id)>cutoff;});
+  var removed=before-filtered.length;
+  if(removed===0){bCsToast('7일 지난 글이 없어요 😊');return;}
+  if(!confirm(removed+'개의 글을 삭제할까요? (7일 이상 지난 글)'))return;
+  localStorage.setItem('ws5_cs_share',JSON.stringify({list:filtered}));
+  fetch(_bCsFB+'/cs_share.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:filtered})}).catch(function(){});
+  bCsRender(); bCsToast('🗑️ '+removed+'개 삭제됐어요!');
+}
+function bCsRender() {
+  var el=document.getElementById('bcs-list'); if(!el)return;
+  var list=bCsLoadCs();
+  var kw=((document.getElementById('bcs-search')||{}).value||'').trim().toLowerCase();
+  if(kw)list=list.filter(function(it){return(it.text||'').toLowerCase().indexOf(kw)!==-1;});
+  if(_bCsFilter==='미완료')list=list.filter(function(it){return!it.done;});
+  if(_bCsFilter==='완료')list=list.filter(function(it){return it.done;});
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:#bbb;padding:40px;font-size:.95rem">CS 내용이 없어요 💬</div>';return;}
+  var AC={'사장':'#C4714A','은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
+  var AT={'사장':'#8B4E35','은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+  el.innerHTML='';
+  list.forEach(function(it){
+    var ac=AC[it.author]||'#eee', atc=AT[it.author]||'#333';
+    var d=new Date(it.createdAt||it.id), hh=d.getHours(), mm=d.getMinutes();
+    var ampm=hh<12?'오전':'오후', hh12=hh%12||12;
+    var dateStr=(d.getMonth()+1)+'/'+(d.getDate())+'('+['일','월','화','수','목','금','토'][d.getDay()]+')';
+    var timeStr=ampm+' '+hh12+':'+(mm<10?'0':'')+mm;
+    var card=document.createElement('div');
+    card.style.cssText='background:'+(it.done?'#f5f5f5':'white')+';border:2px solid '+(it.done?'#ddd':'#b0c8f8')+';border-radius:14px;margin-bottom:14px;overflow:hidden;opacity:'+(it.done?'0.55':'1');
+    var hdr=document.createElement('div'); hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px 0;flex-wrap:wrap';
+    var ab=document.createElement('span'); ab.style.cssText='width:38px;height:38px;border-radius:50%;background:'+ac+';color:white;font-size:.95rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc; ab.textContent=it.author||'?';
+    var dtWrap=document.createElement('div'); dtWrap.style.cssText='display:flex;flex-direction:column;gap:1px';
+    var dateEl=document.createElement('div'); dateEl.style.cssText='font-size:.9rem;font-weight:900;color:#222'; dateEl.textContent=dateStr;
+    var timeEl=document.createElement('div'); timeEl.style.cssText='font-size:1rem;font-weight:900;color:#1050a0'; timeEl.textContent=timeStr;
+    dtWrap.appendChild(dateEl); dtWrap.appendChild(timeEl);
+    hdr.appendChild(ab); hdr.appendChild(dtWrap);
+    var isCat=it.category||'CS';
+    var catBadge=document.createElement('span');
+    catBadge.style.cssText='border-radius:12px;padding:4px 12px;font-size:.85rem;font-weight:900;margin-left:auto;'+(isCat==='그로스'?'background:#e0a000;color:white':'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
+    catBadge.textContent=isCat==='그로스'?'📋 그로스':'💬 CS';
+    hdr.appendChild(catBadge);
+    card.appendChild(hdr);
+    // 확인 체크박스
+    var chkWrap=document.createElement('div'); chkWrap.style.cssText='display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
+    var confirmed=it.confirmed||[];
+    if(isCat==='그로스'){
+      var lbl=document.createElement('label'); lbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer';
+      var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=it.done||false;
+      chk.style.cssText='width:32px;height:32px;accent-color:#e0a000;cursor:pointer';
+      chk.onchange=(function(id,c){return function(){bCsUpdateItem(id,function(item){item.done=c.checked;});};})(it.id,chk);
+      var doneEl=document.createElement('span'); doneEl.style.cssText='font-size:.85rem;font-weight:800;color:#e0a000'; doneEl.textContent='확인완료';
+      lbl.appendChild(chk); lbl.appendChild(doneEl); chkWrap.appendChild(lbl);
+    } else {
+      ['은','수','슬'].forEach(function(name){
+        if(name===(it.author||''))return;
+        var lbl=document.createElement('label'); lbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
+        var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=confirmed.indexOf(name)!==-1;
+        chk.style.cssText='width:28px;height:28px;accent-color:'+(AC[name]||'#ccc')+';cursor:pointer';
+        chk.onchange=(function(id,n,c){return function(){
+          bCsUpdateItem(id,function(item){
+            item.confirmed=item.confirmed||[];
+            var idx=item.confirmed.indexOf(n);
+            if(c.checked){if(idx===-1)item.confirmed.push(n);}
+            else{if(idx!==-1)item.confirmed.splice(idx,1);}
+            var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});
+            item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});
+          });
+        };})(it.id,name,chk);
+        var nameEl=document.createElement('span'); nameEl.style.cssText='font-size:.95rem;font-weight:900;color:'+(AT[name]||'#333'); nameEl.textContent=name;
+        lbl.appendChild(chk); lbl.appendChild(nameEl); chkWrap.appendChild(lbl);
+      });
+      // 사장 확인 체크
+      var blbl=document.createElement('label'); blbl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
+      var bchk=document.createElement('input'); bchk.type='checkbox'; bchk.checked=confirmed.indexOf('사장')!==-1;
+      bchk.style.cssText='width:28px;height:28px;accent-color:#C4714A;cursor:pointer';
+      bchk.onchange=(function(id,c){return function(){
+        bCsUpdateItem(id,function(item){
+          item.confirmed=item.confirmed||[];
+          var idx=item.confirmed.indexOf('사장');
+          if(c.checked){if(idx===-1)item.confirmed.push('사장');}
+          else{if(idx!==-1)item.confirmed.splice(idx,1);}
+        });
+      };})(it.id,bchk);
+      var bnameEl=document.createElement('span'); bnameEl.style.cssText='font-size:.95rem;font-weight:900;color:#8B4E35'; bnameEl.textContent='사장';
+      blbl.appendChild(bchk); blbl.appendChild(bnameEl); chkWrap.appendChild(blbl);
+    }
+    card.appendChild(chkWrap);
+    // 바디
+    var body=document.createElement('div'); body.style.cssText='padding:0 16px 14px';
+    if(it.text){
+      var memo=document.createElement('div');
+      if(isCat==='그로스'){
+        memo.style.cssText='padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        var checks=it.lineChecks||[];
+        it.text.split('\n').filter(function(l){return l.trim();}).forEach(function(line,i){
+          var lbl=document.createElement('label');
+          lbl.style.cssText='display:flex;align-items:flex-start;gap:10px;padding:7px 6px;cursor:pointer;border-bottom:1px solid #fdf0cc;font-size:.95rem;font-weight:700;line-height:1.5;word-break:break-all';
+          var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=!!checks[i];
+          chk.style.cssText='width:18px;height:18px;accent-color:#e0a000;cursor:pointer;flex-shrink:0;margin-top:2px';
+          var sp=document.createElement('span'); sp.textContent=line;
+          if(chk.checked){sp.style.textDecoration='line-through';sp.style.color='#ccc';}
+          chk.onchange=(function(itemId,idx,spanEl){return function(){
+            var isChecked=this.checked;
+            if(isChecked){spanEl.style.textDecoration='line-through';spanEl.style.color='#ccc';}
+            else{spanEl.style.textDecoration='';spanEl.style.color='';}
+            bCsUpdateItem(itemId,function(item){item.lineChecks=item.lineChecks||[];item.lineChecks[idx]=isChecked;});
+          };})(it.id,i,sp);
+          lbl.appendChild(chk); lbl.appendChild(sp); memo.appendChild(lbl);
+        });
+      } else {
+        memo.style.cssText='text-align:center;font-size:1.05rem;font-weight:900;color:'+(it.done?'#aaa':'#1a1a2e')+';line-height:1.8;white-space:pre-wrap;word-break:break-all;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        memo.textContent=it.text;
+      }
+      body.appendChild(memo);
+    }
+    var imgs=(it.imgs&&it.imgs.length)?it.imgs:(it.img?[it.img]:[]);
+    if(imgs.length){
+      var mi=document.createElement('img'); mi.src=imgs[0];
+      mi.style.cssText='width:100%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff';
+      mi.onclick=(function(a){return function(){var w=window.open();w.document.write('<img src="'+a[0]+'" style="max-width:100%">');};})(imgs);
+      body.appendChild(mi);
+    }
+    var acts=document.createElement('div'); acts.style.cssText='display:flex;gap:8px;align-items:center;margin-top:8px';
+    var doneBtn=document.createElement('button'); doneBtn.textContent=it.done?'↺ 미완료':'✅ 완료';
+    doneBtn.style.cssText='padding:6px 14px;border-radius:9px;border:1.5px solid '+(it.done?'#bbb':'#3dbb8f')+';background:'+(it.done?'white':'#3dbb8f')+';color:'+(it.done?'#aaa':'white')+';font-size:.82rem;font-weight:700;cursor:pointer';
+    doneBtn.onclick=(function(id){return function(){bCsToggleDone(id);};})(it.id);
+    var editBtn=document.createElement('button'); editBtn.textContent='✏️'; editBtn.type='button';
+    editBtn.style.cssText='padding:6px 10px;border-radius:9px;border:1.5px solid #ffe080;background:white;color:#a07800;font-size:.82rem;cursor:pointer';
+    editBtn.onclick=(function(id){return function(){bCsEditOpen(id);};})(it.id);
+    var dlBtn=document.createElement('button'); dlBtn.textContent='🗑️'; dlBtn.type='button';
+    dlBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.88rem;margin-left:auto';
+    dlBtn.onmouseover=function(){this.style.color='#e03c6e';}; dlBtn.onmouseout=function(){this.style.color='#ddd';};
+    dlBtn.onclick=(function(id){return function(){bCsDelete(id);};})(it.id);
+    acts.appendChild(doneBtn); acts.appendChild(editBtn); acts.appendChild(dlBtn);
+    body.appendChild(acts); card.appendChild(body); el.appendChild(card);
+  });
+}
+function bCsAlarmStart() {
+  if(_bCsAlarmInterval)return;
+  try{ var cur=JSON.parse(localStorage.getItem('ws5_cs_share')||'{}'); if(cur&&cur.list&&cur.list.length>0)_bCsLastSeenId=cur.list[0].id||0; }catch(e){}
+  _bCsAlarmInterval=setInterval(function(){
+    fetch(_bCsFB+'/cs_share.json?t='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(!data||!data.list||!data.list.length)return;
+        var newest=data.list[0];
+        if(newest&&newest.id&&newest.id>_bCsLastSeenId){
+          var newItems=data.list.filter(function(it){return it.id>_bCsLastSeenId;});
+          _bCsLastSeenId=data.list[0].id;
+          localStorage.setItem('ws5_cs_share',JSON.stringify(data));
+          try{bCsRender();}catch(e){}
+          newItems.forEach(function(item){
+            bCsToast('🔔 새CS! '+(item.author||'?')+' - '+(item.text||'이미지').slice(0,15));
+          });
+        }
+      }).catch(function(){});
+  },5000);
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
