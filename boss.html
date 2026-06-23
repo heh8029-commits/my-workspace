@@ -229,40 +229,40 @@ a{text-decoration:none;color:inherit}
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 @media(max-width:700px){.boss-memo-grid{grid-template-columns:1fr}}
-.bmg-card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;height:300px}
-.bmg-title{font-size:.82rem;font-weight:800;color:#555;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.bmg-card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;height:360px}
+.bmg-title{font-size:.82rem;font-weight:800;color:#555;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .bmg-title-badge{font-size:.7rem;color:#CCC;font-weight:500}
-.bmg-input-row{display:flex;gap:6px;margin-bottom:8px;flex-shrink:0}
-.bmg-input{flex:1;padding:7px 10px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;outline:none;min-width:0}
-.bmg-input:focus{border-color:#C4714A}
-.bmg-add-btn{padding:7px 13px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0}
-.bmg-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.bmg-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;min-height:0}
 .bmg-list::-webkit-scrollbar{width:3px}
 .bmg-list::-webkit-scrollbar-thumb{background:#EDE8E1;border-radius:2px}
 .bmg-empty{text-align:center;padding:30px 10px;color:#CCC;font-size:.76rem}
+/* 주문제작 필터 탭 */
+.bo-ftabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;flex-shrink:0}
+.bo-ftab{padding:3px 7px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:.7rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .12s;white-space:nowrap}
+.bo-ftab.active{background:#C4714A;color:#fff;border-color:#C4714A}
 /* 주문제작 토글 폼 */
-.bo-toggle-btn{width:100%;padding:6px;border-radius:9px;border:1.5px dashed rgba(196,113,74,.4);background:#FFF6F0;font-size:.76rem;color:#C4714A;cursor:pointer;font-weight:700;margin-bottom:6px;transition:background .15s;flex-shrink:0}
+.bo-toggle-btn{width:100%;padding:5px;border-radius:9px;border:1.5px dashed rgba(196,113,74,.4);background:#FFF6F0;font-size:.75rem;color:#C4714A;cursor:pointer;font-weight:700;margin-bottom:6px;transition:background .15s;flex-shrink:0}
 .bo-toggle-btn:hover{background:#FDEEE5}
 .bo-form{display:none;flex-shrink:0;margin-bottom:6px}
 .bo-form.open{display:block}
-.bo-form textarea{width:100%;padding:7px 10px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.81rem;font-family:inherit;outline:none;box-sizing:border-box;resize:none;margin-bottom:5px}
-.bo-form textarea:focus{border-color:#C4714A}
-.bo-status-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.bo-status-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
 .bo-status-chip{padding:3px 8px;border-radius:20px;font-size:.7rem;font-weight:700;border:1.5px solid #EDE8E1;background:#fff;cursor:pointer;color:#999;transition:all .12s}
 .bo-status-chip.sel{border-color:var(--bc,#C4714A);background:var(--bg,#FFF6F0);color:var(--bc,#C4714A)}
 .bo-submit{width:100%;padding:6px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer}
 /* 주문 아이템 */
 .bo-item{border-radius:10px;border:1px solid #EDE8E1;padding:8px 10px;background:#FAFAFA}
 .bo-item-date{font-size:.67rem;color:#BBB;margin-bottom:3px}
-.bo-item-text{font-size:.79rem;color:#333;line-height:1.4;word-break:break-all;margin-top:3px}
-.bo-item-foot{display:flex;align-items:center;justify-content:space-between;margin-top:5px}
-.bo-badge{padding:2px 9px;border-radius:20px;font-size:.69rem;font-weight:700;cursor:pointer;border:none;transition:opacity .12s}
-.bo-badge:hover{opacity:.75}
+.bo-item-statuses{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px}
+.bo-schip{padding:2px 7px;border-radius:20px;font-size:.66rem;font-weight:700;cursor:pointer;opacity:.28;transition:opacity .12s;border:none}
+.bo-schip:hover{opacity:.6}
+.bo-schip.active{opacity:1}
 .bo-s0{background:#EEE8FF;color:#7B5CF0}
 .bo-s1{background:#FFF3D1;color:#C48A00}
 .bo-s2{background:#D4F0FF;color:#0080C4}
 .bo-s3{background:#D4F9D4;color:#2E9B5E}
-.bo-del-btn{padding:2px 8px;border-radius:6px;border:none;background:#FFE8E8;color:#E03A3A;font-size:.7rem;font-weight:700;cursor:pointer}
+.bo-item-path{font-size:.69rem;color:#999;margin:2px 0;word-break:break-all}
+.bo-item-text{font-size:.79rem;color:#333;line-height:1.4;word-break:break-all;margin-top:3px}
+.bo-item-actions{display:flex;gap:2px;justify-content:flex-end;margin-top:5px}
 
 /* ── BOOKMARK POPUP (헤더 바로가기 아이콘) ── */
 .bm-overlay{
@@ -965,12 +965,19 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span>📌 해야할일</span>
             <span class="bmg-title-badge" id="btodo-badge"></span>
           </div>
-          <div class="bmg-input-row">
-            <input class="bmg-input" id="btodo-inp" placeholder="할 일 추가..."
-              onkeydown="if(event.key==='Enter')btodoAdd()">
-            <button class="bmg-add-btn" onclick="btodoAdd()">+</button>
+          <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:8px;flex-shrink:0">
+            <div style="display:flex;gap:6px">
+              <input class="bm-input" id="btodo-inp" placeholder="메모... (Ctrl+V 이미지 붙여넣기)" maxlength="500"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey)memoAdd('todo')"
+                onpaste="handleMemoPasteEv('todo',event)">
+              <input type="file" id="btodo-file-inp" accept="image/*" style="display:none"
+                onchange="handleMemoFilePick('todo',this.files[0]);this.value=''">
+              <button class="bm-attach-btn" onclick="document.getElementById('btodo-file-inp').click()" title="이미지 첨부">📎</button>
+              <button class="bm-add-btn" onclick="memoAdd('todo')">+</button>
+            </div>
+            <div id="btodo-status"></div>
           </div>
-          <div class="bmg-list" id="btodo-list"><div class="bmg-empty">불러오는 중...</div></div>
+          <div class="bmg-list bno-list" id="btodo-list"><div class="bmg-empty">불러오는 중...</div></div>
         </div>
 
         <!-- 주문제작요청 -->
@@ -979,15 +986,36 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span>📦 주문제작요청</span>
             <span class="bmg-title-badge" id="bo-badge"></span>
           </div>
+          <div class="bo-ftabs" id="bo-ftabs">
+            <button class="bo-ftab active" onclick="boSetFilter(-1)">전체</button>
+            <button class="bo-ftab" onclick="boSetFilter(0)">🎨</button>
+            <button class="bo-ftab" onclick="boSetFilter(1)">👁</button>
+            <button class="bo-ftab" onclick="boSetFilter(2)">✅</button>
+            <button class="bo-ftab" onclick="boSetFilter(3)">🎉</button>
+          </div>
           <button class="bo-toggle-btn" id="bo-toggle-btn" onclick="boToggleForm()">＋ 주문 등록</button>
           <div class="bo-form" id="bo-form">
-            <textarea id="bo-inp" rows="2" placeholder="주문 내용 입력..."></textarea>
-            <div class="bo-status-sel" id="bo-status-sel">
-              <div class="bo-status-chip sel" data-idx="0" onclick="boSelStatus(0)" style="--bc:#7B5CF0;--bg:#EEE8FF">🎨 디자인예정</div>
-              <div class="bo-status-chip" data-idx="1" onclick="boSelStatus(1)" style="--bc:#C48A00;--bg:#FFF3D1">👁 시안보여줌</div>
-              <div class="bo-status-chip" data-idx="2" onclick="boSelStatus(2)" style="--bc:#0080C4;--bg:#D4F0FF">✅ 승인출고</div>
-              <div class="bo-status-chip" data-idx="3" onclick="boSelStatus(3)" style="--bc:#2E9B5E;--bg:#D4F9D4">🎉 완료</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">
+              <label style="font-size:.72rem;color:#999;white-space:nowrap">요청일</label>
+              <input type="date" id="bo-date-inp" style="flex:1;padding:5px 8px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.78rem;font-family:inherit;outline:none">
             </div>
+            <input type="text" id="bo-path-inp" placeholder="📁 파일 위치 (G:\폴더\...)"
+              style="width:100%;padding:6px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.76rem;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:5px">
+            <div style="display:flex;gap:6px;margin-bottom:5px">
+              <input class="bm-input" id="bo-inp" placeholder="주문 내용..."
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey)boAdd()"
+                onpaste="boHandlePaste(event)">
+              <input type="file" id="bo-file-inp" accept="image/*" style="display:none"
+                onchange="boUploadFile(this.files[0]);this.value=''">
+              <button class="bm-attach-btn" onclick="document.getElementById('bo-file-inp').click()" title="이미지 첨부">📎</button>
+            </div>
+            <div class="bo-status-sel" id="bo-status-sel">
+              <div class="bo-status-chip sel" onclick="boSelStatus(0)" style="--bc:#7B5CF0;--bg:#EEE8FF">🎨 디자인예정</div>
+              <div class="bo-status-chip" onclick="boSelStatus(1)" style="--bc:#C48A00;--bg:#FFF3D1">👁 시안보여줌</div>
+              <div class="bo-status-chip" onclick="boSelStatus(2)" style="--bc:#0080C4;--bg:#D4F0FF">✅ 승인출고</div>
+              <div class="bo-status-chip" onclick="boSelStatus(3)" style="--bc:#2E9B5E;--bg:#D4F9D4">🎉 완료</div>
+            </div>
+            <div id="bo-status" style="margin-bottom:4px"></div>
             <button class="bo-submit" onclick="boAdd()">등록</button>
           </div>
           <div class="bmg-list" id="bo-list"><div class="bmg-empty">불러오는 중...</div></div>
@@ -999,12 +1027,19 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span>💡 개선해야될거</span>
             <span class="bmg-title-badge" id="bimprove-badge"></span>
           </div>
-          <div class="bmg-input-row">
-            <input class="bmg-input" id="bimprove-inp" placeholder="개선사항 추가..."
-              onkeydown="if(event.key==='Enter')bimproveAdd()">
-            <button class="bmg-add-btn" onclick="bimproveAdd()">+</button>
+          <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:8px;flex-shrink:0">
+            <div style="display:flex;gap:6px">
+              <input class="bm-input" id="bimprove-inp" placeholder="메모... (Ctrl+V 이미지 붙여넣기)" maxlength="500"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey)memoAdd('improve')"
+                onpaste="handleMemoPasteEv('improve',event)">
+              <input type="file" id="bimprove-file-inp" accept="image/*" style="display:none"
+                onchange="handleMemoFilePick('improve',this.files[0]);this.value=''">
+              <button class="bm-attach-btn" onclick="document.getElementById('bimprove-file-inp').click()" title="이미지 첨부">📎</button>
+              <button class="bm-add-btn" onclick="memoAdd('improve')">+</button>
+            </div>
+            <div id="bimprove-status"></div>
           </div>
-          <div class="bmg-list" id="bimprove-list"><div class="bmg-empty">불러오는 중...</div></div>
+          <div class="bmg-list bno-list" id="bimprove-list"><div class="bmg-empty">불러오는 중...</div></div>
         </div>
 
       </div><!-- /boss-memo-grid -->
@@ -5062,116 +5097,249 @@ const FB_BTODO    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/
 const FB_BO       = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_orders.json';
 const FB_BIMPROVE = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_improve.json';
 
-let btodoData=[], boData=[], bimproveData=[];
-let _btodoTimer=null, _boTimer=null, _bimproveTimer=null;
-let boStatusSel=0;
-
-function _memoEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-async function _memoGet(url){try{const r=await fetch(url+'?t='+Date.now());if(r.ok){const d=await r.json();return Array.isArray(d)?d:[];}return[];}catch(e){return[];}}
-async function _memoPut(url,data){try{await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}}
-
-// 해야할일
-async function btodoFetch(){btodoData=await _memoGet(FB_BTODO);btodoRender();}
-function _btodoSave(){clearTimeout(_btodoTimer);_btodoTimer=setTimeout(()=>_memoPut(FB_BTODO,btodoData),600);}
-function btodoAdd(){
-  const inp=document.getElementById('btodo-inp');
-  const t=inp.value.trim();if(!t)return;
-  btodoData.unshift({id:Date.now(),text:t,done:false,date:new Date().toISOString().slice(0,10)});
-  inp.value='';_btodoSave();btodoRender();
+// ── 범용 메모 위젯 (해야할일 / 개선해야될거) ─────────────────
+const _MW = {
+  todo:    {fb:FB_BTODO,    data:[], pendingImgs:[], editId:null, saveTimer:null},
+  improve: {fb:FB_BIMPROVE, data:[], pendingImgs:[], editId:null, saveTimer:null}
+};
+async function memoFetch(k){
+  try{const r=await fetch(_MW[k].fb+'?t='+Date.now());if(r.ok){const d=await r.json();_MW[k].data=Array.isArray(d?.memos)?d.memos:[];}}catch(e){}
+  memoRender(k);
 }
-function btodoDel(id){btodoData=btodoData.filter(x=>x.id!==id);_btodoSave();btodoRender();}
-function btodoToggle(id,v){const x=btodoData.find(x=>x.id===id);if(x){x.done=v;_btodoSave();btodoRender();}}
-function btodoRender(){
-  const el=document.getElementById('btodo-list');if(!el)return;
-  const badge=document.getElementById('btodo-badge');
-  const n=btodoData.filter(x=>!x.done).length;
+function _memoDbSave(k){
+  clearTimeout(_MW[k].saveTimer);
+  _MW[k].saveTimer=setTimeout(()=>{
+    try{fetch(_MW[k].fb,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memos:_MW[k].data})});}catch(e){}
+  },600);
+}
+function memoSetStatus(k,html){const el=document.getElementById(k==='todo'?'btodo-status':'bimprove-status');if(el)el.innerHTML=html;}
+function memoRenderImgs(k){
+  const imgs=_MW[k].pendingImgs;
+  if(!imgs.length){memoSetStatus(k,'');return;}
+  const p=imgs.map((url,i)=>`<div class="pnl-form-img-preview"><img src="${url?url.replace('/upload/','/upload/w_160,h_160,c_fill/'):''}" alt="" style="${url?'':'opacity:.4'}"><button class="pnl-form-img-del" onclick="memoClearImg('${k}',${i})">✕</button></div>`).join('');
+  memoSetStatus(k,`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">${p}</div>`);
+}
+function memoClearImg(k,idx){_MW[k].pendingImgs.splice(idx,1);memoRenderImgs(k);}
+async function memoUploadImg(k,file){
+  const idx=_MW[k].pendingImgs.length;_MW[k].pendingImgs.push(null);
+  memoSetStatus(k,'<div class="pnl-uploading">⏳ 업로드 중...</div>');
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const r=await fetch(CLOUDINARY_URL,{method:'POST',body:fd});const d=await r.json();
+    if(d.secure_url){_MW[k].pendingImgs[idx]=d.secure_url;memoRenderImgs(k);}
+    else{_MW[k].pendingImgs.splice(idx,1);memoSetStatus(k,'<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+  }catch(e){_MW[k].pendingImgs.splice(idx,1);memoSetStatus(k,'<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+}
+function handleMemoFilePick(k,file){if(file&&file.type.startsWith('image/'))memoUploadImg(k,file);}
+function handleMemoPasteEv(k,e){
+  const items=e.clipboardData?.items;if(!items)return;
+  for(const it of items){if(it.type.startsWith('image/')){e.preventDefault();memoUploadImg(k,it.getAsFile());return;}}
+}
+function memoAdd(k){
+  const inpId=k==='todo'?'btodo-inp':'bimprove-inp';
+  const inp=document.getElementById(inpId);
+  const text=(inp.value||'').trim();const validImgs=_MW[k].pendingImgs.filter(Boolean);
+  if(!text&&!validImgs.length)return;
+  const newId=Math.max(0,..._MW[k].data.map(m=>m.id),0)+1;
+  const memo={id:newId,text:text||'',done:false,date:new Date().toISOString().slice(0,10),source:'pc'};
+  if(validImgs.length)memo.images=validImgs;
+  _MW[k].data.unshift(memo);
+  inp.value='';_MW[k].pendingImgs=[];memoSetStatus(k,'');
+  _memoDbSave(k);memoRender(k);
+}
+function memoToggle(k,id,v){const m=_MW[k].data.find(x=>x.id===id);if(m){m.done=v;_memoDbSave(k);memoRender(k);}}
+function memoCopy(k,i){const t=_MW[k].data[i]?.text||'';navigator.clipboard.writeText(t).catch(()=>prompt('복사:',t));}
+function memoStartEdit(k,id){_MW[k].editId=id;memoRender(k);setTimeout(()=>document.getElementById(`${k}-edit-${id}`)?.focus(),40);}
+function memoCancelEdit(k){_MW[k].editId=null;memoRender(k);}
+function memoSaveEdit(k,id){
+  const inp=document.getElementById(`${k}-edit-${id}`);const text=(inp?.value||'').trim();
+  const m=_MW[k].data.find(x=>x.id===id);if(m&&text)m.text=text;
+  _MW[k].editId=null;_memoDbSave(k);memoRender(k);
+}
+function memoDel(k,id){
+  if(!confirm('삭제할까요?'))return;
+  _MW[k].data=_MW[k].data.filter(x=>x.id!==id);_memoDbSave(k);memoRender(k);
+}
+function memoMove(k,i,dir){
+  const j=i+dir;if(j<0||j>=_MW[k].data.length)return;
+  [_MW[k].data[i],_MW[k].data[j]]=[_MW[k].data[j],_MW[k].data[i]];
+  _memoDbSave(k);memoRender(k);
+}
+function memoRender(k){
+  const cfgs={
+    todo:{listId:'btodo-list',badgeId:'btodo-badge',emptyText:'할 일을 추가해요'},
+    improve:{listId:'bimprove-list',badgeId:'bimprove-badge',emptyText:'개선사항을 추가해요'}
+  };
+  const c=cfgs[k];const el=document.getElementById(c.listId);if(!el)return;
+  const badge=document.getElementById(c.badgeId);
+  const n=_MW[k].data.filter(x=>!x.done).length;
   if(badge)badge.textContent=n?n+'개 남음':'';
-  if(!btodoData.length){el.innerHTML='<div class="bmg-empty">할 일을 추가해요</div>';return;}
-  el.innerHTML=btodoData.map(m=>`
+  if(!_MW[k].data.length){el.innerHTML=`<div class="bmg-empty">${c.emptyText}</div>`;return;}
+  el.innerHTML=_MW[k].data.map((m,i)=>{
+    const src=m.source==='bot'?'🤖':'💻';
+    if(_MW[k].editId===m.id)return `
+    <div class="bm-row">
+      <input type="checkbox" class="bm-check" disabled>
+      <div class="bm-edit-wrap">
+        <input class="bm-edit-input" id="${k}-edit-${m.id}" value="${(m.text||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
+          onkeydown="if(event.key==='Enter')memoSaveEdit('${k}',${m.id});if(event.key==='Escape')memoCancelEdit('${k}')">
+        <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="memoSaveEdit('${k}',${m.id})">저장</button>
+        <button class="bno-icon" onclick="memoCancelEdit('${k}')">✕</button>
+      </div>
+    </div>`;
+    const imgs=m.images?.length?m.images:(m.image?[m.image]:[]);
+    const thumbHtml=imgs.length?imgs.map(url=>`
+      <div class="bm-thumb" onclick="openImgModal('${url}')">
+        <img class="bm-thumb-img" src="${url.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
+        <div class="bm-thumb-hover"><img src="${url.replace('/upload/','/upload/w_400/')}" alt=""></div>
+      </div>`).join(''):'';
+    return `
     <div class="bm-row${m.done?' done':''}">
-      <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="btodoToggle(${m.id},this.checked)">
-      <span class="bm-text">${_memoEsc(m.text)}</span>
-      <span class="bm-date">${m.date||''}</span>
-      <div class="bm-actions"><button class="bno-icon del" onclick="btodoDel(${m.id})">🗑️</button></div>
-    </div>`).join('');
+      <div class="bm-move">
+        <button class="bm-move-btn" onclick="memoMove('${k}',${i},-1)">▲</button>
+        <button class="bm-move-btn" onclick="memoMove('${k}',${i},1)">▼</button>
+      </div>
+      <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="memoToggle('${k}',${m.id},this.checked)">
+      <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
+      ${thumbHtml}
+      <span class="bm-text">${_linkify(m.text||'')}</span>
+      <span class="bm-date">${_fmtMemoDate(m.date)}</span>
+      <div class="bm-actions">
+        <button class="bno-icon" onclick="memoCopy('${k}',${i})" title="복사">📋</button>
+        <button class="bno-icon" onclick="memoStartEdit('${k}',${m.id})" title="편집">✏️</button>
+        <button class="bno-icon del" onclick="memoDel('${k}',${m.id})" title="삭제">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
 }
+async function btodoFetch(){await memoFetch('todo');}
+async function bimproveFetch(){await memoFetch('improve');}
 
-// 주문제작요청
+// ── 주문제작요청 ──────────────────────────────────────────────
 const BO_ST=[
   {label:'디자인예정',cls:'bo-s0',emoji:'🎨'},
   {label:'시안보여줌',cls:'bo-s1',emoji:'👁'},
   {label:'승인출고',cls:'bo-s2',emoji:'✅'},
   {label:'완료',cls:'bo-s3',emoji:'🎉'},
 ];
-async function boFetch(){boData=await _memoGet(FB_BO);boRender();}
-function _boSave(){clearTimeout(_boTimer);_boTimer=setTimeout(()=>_memoPut(FB_BO,boData),600);}
+let boData=[], _boTimer=null, boStatusSel=0, boFilter=-1, boPendingImgs=[], _boEditId=null;
+
+async function boFetch(){
+  try{const r=await fetch(FB_BO+'?t='+Date.now());if(r.ok){const d=await r.json();boData=Array.isArray(d?.orders)?d.orders:[];}}catch(e){}
+  boRender();
+}
+function _boSave(){
+  clearTimeout(_boTimer);
+  _boTimer=setTimeout(()=>{
+    try{fetch(FB_BO,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({orders:boData})});}catch(e){}
+  },600);
+}
 function boToggleForm(){
-  const f=document.getElementById('bo-form');
-  const b=document.getElementById('bo-toggle-btn');
-  if(!f||!b)return;
-  const open=f.classList.toggle('open');
-  b.textContent=open?'▲ 닫기':'＋ 주문 등록';
+  const f=document.getElementById('bo-form'),b=document.getElementById('bo-toggle-btn');if(!f||!b)return;
+  const open=f.classList.toggle('open');b.textContent=open?'▲ 닫기':'＋ 주문 등록';
   if(open)document.getElementById('bo-inp')?.focus();
 }
 function boSelStatus(idx){
   boStatusSel=idx;
   document.querySelectorAll('#bo-status-sel .bo-status-chip').forEach((el,i)=>el.classList.toggle('sel',i===idx));
 }
+function boSetFilter(f){
+  boFilter=f;
+  document.querySelectorAll('#bo-ftabs .bo-ftab').forEach((el,i)=>el.classList.toggle('active',i===(f+1)));
+  boRender();
+}
+function _boSetStatus(html){const el=document.getElementById('bo-status');if(el)el.innerHTML=html;}
+function _boRenderImgs(){
+  if(!boPendingImgs.length){_boSetStatus('');return;}
+  const p=boPendingImgs.map((url,i)=>`<div class="pnl-form-img-preview"><img src="${url?url.replace('/upload/','/upload/w_160,h_160,c_fill/'):''}" alt="" style="${url?'':'opacity:.4'}"><button class="pnl-form-img-del" onclick="boClearImg(${i})">✕</button></div>`).join('');
+  _boSetStatus(`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">${p}</div>`);
+}
+function boClearImg(idx){boPendingImgs.splice(idx,1);_boRenderImgs();}
+async function boUploadFile(file){
+  if(!file||!file.type.startsWith('image/'))return;
+  const idx=boPendingImgs.length;boPendingImgs.push(null);
+  _boSetStatus('<div class="pnl-uploading">⏳ 업로드 중...</div>');
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const r=await fetch(CLOUDINARY_URL,{method:'POST',body:fd});const d=await r.json();
+    if(d.secure_url){boPendingImgs[idx]=d.secure_url;_boRenderImgs();}
+    else{boPendingImgs.splice(idx,1);_boSetStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+  }catch(e){boPendingImgs.splice(idx,1);_boSetStatus('<div class="pnl-uploading" style="color:#E03A3A">업로드 실패</div>');}
+}
+function boHandlePaste(e){
+  const items=e.clipboardData?.items;if(!items)return;
+  for(const it of items){if(it.type.startsWith('image/')){e.preventDefault();boUploadFile(it.getAsFile());return;}}
+}
 function boAdd(){
-  const inp=document.getElementById('bo-inp');
-  const t=inp.value.trim();if(!t)return;
-  boData.unshift({id:Date.now(),text:t,status:boStatusSel,date:new Date().toISOString().slice(0,10)});
-  inp.value='';boStatusSel=0;boSelStatus(0);
+  const text=(document.getElementById('bo-inp')?.value||'').trim();
+  const validImgs=boPendingImgs.filter(Boolean);
+  if(!text&&!validImgs.length)return;
+  const reqDate=document.getElementById('bo-date-inp')?.value||new Date().toISOString().slice(0,10);
+  const filePath=(document.getElementById('bo-path-inp')?.value||'').trim();
+  const newId=Math.max(0,...boData.map(m=>m.id),0)+1;
+  const order={id:newId,text:text||'',status:boStatusSel,date:reqDate,filePath,source:'pc'};
+  if(validImgs.length)order.images=validImgs;
+  boData.unshift(order);
+  document.getElementById('bo-inp').value='';
+  document.getElementById('bo-path-inp').value='';
+  document.getElementById('bo-date-inp').value='';
+  boPendingImgs=[];_boSetStatus('');boStatusSel=0;boSelStatus(0);
   _boSave();boRender();boToggleForm();
 }
-function boDel(id){boData=boData.filter(x=>x.id!==id);_boSave();boRender();}
-function boNextStatus(id){
-  const x=boData.find(x=>x.id===id);if(!x)return;
-  x.status=(x.status+1)%BO_ST.length;_boSave();boRender();
+function boSetStatus(id,s){const x=boData.find(x=>x.id===id);if(!x)return;x.status=s;_boSave();boRender();}
+function boDel(id){if(!confirm('삭제할까요?'))return;boData=boData.filter(x=>x.id!==id);_boSave();boRender();}
+function boStartEdit(id){_boEditId=id;boRender();setTimeout(()=>document.getElementById(`bo-edit-${id}`)?.focus(),40);}
+function boCancelEdit(){_boEditId=null;boRender();}
+function boSaveEdit(id){
+  const inp=document.getElementById(`bo-edit-${id}`);const text=(inp?.value||'').trim();
+  const m=boData.find(x=>x.id===id);if(m&&text)m.text=text;
+  _boEditId=null;_boSave();boRender();
 }
+function boCopyOrder(i){const t=boData[i]?.text||'';navigator.clipboard.writeText(t).catch(()=>prompt('복사:',t));}
 function boRender(){
   const el=document.getElementById('bo-list');if(!el)return;
   const badge=document.getElementById('bo-badge');
-  const active=boData.filter(x=>x.status<3).length;
-  if(badge)badge.textContent=boData.length?`전체${boData.length}·진행${active}`:'';
-  if(!boData.length){el.innerHTML='<div class="bmg-empty">주문을 등록해요</div>';return;}
-  el.innerHTML=boData.map(m=>{
-    const s=BO_ST[m.status||0];
+  const filtered=boFilter===-1?boData:boData.filter(x=>(x.status||0)===boFilter);
+  const active=boData.filter(x=>(x.status||0)<3).length;
+  // 탭 카운트 갱신
+  const ftabs=document.querySelectorAll('#bo-ftabs .bo-ftab');
+  if(ftabs.length){
+    ftabs[0].textContent=`전체 ${boData.length}`;
+    BO_ST.forEach((s,i)=>{const n=boData.filter(x=>(x.status||0)===i).length;if(ftabs[i+1])ftabs[i+1].textContent=`${s.emoji} ${n}`;});
+  }
+  if(badge)badge.textContent=active?`진행 ${active}`:'';
+  if(!filtered.length){el.innerHTML='<div class="bmg-empty">주문을 등록해요</div>';return;}
+  el.innerHTML=filtered.map((m,i)=>{
+    const realIdx=boData.indexOf(m);
+    if(_boEditId===m.id)return `
+    <div class="bo-item">
+      <div class="bm-edit-wrap">
+        <input class="bm-edit-input" id="bo-edit-${m.id}" value="${(m.text||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
+          onkeydown="if(event.key==='Enter')boSaveEdit(${m.id});if(event.key==='Escape')boCancelEdit()">
+        <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="boSaveEdit(${m.id})">저장</button>
+        <button class="bno-icon" onclick="boCancelEdit()">✕</button>
+      </div>
+    </div>`;
+    const imgs=m.images?.length?m.images:(m.image?[m.image]:[]);
+    const thumbHtml=imgs.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${imgs.map(url=>`
+      <div class="bm-thumb" onclick="openImgModal('${url}')">
+        <img class="bm-thumb-img" src="${url.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
+        <div class="bm-thumb-hover"><img src="${url.replace('/upload/','/upload/w_400/')}" alt=""></div>
+      </div>`).join('')}</div>`:'';
+    const chips=BO_ST.map((s,si)=>`<button class="bo-schip ${s.cls}${(m.status||0)===si?' active':''}" onclick="boSetStatus(${m.id},${si})">${s.emoji} ${s.label}</button>`).join('');
     return `<div class="bo-item">
-      <div class="bo-item-date">📅 ${m.date||''}</div>
-      <div class="bo-item-text">${_memoEsc(m.text)}</div>
-      <div class="bo-item-foot">
-        <button class="bo-badge ${s.cls}" onclick="boNextStatus(${m.id})" title="클릭 → 다음 단계">${s.emoji} ${s.label}</button>
-        <button class="bo-del-btn" onclick="boDel(${m.id})">🗑 삭제</button>
+      <div class="bo-item-date">📅 ${_fmtMemoDate(m.date)}</div>
+      <div class="bo-item-statuses">${chips}</div>
+      ${m.filePath?`<div class="bo-item-path">📁 ${m.filePath}</div>`:''}
+      <div class="bo-item-text">${_linkify(m.text||'')}</div>
+      ${thumbHtml}
+      <div class="bo-item-actions">
+        <button class="bno-icon" onclick="boCopyOrder(${realIdx})" title="복사">📋</button>
+        <button class="bno-icon" onclick="boStartEdit(${m.id})" title="편집">✏️</button>
+        <button class="bno-icon del" onclick="boDel(${m.id})" title="삭제">🗑️</button>
       </div>
     </div>`;
   }).join('');
-}
-
-// 개선해야될거
-async function bimproveFetch(){bimproveData=await _memoGet(FB_BIMPROVE);bimproveRender();}
-function _bimproveSave(){clearTimeout(_bimproveTimer);_bimproveTimer=setTimeout(()=>_memoPut(FB_BIMPROVE,bimproveData),600);}
-function bimproveAdd(){
-  const inp=document.getElementById('bimprove-inp');
-  const t=inp.value.trim();if(!t)return;
-  bimproveData.unshift({id:Date.now(),text:t,done:false,date:new Date().toISOString().slice(0,10)});
-  inp.value='';_bimproveSave();bimproveRender();
-}
-function bimproveDel(id){bimproveData=bimproveData.filter(x=>x.id!==id);_bimproveSave();bimproveRender();}
-function bimproveToggle(id,v){const x=bimproveData.find(x=>x.id===id);if(x){x.done=v;_bimproveSave();bimproveRender();}}
-function bimproveRender(){
-  const el=document.getElementById('bimprove-list');if(!el)return;
-  const badge=document.getElementById('bimprove-badge');
-  const n=bimproveData.filter(x=>!x.done).length;
-  if(badge)badge.textContent=n?n+'개':'';
-  if(!bimproveData.length){el.innerHTML='<div class="bmg-empty">개선사항을 추가해요</div>';return;}
-  el.innerHTML=bimproveData.map(m=>`
-    <div class="bm-row${m.done?' done':''}">
-      <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="bimproveToggle(${m.id},this.checked)">
-      <span class="bm-text">${_memoEsc(m.text)}</span>
-      <span class="bm-date">${m.date||''}</span>
-      <div class="bm-actions"><button class="bno-icon del" onclick="bimproveDel(${m.id})">🗑️</button></div>
-    </div>`).join('');
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
