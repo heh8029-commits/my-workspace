@@ -834,10 +834,16 @@ function render() {
   const data = getMergedData(currentBrand);
   const todayStr = new Date().toISOString().slice(0, 10);
 
-  // 날짜 필터 후 최신순 정렬 (최근 날짜가 첫 행)
-  let dates = Object.keys(data)
+  // 날짜 범위: 데이터 있는 날짜 기준 최솟값 ~ 오늘, 빈 날짜도 행 표시
+  const dataKeys = Object.keys(data);
+  const minDate = dataKeys.length ? dataKeys.sort()[0] : todayStr;
+  const allDates = [];
+  for (let d = new Date(minDate); d <= new Date(todayStr); d.setDate(d.getDate() + 1)) {
+    allDates.push(d.toISOString().slice(0, 10));
+  }
+  let dates = allDates
     .filter(d => currentMonth === null || d.startsWith(currentMonth))
-    .sort().reverse();
+    .reverse();
 
   // 요약
   const brandClass = currentBrand === '미리토퍼' ? 'miri' : 'mong';
