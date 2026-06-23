@@ -876,15 +876,24 @@ function render() {
     ${HOURS.map(h => `<th>${h.replace('시','')}</th>`).join('')}
   </tr>`;
 
-  // 시간대별 평균 계산용 (전체 날짜 기준 합계/개수)
-  const hourStats = {};
+  // 시간대별 5분위 계산 (1위그룹=최상위 20%)
+  const RANK_COLORS = ['#1B5E20','#66BB6A','#F57F17','#EF5350','#B71C1C'];
+  const RANK_LABELS = ['1위','2위','3위','4위','5위'];
+  const hourRankMap = {};  // h → Map(dateStr → rank 0~4)
   for (const h of HOURS) {
-    let sum = 0, count = 0;
+    const vals = [];
     for (const d of Object.keys(data)) {
       const v = data[d][h];
-      if (v) { sum += v; count++; }
+      if (v) vals.push({ d, v });
     }
-    hourStats[h] = { sum, count };
+    vals.sort((a, b) => b.v - a.v);  // 내림차순
+    const n = vals.length;
+    const map = new Map();
+    vals.forEach(({ d, v }, i) => {
+      const rank = n < 2 ? 0 : Math.min(4, Math.floor(i / n * 5));
+      map.set(d, rank);
+    });
+    hourRankMap[h] = map;
   }
 
   // 바디
@@ -901,13 +910,9 @@ function render() {
       const v = row[h];
       let badge = '';
       if (v) {
-        const stat = hourStats[h];
-        const otherCount = stat.count - 1;
-        if (otherCount > 0) {
-          const avg = (stat.sum - v) / otherCount;
-          const diffPct = (v - avg) / avg * 100;
-          const up = diffPct >= 0;
-          badge = `<br><span style="font-size:.62rem;font-weight:700;color:${up ? '#0ea5e9' : '#e0316b'}">${up ? '▲' : '▼'}${Math.abs(diffPct).toFixed(0)}%</span>`;
+        const rank = hourRankMap[h].get(dateStr);
+        if (rank !== undefined) {
+          badge = `<br><span style="font-size:.6rem;font-weight:700;color:${RANK_COLORS[rank]}">${RANK_LABELS[rank]}</span>`;
         }
       }
       if (!v && isRecent) {
