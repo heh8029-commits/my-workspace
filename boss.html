@@ -226,6 +226,44 @@ a{text-decoration:none;color:inherit}
 .flow-item .fi-drag{cursor:grab;color:#ccc;font-size:.8rem;padding:0 2px;flex-shrink:0;user-select:none}
 .flow-time-now{font-size:.6rem;background:rgba(255,255,255,.4);border-radius:8px;padding:1px 5px;margin-left:3px;font-weight:700;white-space:nowrap}
 
+/* ── 홈 3단 메모 그리드 ── */
+.boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:700px){.boss-memo-grid{grid-template-columns:1fr}}
+.bmg-card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;height:300px}
+.bmg-title{font-size:.82rem;font-weight:800;color:#555;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.bmg-title-badge{font-size:.7rem;color:#CCC;font-weight:500}
+.bmg-input-row{display:flex;gap:6px;margin-bottom:8px;flex-shrink:0}
+.bmg-input{flex:1;padding:7px 10px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;outline:none;min-width:0}
+.bmg-input:focus{border-color:#C4714A}
+.bmg-add-btn{padding:7px 13px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.bmg-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.bmg-list::-webkit-scrollbar{width:3px}
+.bmg-list::-webkit-scrollbar-thumb{background:#EDE8E1;border-radius:2px}
+.bmg-empty{text-align:center;padding:30px 10px;color:#CCC;font-size:.76rem}
+/* 주문제작 토글 폼 */
+.bo-toggle-btn{width:100%;padding:6px;border-radius:9px;border:1.5px dashed rgba(196,113,74,.4);background:#FFF6F0;font-size:.76rem;color:#C4714A;cursor:pointer;font-weight:700;margin-bottom:6px;transition:background .15s;flex-shrink:0}
+.bo-toggle-btn:hover{background:#FDEEE5}
+.bo-form{display:none;flex-shrink:0;margin-bottom:6px}
+.bo-form.open{display:block}
+.bo-form textarea{width:100%;padding:7px 10px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.81rem;font-family:inherit;outline:none;box-sizing:border-box;resize:none;margin-bottom:5px}
+.bo-form textarea:focus{border-color:#C4714A}
+.bo-status-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.bo-status-chip{padding:3px 8px;border-radius:20px;font-size:.7rem;font-weight:700;border:1.5px solid #EDE8E1;background:#fff;cursor:pointer;color:#999;transition:all .12s}
+.bo-status-chip.sel{border-color:var(--bc,#C4714A);background:var(--bg,#FFF6F0);color:var(--bc,#C4714A)}
+.bo-submit{width:100%;padding:6px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer}
+/* 주문 아이템 */
+.bo-item{border-radius:10px;border:1px solid #EDE8E1;padding:8px 10px;background:#FAFAFA}
+.bo-item-date{font-size:.67rem;color:#BBB;margin-bottom:3px}
+.bo-item-text{font-size:.79rem;color:#333;line-height:1.4;word-break:break-all;margin-top:3px}
+.bo-item-foot{display:flex;align-items:center;justify-content:space-between;margin-top:5px}
+.bo-badge{padding:2px 9px;border-radius:20px;font-size:.69rem;font-weight:700;cursor:pointer;border:none;transition:opacity .12s}
+.bo-badge:hover{opacity:.75}
+.bo-s0{background:#EEE8FF;color:#7B5CF0}
+.bo-s1{background:#FFF3D1;color:#C48A00}
+.bo-s2{background:#D4F0FF;color:#0080C4}
+.bo-s3{background:#D4F9D4;color:#2E9B5E}
+.bo-del-btn{padding:2px 8px;border-radius:6px;border:none;background:#FFE8E8;color:#E03A3A;font-size:.7rem;font-weight:700;cursor:pointer}
+
 /* ── BOOKMARK POPUP (헤더 바로가기 아이콘) ── */
 .bm-overlay{
   display:none;position:fixed;inset:0;z-index:400;
@@ -917,6 +955,59 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div class="flow-wrap" id="boss-flow"></div>
         </div>
       </div>
+
+      <!-- 3단 메모 그리드 -->
+      <div class="boss-memo-grid">
+
+        <!-- 해야할일 -->
+        <div class="bmg-card">
+          <div class="bmg-title">
+            <span>📌 해야할일</span>
+            <span class="bmg-title-badge" id="btodo-badge"></span>
+          </div>
+          <div class="bmg-input-row">
+            <input class="bmg-input" id="btodo-inp" placeholder="할 일 추가..."
+              onkeydown="if(event.key==='Enter')btodoAdd()">
+            <button class="bmg-add-btn" onclick="btodoAdd()">+</button>
+          </div>
+          <div class="bmg-list" id="btodo-list"><div class="bmg-empty">불러오는 중...</div></div>
+        </div>
+
+        <!-- 주문제작요청 -->
+        <div class="bmg-card">
+          <div class="bmg-title">
+            <span>📦 주문제작요청</span>
+            <span class="bmg-title-badge" id="bo-badge"></span>
+          </div>
+          <button class="bo-toggle-btn" id="bo-toggle-btn" onclick="boToggleForm()">＋ 주문 등록</button>
+          <div class="bo-form" id="bo-form">
+            <textarea id="bo-inp" rows="2" placeholder="주문 내용 입력..."></textarea>
+            <div class="bo-status-sel" id="bo-status-sel">
+              <div class="bo-status-chip sel" data-idx="0" onclick="boSelStatus(0)" style="--bc:#7B5CF0;--bg:#EEE8FF">🎨 디자인예정</div>
+              <div class="bo-status-chip" data-idx="1" onclick="boSelStatus(1)" style="--bc:#C48A00;--bg:#FFF3D1">👁 시안보여줌</div>
+              <div class="bo-status-chip" data-idx="2" onclick="boSelStatus(2)" style="--bc:#0080C4;--bg:#D4F0FF">✅ 승인출고</div>
+              <div class="bo-status-chip" data-idx="3" onclick="boSelStatus(3)" style="--bc:#2E9B5E;--bg:#D4F9D4">🎉 완료</div>
+            </div>
+            <button class="bo-submit" onclick="boAdd()">등록</button>
+          </div>
+          <div class="bmg-list" id="bo-list"><div class="bmg-empty">불러오는 중...</div></div>
+        </div>
+
+        <!-- 개선해야될거 -->
+        <div class="bmg-card">
+          <div class="bmg-title">
+            <span>💡 개선해야될거</span>
+            <span class="bmg-title-badge" id="bimprove-badge"></span>
+          </div>
+          <div class="bmg-input-row">
+            <input class="bmg-input" id="bimprove-inp" placeholder="개선사항 추가..."
+              onkeydown="if(event.key==='Enter')bimproveAdd()">
+            <button class="bmg-add-btn" onclick="bimproveAdd()">+</button>
+          </div>
+          <div class="bmg-list" id="bimprove-list"><div class="bmg-empty">불러오는 중...</div></div>
+        </div>
+
+      </div><!-- /boss-memo-grid -->
     </div>
 
     <!-- 서브메뉴 콘텐츠 (준비 중) -->
@@ -4966,6 +5057,123 @@ function bfDrop(e,targetId){
 }
 setInterval(bfRender,60000);
 
+// ── 홈 3단 메모 (전역) ─────────────────────────────────────
+const FB_BTODO    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_todo.json';
+const FB_BO       = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_orders.json';
+const FB_BIMPROVE = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_improve.json';
+
+let btodoData=[], boData=[], bimproveData=[];
+let _btodoTimer=null, _boTimer=null, _bimproveTimer=null;
+let boStatusSel=0;
+
+function _memoEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function _memoGet(url){try{const r=await fetch(url+'?t='+Date.now());if(r.ok){const d=await r.json();return Array.isArray(d)?d:[];}return[];}catch(e){return[];}}
+async function _memoPut(url,data){try{await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}}
+
+// 해야할일
+async function btodoFetch(){btodoData=await _memoGet(FB_BTODO);btodoRender();}
+function _btodoSave(){clearTimeout(_btodoTimer);_btodoTimer=setTimeout(()=>_memoPut(FB_BTODO,btodoData),600);}
+function btodoAdd(){
+  const inp=document.getElementById('btodo-inp');
+  const t=inp.value.trim();if(!t)return;
+  btodoData.unshift({id:Date.now(),text:t,done:false,date:new Date().toISOString().slice(0,10)});
+  inp.value='';_btodoSave();btodoRender();
+}
+function btodoDel(id){btodoData=btodoData.filter(x=>x.id!==id);_btodoSave();btodoRender();}
+function btodoToggle(id,v){const x=btodoData.find(x=>x.id===id);if(x){x.done=v;_btodoSave();btodoRender();}}
+function btodoRender(){
+  const el=document.getElementById('btodo-list');if(!el)return;
+  const badge=document.getElementById('btodo-badge');
+  const n=btodoData.filter(x=>!x.done).length;
+  if(badge)badge.textContent=n?n+'개 남음':'';
+  if(!btodoData.length){el.innerHTML='<div class="bmg-empty">할 일을 추가해요</div>';return;}
+  el.innerHTML=btodoData.map(m=>`
+    <div class="bm-row${m.done?' done':''}">
+      <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="btodoToggle(${m.id},this.checked)">
+      <span class="bm-text">${_memoEsc(m.text)}</span>
+      <span class="bm-date">${m.date||''}</span>
+      <div class="bm-actions"><button class="bno-icon del" onclick="btodoDel(${m.id})">🗑️</button></div>
+    </div>`).join('');
+}
+
+// 주문제작요청
+const BO_ST=[
+  {label:'디자인예정',cls:'bo-s0',emoji:'🎨'},
+  {label:'시안보여줌',cls:'bo-s1',emoji:'👁'},
+  {label:'승인출고',cls:'bo-s2',emoji:'✅'},
+  {label:'완료',cls:'bo-s3',emoji:'🎉'},
+];
+async function boFetch(){boData=await _memoGet(FB_BO);boRender();}
+function _boSave(){clearTimeout(_boTimer);_boTimer=setTimeout(()=>_memoPut(FB_BO,boData),600);}
+function boToggleForm(){
+  const f=document.getElementById('bo-form');
+  const b=document.getElementById('bo-toggle-btn');
+  if(!f||!b)return;
+  const open=f.classList.toggle('open');
+  b.textContent=open?'▲ 닫기':'＋ 주문 등록';
+  if(open)document.getElementById('bo-inp')?.focus();
+}
+function boSelStatus(idx){
+  boStatusSel=idx;
+  document.querySelectorAll('#bo-status-sel .bo-status-chip').forEach((el,i)=>el.classList.toggle('sel',i===idx));
+}
+function boAdd(){
+  const inp=document.getElementById('bo-inp');
+  const t=inp.value.trim();if(!t)return;
+  boData.unshift({id:Date.now(),text:t,status:boStatusSel,date:new Date().toISOString().slice(0,10)});
+  inp.value='';boStatusSel=0;boSelStatus(0);
+  _boSave();boRender();boToggleForm();
+}
+function boDel(id){boData=boData.filter(x=>x.id!==id);_boSave();boRender();}
+function boNextStatus(id){
+  const x=boData.find(x=>x.id===id);if(!x)return;
+  x.status=(x.status+1)%BO_ST.length;_boSave();boRender();
+}
+function boRender(){
+  const el=document.getElementById('bo-list');if(!el)return;
+  const badge=document.getElementById('bo-badge');
+  const active=boData.filter(x=>x.status<3).length;
+  if(badge)badge.textContent=boData.length?`전체${boData.length}·진행${active}`:'';
+  if(!boData.length){el.innerHTML='<div class="bmg-empty">주문을 등록해요</div>';return;}
+  el.innerHTML=boData.map(m=>{
+    const s=BO_ST[m.status||0];
+    return `<div class="bo-item">
+      <div class="bo-item-date">📅 ${m.date||''}</div>
+      <div class="bo-item-text">${_memoEsc(m.text)}</div>
+      <div class="bo-item-foot">
+        <button class="bo-badge ${s.cls}" onclick="boNextStatus(${m.id})" title="클릭 → 다음 단계">${s.emoji} ${s.label}</button>
+        <button class="bo-del-btn" onclick="boDel(${m.id})">🗑 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// 개선해야될거
+async function bimproveFetch(){bimproveData=await _memoGet(FB_BIMPROVE);bimproveRender();}
+function _bimproveSave(){clearTimeout(_bimproveTimer);_bimproveTimer=setTimeout(()=>_memoPut(FB_BIMPROVE,bimproveData),600);}
+function bimproveAdd(){
+  const inp=document.getElementById('bimprove-inp');
+  const t=inp.value.trim();if(!t)return;
+  bimproveData.unshift({id:Date.now(),text:t,done:false,date:new Date().toISOString().slice(0,10)});
+  inp.value='';_bimproveSave();bimproveRender();
+}
+function bimproveDel(id){bimproveData=bimproveData.filter(x=>x.id!==id);_bimproveSave();bimproveRender();}
+function bimproveToggle(id,v){const x=bimproveData.find(x=>x.id===id);if(x){x.done=v;_bimproveSave();bimproveRender();}}
+function bimproveRender(){
+  const el=document.getElementById('bimprove-list');if(!el)return;
+  const badge=document.getElementById('bimprove-badge');
+  const n=bimproveData.filter(x=>!x.done).length;
+  if(badge)badge.textContent=n?n+'개':'';
+  if(!bimproveData.length){el.innerHTML='<div class="bmg-empty">개선사항을 추가해요</div>';return;}
+  el.innerHTML=bimproveData.map(m=>`
+    <div class="bm-row${m.done?' done':''}">
+      <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="bimproveToggle(${m.id},this.checked)">
+      <span class="bm-text">${_memoEsc(m.text)}</span>
+      <span class="bm-date">${m.date||''}</span>
+      <div class="bm-actions"><button class="bno-icon del" onclick="bimproveDel(${m.id})">🗑️</button></div>
+    </div>`).join('');
+}
+
 // ── 초기화 ─────────────────────────────────────────────────
 (function init(){
   renderTopMenu();
@@ -4977,6 +5185,9 @@ setInterval(bfRender,60000);
   fetchAlarms().then(()=>renderAlarmList());
   fetchExpenses().then(()=>updateDatebar());
   bfFetch();
+  btodoFetch();
+  boFetch();
+  bimproveFetch();
 })();
 </script>
 </body>
