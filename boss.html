@@ -1632,6 +1632,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <button onclick="cardOpenNew()" style="padding:7px 16px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.82rem;font-weight:700;cursor:pointer">+ 카드 추가</button>
       </div>
       <!-- 카드 그리드 (인라인 편집) -->
+      <input type="file" id="card-file-inp" accept="image/*" style="display:none" onchange="cardHandleFile(this.files[0]);this.value=''">
       <div id="card-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:16px"></div>
     </div>
 
@@ -5860,7 +5861,9 @@ function cardOpenEdit(id){
   cardRender();
 }
 function cardCancelEdit(){_cardEditId=null;_cardFormImgs={main:null,subs:[null,null,null]};cardRender();}
-function cardPickImg(slot){_cardImgTarget=slot;document.getElementById('card-file-inp').click();}
+let _cardQuickId=null;
+function cardPickImg(slot){_cardImgTarget=slot;_cardQuickId=null;document.getElementById('card-file-inp').click();}
+function cardQuickPickImg(cardId,slot){_cardQuickId=cardId;_cardImgTarget=slot;document.getElementById('card-file-inp').click();}
 async function cardHandleFile(file){
   if(!file)return;
   const statusEl=document.getElementById('card-upload-status');
@@ -5869,10 +5872,21 @@ async function cardHandleFile(file){
   try{
     const r=await fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd});
     const d=await r.json();const url=d.secure_url;
-    if(_cardImgTarget==='main')_cardFormImgs.main=url;
-    else if(typeof _cardImgTarget==='number')_cardFormImgs.subs[_cardImgTarget]=url;
-    if(statusEl)statusEl.textContent='';
-    cardRender();
+    if(_cardQuickId){
+      // 뷰 모드에서 바로 저장
+      const m=_cardData.find(x=>x.id===_cardQuickId);
+      if(m){
+        if(_cardImgTarget==='main')m.imgMain=url;
+        else if(typeof _cardImgTarget==='number'){m.imgSubs=m.imgSubs||[];m.imgSubs[_cardImgTarget]=url;}
+        _cardDbSave();
+      }
+      _cardQuickId=null;cardRender();
+    } else {
+      if(_cardImgTarget==='main')_cardFormImgs.main=url;
+      else if(typeof _cardImgTarget==='number')_cardFormImgs.subs[_cardImgTarget]=url;
+      if(statusEl)statusEl.textContent='';
+      cardRender();
+    }
   }catch(e){if(statusEl)statusEl.textContent='업로드 실패';alert('이미지 업로드 실패');}
 }
 function cardSave(){
@@ -5902,15 +5916,20 @@ function _cardShowToast(msg){
   document.body.appendChild(t);
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);},1500);
 }
-function _cardImgBox(url,slot,editMode){
+function _cardImgBox(url,slot,editMode,cardId){
   if(editMode){
     return `<div onclick="cardPickImg(${JSON.stringify(slot)})" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;background:#F5F0EB">
       ${url?`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:.65rem;color:#CCC">📷</span>'}
       <div style="position:absolute;inset:0;background:rgba(196,113,74,.15);display:flex;align-items:center;justify-content:center"><span style="font-size:.6rem;color:#C4714A;background:rgba(255,255,255,.9);padding:2px 7px;border-radius:20px;font-weight:700">변경</span></div>
     </div>`;
   }
-  return `<div onclick="cardImgClipboard('${url}')" style="width:100%;height:100%;cursor:${url?'pointer':'default'};overflow:hidden;background:#F5F0EB;display:flex;align-items:center;justify-content:center" title="${url?'클릭 → 클립보드 복사':''}">
-    ${url?`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:.65rem;color:#CCC">메인</span>'}
+  if(url){
+    return `<div onclick="cardImgClipboard('${url}')" style="width:100%;height:100%;cursor:pointer;overflow:hidden;background:#F5F0EB" title="클릭 → 클립보드 복사">
+      <img src="${url}" style="width:100%;height:100%;object-fit:cover">
+    </div>`;
+  }
+  return `<div onclick="cardQuickPickImg(${cardId},${JSON.stringify(slot)})" style="width:100%;height:100%;cursor:pointer;overflow:hidden;background:#F5F0EB;display:flex;align-items:center;justify-content:center" title="클릭해서 이미지 추가">
+    <span style="font-size:.65rem;color:#CCC">📷</span>
   </div>`;
 }
 function _cardRow(icon,label,value,editMode,field){
@@ -5940,11 +5959,11 @@ function _cardCardHTML(m,editMode){
   return `<div style="height:300px;display:flex;border-radius:16px;border:${editMode?'2px solid #C4714A':'1.5px solid #EDE8E1'};overflow:hidden;background:#fff;box-shadow:${editMode?'0 4px 20px rgba(196,113,74,.18)':'0 2px 10px rgba(0,0,0,.06)'}">
     <!-- 왼쪽 이미지 -->
     <div style="width:180px;flex-shrink:0;border-right:1.5px solid #EDE8E1;display:flex;flex-direction:column">
-      <div style="flex:1;overflow:hidden">${_cardImgBox(fi.main,'main',editMode)}</div>
+      <div style="flex:1;overflow:hidden">${_cardImgBox(fi.main,'main',editMode,mid)}</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);height:64px;border-top:1.5px solid #EDE8E1">
-        ${[0,1,2].map(i=>`<div style="border-right:${i<2?'1px solid #EDE8E1':'none'};overflow:hidden">${_cardImgBox(fi.subs[i]||'',i,editMode)}</div>`).join('')}
+        ${[0,1,2].map(i=>`<div style="border-right:${i<2?'1px solid #EDE8E1':'none'};overflow:hidden">${_cardImgBox(fi.subs[i]||'',i,editMode,mid)}</div>`).join('')}
       </div>
-      ${editMode?'<input type="file" id="card-file-inp" accept="image/*" style="display:none" onchange="cardHandleFile(this.files[0]);this.value=\'\'"><div id="card-upload-status" style="font-size:.65rem;color:#C4714A;text-align:center;padding:3px"></div>':''}
+      ${editMode?'<div id="card-upload-status" style="font-size:.65rem;color:#C4714A;text-align:center;padding:3px"></div>':''}
     </div>
     <!-- 오른쪽 정보 -->
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
