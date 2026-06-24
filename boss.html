@@ -228,7 +228,16 @@ a{text-decoration:none;color:inherit}
 
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
-@media(max-width:960px){.boss-memo-grid{grid-template-columns:1fr}}
+@media(max-width:960px){
+  .boss-memo-grid{grid-template-columns:1fr}
+  .bmg-card{height:420px}
+  .boss-memo-row2{display:none}
+  .boss-memo-row2.active{display:grid}
+  .boss-row2-tabs{display:flex;gap:6px;margin-top:12px;flex-shrink:0}
+  .boss-row2-tab{padding:5px 13px;font-size:.75rem;font-weight:700;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer;transition:all .12s}
+  .boss-row2-tab.active{background:#C4714A;color:#fff;border-color:#C4714A}
+}
+@media(min-width:961px){.boss-row2-tabs{display:none}}
 .bmg-card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;height:600px}
 .bmg-title{font-size:.82rem;font-weight:800;color:#555;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .bmg-title-badge{font-size:.7rem;color:#CCC;font-weight:500}
@@ -1058,11 +1067,18 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
       </div><!-- /boss-memo-grid -->
 
+      <!-- 모바일 탭 (2행 전용) -->
+      <div class="boss-row2-tabs">
+        <button class="boss-row2-tab active" onclick="bossRow2Tab(0,this)">▶️ 유투브</button>
+        <button class="boss-row2-tab" onclick="bossRow2Tab(1,this)">⭐ 단골</button>
+        <button class="boss-row2-tab" onclick="bossRow2Tab(2,this)">📋 CS복사</button>
+      </div>
+
       <!-- 2행 3단 그리드 -->
-      <div class="boss-memo-grid" style="margin-top:12px">
+      <div class="boss-memo-grid boss-memo-row2 active" style="margin-top:12px">
 
         <!-- 유투브정리 -->
-        <div class="bmg-card">
+        <div class="bmg-card" data-row2="0">
           <div class="bmg-title">
             <span>▶️ 유투브정리</span>
             <span class="bmg-title-badge" id="byt-badge"></span>
@@ -1093,7 +1109,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
 
         <!-- 단골리스트 -->
-        <div class="bmg-card">
+        <div class="bmg-card" data-row2="1">
           <div class="bmg-title" style="cursor:pointer" onclick="bregToggleForm()">
             <span>⭐ 단골리스트</span>
             <span style="display:flex;align-items:center;gap:6px">
@@ -1121,7 +1137,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
 
         <!-- CS복사 -->
-        <div class="bmg-card">
+        <div class="bmg-card" data-row2="2">
           <div class="bmg-title"><span>📋 CS복사</span><span class="bmg-title-badge" id="bcsc-badge"></span></div>
           <div style="display:flex;gap:5px;margin-bottom:6px;flex-shrink:0">
             <input class="bm-input" id="bcsc-inp" placeholder="CS 문구 추가..." style="flex:1"
@@ -5632,6 +5648,18 @@ function boRender(){
 async function bytFetch(){await memoFetch('youtube'); setTimeout(()=>memoCheckClamp('youtube'),50);}
 
 // ── 단골리스트 ────────────────────────────────────────────
+function bossRow2Tab(idx,btn){
+  document.querySelectorAll('.boss-row2-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  document.querySelectorAll('[data-row2]').forEach(el=>{
+    const i=parseInt(el.dataset.row2);
+    el.style.display=(window.innerWidth<=960&&i!==idx)?'none':'';
+  });
+}
+function bossRow2Init(){
+  if(window.innerWidth<=960){
+    document.querySelectorAll('[data-row2]').forEach((el,i)=>{if(i>0)el.style.display='none';});
+  }
+}
 function bregToggleForm(){
   const form=document.getElementById('breg-form');
   const arrow=document.getElementById('breg-form-arrow');
@@ -6142,6 +6170,7 @@ function bCsAlarmStart() {
   ytCatFetch().then(()=>bytFetch());
   bregFetch();
   bcscFetch();
+  bossRow2Init();
 })();
 </script>
 </body>
