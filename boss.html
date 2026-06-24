@@ -240,6 +240,7 @@ a{text-decoration:none;color:inherit}
 .bo-ftabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;flex-shrink:0}
 .bo-ftab{padding:3px 7px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:.7rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .12s;white-space:nowrap}
 .bo-ftab.active{background:#C4714A;color:#fff;border-color:#C4714A}
+.byt-cat-btn{padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer;transition:all .12s;white-space:nowrap}
 .byt-cat-btn.active{background:#C4714A!important;color:#fff!important;border-color:#C4714A!important}
 /* 주문제작 토글 폼 */
 .bo-toggle-btn{width:100%;padding:5px;border-radius:9px;border:1.5px dashed rgba(196,113,74,.4);background:#FFF6F0;font-size:.75rem;color:#C4714A;cursor:pointer;font-weight:700;margin-bottom:6px;transition:background .15s;flex-shrink:0}
@@ -1066,15 +1067,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span>▶️ 유투브정리</span>
             <span class="bmg-title-badge" id="byt-badge"></span>
           </div>
-          <!-- 카테고리 필터 탭 -->
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;flex-shrink:0">
-            <button class="byt-cat-btn active" data-cat="전체" onclick="ytSetCatFilter('전체')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#FDF0EA;color:#C4714A;font-weight:700;cursor:pointer">전체</button>
-            <button class="byt-cat-btn" data-cat="마케팅" onclick="ytSetCatFilter('마케팅')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">마케팅</button>
-            <button class="byt-cat-btn" data-cat="제품/제작" onclick="ytSetCatFilter('제품/제작')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">제품/제작</button>
-            <button class="byt-cat-btn" data-cat="투자" onclick="ytSetCatFilter('투자')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">투자</button>
-            <button class="byt-cat-btn" data-cat="일상" onclick="ytSetCatFilter('일상')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">일상</button>
-            <button class="byt-cat-btn" data-cat="기타" onclick="ytSetCatFilter('기타')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">기타</button>
-          </div>
+          <!-- 카테고리 필터 탭 (동적) -->
+          <div id="byt-cat-wrap" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;flex-shrink:0"></div>
           <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:8px;flex-shrink:0">
             <div style="display:flex;gap:6px;align-items:flex-start">
               <textarea class="bm-input" id="byt-inp" placeholder="유튜브 메모... (Shift+Enter 줄바꿈)" maxlength="500" rows="2"
@@ -1100,8 +1094,14 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
         <!-- 단골리스트 -->
         <div class="bmg-card">
-          <div class="bmg-title"><span>⭐ 단골리스트</span><span class="bmg-title-badge" id="breg-badge"></span></div>
-          <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;flex-shrink:0">
+          <div class="bmg-title" style="cursor:pointer" onclick="bregToggleForm()">
+            <span>⭐ 단골리스트</span>
+            <span style="display:flex;align-items:center;gap:6px">
+              <span class="bmg-title-badge" id="breg-badge"></span>
+              <span id="breg-form-arrow" style="font-size:.7rem;color:#BBB;transition:transform .2s">▼</span>
+            </span>
+          </div>
+          <div id="breg-form" style="display:none;flex-direction:column;gap:5px;margin-bottom:8px;flex-shrink:0">
             <div style="display:flex;gap:5px">
               <input class="bm-input" id="breg-name" placeholder="이름" style="flex:1">
               <input class="bm-input" id="breg-phone" placeholder="연락처" style="flex:1">
@@ -5299,8 +5299,52 @@ function handleMemoPasteEv(k,e){
 }
 const _MEMO_INP_ID={todo:'btodo-inp',improve:'bimprove-inp',youtube:'byt-inp'};
 const _MEMO_STATUS_ID={todo:'btodo-status',improve:'bimprove-status',youtube:'byt-status'};
-const _YT_CATS=['전체','마케팅','제품/제작','투자','일상','기타'];
+const FB_YTCATS='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_ytcats.json';
+let _ytCats=['마케팅','제품/제작','투자','일상','기타'];
 let _ytCatFilter='전체';
+async function ytCatFetch(){
+  try{const r=await fetch(FB_YTCATS+'?t='+Date.now());if(r.ok){const d=await r.json();if(Array.isArray(d)&&d.length)_ytCats=d;}}catch(e){}
+  ytRenderCatBtns();
+}
+function ytCatSave(){fetch(FB_YTCATS,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_ytCats)}).catch(()=>{});}
+function ytRenderCatBtns(){
+  const wrap=document.getElementById('byt-cat-wrap');const sel=document.getElementById('byt-cat-sel');if(!wrap)return;
+  const all=['전체',..._ytCats];
+  wrap.innerHTML=all.map(c=>`<button class="byt-cat-btn${_ytCatFilter===c?' active':''}" data-cat="${c}" onclick="ytSetCatFilter('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('')
+    +`<button onclick="ytCatManage()" style="padding:3px 8px;font-size:.72rem;border:1.5px dashed #EDE8E1;border-radius:20px;background:#fff;color:#BBB;cursor:pointer">⚙️</button>`;
+  if(sel){sel.innerHTML=_ytCats.map(c=>`<option value="${c}">${c}</option>`).join('');}
+}
+function ytCatManage(){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const renderList=()=>ov.querySelector('#ytcat-list').innerHTML=_ytCats.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #F5F0EB">
+      <span style="flex:1;font-size:.85rem">${c}</span>
+      <button onclick="ytCatDel(${i})" style="border:none;background:none;color:#E04040;cursor:pointer;font-size:.8rem">✕</button>
+    </div>`).join('')||'<div style="color:#aaa;font-size:.8rem;padding:8px 0">카테고리 없음</div>';
+  ov.innerHTML=`<div style="background:white;border-radius:18px;padding:20px;width:100%;max-width:320px;font-family:inherit">
+    <div style="font-weight:800;color:#C4714A;margin-bottom:12px">⚙️ 카테고리 관리</div>
+    <div id="ytcat-list"></div>
+    <div style="display:flex;gap:6px;margin-top:12px">
+      <input id="ytcat-new" class="bm-input" placeholder="새 카테고리..." style="flex:1" onkeydown="if(event.key==='Enter')ytCatAdd()">
+      <button onclick="ytCatAdd()" class="bm-add-btn">+</button>
+    </div>
+    <button onclick="this.closest('[style*=fixed]').remove()" style="width:100%;margin-top:10px;padding:9px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">닫기</button>
+  </div>`;
+  document.body.appendChild(ov);ov.onclick=e=>{if(e.target===ov)ov.remove();};renderList();
+  window._ytCatOvRender=renderList;
+}
+function ytCatAdd(){
+  const inp=document.getElementById('ytcat-new');const v=(inp?.value||'').trim();
+  if(!v||_ytCats.includes(v))return;
+  _ytCats.push(v);ytCatSave();ytRenderCatBtns();
+  if(inp)inp.value='';
+  if(window._ytCatOvRender)window._ytCatOvRender();
+}
+function ytCatDel(i){
+  _ytCats.splice(i,1);ytCatSave();ytRenderCatBtns();
+  if(window._ytCatOvRender)window._ytCatOvRender();
+}
 function memoAdd(k){
   const inpId=_MEMO_INP_ID[k]||(k==='todo'?'btodo-inp':'bimprove-inp');
   const inp=document.getElementById(inpId);
@@ -5328,7 +5372,11 @@ function memoStartEdit(k,id){_MW[k].editId=id;memoRender(k);setTimeout(()=>{cons
 function memoCancelEdit(k){_MW[k].editId=null;memoRender(k);}
 function memoSaveEdit(k,id){
   const inp=document.getElementById(`${k}-edit-${id}`);const text=(inp?.value||'').trim();
-  const m=_MW[k].data.find(x=>x.id===id);if(m&&text)m.text=text;
+  const m=_MW[k].data.find(x=>x.id===id);
+  if(m){
+    if(text)m.text=text;
+    if(k==='youtube'){const catSel=document.getElementById(`${k}-edit-cat-${id}`);if(catSel)m.cat=catSel.value;}
+  }
   _MW[k].editId=null;_memoDbSave(k);memoRender(k);
 }
 function memoDel(k,id){
@@ -5364,6 +5412,7 @@ function memoRender(k){
           style="resize:none;min-height:60px;line-height:1.5"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();memoSaveEdit('${k}',${m.id})}if(event.key==='Escape')memoCancelEdit('${k}')"
         >${(m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
+        ${k==='youtube'?`<select id="${k}-edit-cat-${m.id}" style="padding:4px 8px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.75rem;font-family:inherit;outline:none">${_ytCats.map(c=>`<option value="${c}"${(m.cat||'기타')===c?' selected':''}>${c}</option>`).join('')}</select>`:''}
         <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="memoSaveEdit('${k}',${m.id})">저장</button>
         <button class="bno-icon" onclick="memoCancelEdit('${k}')">✕</button>
       </div>
@@ -5583,6 +5632,14 @@ function boRender(){
 async function bytFetch(){await memoFetch('youtube'); setTimeout(()=>memoCheckClamp('youtube'),50);}
 
 // ── 단골리스트 ────────────────────────────────────────────
+function bregToggleForm(){
+  const form=document.getElementById('breg-form');
+  const arrow=document.getElementById('breg-form-arrow');
+  if(!form)return;
+  const open=form.style.display==='none';
+  form.style.display=open?'flex':'none';
+  if(arrow)arrow.style.transform=open?'rotate(0deg)':'rotate(-90deg)';
+}
 let _bregData=[], _bregTimer=null, _bregEditId=null;
 async function bregFetch(){
   try{const r=await fetch(FB_BREG+'?t='+Date.now());if(r.ok){const d=await r.json();_bregData=Array.isArray(d?.list)?d.list:[];}}catch(e){}
@@ -5698,6 +5755,7 @@ function bcscCopy(id){
     if(btn){btn.style.background='#e8f5e8';setTimeout(()=>{btn.style.background='';},800);}
   });
 }
+let _bcscDragId=null;
 function bcscRender(){
   const el=document.getElementById('bcsc-list');if(!el)return;
   const badge=document.getElementById('bcsc-badge');
@@ -5706,15 +5764,33 @@ function bcscRender(){
   let list=kw?_bcscData.filter(x=>(x.text||'').toLowerCase().includes(kw)):_bcscData;
   if(!list.length){el.innerHTML=`<div class="bmg-empty">${kw?'검색 결과 없음':'CS 문구를 추가해요'}</div>`;return;}
   el.innerHTML=list.map(m=>`
-    <div class="bm-row" id="bcsc-cb-${m.id}" style="gap:6px;cursor:pointer" onclick="bcscCopy(${m.id})" title="클릭하면 복사">
-      <span style="font-size:.75rem;color:#aaa;flex-shrink:0">📋</span>
-      <span class="bm-text" style="font-size:.8rem">${m.text.replace(/</g,'&lt;')}</span>
+    <div class="bm-row bcsc-drag-item" id="bcsc-cb-${m.id}" draggable="true"
+      data-id="${m.id}" style="gap:6px;cursor:pointer"
+      onclick="bcscCopy(${m.id})" title="클릭하면 복사"
+      ondragstart="bcscDragStart(event,${m.id})"
+      ondragover="bcscDragOver(event,${m.id})"
+      ondrop="bcscDrop(event,${m.id})"
+      ondragend="bcscDragEnd()">
+      <span style="font-size:.75rem;color:#ccc;flex-shrink:0;cursor:grab">☰</span>
+      <span class="bm-text" style="font-size:.8rem">${(m.text||'').replace(/</g,'&lt;')}</span>
       <div style="display:flex;gap:2px;flex-shrink:0" onclick="event.stopPropagation()">
         <button class="bno-icon" onclick="bcscEditOpen(${m.id})" title="편집">✏️</button>
         <button class="bno-icon del" onclick="bcscDel(${m.id})" title="삭제">🗑️</button>
       </div>
     </div>`).join('');
 }
+function bcscDragStart(e,id){_bcscDragId=id;e.dataTransfer.effectAllowed='move';setTimeout(()=>{const el=document.getElementById('bcsc-cb-'+id);if(el)el.style.opacity='.4';},0);}
+function bcscDragOver(e,id){e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.bcsc-drag-item').forEach(el=>el.style.borderTop='');if(id!==_bcscDragId){const el=document.getElementById('bcsc-cb-'+id);if(el)el.style.borderTop='2px solid #C4714A';}}
+function bcscDrop(e,targetId){
+  e.preventDefault();
+  if(_bcscDragId===null||_bcscDragId===targetId)return;
+  const fromIdx=_bcscData.findIndex(x=>x.id===_bcscDragId);
+  const toIdx=_bcscData.findIndex(x=>x.id===targetId);
+  if(fromIdx<0||toIdx<0)return;
+  const [item]=_bcscData.splice(fromIdx,1);_bcscData.splice(toIdx,0,item);
+  _bcscSave();bcscRender();
+}
+function bcscDragEnd(){_bcscDragId=null;document.querySelectorAll('.bcsc-drag-item').forEach(el=>{el.style.opacity='';el.style.borderTop='';});}
 
 // ── CS 실시간공유 ─────────────────────────────────────────
 var _bCsAuthor = '수';
@@ -6063,7 +6139,7 @@ function bCsAlarmStart() {
   btodoFetch();
   boFetch();
   bimproveFetch();
-  bytFetch();
+  ytCatFetch().then(()=>bytFetch());
   bregFetch();
   bcscFetch();
 })();
