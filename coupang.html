@@ -883,10 +883,28 @@ function render() {
   // 요약
   const brandClass = currentBrand === '미리토퍼' ? 'miri' : 'mong';
   const todayAmt = currentAmount[currentBrand] || 0;
+  const ydD = new Date(); ydD.setDate(ydD.getDate()-1);
+  const ydMD = `${String(ydD.getMonth()+1).padStart(2,'0')}/${String(ydD.getDate()).padStart(2,'0')}`;
+  const ydRow = (salesData[currentBrand] || []).find(r => r.date === ydMD) || {};
+  const ydRocket = ydRow.rocket_growth || 0;
+  const ydSeller = ydRow.seller_delivery || 0;
+  const ydTotal  = ydRocket + ydSeller;
   document.getElementById('summary').innerHTML = `
     <div class="summary-card">
       <div class="summary-label">실시간 매출 (오늘)</div>
       <div class="summary-val ${brandClass}">${fmt(todayAmt) || '—'}원</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">어제 로켓그로스</div>
+      <div class="summary-val ${brandClass}">${ydRocket ? fmt(ydRocket)+'원' : '—'}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">어제 판매자배송</div>
+      <div class="summary-val ${brandClass}">${ydSeller ? fmt(ydSeller)+'원' : '—'}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">어제 총매출</div>
+      <div class="summary-val ${brandClass}">${ydTotal ? fmt(ydTotal)+'원' : '—'}</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">기록 일수</div>
