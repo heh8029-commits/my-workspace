@@ -5225,7 +5225,7 @@ function memoAdd(k){
 }
 function memoToggle(k,id,v){const m=_MW[k].data.find(x=>x.id===id);if(m){m.done=v;_memoDbSave(k);memoRender(k);}}
 function memoCopy(k,i){const t=_MW[k].data[i]?.text||'';navigator.clipboard.writeText(t).catch(()=>prompt('복사:',t));}
-function memoStartEdit(k,id){_MW[k].editId=id;memoRender(k);setTimeout(()=>document.getElementById(`${k}-edit-${id}`)?.focus(),40);}
+function memoStartEdit(k,id){_MW[k].editId=id;memoRender(k);setTimeout(()=>{const el=document.getElementById(`${k}-edit-${id}`);if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},40);}
 function memoCancelEdit(k){_MW[k].editId=null;memoRender(k);}
 function memoSaveEdit(k,id){
   const inp=document.getElementById(`${k}-edit-${id}`);const text=(inp?.value||'').trim();
@@ -5256,9 +5256,11 @@ function memoRender(k){
     if(_MW[k].editId===m.id)return `
     <div class="bm-row">
       <input type="checkbox" class="bm-check" disabled>
-      <div class="bm-edit-wrap">
-        <input class="bm-edit-input" id="${k}-edit-${m.id}" value="${(m.text||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"
-          onkeydown="if(event.key==='Enter')memoSaveEdit('${k}',${m.id});if(event.key==='Escape')memoCancelEdit('${k}')">
+      <div class="bm-edit-wrap" style="align-items:flex-start">
+        <textarea class="bm-edit-input" id="${k}-edit-${m.id}"
+          style="resize:none;min-height:60px;line-height:1.5"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();memoSaveEdit('${k}',${m.id})}if(event.key==='Escape')memoCancelEdit('${k}')"
+        >${(m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
         <button class="bm-add-btn" style="padding:5px 10px;font-size:.75rem" onclick="memoSaveEdit('${k}',${m.id})">저장</button>
         <button class="bno-icon" onclick="memoCancelEdit('${k}')">✕</button>
       </div>
