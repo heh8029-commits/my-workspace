@@ -89,6 +89,14 @@ h1 {
 .c-gray .card-title { color: #475569; }
 .c-gray .badge { background: #e2e8f0; color: #334155; }
 
+.c-rose { background: #fff1f2; border-color: #f43f5e; }
+.c-rose .card-title { color: #be123c; }
+.c-rose .badge { background: #ffe4e6; color: #9f1239; }
+
+.c-indigo { background: #eef2ff; border-color: #6366f1; }
+.c-indigo .card-title { color: #4338ca; }
+.c-indigo .badge { background: #e0e7ff; color: #3730a3; }
+
 /* ──────────── 컬럼 ──────────── */
 .col-left  { grid-column: 1; grid-row: 1 / 4; align-self: start; width: 280px; }
 .col-arrow-l { grid-column: 2; grid-row: 1 / 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 100%; }
@@ -243,7 +251,7 @@ h1 {
 <body>
 
 <h1>🗺️ 미리토퍼캐슬 자동화 시스템 맵</h1>
-<p class="updated">2026-06-23 기준 · 실행 중인 봇 & 자동화 프로세스 전체</p>
+<p class="updated">2026-06-24 기준 · 실행 중인 봇 & 자동화 프로세스 전체</p>
 
 <!-- ═══════════ 메인 다이어그램 ═══════════ -->
 <div class="diagram">
@@ -295,6 +303,34 @@ h1 {
       <span class="badge c-teal">threading.Lock</span>
       <span class="path">📄 G:\내 드라이브\미리토퍼캐슬\코드\folder_watcher.py</span>
       <span class="path">▶ loop: 코드\loop_folder.ps1</span>
+    </div>
+
+    <div class="card c-rose" style="margin-top:12px">
+      <div class="card-title">🏢 boss_bot.py (사이트매니저봇)</div>
+      <ul class="card-body">
+        <li>boss.html 사이트에 글/사진 게시</li>
+        <li>알람 설정 · 관리 (Firebase 저장)</li>
+        <li>손익 메모 / 캘린더 / 지출 기록</li>
+        <li>체크리스트 관리</li>
+        <li>두 사용자 모두 알림 수신</li>
+      </ul>
+      <span class="badge c-rose">Task Scheduler 3분 자동실행</span>
+      <span class="path">📄 G:\내 드라이브\런처바로가기\새로운그로스\boss_bot.py</span>
+      <span class="path">config.json · boss_posts.json · boss_photos\</span>
+    </div>
+
+    <div class="card c-indigo" style="margin-top:12px">
+      <div class="card-title">🏠 homebase_bot.py (홈베이스봇)</div>
+      <ul class="card-body">
+        <li>PC 원격제어 (텔레그램으로 명령)</li>
+        <li>봇 재시작: 그로스봇 · 토글봇 · 사이트봇</li>
+        <li>프로세스 상태 확인</li>
+        <li>VS Code 터널 ON/OFF</li>
+        <li>! 로 시작하는 명령 직접 실행</li>
+      </ul>
+      <span class="badge c-indigo">Task Scheduler 3분 자동실행</span>
+      <span class="path">📄 G:\내 드라이브\런처바로가기\homebase_bot\homebase_bot.py</span>
+      <span class="path">homebase_bot.log</span>
     </div>
 
   </div>
@@ -370,6 +406,18 @@ h1 {
       <span class="path">📄 G:\내 드라이브\런처바로가기\새로운그로스\app.py</span>
       <span class="path">▶ loop: 새로운그로스\웹_루프실행.bat</span>
       <span class="path">http://IP:5124/index</span>
+    </div>
+
+    <div class="card c-rose" style="margin-top:12px">
+      <div class="card-title">⏰ boss_manager_bot.py (보스매니저봇)</div>
+      <ul class="card-body">
+        <li>Firebase boss_alarms.json 5분마다 조회</li>
+        <li>설정된 시간+요일에 텔레그램 알람 전송</li>
+        <li>boss.html에서 알람 등록 → 봇이 전송</li>
+      </ul>
+      <span class="badge c-rose">Task Scheduler 3분 자동실행</span>
+      <span class="path">📄 G:\내 드라이브\미리토퍼캐슬\코드\boss_manager_bot.py</span>
+      <span class="path">Firebase: ws5/boss_alarms.json</span>
     </div>
 
   </div>
@@ -481,7 +529,10 @@ h1 {
 
 <!-- ═══════════ 윈도우 시작 시 실행 목록 ═══════════ -->
 <div class="bottom-section">
-  <div class="section-title">🖥️ 윈도우 시작 시 실행해야 하는 것들 (총 7개)</div>
+  <div class="section-title">🖥️ 윈도우 시작 시 실행해야 하는 것들 — 수동 7개 · Task Scheduler 자동 4개</div>
+
+  <!-- 수동 실행 -->
+  <div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:1px;margin-bottom:8px;padding-left:2px">📋 수동 실행 (직접 켜야 하는 것)</div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
 
     <div style="background:#fff;border:2px solid #a855f7;border-radius:12px;padding:14px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
@@ -491,7 +542,7 @@ h1 {
         주문수집 / 문의수집 / 단건접수<br>
         스케줄 자동 실행 포함
       </div>
-      <div style="font-size:10px;background:#faf5ff;border-radius:6px;padding:3px 7px;margin-top:6px;color:#7c3aed;font-family:monospace">python -X utf8 togle_bot.py</div>
+      <div style="font-size:10px;background:#faf5ff;border-radius:6px;padding:3px 7px;margin-top:6px;color:#7c3aed;font-family:monospace">코드\loop_togle.ps1</div>
     </div>
 
     <div style="background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:14px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
@@ -501,7 +552,7 @@ h1 {
         여행토퍼 / 셀프제작 TXT 저장<br>
         배너 이미지 콜라주 전송
       </div>
-      <div style="font-size:10px;background:#eff6ff;border-radius:6px;padding:3px 7px;margin-top:6px;color:#1d4ed8;font-family:monospace">python bot_receiver.py</div>
+      <div style="font-size:10px;background:#eff6ff;border-radius:6px;padding:3px 7px;margin-top:6px;color:#1d4ed8;font-family:monospace">코드\loop_receiver.ps1</div>
     </div>
 
     <div style="background:#fff;border:2px solid #14b8a6;border-radius:12px;padding:14px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
@@ -511,7 +562,7 @@ h1 {
         완료 이미지 자동 전송<br>
         (여행토퍼완료 + 셀프제작)
       </div>
-      <div style="font-size:10px;background:#f0fdfa;border-radius:6px;padding:3px 7px;margin-top:6px;color:#0d9488;font-family:monospace">python folder_watcher.py</div>
+      <div style="font-size:10px;background:#f0fdfa;border-radius:6px;padding:3px 7px;margin-top:6px;color:#0d9488;font-family:monospace">코드\loop_folder.ps1</div>
     </div>
 
     <div style="background:#fff;border:2px solid #22c55e;border-radius:12px;padding:14px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
@@ -526,7 +577,7 @@ h1 {
 
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">
 
     <div style="background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:14px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
       <div style="font-size:11px;font-weight:800;color:#475569;margin-bottom:6px">⑤ 웹_루프실행.bat</div>
@@ -542,8 +593,8 @@ h1 {
       <div style="font-size:11px;font-weight:800;color:#c2410c;margin-bottom:6px">⑥ Edge (미리토퍼) — 포트 9301</div>
       <div style="font-size:11px;color:#475569;line-height:1.8">
         쿠팡 미리토퍼 계정 로그인 상태 유지<br>
-        coupang_checker가 이 세션 사용<br>
-        <span style="color:#94a3b8">※ 꺼지면 자동 재실행</span>
+        coupang_checker가 CDP로 이 세션 사용<br>
+        <span style="color:#94a3b8">※ 꺼지면 자동 재실행+로그인</span>
       </div>
     </div>
 
@@ -551,18 +602,54 @@ h1 {
       <div style="font-size:11px;font-weight:800;color:#c2410c;margin-bottom:6px">⑦ Edge (몽몽토퍼) — 포트 9302</div>
       <div style="font-size:11px;color:#475569;line-height:1.8">
         쿠팡 몽몽토퍼 계정 로그인 상태 유지<br>
-        coupang_checker가 이 세션 사용<br>
-        <span style="color:#94a3b8">※ 꺼지면 자동 재실행</span>
+        coupang_checker가 CDP로 이 세션 사용<br>
+        <span style="color:#94a3b8">※ 꺼지면 자동 재실행+로그인</span>
       </div>
     </div>
 
+  </div>
+
+  <!-- Task Scheduler 자동 실행 -->
+  <div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:1px;margin-bottom:8px;padding-left:2px">🔄 Task Scheduler 자동 실행 (로그인 후 자동 — 따로 켤 필요 없음)</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+
     <div style="background:#fef9c3;border:2px dashed #ca8a04;border-radius:12px;padding:14px 16px">
-      <div style="font-size:11px;font-weight:800;color:#92400e;margin-bottom:6px">🔄 자동 실행 (별도 조작 불필요)</div>
+      <div style="font-size:11px;font-weight:800;color:#92400e;margin-bottom:6px">⚙️ CoupangAdCheck / CoupangSalesCheck</div>
       <div style="font-size:11px;color:#78350f;line-height:1.8">
-        <b>coupang_checker.py</b><br>
-        Windows 작업 스케줄러가 자동 실행<br>
-        매시 :20, :45 / 야간 광고수집<br>
-        <span style="color:#92400e">→ 따로 실행 안 해도 됨!</span>
+        → <b>coupang_checker.py</b><br>
+        매시 :20 미리토퍼 · :45 몽몽토퍼<br>
+        20:20 RFM / 광고 스크린샷 수집<br>
+        <span style="font-size:10px;color:#92400e">딜레이 없음 · 봇과 무관하게 독립 실행</span>
+      </div>
+    </div>
+
+    <div style="background:#fff1f2;border:2px dashed #f43f5e;border-radius:12px;padding:14px 16px">
+      <div style="font-size:11px;font-weight:800;color:#be123c;margin-bottom:6px">🏢 사이트매니저봇 (로그인 3분 후)</div>
+      <div style="font-size:11px;color:#9f1239;line-height:1.8">
+        → <b>boss_bot.py</b><br>
+        사이트 글·사진 게시<br>
+        알람 설정·관리, 손익메모, 캘린더<br>
+        <span style="font-size:10px;color:#be123c">G:\런처바로가기\새로운그로스\boss_bot.py</span>
+      </div>
+    </div>
+
+    <div style="background:#eef2ff;border:2px dashed #6366f1;border-radius:12px;padding:14px 16px">
+      <div style="font-size:11px;font-weight:800;color:#4338ca;margin-bottom:6px">🏠 홈베이스봇 (로그인 3분 후)</div>
+      <div style="font-size:11px;color:#3730a3;line-height:1.8">
+        → <b>homebase_bot.py</b><br>
+        PC 원격제어 · 봇 재시작<br>
+        프로세스 확인 · VS Code 터널<br>
+        <span style="font-size:10px;color:#4338ca">G:\런처바로가기\homebase_bot\homebase_bot.py</span>
+      </div>
+    </div>
+
+    <div style="background:#fff1f2;border:2px dashed #f43f5e;border-radius:12px;padding:14px 16px">
+      <div style="font-size:11px;font-weight:800;color:#be123c;margin-bottom:6px">⏰ 보스매니저봇 (로그인 3분 후)</div>
+      <div style="font-size:11px;color:#9f1239;line-height:1.8">
+        → <b>boss_manager_bot.py</b><br>
+        Firebase 알람 조회 (5분 주기)<br>
+        설정 시간에 텔레그램 알람 전송<br>
+        <span style="font-size:10px;color:#be123c">코드\boss_manager_bot.py</span>
       </div>
     </div>
 
@@ -570,7 +657,7 @@ h1 {
 </div>
 
 <p style="text-align:center;font-size:10px;color:#94a3b8">
-  미리토퍼캐슬 자동화 시스템 &nbsp;·&nbsp; 2026-06-23
+  미리토퍼캐슬 자동화 시스템 &nbsp;·&nbsp; 2026-06-24
 </p>
 
 </body>
