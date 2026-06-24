@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-06-24 23:45",
+  "last_updated": "2026-06-25 00:20",
   "sales_data": {
-    "last_updated": "2026-06-24",
+    "last_updated": "2026-06-25",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -610,6 +610,12 @@
         "rocket_growth": 291000,
         "seller_delivery": 0,
         "total": 291000
+      },
+      {
+        "date": "06/24",
+        "rocket_growth": 259020,
+        "seller_delivery": 0,
+        "total": 259020
       }
     ]
   },
@@ -2572,6 +2578,12 @@
       "account": "몽몽토퍼",
       "status": "fail",
       "reason": "예외: Page.wait_for_timeout: Target page, context or browser has been closed"
+    },
+    {
+      "time": "2026-06-25 00:20",
+      "account": "미리토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
     }
   ],
   "ad_performance": {
