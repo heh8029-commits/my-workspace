@@ -326,7 +326,12 @@ async function loadAutoData() {
     ]);
     if (fbR && fbR.ok) {
       const fb = await fbR.json();
-      if (fb && typeof fb === 'object') manualAdData = fb;
+      if (fb && typeof fb === 'object') {
+        manualAdData = {};
+        for (const [k, v] of Object.entries(fb)) {
+          manualAdData[k.replace(/_/g, '/')] = v;
+        }
+      }
     }
     if (fbHR && fbHR.ok) {
       const fbH = await fbHR.json();
@@ -513,10 +518,14 @@ function saveAdData() {
 async function doFirebaseSave() {
   setSaveStatus('저장 중...');
   try {
+    const encoded = {};
+    for (const [k, v] of Object.entries(manualAdData)) {
+      encoded[k.replace(/\//g, '_')] = v;
+    }
     const r = await fetch(FB_MANUAL_AD, {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(manualAdData)
+      body: JSON.stringify(encoded)
     });
     if (r.ok) {
       setSaveStatus('✓ 저장됨');
@@ -601,9 +610,10 @@ function updateAdField(date, field, value) {
   renderSales();
 }
 
-function renderSalesSummary(date, m, ad, dayCount) {
+function renderSalesSummary(date, m, ad, dayCount, label) {
   const box = document.getElementById('sales-summary');
   if (!date) { box.innerHTML = ''; return; }
+  const titleHtml = label ? `<div style="grid-column:1/-1;font-size:.72rem;font-weight:700;color:#888;padding-bottom:2px">${label}</div>` : '';
 
   const fmtNum = n => Number(n || 0).toLocaleString('ko-KR') + '원';
   const fmtPct = n => n.toFixed(0) + '%';
@@ -627,6 +637,7 @@ function renderSalesSummary(date, m, ad, dayCount) {
     </div>`;
 
   box.innerHTML = [
+    titleHtml,
     card('쿠팡 그로스', rg, 'rev', pctOf(rg)),
     card('쿠팡 판매자배송', sd, 'rev', pctOf(sd)),
     card('쿠팡 총매출', cpTotal, 'rev', pctOf(cpTotal)),
@@ -687,10 +698,14 @@ function renderSales() {
     return { rg, sd };
   };
 
-  // 합산 요약 (실제 데이터가 있는 날짜 기준)
+  // 요약: 선택된 월 또는 현재 월 기준
+  const nowMM = String(new Date().getMonth()+1).padStart(2,'0');
+  const summaryMM = currentSalesMonth || nowMM;
+  const summaryLabel = parseInt(summaryMM) + '월 요약';
+  const sumDates = dataDates.filter(d => d.startsWith(summaryMM));
   const sumRow = { rocket_growth: 0, seller_delivery: 0, total: 0 };
   const sumAd = { cpAdCost: 0, naverSales: 0, naverSearchAd: 0, naverAiAd: 0 };
-  for (const d of dataDates) {
+  for (const d of sumDates) {
     const { rg, sd } = getRgSd(d);
     const ad = adData[d] || {};
     sumRow.rocket_growth += rg;
@@ -701,7 +716,7 @@ function renderSales() {
     sumAd.naverSearchAd += ad[fNvSe] || 0;
     sumAd.naverAiAd    += ad[fNvAi] || 0;
   }
-  renderSalesSummary(dataDates.length ? 'sum' : null, sumRow, sumAd, dataDates.length);
+  renderSalesSummary(sumDates.length ? summaryMM : null, sumRow, sumAd, sumDates.length, summaryLabel);
 
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
