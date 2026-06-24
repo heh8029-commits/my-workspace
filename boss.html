@@ -240,6 +240,7 @@ a{text-decoration:none;color:inherit}
 .bo-ftabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;flex-shrink:0}
 .bo-ftab{padding:3px 7px;border-radius:8px;border:1.5px solid #EDE8E1;background:#fff;font-size:.7rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .12s;white-space:nowrap}
 .bo-ftab.active{background:#C4714A;color:#fff;border-color:#C4714A}
+.byt-cat-btn.active{background:#C4714A!important;color:#fff!important;border-color:#C4714A!important}
 /* 주문제작 토글 폼 */
 .bo-toggle-btn{width:100%;padding:5px;border-radius:9px;border:1.5px dashed rgba(196,113,74,.4);background:#FFF6F0;font-size:.75rem;color:#C4714A;cursor:pointer;font-weight:700;margin-bottom:6px;transition:background .15s;flex-shrink:0}
 .bo-toggle-btn:hover{background:#FDEEE5}
@@ -1065,17 +1066,33 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <span>▶️ 유투브정리</span>
             <span class="bmg-title-badge" id="byt-badge"></span>
           </div>
+          <!-- 카테고리 필터 탭 -->
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;flex-shrink:0">
+            <button class="byt-cat-btn active" data-cat="전체" onclick="ytSetCatFilter('전체')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#FDF0EA;color:#C4714A;font-weight:700;cursor:pointer">전체</button>
+            <button class="byt-cat-btn" data-cat="마케팅" onclick="ytSetCatFilter('마케팅')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">마케팅</button>
+            <button class="byt-cat-btn" data-cat="제품/제작" onclick="ytSetCatFilter('제품/제작')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">제품/제작</button>
+            <button class="byt-cat-btn" data-cat="투자" onclick="ytSetCatFilter('투자')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">투자</button>
+            <button class="byt-cat-btn" data-cat="일상" onclick="ytSetCatFilter('일상')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">일상</button>
+            <button class="byt-cat-btn" data-cat="기타" onclick="ytSetCatFilter('기타')" style="padding:3px 9px;font-size:.72rem;border:1.5px solid #EDE8E1;border-radius:20px;background:#fff;color:#888;cursor:pointer">기타</button>
+          </div>
           <div class="bm-add" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:8px;flex-shrink:0">
             <div style="display:flex;gap:6px;align-items:flex-start">
               <textarea class="bm-input" id="byt-inp" placeholder="유튜브 메모... (Shift+Enter 줄바꿈)" maxlength="500" rows="2"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();memoAdd('youtube')}"
                 onpaste="handleMemoPasteEv('youtube',event)"
-                style="resize:none;line-height:1.5"></textarea>
+                style="resize:none;line-height:1.5;flex:1"></textarea>
               <input type="file" id="byt-file-inp" accept="image/*" style="display:none"
                 onchange="handleMemoFilePick('youtube',this.files[0]);this.value=''">
               <button class="bm-attach-btn" onclick="document.getElementById('byt-file-inp').click()" title="이미지 첨부">📎</button>
               <button class="bm-add-btn" onclick="memoAdd('youtube')">+</button>
             </div>
+            <select id="byt-cat-sel" style="padding:5px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.78rem;font-family:inherit;outline:none;color:#555;background:#fff">
+              <option value="마케팅">마케팅</option>
+              <option value="제품/제작">제품/제작</option>
+              <option value="투자">투자</option>
+              <option value="일상">일상</option>
+              <option value="기타">기타</option>
+            </select>
             <div id="byt-status"></div>
           </div>
           <div class="bmg-list bno-list" id="byt-list"><div class="bmg-empty">불러오는 중...</div></div>
@@ -5257,7 +5274,7 @@ function _memoDbSave(k){
     try{fetch(_MW[k].fb,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({memos:_MW[k].data})});}catch(e){}
   },600);
 }
-function memoSetStatus(k,html){const el=document.getElementById(k==='todo'?'btodo-status':'bimprove-status');if(el)el.innerHTML=html;}
+function memoSetStatus(k,html){const el=document.getElementById(_MEMO_STATUS_ID[k]||(k==='todo'?'btodo-status':'bimprove-status'));if(el)el.innerHTML=html;}
 function memoRenderImgs(k){
   const imgs=_MW[k].pendingImgs;
   if(!imgs.length){memoSetStatus(k,'');return;}
@@ -5280,17 +5297,30 @@ function handleMemoPasteEv(k,e){
   const items=e.clipboardData?.items;if(!items)return;
   for(const it of items){if(it.type.startsWith('image/')){e.preventDefault();memoUploadImg(k,it.getAsFile());return;}}
 }
+const _MEMO_INP_ID={todo:'btodo-inp',improve:'bimprove-inp',youtube:'byt-inp'};
+const _MEMO_STATUS_ID={todo:'btodo-status',improve:'bimprove-status',youtube:'byt-status'};
+const _YT_CATS=['전체','마케팅','제품/제작','투자','일상','기타'];
+let _ytCatFilter='전체';
 function memoAdd(k){
-  const inpId=k==='todo'?'btodo-inp':'bimprove-inp';
+  const inpId=_MEMO_INP_ID[k]||(k==='todo'?'btodo-inp':'bimprove-inp');
   const inp=document.getElementById(inpId);
-  const text=(inp.value||'').trim();const validImgs=_MW[k].pendingImgs.filter(Boolean);
+  const text=(inp?.value||'').trim();const validImgs=_MW[k].pendingImgs.filter(Boolean);
   if(!text&&!validImgs.length)return;
   const newId=Math.max(0,..._MW[k].data.map(m=>m.id),0)+1;
   const memo={id:newId,text:text||'',done:false,date:new Date().toISOString().slice(0,10),source:'pc'};
   if(validImgs.length)memo.images=validImgs;
+  if(k==='youtube'){
+    const catEl=document.getElementById('byt-cat-sel');
+    memo.cat=catEl?catEl.value:'기타';
+  }
   _MW[k].data.unshift(memo);
-  inp.value='';_MW[k].pendingImgs=[];memoSetStatus(k,'');
+  if(inp)inp.value='';_MW[k].pendingImgs=[];memoSetStatus(k,'');
   _memoDbSave(k);memoRender(k);
+}
+function ytSetCatFilter(cat){
+  _ytCatFilter=cat;
+  document.querySelectorAll('.byt-cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+  memoRender('youtube');
 }
 function memoToggle(k,id,v){const m=_MW[k].data.find(x=>x.id===id);if(m){m.done=v;_memoDbSave(k);memoRender(k);}}
 function memoCopy(k,i){const t=_MW[k].data[i]?.text||'';navigator.clipboard.writeText(t).catch(()=>prompt('복사:',t));}
@@ -5320,8 +5350,11 @@ function memoRender(k){
   const badge=document.getElementById(c.badgeId);
   const n=_MW[k].data.filter(x=>!x.done).length;
   if(badge)badge.textContent=n?n+'개 남음':'';
-  if(!_MW[k].data.length){el.innerHTML=`<div class="bmg-empty">${c.emptyText}</div>`;return;}
-  el.innerHTML=_MW[k].data.map((m,i)=>{
+  let renderData=_MW[k].data;
+  if(k==='youtube'&&_ytCatFilter!=='전체')renderData=renderData.filter(m=>(m.cat||'기타')===_ytCatFilter);
+  if(!renderData.length){el.innerHTML=`<div class="bmg-empty">${_MW[k].data.length?'해당 카테고리 없음':c.emptyText}</div>`;return;}
+  el.innerHTML=renderData.map((m)=>{
+    const i=_MW[k].data.indexOf(m);
     const src=m.source==='bot'?'🤖':'💻';
     if(_MW[k].editId===m.id)return `
     <div class="bm-row">
@@ -5351,6 +5384,8 @@ function memoRender(k){
       <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
       ${thumbHtml}
       <div class="bm-text-wrap">
+        ${k==='youtube'&&m.cat?`<span style="font-size:.65rem;color:#C4714A;background:#FDF0EA;border-radius:5px;padding:1px 6px;font-weight:700;display:inline-block;margin-bottom:2px">${m.cat}</span>`:''}
+
         <span class="bm-text bm-text-clamp" id="bmt-${k}-${m.id}">${_linkify(m.text||'')}</span>
         <button class="bm-expand-btn" id="bmx-${k}-${m.id}" style="display:none" onclick="memoToggleExpand('${k}',${m.id})">더보기 ▼</button>
       </div>
