@@ -831,6 +831,34 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .mini-cal-footer{display:flex;justify-content:center;padding:7px 12px 10px;border-top:1px solid #EDE8E1}
 .mini-cal-footer button{padding:5px 15px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.73rem;font-weight:700;color:#C4714A;cursor:pointer}
 .mini-cal-footer button:hover{background:#C4714A;color:#fff;border-color:#C4714A}
+/* ── 세금관리 ── */
+.tax-wrap{max-width:740px}
+.tax-tabs{display:flex;gap:8px;margin-bottom:18px}
+.tax-tab{padding:8px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
+.tax-tab.active{background:#C4714A;color:#fff;border-color:#C4714A}
+.tax-year-card{background:#fff;border-radius:14px;border:1.5px solid #EDE8E1;margin-bottom:12px;overflow:hidden}
+.tax-year-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;transition:background .1s}
+.tax-year-hd:hover{background:#FDF8F5}
+.tax-year-label{font-size:.96rem;font-weight:800;color:#333}
+.tax-year-sum{font-size:.78rem;color:#C4714A;font-weight:700}
+.tax-year-arrow{font-size:.85rem;color:#CCC;transition:transform .2s}
+.tax-year-body{display:none;padding:0 14px 14px;border-top:1px solid #EDE8E1}
+.tax-year-body.open{display:block}
+.tax-entry-card{background:#FAFAF9;border-radius:11px;border:1px solid #EDE8E1;padding:11px 14px;margin-bottom:8px}
+.tax-entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px}
+.tax-entry-title{font-size:.86rem;font-weight:800;color:#333}
+.tax-entry-meta{font-size:.72rem;color:#AAA;margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+.tax-entry-amount{font-size:.84rem;font-weight:700;color:#C4714A}
+.tax-entry-content{font-size:.8rem;color:#555;line-height:1.6;margin-top:5px;white-space:pre-wrap;word-break:break-word}
+.tax-entry-imgs{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tax-entry-actions{display:flex;gap:4px;flex-shrink:0}
+.tax-add-form{background:#fff;border-radius:12px;border:1.5px dashed #EDE8E1;padding:13px 14px;margin-top:10px}
+.tax-form-row{display:flex;gap:7px;margin-bottom:7px;flex-wrap:wrap}
+.tax-inp{padding:7px 10px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;color:#333;outline:none;box-sizing:border-box}
+.tax-inp:focus{border-color:#C4714A}
+.tax-ta{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.8rem;font-family:inherit;resize:vertical;min-height:60px;outline:none;box-sizing:border-box;margin-bottom:7px}
+.tax-ta:focus{border-color:#C4714A}
+.tax-memo-list-item{background:#fff;border-radius:12px;border:1px solid #EDE8E1;padding:13px 15px;margin-bottom:10px}
 /* ── 손익 탭 ── */
 .profit-tabs{display:flex;gap:8px;margin-bottom:16px}
 .profit-tab{padding:8px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
@@ -1249,6 +1277,76 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <button class="bm-add-btn" onclick="addClItem()">➕ 추가</button>
         </div>
         <div id="cl-list"><div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <!-- 세금관리 페이지 -->
+    <div class="page" id="page-tax">
+      <div class="tax-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">💰 부가세/종소세/세금</div>
+          <button onclick="fetchTaxData().then(()=>renderTax())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div class="tax-tabs">
+          <button class="tax-tab active" id="tax-tab-rec" onclick="taxSetTab('rec')">📋 납부기록</button>
+          <button class="tax-tab" id="tax-tab-memo" onclick="taxSetTab('memo')">📝 세금메모</button>
+        </div>
+        <!-- 납부기록 탭 -->
+        <div id="tax-pane-rec">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+            <button onclick="taxAddYear()" style="padding:6px 15px;border-radius:10px;border:1.5px dashed #C4714A;background:none;color:#C4714A;font-size:.78rem;font-weight:700;cursor:pointer">＋ 연도 추가</button>
+          </div>
+          <div id="tax-year-list"></div>
+        </div>
+        <!-- 세금메모 탭 -->
+        <div id="tax-pane-memo" style="display:none">
+          <div class="tax-memo-list-item" style="background:#FDF8F5;border:1px solid #EDE8E1;margin-bottom:18px">
+            <div style="font-size:.82rem;font-weight:800;color:#555;margin-bottom:10px">📝 메모 추가</div>
+            <input id="tax-gmemo-title" class="tax-inp" placeholder="제목 (선택)" style="width:100%;margin-bottom:7px">
+            <textarea id="tax-gmemo-content" class="tax-ta" placeholder="내용 (국세청 서류, 참고사항 등 자유롭게)" onpaste="taxGMemoHandlePaste(event)"></textarea>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <input type="file" id="tax-gmemo-file" accept="image/*" style="display:none" onchange="taxGMemoHandleFile(this.files[0]);this.value=''">
+              <button class="bm-attach-btn" onclick="document.getElementById('tax-gmemo-file').click()">📎 이미지 첨부</button>
+              <span id="tax-gmemo-img-st" style="font-size:.73rem;color:#C4714A;font-weight:600"></span>
+            </div>
+            <div id="tax-gmemo-thumbs" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px"></div>
+            <button onclick="taxGMemoSave()" style="width:100%;padding:10px;border-radius:11px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:700;cursor:pointer;margin-top:12px">✅ 저장</button>
+          </div>
+          <div id="tax-gmemo-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 세금 항목 추가/수정 모달 -->
+    <div class="bcal-overlay" id="tax-entry-ov" onclick="if(event.target===this)closeTaxEntryModal()">
+      <div class="bcal-modal">
+        <div class="bcal-modal-head">
+          <span id="tax-entry-modal-ttl">💰 항목 추가</span>
+          <button class="bcal-x" onclick="closeTaxEntryModal()">✕</button>
+        </div>
+        <div class="bcal-body">
+          <div class="bcal-label">제목 <span style="color:#CCC;font-size:.68rem">(예: 부가세 1기 예정고지, 종소세 확정신고 등)</span></div>
+          <input class="bcal-inp" id="tax-entry-title" placeholder="자유롭게 입력" maxlength="80">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <div style="flex:1">
+              <div class="bcal-label">날짜</div>
+              <input type="date" class="bcal-inp" id="tax-entry-date">
+            </div>
+            <div style="flex:1">
+              <div class="bcal-label">금액 (원)</div>
+              <input class="bcal-inp" id="tax-entry-amount" type="text" placeholder="납부액" oninput="taxFmtAmt(this)">
+            </div>
+          </div>
+          <div class="bcal-label" style="margin-top:8px">내용 메모 (이미지 Ctrl+V 붙여넣기 가능)</div>
+          <textarea class="bcal-ta" id="tax-entry-content" placeholder="자유롭게 입력" onpaste="taxEntryHandlePaste(event)"></textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <input type="file" id="tax-entry-file" accept="image/*" style="display:none" onchange="taxEntryHandleFile(this.files[0]);this.value=''">
+            <button class="bm-attach-btn" onclick="document.getElementById('tax-entry-file').click()">📎 이미지 첨부</button>
+            <span id="tax-entry-img-st" style="font-size:.73rem;color:#C4714A;font-weight:600"></span>
+          </div>
+          <div id="tax-entry-thumbs" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px"></div>
+          <button class="bcal-save" onclick="saveTaxEntry()">✅ 저장</button>
+        </div>
       </div>
     </div>
 
@@ -2030,6 +2128,9 @@ function setSub(id, label){
   } else if(id==='card'){
     showPage('card');
     cardFetch();
+  } else if(id==='tax'){
+    showPage('tax');
+    fetchTaxData().then(()=>renderTax());
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -6537,6 +6638,279 @@ function bCsAlarmStart() {
   bcscFetch();
   bossRow2Init();
 })();
+
+// ── 세금관리 ──────────────────────────────────────────────────
+const FB_TAX = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_tax.json';
+let _taxData = {records:{}, memos:[]};
+let _taxTab = 'rec';
+let _taxExpandedYears = new Set();
+// 항목 추가/수정 모달 상태
+let _taxEntryYear = null;
+let _taxEntryId = null; // null이면 추가, 있으면 수정
+let _taxEntryPendingImgs = [];
+// 세금메모 상태
+let _taxGMemoPendingImgs = [];
+
+async function fetchTaxData(){
+  try{
+    const r=await fetch(FB_TAX+'?t='+Date.now());
+    if(r.ok){
+      const d=await r.json();
+      if(d&&typeof d==='object'){
+        _taxData={
+          records:d.records&&typeof d.records==='object'?d.records:{},
+          memos:Array.isArray(d.memos)?d.memos:[]
+        };
+      }
+    }
+  }catch(e){}
+}
+async function _saveTaxData(){
+  try{ await fetch(FB_TAX,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_taxData)}); }catch(e){}
+}
+
+function renderTax(){ taxSetTab(_taxTab,true); }
+
+function taxSetTab(tab,noInit){
+  _taxTab=tab;
+  document.getElementById('tax-tab-rec').classList.toggle('active',tab==='rec');
+  document.getElementById('tax-tab-memo').classList.toggle('active',tab==='memo');
+  document.getElementById('tax-pane-rec').style.display=tab==='rec'?'':'none';
+  document.getElementById('tax-pane-memo').style.display=tab==='memo'?'':'none';
+  if(tab==='rec') renderTaxYears();
+  else renderTaxGMemos();
+}
+
+function taxAddYear(){
+  const y=prompt('연도 입력 (예: 2026)');
+  if(!y||!/^\d{4}$/.test(y.trim())) return;
+  const yr=y.trim();
+  if(!_taxData.records[yr]) _taxData.records[yr]=[];
+  _taxExpandedYears.add(yr);
+  _saveTaxData();
+  renderTaxYears();
+}
+
+function _taxYearTotal(entries){
+  let t=0;
+  (entries||[]).forEach(e=>{if(e.amount) t+=parseInt(String(e.amount).replace(/,/g,''))||0;});
+  return t;
+}
+
+function renderTaxYears(){
+  const el=document.getElementById('tax-year-list');
+  if(!el) return;
+  const years=Object.keys(_taxData.records).sort((a,b)=>parseInt(b)-parseInt(a));
+  if(!years.length){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:#CCC;font-size:.85rem">+ 연도 추가 버튼으로 시작하세요</div>`;
+    return;
+  }
+  if(_taxExpandedYears.size===0&&years.length) _taxExpandedYears.add(years[0]);
+  el.innerHTML=years.map(yr=>_renderTaxYearCard(yr)).join('');
+}
+
+function _renderTaxYearCard(yr){
+  const entries=_taxData.records[yr]||[];
+  const total=_taxYearTotal(entries);
+  const open=_taxExpandedYears.has(yr);
+  const entriesHtml=entries.length
+    ? entries.map(e=>_renderTaxEntry(yr,e)).join('')
+    : `<div style="text-align:center;padding:14px 0;color:#CCC;font-size:.78rem">항목이 없어요</div>`;
+  return `<div class="tax-year-card">
+    <div class="tax-year-hd" onclick="taxToggleYear('${yr}')">
+      <span class="tax-year-label">📆 ${yr}년</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        ${total?`<span class="tax-year-sum">납부 합계 ${_fmtAmt(total)}원</span>`:''}
+        <span class="tax-year-arrow" id="tax-arrow-${yr}" style="transform:${open?'rotate(90deg)':'rotate(0deg)'}">▶</span>
+      </div>
+    </div>
+    <div class="tax-year-body${open?' open':''}" id="tax-body-${yr}">
+      <div style="display:flex;justify-content:flex-end;padding-top:12px;margin-bottom:8px">
+        <button onclick="openTaxEntryModal('${yr}',null)" style="padding:5px 13px;border-radius:9px;border:1.5px dashed #C4714A;background:none;color:#C4714A;font-size:.76rem;font-weight:700;cursor:pointer">＋ 항목 추가</button>
+      </div>
+      ${entriesHtml}
+    </div>
+  </div>`;
+}
+
+function _renderTaxEntry(yr,e){
+  const imgs=e.imgs||[];
+  const amtDisp=e.amount?_fmtAmt(parseInt(String(e.amount).replace(/,/g,''))||0)+'원':'';
+  return `<div class="tax-entry-card" id="tax-entry-${yr}-${e.id}">
+    <div class="tax-entry-top">
+      <div style="flex:1;min-width:0">
+        <div class="tax-entry-title">${e.title||'(제목 없음)'}</div>
+        <div class="tax-entry-meta">
+          ${e.date?`<span>📅 ${e.date}</span>`:''}
+          ${amtDisp?`<span class="tax-entry-amount">💰 ${amtDisp}</span>`:''}
+        </div>
+        ${e.content?`<div class="tax-entry-content">${_linkify(e.content)}</div>`:''}
+        ${imgs.length?`<div class="tax-entry-imgs">${imgs.map(u=>`<img src="${u.replace('/upload/','/upload/w_320/')}" style="max-height:130px;max-width:100%;border-radius:8px;cursor:pointer;border:1px solid #EDE8E1" onclick="openImgModal('${u}')">`).join('')}</div>`:''}
+      </div>
+      <div class="tax-entry-actions">
+        <button onclick="openTaxEntryModal('${yr}',${e.id})" style="width:26px;height:26px;border-radius:7px;border:none;background:#F5F0EB;color:#C4714A;font-size:.75rem;cursor:pointer">✏️</button>
+        <button onclick="taxDelEntry('${yr}',${e.id})" style="width:26px;height:26px;border-radius:7px;border:none;background:#FFE8E8;color:#D03030;font-size:.75rem;cursor:pointer">🗑️</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function taxToggleYear(yr){
+  if(_taxExpandedYears.has(yr)) _taxExpandedYears.delete(yr);
+  else _taxExpandedYears.add(yr);
+  const body=document.getElementById(`tax-body-${yr}`);
+  const arrow=document.getElementById(`tax-arrow-${yr}`);
+  if(body) body.classList.toggle('open',_taxExpandedYears.has(yr));
+  if(arrow) arrow.style.transform=_taxExpandedYears.has(yr)?'rotate(90deg)':'rotate(0deg)';
+}
+
+function taxFmtAmt(inp){
+  const raw=inp.value.replace(/[^0-9]/g,'');
+  inp.value=raw?parseInt(raw).toLocaleString():'';
+}
+
+// --- 항목 추가/수정 모달 ---
+function openTaxEntryModal(yr, id){
+  _taxEntryYear=yr; _taxEntryId=id; _taxEntryPendingImgs=[];
+  document.getElementById('tax-entry-img-st').textContent='';
+  if(id!==null){
+    const entry=(_taxData.records[yr]||[]).find(e=>e.id===id);
+    document.getElementById('tax-entry-modal-ttl').textContent='💰 항목 수정';
+    document.getElementById('tax-entry-title').value=entry?.title||'';
+    document.getElementById('tax-entry-date').value=entry?.date||'';
+    document.getElementById('tax-entry-amount').value=entry?.amount?parseInt(String(entry.amount).replace(/,/g,'')).toLocaleString():'';
+    document.getElementById('tax-entry-content').value=entry?.content||'';
+    _taxEntryPendingImgs=entry?.imgs?[...entry.imgs]:[];
+  }else{
+    document.getElementById('tax-entry-modal-ttl').textContent='💰 항목 추가';
+    document.getElementById('tax-entry-title').value='';
+    document.getElementById('tax-entry-date').value='';
+    document.getElementById('tax-entry-amount').value='';
+    document.getElementById('tax-entry-content').value='';
+  }
+  _taxEntryRenderThumbs();
+  document.getElementById('tax-entry-ov').classList.add('open');
+}
+function closeTaxEntryModal(){
+  document.getElementById('tax-entry-ov').classList.remove('open');
+}
+function _taxEntryRenderThumbs(){
+  const el=document.getElementById('tax-entry-thumbs');
+  el.innerHTML=_taxEntryPendingImgs.map((u,i)=>`
+    <div style="position:relative;display:inline-block">
+      <img src="${u}" style="width:68px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #EDE8E1;cursor:pointer" onclick="openImgModal('${u}')">
+      <button onclick="_taxEntryRemImg(${i})" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;border:none;background:#D03030;color:#fff;font-size:.6rem;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+}
+function _taxEntryRemImg(i){ _taxEntryPendingImgs.splice(i,1); _taxEntryRenderThumbs(); }
+async function taxEntryHandleFile(file){
+  if(!file) return;
+  const st=document.getElementById('tax-entry-img-st'); st.textContent='업로드 중...';
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const d=await(await fetch(CLOUDINARY_URL,{method:'POST',body:fd})).json();
+    if(d.secure_url){_taxEntryPendingImgs.push(d.secure_url);_taxEntryRenderThumbs();st.textContent='';}
+    else st.textContent='업로드 실패';
+  }catch(e){st.textContent='업로드 실패';}
+}
+async function taxEntryHandlePaste(e){
+  const img=[...e.clipboardData.items].find(i=>i.type.startsWith('image/'));
+  if(!img) return;
+  e.preventDefault();
+  await taxEntryHandleFile(img.getAsFile());
+}
+async function saveTaxEntry(){
+  const yr=_taxEntryYear;
+  if(!_taxData.records[yr]) _taxData.records[yr]=[];
+  const title=document.getElementById('tax-entry-title').value.trim();
+  const date=document.getElementById('tax-entry-date').value;
+  const amount=document.getElementById('tax-entry-amount').value.replace(/,/g,'');
+  const content=document.getElementById('tax-entry-content').value;
+  const imgs=[..._taxEntryPendingImgs];
+  if(_taxEntryId!==null){
+    const idx=_taxData.records[yr].findIndex(e=>e.id===_taxEntryId);
+    if(idx>=0) _taxData.records[yr][idx]={..._taxData.records[yr][idx],title,date,amount,content,imgs};
+  }else{
+    _taxData.records[yr].push({id:Date.now(),title,date,amount,content,imgs});
+  }
+  await _saveTaxData();
+  closeTaxEntryModal();
+  _taxExpandedYears.add(yr);
+  renderTaxYears();
+}
+async function taxDelEntry(yr, id){
+  _taxData.records[yr]=(_taxData.records[yr]||[]).filter(e=>e.id!==id);
+  await _saveTaxData();
+  _taxExpandedYears.add(yr);
+  renderTaxYears();
+}
+
+// --- 세금 일반 메모 ---
+function renderTaxGMemos(){
+  const el=document.getElementById('tax-gmemo-list');
+  if(!el) return;
+  const memos=[..._taxData.memos].sort((a,b)=>b.id-a.id);
+  if(!memos.length){
+    el.innerHTML=`<div style="text-align:center;padding:30px;color:#CCC;font-size:.82rem">세금 메모가 없어요</div>`;
+    return;
+  }
+  el.innerHTML=memos.map(m=>`
+    <div class="tax-memo-list-item">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.69rem;color:#BBB;margin-bottom:3px">${m.date||''}</div>
+          ${m.title?`<div style="font-size:.85rem;font-weight:800;color:#333;margin-bottom:4px">${m.title}</div>`:''}
+          <div style="font-size:.8rem;color:#555;line-height:1.6;white-space:pre-wrap;word-break:break-word">${_linkify(m.content||'')}</div>
+          ${(m.imgs||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px">${(m.imgs).map(u=>`<img src="${u.replace('/upload/','/upload/w_320/')}" style="max-width:100%;max-height:160px;border-radius:8px;cursor:pointer;border:1px solid #EDE8E1" onclick="openImgModal('${u}')">`).join('')}</div>`:''}
+        </div>
+        <button onclick="taxDelGMemo(${m.id})" style="width:26px;height:26px;border-radius:7px;border:none;background:#FFE8E8;color:#D03030;font-size:.8rem;cursor:pointer;flex-shrink:0">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+async function taxGMemoHandleFile(file){
+  if(!file) return;
+  const st=document.getElementById('tax-gmemo-img-st'); st.textContent='업로드 중...';
+  try{
+    const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
+    const d=await(await fetch(CLOUDINARY_URL,{method:'POST',body:fd})).json();
+    if(d.secure_url){_taxGMemoPendingImgs.push(d.secure_url);_taxGMemoRenderThumbs();st.textContent='';}
+    else st.textContent='업로드 실패';
+  }catch(e){st.textContent='업로드 실패';}
+}
+async function taxGMemoHandlePaste(e){
+  const img=[...e.clipboardData.items].find(i=>i.type.startsWith('image/'));
+  if(!img) return;
+  e.preventDefault();
+  await taxGMemoHandleFile(img.getAsFile());
+}
+function _taxGMemoRenderThumbs(){
+  const el=document.getElementById('tax-gmemo-thumbs');
+  el.innerHTML=_taxGMemoPendingImgs.map((u,i)=>`
+    <div style="position:relative;display:inline-block">
+      <img src="${u}" style="width:68px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #EDE8E1">
+      <button onclick="_taxGMemoRemImg(${i})" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;border:none;background:#D03030;color:#fff;font-size:.6rem;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+}
+function _taxGMemoRemImg(i){_taxGMemoPendingImgs.splice(i,1);_taxGMemoRenderThumbs();}
+async function taxGMemoSave(){
+  const title=document.getElementById('tax-gmemo-title').value.trim();
+  const content=document.getElementById('tax-gmemo-content').value.trim();
+  if(!title&&!content&&!_taxGMemoPendingImgs.length) return;
+  const today=new Date();
+  const date=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  _taxData.memos.push({id:Date.now(),date,title,content,imgs:[..._taxGMemoPendingImgs]});
+  await _saveTaxData();
+  document.getElementById('tax-gmemo-title').value='';
+  document.getElementById('tax-gmemo-content').value='';
+  _taxGMemoPendingImgs=[];
+  _taxGMemoRenderThumbs();
+  renderTaxGMemos();
+}
+async function taxDelGMemo(id){
+  _taxData.memos=_taxData.memos.filter(m=>m.id!==id);
+  await _saveTaxData();
+  renderTaxGMemos();
+}
 </script>
 </body>
 </html>
