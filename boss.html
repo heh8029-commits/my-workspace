@@ -859,6 +859,9 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tax-ta{width:100%;padding:8px 11px;border-radius:9px;border:1.5px solid #EDE8E1;font-size:.8rem;font-family:inherit;resize:vertical;min-height:60px;outline:none;box-sizing:border-box;margin-bottom:7px}
 .tax-ta:focus{border-color:#C4714A}
 .tax-memo-list-item{background:#fff;border-radius:12px;border:1px solid #EDE8E1;padding:13px 15px;margin-bottom:10px}
+.tax-split{display:flex;gap:14px;align-items:flex-start}
+.tax-split-right{width:300px;flex-shrink:0}
+@media(max-width:620px){.tax-split{flex-direction:column}.tax-split-right{width:100%}}
 /* ── 손익 탭 ── */
 .profit-tabs{display:flex;gap:8px;margin-bottom:16px}
 .profit-tab{padding:8px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
@@ -1287,32 +1290,32 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="font-size:.9rem;font-weight:800;color:#555">💰 부가세/종소세/세금</div>
           <button onclick="fetchTaxData().then(()=>renderTax())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
         </div>
-        <div class="tax-tabs">
-          <button class="tax-tab active" id="tax-tab-rec" onclick="taxSetTab('rec')">📋 납부기록</button>
-          <button class="tax-tab" id="tax-tab-memo" onclick="taxSetTab('memo')">📝 세금메모</button>
-        </div>
-        <!-- 납부기록 탭 -->
-        <div id="tax-pane-rec">
-          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-            <button onclick="taxAddYear()" style="padding:6px 15px;border-radius:10px;border:1.5px dashed #C4714A;background:none;color:#C4714A;font-size:.78rem;font-weight:700;cursor:pointer">＋ 연도 추가</button>
-          </div>
-          <div id="tax-year-list"></div>
-        </div>
-        <!-- 세금메모 탭 -->
-        <div id="tax-pane-memo" style="display:none">
-          <div class="tax-memo-list-item" style="background:#FDF8F5;border:1px solid #EDE8E1;margin-bottom:18px">
-            <div style="font-size:.82rem;font-weight:800;color:#555;margin-bottom:10px">📝 메모 추가</div>
-            <input id="tax-gmemo-title" class="tax-inp" placeholder="제목 (선택)" style="width:100%;margin-bottom:7px">
-            <textarea id="tax-gmemo-content" class="tax-ta" placeholder="내용 (국세청 서류, 참고사항 등 자유롭게)" onpaste="taxGMemoHandlePaste(event)"></textarea>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <input type="file" id="tax-gmemo-file" accept="image/*" style="display:none" onchange="taxGMemoHandleFile(this.files[0]);this.value=''">
-              <button class="bm-attach-btn" onclick="document.getElementById('tax-gmemo-file').click()">📎 이미지 첨부</button>
-              <span id="tax-gmemo-img-st" style="font-size:.73rem;color:#C4714A;font-weight:600"></span>
+        <!-- 납부기록 + 세금메모 나란히 -->
+        <div class="tax-split">
+          <!-- 왼쪽: 납부기록 -->
+          <div id="tax-pane-rec" style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:.82rem;font-weight:800;color:#555">📋 납부기록</div>
+              <button onclick="taxAddYear()" style="padding:5px 13px;border-radius:10px;border:1.5px dashed #C4714A;background:none;color:#C4714A;font-size:.76rem;font-weight:700;cursor:pointer">＋ 연도 추가</button>
             </div>
-            <div id="tax-gmemo-thumbs" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px"></div>
-            <button onclick="taxGMemoSave()" style="width:100%;padding:10px;border-radius:11px;background:#C4714A;color:#fff;border:none;font-size:.85rem;font-weight:700;cursor:pointer;margin-top:12px">✅ 저장</button>
+            <div id="tax-year-list"></div>
           </div>
-          <div id="tax-gmemo-list"></div>
+          <!-- 오른쪽: 세금메모 -->
+          <div id="tax-pane-memo" class="tax-split-right">
+            <div style="font-size:.82rem;font-weight:800;color:#555;margin-bottom:10px">📝 세금메모</div>
+            <div class="tax-memo-list-item" style="background:#FDF8F5;border:1px solid #EDE8E1;margin-bottom:12px;padding:11px 13px">
+              <input id="tax-gmemo-title" class="tax-inp" placeholder="제목 (선택)" style="width:100%;margin-bottom:7px">
+              <textarea id="tax-gmemo-content" class="tax-ta" placeholder="내용 자유롭게 (Ctrl+V 이미지)" onpaste="taxGMemoHandlePaste(event)" style="min-height:52px"></textarea>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <input type="file" id="tax-gmemo-file" accept="image/*" style="display:none" onchange="taxGMemoHandleFile(this.files[0]);this.value=''">
+                <button class="bm-attach-btn" onclick="document.getElementById('tax-gmemo-file').click()">📎</button>
+                <span id="tax-gmemo-img-st" style="font-size:.71rem;color:#C4714A;font-weight:600"></span>
+              </div>
+              <div id="tax-gmemo-thumbs" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px"></div>
+              <button onclick="taxGMemoSave()" style="width:100%;padding:8px;border-radius:10px;background:#C4714A;color:#fff;border:none;font-size:.82rem;font-weight:700;cursor:pointer;margin-top:10px">✅ 저장</button>
+            </div>
+            <div id="tax-gmemo-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -6669,16 +6672,9 @@ async function _saveTaxData(){
   try{ await fetch(FB_TAX,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_taxData)}); }catch(e){}
 }
 
-function renderTax(){ taxSetTab(_taxTab,true); }
-
-function taxSetTab(tab,noInit){
-  _taxTab=tab;
-  document.getElementById('tax-tab-rec').classList.toggle('active',tab==='rec');
-  document.getElementById('tax-tab-memo').classList.toggle('active',tab==='memo');
-  document.getElementById('tax-pane-rec').style.display=tab==='rec'?'':'none';
-  document.getElementById('tax-pane-memo').style.display=tab==='memo'?'':'none';
-  if(tab==='rec') renderTaxYears();
-  else renderTaxGMemos();
+function renderTax(){
+  renderTaxYears();
+  renderTaxGMemos();
 }
 
 function taxAddYear(){
