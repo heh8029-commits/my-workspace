@@ -1319,7 +1319,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <div class="mini-cal-grid2" id="mini-cal-grid"></div>
         <div class="mini-cal-panel2" id="mini-cal-panel" style="display:none"></div>
         <div class="mini-cal-footer">
-          <button onclick="closeMiniCal();gotoCalendar()">📅 전체 달력 보기</button>
+          <button onclick="closeMiniCal();setSub('calendar','달력/일정')">📅 전체 달력 보기</button>
         </div>
       </div>
     </div>
@@ -3646,7 +3646,6 @@ async function openMiniCal(){
     popup.style.top=(r.bottom+6)+'px';
     popup.style.left=left+'px';
   }
-  document.getElementById('mini-cal-panel').style.display='none';
   document.getElementById('mini-cal-overlay').classList.add('open');
   miniCalRender();
 }
@@ -3700,11 +3699,39 @@ function miniCalRender(){
   }
   grid.innerHTML=html;
   if(_miniCalSelDate) _miniCalPanel2(_miniCalSelDate);
+  else _miniCalMonthPanel();
 }
 function miniCalSel(dateStr){
   _miniCalSelDate=dateStr;
   miniCalRender();
-  _miniCalPanel2(dateStr);
+}
+function _miniCalMonthPanel(){
+  const panel=document.getElementById('mini-cal-panel');
+  if(!panel) return;
+  const monthEvs=_calEvents.filter(e=>{
+    if(!e.date) return false;
+    const parts=e.date.split('-');
+    return parseInt(parts[0])===_miniCalY&&parseInt(parts[1])===_miniCalM;
+  }).sort((a,b)=>a.date.localeCompare(b.date));
+  const DOW=['일','월','화','수','목','금','토'];
+  if(!monthEvs.length){
+    panel.innerHTML=`<div style="text-align:center;padding:10px 0;color:#CCC;font-size:.74rem">이 달 일정이 없어요</div>`;
+    panel.style.display='block';
+    return;
+  }
+  let html=`<div style="font-size:.72rem;font-weight:800;color:#C4714A;margin-bottom:7px">${_miniCalM}월 일정</div>`;
+  monthEvs.forEach(ev=>{
+    const d=new Date(ev.date+'T00:00:00');
+    html+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:8px;background:#FDF8F5;margin-bottom:4px;border:1px solid #EDE8E1;cursor:pointer" onclick="miniCalSel('${ev.date}')">
+      <span style="font-size:.88rem">${ev.emoji||'📅'}</span>
+      <div style="flex:1;min-width:0;overflow:hidden">
+        <div style="font-size:.68rem;color:#AAA;margin-bottom:1px">${d.getMonth()+1}/${d.getDate()} (${DOW[d.getDay()]})</div>
+        <div style="font-size:.76rem;font-weight:700;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.title||''}</div>
+      </div>
+    </div>`;
+  });
+  panel.innerHTML=html;
+  panel.style.display='block';
 }
 function _miniCalPanel2(dateStr){
   const panel=document.getElementById('mini-cal-panel');
@@ -3715,7 +3742,10 @@ function _miniCalPanel2(dateStr){
   const dayEvs=_calEvents.filter(e=>e.date===dateStr);
   let html=`<div style="font-size:.77rem;font-weight:800;color:#C4714A;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between">
     <span>${d.getMonth()+1}월 ${d.getDate()}일 (${DOW[d.getDay()]})${hol?` <span style="color:#D03030;font-size:.7rem">${hol}</span>`:''}</span>
-    <button onclick="closeMiniCal();openBcal('${dateStr}')" style="padding:3px 8px;border-radius:7px;background:#C4714A;color:#fff;border:none;font-size:.67rem;font-weight:700;cursor:pointer">➕</button>
+    <div style="display:flex;gap:5px;align-items:center">
+      <button onclick="_miniCalSelDate=null;miniCalRender()" style="padding:2px 7px;border-radius:6px;background:#F5F0EB;color:#999;border:1px solid #EDE8E1;font-size:.65rem;cursor:pointer">← 월</button>
+      <button onclick="closeMiniCal();openBcal('${dateStr}')" style="padding:3px 8px;border-radius:7px;background:#C4714A;color:#fff;border:none;font-size:.67rem;font-weight:700;cursor:pointer">➕</button>
+    </div>
   </div>`;
   if(dayEvs.length){
     dayEvs.forEach(ev=>{
@@ -3733,8 +3763,8 @@ function _miniCalPanel2(dateStr){
   panel.innerHTML=html;
   panel.style.display='block';
 }
-function miniCalPrev(){_miniCalM--;if(_miniCalM<1){_miniCalM=12;_miniCalY--;}miniCalRender();}
-function miniCalNext(){_miniCalM++;if(_miniCalM>12){_miniCalM=1;_miniCalY++;}miniCalRender();}
+function miniCalPrev(){_miniCalM--;if(_miniCalM<1){_miniCalM=12;_miniCalY--;}_miniCalSelDate=null;miniCalRender();}
+function miniCalNext(){_miniCalM++;if(_miniCalM>12){_miniCalM=1;_miniCalY++;}_miniCalSelDate=null;miniCalRender();}
 
 // ── 보스 달력 ─────────────────────────────────────────────────
 const FB_CAL    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_calendar.json';
