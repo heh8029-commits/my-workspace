@@ -806,6 +806,31 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bcal-ta:focus{border-color:#C4714A}
 .bcal-save{width:100%;padding:11px;border-radius:11px;background:#C4714A;color:#fff;border:none;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:12px}
 .bcal-save:hover{background:#B46040}
+/* ── 미니 달력 팝업 ── */
+.mini-cal-overlay{display:none;position:fixed;inset:0;z-index:800}
+.mini-cal-overlay.open{display:block}
+.mini-cal-popup{position:fixed;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.22);width:290px;overflow:hidden}
+.mini-cal-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 13px 8px;border-bottom:1px solid #EDE8E1}
+.mini-cal-hd-ttl{font-size:.86rem;font-weight:800;color:#C4714A}
+.mini-cal-hd-nav{width:26px;height:26px;border-radius:50%;border:1.5px solid #EDE8E1;background:#fff;font-size:.88rem;cursor:pointer;color:#C4714A;transition:all .12s}
+.mini-cal-hd-nav:hover{background:#C4714A;color:#fff;border-color:#C4714A}
+.mini-cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);padding:6px 9px 2px}
+.mini-cal-dow-c{text-align:center;font-size:.6rem;font-weight:700;color:#AAA}
+.mini-cal-dow-c.sun{color:#D03030}.mini-cal-dow-c.sat{color:#2266CC}
+.mini-cal-grid2{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:2px 9px 8px}
+.mini-cal-cell2{min-height:34px;border-radius:7px;padding:3px 1px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;transition:background .1s}
+.mini-cal-cell2:hover{background:#FDF5F1}
+.mini-cal-cell2.other-month{opacity:.22;pointer-events:none}
+.mini-cal-cell2.today .mini-cal-dn{background:#C4714A;color:#fff;border-radius:50%;width:19px;height:19px;display:flex;align-items:center;justify-content:center;font-size:.65rem}
+.mini-cal-cell2.selected{background:#FDE8D8}
+.mini-cal-dn{font-size:.72rem;font-weight:700;color:#333;line-height:1.3}
+.mini-cal-cell2.sun .mini-cal-dn,.mini-cal-cell2.holiday .mini-cal-dn{color:#D03030}
+.mini-cal-cell2.sat .mini-cal-dn{color:#2266CC}
+.mini-cal-dot2{width:4px;height:4px;border-radius:50%;background:#C4714A;margin-top:1px}
+.mini-cal-panel2{padding:9px 12px;border-top:1px solid #EDE8E1;max-height:150px;overflow-y:auto}
+.mini-cal-footer{display:flex;justify-content:center;padding:7px 12px 10px;border-top:1px solid #EDE8E1}
+.mini-cal-footer button{padding:5px 15px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.73rem;font-weight:700;color:#C4714A;cursor:pointer}
+.mini-cal-footer button:hover{background:#C4714A;color:#fff;border-color:#C4714A}
 /* ── 손익 탭 ── */
 .profit-tabs{display:flex;gap:8px;margin-bottom:16px}
 .profit-tab{padding:8px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
@@ -928,7 +953,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
   <div class="topbar-menus" id="topbar-menus"></div>
   <div class="topbar-right">
     <button class="top-icon-btn" id="bm-popup-btn" onclick="toggleBmPopup()" title="바로가기">🔗</button>
-    <button class="top-icon-btn" onclick="gotoCalendar()" title="달력">📅</button>
+    <button class="top-icon-btn" id="mini-cal-trigger" onclick="openMiniCal()" title="달력">📅</button>
     <button class="top-icon-btn" id="btn-pc" onclick="setMode('pc')" title="PC 버전">🖥️</button>
     <button class="top-icon-btn" id="btn-mob" onclick="setMode('mob')" title="모바일 버전">📱</button>
   </div>
@@ -1270,6 +1295,31 @@ body.mode-mob .mobile-subnav{display:flex!important}
             </div>
           </div>
           <button class="bcal-save" onclick="saveBcalEvent()">✅ 저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 미니 달력 팝업 -->
+    <div class="mini-cal-overlay" id="mini-cal-overlay" onclick="if(event.target===this)closeMiniCal()">
+      <div class="mini-cal-popup" id="mini-cal-popup">
+        <div class="mini-cal-hd">
+          <button class="mini-cal-hd-nav" onclick="miniCalPrev()">‹</button>
+          <div class="mini-cal-hd-ttl" id="mini-cal-title"></div>
+          <button class="mini-cal-hd-nav" onclick="miniCalNext()">›</button>
+        </div>
+        <div class="mini-cal-dow-row">
+          <div class="mini-cal-dow-c sun">일</div>
+          <div class="mini-cal-dow-c">월</div>
+          <div class="mini-cal-dow-c">화</div>
+          <div class="mini-cal-dow-c">수</div>
+          <div class="mini-cal-dow-c">목</div>
+          <div class="mini-cal-dow-c">금</div>
+          <div class="mini-cal-dow-c sat">토</div>
+        </div>
+        <div class="mini-cal-grid2" id="mini-cal-grid"></div>
+        <div class="mini-cal-panel2" id="mini-cal-panel" style="display:none"></div>
+        <div class="mini-cal-footer">
+          <button onclick="closeMiniCal();gotoCalendar()">📅 전체 달력 보기</button>
         </div>
       </div>
     </div>
@@ -3577,6 +3627,114 @@ function gotoCalendar(){
   setSub('calendar','달력/일정');
   setMenu('house');
 }
+
+// ── 미니 달력 팝업 ────────────────────────────────────────────
+let _miniCalY=new Date().getFullYear();
+let _miniCalM=new Date().getMonth()+1;
+let _miniCalSelDate=null;
+
+async function openMiniCal(){
+  if(!_calEvents.length) await fetchCalEvents();
+  _miniCalY=_calYear; _miniCalM=_calMonth; _miniCalSelDate=null;
+  const btn=document.getElementById('mini-cal-trigger');
+  const popup=document.getElementById('mini-cal-popup');
+  if(btn&&popup){
+    const r=btn.getBoundingClientRect();
+    const pw=290;
+    let left=r.right-pw;
+    if(left<6) left=6;
+    popup.style.top=(r.bottom+6)+'px';
+    popup.style.left=left+'px';
+  }
+  document.getElementById('mini-cal-panel').style.display='none';
+  document.getElementById('mini-cal-overlay').classList.add('open');
+  miniCalRender();
+}
+function closeMiniCal(){
+  document.getElementById('mini-cal-overlay').classList.remove('open');
+}
+function miniCalRender(){
+  const grid=document.getElementById('mini-cal-grid');
+  const ttl=document.getElementById('mini-cal-title');
+  if(!grid) return;
+  ttl.textContent=`${_miniCalY}년 ${_miniCalM}월`;
+  const today=new Date();
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const firstDay=new Date(_miniCalY,_miniCalM-1,1).getDay();
+  const daysInMonth=new Date(_miniCalY,_miniCalM,0).getDate();
+  const prevDays=new Date(_miniCalY,_miniCalM-1,0).getDate();
+  const evByDate={};
+  _calEvents.forEach(ev=>{if(!evByDate[ev.date])evByDate[ev.date]=[];evByDate[ev.date].push(ev);});
+  const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+  let html='';
+  for(let c=0;c<totalCells;c++){
+    const dow=c%7;
+    let day,dateStr,isOther=false;
+    if(c<firstDay){
+      day=prevDays-firstDay+c+1;
+      const pm=_miniCalM===1?12:_miniCalM-1;const py=_miniCalM===1?_miniCalY-1:_miniCalY;
+      dateStr=`${py}-${String(pm).padStart(2,'0')}-${String(day).padStart(2,'0')}`;isOther=true;
+    }else if(c>=firstDay+daysInMonth){
+      day=c-firstDay-daysInMonth+1;
+      const nm=_miniCalM===12?1:_miniCalM+1;const ny=_miniCalM===12?_miniCalY+1:_miniCalY;
+      dateStr=`${ny}-${String(nm).padStart(2,'0')}-${String(day).padStart(2,'0')}`;isOther=true;
+    }else{
+      day=c-firstDay+1;
+      dateStr=`${_miniCalY}-${String(_miniCalM).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+    const hol=!isOther?_bossHol(_miniCalY,_miniCalM,day):null;
+    const isHol=!!hol;const isToday=dateStr===todayStr;const isSel=_miniCalSelDate===dateStr;
+    const dowCls=dow===0?'sun':dow===6?'sat':'';
+    let cls='mini-cal-cell2';
+    if(hol||dowCls==='sun') cls+=' sun';
+    else if(dowCls==='sat') cls+=' sat';
+    if(isHol) cls+=' holiday';
+    if(isToday) cls+=' today';
+    if(isOther) cls+=' other-month';
+    if(isSel) cls+=' selected';
+    const dayEvs=evByDate[dateStr]||[];
+    html+=`<div class="${cls}" onclick="miniCalSel('${dateStr}')">`;
+    html+=`<span class="mini-cal-dn">${day}</span>`;
+    if(dayEvs.length) html+=`<div class="mini-cal-dot2"></div>`;
+    html+='</div>';
+  }
+  grid.innerHTML=html;
+  if(_miniCalSelDate) _miniCalPanel2(_miniCalSelDate);
+}
+function miniCalSel(dateStr){
+  _miniCalSelDate=dateStr;
+  miniCalRender();
+  _miniCalPanel2(dateStr);
+}
+function _miniCalPanel2(dateStr){
+  const panel=document.getElementById('mini-cal-panel');
+  if(!panel) return;
+  const d=new Date(dateStr+'T00:00:00');
+  const DOW=['일','월','화','수','목','금','토'];
+  const hol=_bossHol(d.getFullYear(),d.getMonth()+1,d.getDate());
+  const dayEvs=_calEvents.filter(e=>e.date===dateStr);
+  let html=`<div style="font-size:.77rem;font-weight:800;color:#C4714A;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between">
+    <span>${d.getMonth()+1}월 ${d.getDate()}일 (${DOW[d.getDay()]})${hol?` <span style="color:#D03030;font-size:.7rem">${hol}</span>`:''}</span>
+    <button onclick="closeMiniCal();openBcal('${dateStr}')" style="padding:3px 8px;border-radius:7px;background:#C4714A;color:#fff;border:none;font-size:.67rem;font-weight:700;cursor:pointer">➕</button>
+  </div>`;
+  if(dayEvs.length){
+    dayEvs.forEach(ev=>{
+      html+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:8px;background:#FDF8F5;margin-bottom:4px;border:1px solid #EDE8E1">
+        <span style="font-size:.88rem">${ev.emoji||'📅'}</span>
+        <div style="flex:1;min-width:0;overflow:hidden">
+          <div style="font-size:.76rem;font-weight:700;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.title||''}</div>
+          ${ev.memo?`<div style="font-size:.67rem;color:#AAA;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.memo}</div>`:''}
+        </div>
+      </div>`;
+    });
+  }else{
+    html+=`<div style="text-align:center;padding:10px 0;color:#CCC;font-size:.74rem">일정 없음</div>`;
+  }
+  panel.innerHTML=html;
+  panel.style.display='block';
+}
+function miniCalPrev(){_miniCalM--;if(_miniCalM<1){_miniCalM=12;_miniCalY--;}miniCalRender();}
+function miniCalNext(){_miniCalM++;if(_miniCalM>12){_miniCalM=1;_miniCalY++;}miniCalRender();}
 
 // ── 보스 달력 ─────────────────────────────────────────────────
 const FB_CAL    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_calendar.json';
