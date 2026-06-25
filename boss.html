@@ -2047,7 +2047,7 @@ function renderSidebar(){
           ${s.emoji} ${s.label}
         </button>`;
         if(s.id==='stock' && activeSubMenu==='stock'){
-          sh += [{id:'전체',name:'전체'}, ..._invData.cats].map(c=>{
+          sh += _invData.cats.map(c=>{
             const on = _invCatFilter===c.id;
             return `<button class="sid-catitem${on?' active':''}" onclick="_invCatFilter='${c.id}';renderInvCats();renderInv();renderSidebar()">${c.name}</button>`;
           }).join('');
@@ -2070,7 +2070,7 @@ function renderMobileSub(){
     </button>`
   ).join('');
   if(activeSubMenu==='stock'){
-    html += [{id:'전체',name:'전체'}, ..._invData.cats].map(c=>{
+    html += _invData.cats.map(c=>{
       const on = _invCatFilter===c.id;
       return `<button class="mob-sub-item${on?' active':''}" onclick="_invCatFilter='${c.id}';renderInvCats();renderInv()">${c.name}</button>`;
     }).join('');
