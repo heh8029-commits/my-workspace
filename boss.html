@@ -126,6 +126,9 @@ a{text-decoration:none;color:inherit}
 }
 .sid-item:hover{background:#FDF5F1;color:#C4714A}
 .sid-item.active{background:#FDF0EA;color:#C4714A;border-left-color:#C4714A;font-weight:700}
+.sid-catitem{display:flex;align-items:center;padding:4px 14px 4px 36px;font-size:.7rem;color:#BBB;border:none;background:transparent;width:100%;text-align:left;border-left:3px solid transparent;cursor:pointer;transition:all .12s}
+.sid-catitem:hover{background:#FDF5F1;color:#C4714A}
+.sid-catitem.active{background:#FEF4EE;color:#C4714A;border-left-color:#C4714A;font-weight:700}
 
 /* ── CONTENT ── */
 .content{flex:1;padding:22px 20px;overflow-x:hidden;min-width:0}
@@ -2039,11 +2042,18 @@ function renderSidebar(){
       ${m.emoji} ${m.label}
     </button>`;
     if(m.sub && m.sub.length){
-      html += m.sub.map(s=>
-        `<button class="sid-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
+      html += m.sub.map(s=>{
+        let sh = `<button class="sid-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
           ${s.emoji} ${s.label}
-        </button>`
-      ).join('');
+        </button>`;
+        if(s.id==='stock' && activeSubMenu==='stock'){
+          sh += [{id:'전체',name:'전체'}, ..._invData.cats].map(c=>{
+            const on = _invCatFilter===c.id;
+            return `<button class="sid-catitem${on?' active':''}" onclick="_invCatFilter='${c.id}';renderInvCats();renderInv();renderSidebar()">${c.name}</button>`;
+          }).join('');
+        }
+        return sh;
+      }).join('');
     }
   }
   el.innerHTML = html;
@@ -2054,11 +2064,18 @@ function renderMobileSub(){
   const m = MENUS.find(x=>x.id===activeMenu);
   const el = document.getElementById('mobile-subnav');
   if(!m||!m.sub||!m.sub.length){el.innerHTML='';return;}
-  el.innerHTML = m.sub.map(s=>
+  let html = m.sub.map(s=>
     `<button class="mob-sub-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
       ${s.emoji} ${s.label}
     </button>`
   ).join('');
+  if(activeSubMenu==='stock'){
+    html += [{id:'전체',name:'전체'}, ..._invData.cats].map(c=>{
+      const on = _invCatFilter===c.id;
+      return `<button class="mob-sub-item${on?' active':''}" onclick="_invCatFilter='${c.id}';renderInvCats();renderInv()">${c.name}</button>`;
+    }).join('');
+  }
+  el.innerHTML = html;
 }
 
 // ── 메뉴 이동 ──────────────────────────────────────────────
@@ -3390,13 +3407,13 @@ function invAddCat(){
   if(!name) return;
   _invData.cats.push({id:'ic_'+Date.now(),name});
   inp.value='';
-  _saveInvData(); renderInvCats(); renderInv();
+  _saveInvData(); renderInvCats(); renderInv(); renderSidebar(); renderMobileSub();
 }
 function invDelCat(id){
   _invData.cats=_invData.cats.filter(c=>c.id!==id);
   _invData.items.forEach(it=>{ if(it.catId===id) it.catId=''; });
   if(_invCatFilter===id) _invCatFilter='전체';
-  _saveInvData(); renderInvCats(); renderInv();
+  _saveInvData(); renderInvCats(); renderInv(); renderSidebar(); renderMobileSub();
 }
 function renderInvCats(){
   const bar=document.getElementById('inv-cat-tabs'); if(!bar) return;
