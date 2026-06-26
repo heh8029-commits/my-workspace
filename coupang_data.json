@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-06-26 23:45",
+  "last_updated": "2026-06-27 00:20",
   "sales_data": {
-    "last_updated": "2026-06-26",
+    "last_updated": "2026-06-27",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -634,6 +634,12 @@
         "rocket_growth": 257120,
         "seller_delivery": 0,
         "total": 257120
+      },
+      {
+        "date": "06/26",
+        "rocket_growth": 277900,
+        "seller_delivery": 0,
+        "total": 277900
       }
     ]
   },
@@ -2996,6 +3002,12 @@
       "account": "미리토퍼",
       "status": "fail",
       "reason": "로그인 실패 (Akamai/인증 차단 추정)"
+    },
+    {
+      "time": "2026-06-27 00:20",
+      "account": "미리토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
     }
   ],
   "ad_performance": {
