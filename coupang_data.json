@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-26 17:45",
+  "last_updated": "2026-06-26 18:20",
   "sales_data": {
     "last_updated": "2026-06-26",
     "미리토퍼": [
@@ -2943,6 +2943,12 @@
     },
     {
       "time": "2026-06-26 17:20",
+      "account": "미리토퍼",
+      "status": "fail",
+      "reason": "로그인 실패 (Akamai/인증 차단 추정)"
+    },
+    {
+      "time": "2026-06-26 18:20",
       "account": "미리토퍼",
       "status": "fail",
       "reason": "로그인 실패 (Akamai/인증 차단 추정)"
