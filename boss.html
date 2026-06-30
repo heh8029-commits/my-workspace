@@ -1215,6 +1215,20 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div><!-- /2행 boss-memo-grid -->
     </div>
 
+    <!-- 미리제작소 메인 페이지 -->
+    <div class="page" id="page-miri">
+      <div style="max-width:1100px">
+        <div class="boss-flow-section">
+          <div class="boss-flow-header">
+            <span class="boss-flow-title">🎨 디자인 업무 순서</span>
+          </div>
+          <div class="boss-flow-card">
+            <div class="flow-wrap" id="design-flow"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 서브메뉴 콘텐츠 (준비 중) -->
     <div class="page" id="page-sub">
       <div class="placeholder">
@@ -2083,6 +2097,7 @@ function setMenu(id){
   activeMenu=id; activeSubMenu=null;
   renderTopMenu(); renderSidebar(); renderMobileSub();
   if(id==='home'){ showPage('home'); }
+  else if(id==='miri'){ showPage('miri'); dfFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else { showPage('sub'); }
@@ -5589,6 +5604,105 @@ function bfDrop(e,targetId){
   bfSave();bfRender();
 }
 setInterval(bfRender,60000);
+
+// ── 디자인 업무 순서 플로우 ────────────────────────────────
+const FB_DESIGN_FLOW = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/design_flow.json';
+let dfData = [];
+let _dfSaveTimer = null;
+async function dfFetch(){
+  try{const r=await fetch(FB_DESIGN_FLOW+'?t='+Date.now());if(r.ok){const d=await r.json();if(Array.isArray(d))dfData=d;}}catch(e){}
+  dfRender();
+}
+async function _dfSaveNow(){
+  try{await fetch(FB_DESIGN_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(dfData)});}catch(e){}
+}
+function dfSave(){clearTimeout(_dfSaveTimer);_dfSaveTimer=setTimeout(_dfSaveNow,600);}
+function dfRender(){
+  const wrap=document.getElementById('design-flow');if(!wrap)return;
+  let h='';
+  dfData.forEach((item,i)=>{
+    if(i>0)h+=`<span class="flow-arrow">→</span>`;
+    const now=bfIsNow(item.time);
+    const nowBadge=now?`<span class="flow-time-now">⏰ 지금</span>`:'';
+    h+=`<div class="flow-item${now?' now-active':''}" draggable="true"
+      ondragstart="dfDragStart(event,${item.id})"
+      ondragover="event.preventDefault();this.style.outline='2px dashed #C4714A'"
+      ondragleave="this.style.outline=''"
+      ondrop="dfDrop(event,${item.id});this.style.outline=''">
+      <span class="fi-drag">⠿</span>
+      <span contenteditable="true"
+        onblur="dfEdit(${item.id},this.textContent)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        style="outline:none;min-width:30px">${bfEsc(item.text)}</span>
+      ${nowBadge}
+      <button class="fi-edit" onclick="dfEditPopup(${item.id})">✏️</button>
+      <button class="fi-del" onclick="dfDel(${item.id})">✕</button>
+    </div>`;
+  });
+  h+=`<span class="flow-arrow"${dfData.length===0?' style="display:none"':''}>→</span>
+    <div class="flow-add" onclick="dfAdd()">＋ 추가</div>`;
+  wrap.innerHTML=h;
+}
+function dfAdd(){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}">${t.label}</option>`).join('');
+  ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
+    <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">🎨 업무 추가</div>
+    <input id="df-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <select id="df-add-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+      <option value="">시간대 없음</option>${opts}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+      <button id="df-add-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#D4895E,#C4714A);color:white;font-weight:700;cursor:pointer;font-size:.85rem">추가</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#df-add-txt');inp.focus();
+  ov.querySelector('#df-add-ok').onclick=function(){
+    const t=inp.value.trim();if(!t){inp.focus();return;}
+    dfData.push({id:Date.now(),text:t,time:ov.querySelector('#df-add-time').value});
+    dfSave();dfRender();ov.remove();
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#df-add-ok').click();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+function dfDel(id){dfData=dfData.filter(i=>i.id!==id);dfSave();dfRender();}
+function dfEdit(id,val){const item=dfData.find(i=>i.id===id);if(item&&val.trim()){item.text=val.trim();dfSave();}}
+function dfEditPopup(id){
+  const item=dfData.find(i=>i.id===id);if(!item)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}"${item.time===t.val?' selected':''}>${t.label}</option>`).join('');
+  ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
+    <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">✏️ 업무 편집</div>
+    <input id="df-edit-txt" type="text" value="${bfEsc(item.text)}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <select id="df-edit-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+      <option value=""${!item.time?' selected':''}>시간대 없음</option>${opts}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+      <button id="df-edit-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#D4895E,#C4714A);color:white;font-weight:700;cursor:pointer;font-size:.85rem">저장</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#df-edit-txt');inp.focus();inp.select();
+  ov.querySelector('#df-edit-ok').onclick=function(){
+    const t=inp.value.trim();if(!t){inp.focus();return;}
+    item.text=t;item.time=ov.querySelector('#df-edit-time').value;
+    dfSave();dfRender();ov.remove();
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#df-edit-ok').click();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+let _dfDragId=null;
+function dfDragStart(e,id){_dfDragId=id;e.dataTransfer.effectAllowed='move';}
+function dfDrop(e,targetId){
+  e.preventDefault();if(_dfDragId===targetId)return;
+  const fi=dfData.findIndex(i=>i.id===_dfDragId),ti=dfData.findIndex(i=>i.id===targetId);
+  if(fi<0||ti<0)return;
+  const[m]=dfData.splice(fi,1);dfData.splice(ti,0,m);
+  dfSave();dfRender();
+}
 
 // ── 홈 3단 메모 (전역) ─────────────────────────────────────
 const FB_BTODO    = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_todo.json';
