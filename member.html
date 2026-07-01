@@ -938,7 +938,7 @@ load();
 document.getElementById('attDate').value=new Date().toISOString().slice(0,10);
 // 시간 기본값 현재
 const _now=new Date();
-document.getElementById('attHour').value=_now.getHours();
+document.getElementById('attHour').value=4;
 document.getElementById('attMin').value=Math.floor(_now.getMinutes()/5)*5;
 // 컨트롤 변경 시 인포 갱신
 ['attDate','attHour','attMin','attOff'].forEach(id=>{
