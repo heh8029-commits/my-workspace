@@ -1152,7 +1152,7 @@ document.addEventListener('click',()=>closeCtx());
 // 시간 기본값 현재
 const _now=new Date();
   document.getElementById('attHour').value=4;
-  document.getElementById('attMin').value=Math.floor(_now.getMinutes()/5)*5;
+  document.getElementById('attMin').value=0;
   ['attDate','attHour','attMin','attOff'].forEach(id=>{
     document.getElementById(id).addEventListener('change',updateAttInfo);
   });
