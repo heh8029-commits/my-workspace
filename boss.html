@@ -247,6 +247,24 @@ a{text-decoration:none;color:inherit}
 .design-flow-item .dfi-edit{display:none;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(74,95,207,.15);border:none;cursor:pointer;font-size:.65rem;color:#4A5FCF;padding:0;flex-shrink:0;margin-left:2px}
 .design-flow-item:hover .dfi-edit{display:flex}
 .design-flow-item .dfi-drag{cursor:grab;color:#B0BAE8;font-size:.8rem;padding:0 2px;flex-shrink:0;user-select:none}
+/* ── 광고 업무 순서 (미리제작소) ── */
+.ad-flow-section{margin-top:20px}
+.ad-flow-card{background:linear-gradient(135deg,#EAFAF1 0%,#E6FFF5 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(39,174,96,.1);border:1.5px solid #C3E6CB}
+.ad-flow-title{font-size:1rem;font-weight:800;color:#1D8348;letter-spacing:-.3px}
+.ad-flow-wrap{display:flex;align-items:center;gap:0;flex-wrap:wrap;min-height:52px;row-gap:10px}
+.ad-flow-item{display:flex;align-items:center;gap:7px;background:#fff;border:2px solid #A9DFBF;border-radius:14px;padding:8px 14px;font-size:.87rem;font-weight:600;color:#1A5C35;cursor:default;transition:all .18s;position:relative;box-shadow:0 2px 6px rgba(39,174,96,.08)}
+.ad-flow-item:hover{background:#EAFAF1;border-color:#27AE60;box-shadow:0 3px 10px rgba(39,174,96,.18)}
+.ad-flow-item.now-active{background:#27AE60;border-color:#1D8348}
+.ad-flow-item.now-active span{color:#fff}
+.ad-flow-num{width:20px;height:20px;border-radius:50%;background:#27AE60;color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ad-flow-arrow{color:#76C893;font-size:1rem;margin:0 3px;flex-shrink:0}
+.ad-flow-add{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);border:2px dashed #76C893;border-radius:14px;padding:8px 14px;font-size:.87rem;color:#76C893;cursor:pointer;transition:all .18s}
+.ad-flow-add:hover{background:#fff;border-color:#27AE60;color:#27AE60}
+.ad-flow-item .afi-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#27AE60;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
+.ad-flow-item:hover .afi-del{display:flex}
+.ad-flow-item .afi-edit{display:none;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(39,174,96,.15);border:none;cursor:pointer;font-size:.65rem;color:#27AE60;padding:0;flex-shrink:0;margin-left:2px}
+.ad-flow-item:hover .afi-edit{display:flex}
+.ad-flow-item .afi-drag{cursor:grab;color:#A9DFBF;font-size:.8rem;padding:0 2px;flex-shrink:0;user-select:none}
 
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
@@ -1245,6 +1263,14 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <div class="design-flow-wrap" id="design-flow"></div>
           </div>
         </div>
+        <div class="ad-flow-section">
+          <div class="design-flow-header">
+            <span class="ad-flow-title">📢 광고 업무 순서</span>
+          </div>
+          <div class="ad-flow-card">
+            <div class="ad-flow-wrap" id="ad-flow"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2116,7 +2142,7 @@ function setMenu(id){
   activeMenu=id; activeSubMenu=null;
   renderTopMenu(); renderSidebar(); renderMobileSub();
   if(id==='home'){ showPage('home'); }
-  else if(id==='miri'){ showPage('miri'); dfFetch(); }
+  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else { showPage('sub'); }
@@ -5722,6 +5748,106 @@ function dfDrop(e,targetId){
   if(fi<0||ti<0)return;
   const[m]=dfData.splice(fi,1);dfData.splice(ti,0,m);
   dfSave();dfRender();
+}
+
+// ── 광고 업무 순서 플로우 ────────────────────────────────────
+const FB_AD_FLOW = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/ad_flow.json';
+let afData = [];
+let _afSaveTimer = null;
+async function afFetch(){
+  try{const r=await fetch(FB_AD_FLOW+'?t='+Date.now());if(r.ok){const d=await r.json();if(Array.isArray(d))afData=d;}}catch(e){}
+  afRender();
+}
+async function _afSaveNow(){
+  try{await fetch(FB_AD_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(afData)});}catch(e){}
+}
+function afSave(){clearTimeout(_afSaveTimer);_afSaveTimer=setTimeout(_afSaveNow,600);}
+function afRender(){
+  const wrap=document.getElementById('ad-flow');if(!wrap)return;
+  let h='';
+  afData.forEach((item,i)=>{
+    if(i>0)h+=`<span class="ad-flow-arrow">→</span>`;
+    const now=bfIsNow(item.time);
+    const nowBadge=now?`<span class="flow-time-now" style="background:rgba(255,255,255,.35)">⏰ 지금</span>`:'';
+    h+=`<div class="ad-flow-item${now?' now-active':''}" draggable="true"
+      ondragstart="afDragStart(event,${item.id})"
+      ondragover="event.preventDefault();this.style.outline='2px dashed #27AE60'"
+      ondragleave="this.style.outline=''"
+      ondrop="afDrop(event,${item.id});this.style.outline=''">
+      <span class="afi-drag">⠿</span>
+      <span class="ad-flow-num">${i+1}</span>
+      <span contenteditable="true"
+        onblur="afEdit(${item.id},this.textContent)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        style="outline:none;min-width:30px">${bfEsc(item.text)}</span>
+      ${nowBadge}
+      <button class="afi-edit" onclick="afEditPopup(${item.id})">✏️</button>
+      <button class="afi-del" onclick="afDel(${item.id})">✕</button>
+    </div>`;
+  });
+  h+=`<span class="ad-flow-arrow"${afData.length===0?' style="display:none"':''}>→</span>
+    <div class="ad-flow-add" onclick="afAdd()">＋ 추가</div>`;
+  wrap.innerHTML=h;
+}
+function afAdd(){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}">${t.label}</option>`).join('');
+  ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(39,174,96,.25)">
+    <div style="font-size:1rem;font-weight:700;color:#27AE60;margin-bottom:14px">📢 업무 추가</div>
+    <input id="af-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #A9DFBF;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <select id="af-add-time" style="width:100%;border:1.5px solid #A9DFBF;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+      <option value="">시간대 없음</option>${opts}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+      <button id="af-add-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#52BE80,#27AE60);color:white;font-weight:700;cursor:pointer;font-size:.85rem">추가</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#af-add-txt');inp.focus();
+  ov.querySelector('#af-add-ok').onclick=function(){
+    const t=inp.value.trim();if(!t){inp.focus();return;}
+    afData.push({id:Date.now(),text:t,time:ov.querySelector('#af-add-time').value});
+    afSave();afRender();ov.remove();
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#af-add-ok').click();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+function afDel(id){afData=afData.filter(i=>i.id!==id);afSave();afRender();}
+function afEdit(id,val){const item=afData.find(i=>i.id===id);if(item&&val.trim()){item.text=val.trim();afSave();}}
+function afEditPopup(id){
+  const item=afData.find(i=>i.id===id);if(!item)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const opts=BOSS_FLOW_SLOTS.map(t=>`<option value="${t.val}"${item.time===t.val?' selected':''}>${t.label}</option>`).join('');
+  ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(39,174,96,.25)">
+    <div style="font-size:1rem;font-weight:700;color:#27AE60;margin-bottom:14px">✏️ 업무 편집</div>
+    <input id="af-edit-txt" type="text" value="${bfEsc(item.text)}" style="width:100%;border:1.5px solid #A9DFBF;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <select id="af-edit-time" style="width:100%;border:1.5px solid #A9DFBF;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
+      <option value=""${!item.time?' selected':''}>시간대 없음</option>${opts}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;border:none;border-radius:10px;background:#eee;cursor:pointer;font-size:.85rem">취소</button>
+      <button id="af-edit-ok" style="padding:8px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#52BE80,#27AE60);color:white;font-weight:700;cursor:pointer;font-size:.85rem">저장</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#af-edit-txt');inp.focus();inp.select();
+  ov.querySelector('#af-edit-ok').onclick=function(){
+    const t=inp.value.trim();if(!t){inp.focus();return;}
+    item.text=t;item.time=ov.querySelector('#af-edit-time').value;
+    afSave();afRender();ov.remove();
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#af-edit-ok').click();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+let _afDragId=null;
+function afDragStart(e,id){_afDragId=id;e.dataTransfer.effectAllowed='move';}
+function afDrop(e,targetId){
+  e.preventDefault();if(_afDragId===targetId)return;
+  const fi=afData.findIndex(i=>i.id===_afDragId),ti=afData.findIndex(i=>i.id===targetId);
+  if(fi<0||ti<0)return;
+  const[m]=afData.splice(fi,1);afData.splice(ti,0,m);
+  afSave();afRender();
 }
 
 // ── 홈 3단 메모 (전역) ─────────────────────────────────────
