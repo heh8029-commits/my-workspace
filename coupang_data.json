@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-02 07:00",
+  "last_updated": "2026-07-02 07:20",
   "accounts": {
     "미리토퍼": {
       "current_amount": 72500,
@@ -123,7 +123,86 @@
         "total": 1816890
       }
     ],
-    "몽몽토퍼": []
+    "몽몽토퍼": [
+      {
+        "date": "06/18",
+        "rocket_growth": 290300,
+        "seller_delivery": 0,
+        "total": 290300
+      },
+      {
+        "date": "06/19",
+        "rocket_growth": 330900,
+        "seller_delivery": 0,
+        "total": 330900
+      },
+      {
+        "date": "06/20",
+        "rocket_growth": 160000,
+        "seller_delivery": 3500,
+        "total": 163500
+      },
+      {
+        "date": "06/22",
+        "rocket_growth": 244900,
+        "seller_delivery": 12800,
+        "total": 257700
+      },
+      {
+        "date": "06/23",
+        "rocket_growth": 291000,
+        "seller_delivery": 0,
+        "total": 291000
+      },
+      {
+        "date": "06/24",
+        "rocket_growth": 278970,
+        "seller_delivery": 12800,
+        "total": 291770
+      },
+      {
+        "date": "06/25",
+        "rocket_growth": 257120,
+        "seller_delivery": 0,
+        "total": 257120
+      },
+      {
+        "date": "06/26",
+        "rocket_growth": 277900,
+        "seller_delivery": 0,
+        "total": 277900
+      },
+      {
+        "date": "06/27",
+        "rocket_growth": 208700,
+        "seller_delivery": 0,
+        "total": 208700
+      },
+      {
+        "date": "06/28",
+        "rocket_growth": 123800,
+        "seller_delivery": 25600,
+        "total": 149400
+      },
+      {
+        "date": "06/29",
+        "rocket_growth": 217300,
+        "seller_delivery": 12800,
+        "total": 230100
+      },
+      {
+        "date": "06/30",
+        "rocket_growth": 281000,
+        "seller_delivery": 0,
+        "total": 281000
+      },
+      {
+        "date": "07/01",
+        "rocket_growth": 288350,
+        "seller_delivery": 62900,
+        "total": 351250
+      }
+    ]
   },
   "run_log": [
     {
@@ -155,11 +234,18 @@
       "account": "몽몽토퍼",
       "status": "fail",
       "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
+    },
+    {
+      "time": "2026-07-02 07:20",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
     }
   ],
   "ad_data": {
     "07/01": {
-      "cpAdCost": 219280
+      "cpAdCost": 219280,
+      "mongCpAdCost": 37819
     }
   },
   "ad_performance": {
@@ -197,6 +283,30 @@
         "전체 매출": "0원",
         "클릭수": "1,035회",
         "전환율": "8.12%"
+      }
+    },
+    "몽몽토퍼": {
+      "updated": "2026-07-02 07:20",
+      "어제": {
+        "전체 집행 광고비": "37,819원",
+        "광고 전환 매출": "124,950원",
+        "집행 광고비": "37,819원",
+        "광고 수익률": "330.39%",
+        "전환율": "8.4%"
+      },
+      "최근7일": {
+        "전체 집행 광고비": "230,526원",
+        "광고 전환 매출": "922,950원",
+        "집행 광고비": "230,526원",
+        "광고 수익률": "400.37%",
+        "전환율": "8.73%"
+      },
+      "이번달": {
+        "전체 집행 광고비": "37,819원",
+        "광고 전환 매출": "124,950원",
+        "집행 광고비": "37,819원",
+        "광고 수익률": "330.39%",
+        "전환율": "8.4%"
       }
     }
   }
