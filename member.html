@@ -196,82 +196,123 @@ button{font-family:inherit;cursor:pointer}
 .subpage{display:none}
 .subpage.active{display:block}
 
-/* ── 출퇴근 ── */
-.att-wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
-.att-title{font-size:1.5rem;font-weight:800;color:var(--rose);margin-bottom:18px;letter-spacing:.02em}
+/* ── 출퇴근 페이지 배경 ── */
+#page-attendance{
+  min-height:calc(100vh - 54px);
+  background:linear-gradient(140deg,#fce8f0 0%,#f0e8fc 50%,#e8eeff 100%);
+  padding:24px 16px 60px;
+}
+
+/* ── 출퇴근 카드 ── */
+.att-card{
+  max-width:720px;margin:0 auto;
+  background:white;border-radius:24px;
+  padding:24px 24px 20px;
+  box-shadow:0 6px 36px rgba(200,150,220,.14);
+}
+
+/* 카드 헤더 */
+.att-card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.att-card-title{font-size:1.55rem;font-weight:800;color:var(--text)}
+.att-card-sub{font-size:.73rem;color:var(--soft);margin-top:4px;font-weight:500}
+.att-admin-btn{
+  padding:7px 14px;border-radius:12px;border:1.5px solid #e2d6f4;
+  background:white;font-size:.8rem;font-weight:700;color:#8060b0;
+  display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;
+  transition:all .15s;flex-shrink:0;
+}
+.att-admin-btn:hover{background:#f5f0fd;border-color:#c0a0e8}
+
+/* 직원 선택 라벨 */
 .att-section-label{font-size:.78rem;font-weight:700;color:var(--soft);margin-bottom:10px}
-.att-hint{font-size:.72rem;font-weight:500;color:#bbb;margin-left:6px}
+.att-hint{font-size:.72rem;font-weight:400;color:#ccc;margin-left:6px}
+
+/* 꽃 모션 */
+@keyframes bloom{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.35)}
+}
+@keyframes bloom-fast{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.4)}
+}
+.att-flower{
+  display:inline-block;font-size:1.25rem;flex-shrink:0;
+  animation:bloom 2.4s ease-in-out infinite;
+}
+.att-emp-btn.selected .att-flower{
+  animation:bloom-fast .7s ease-in-out infinite;
+}
 
 /* 직원 버튼 그리드 */
 .att-emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
 .att-emp-btn{
-  background:white;border:2px solid #ede8f8;border-radius:14px;
-  padding:16px 10px;cursor:pointer;text-align:center;
-  transition:all .15s;box-shadow:0 2px 8px rgba(200,180,240,.13);
-  display:flex;align-items:center;gap:10px;
-  font-family:inherit;
+  background:white;border:2px solid #ede8f8;border-radius:16px;
+  padding:18px 12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;transition:all .15s;
+  box-shadow:0 2px 8px rgba(200,180,240,.1);
 }
-.att-emp-btn:hover{border-color:var(--pink);background:var(--pink-pale)}
+.att-emp-btn:hover{border-color:var(--pink);background:#fff5fa;transform:translateY(-1px)}
 .att-emp-btn.selected{
-  background:linear-gradient(135deg,#fff0f5,#ffe0ed);
+  background:linear-gradient(135deg,#fff0f6,#ffe0ec);
   border-color:var(--rose);
-  box-shadow:0 4px 14px rgba(224,60,110,.18);
+  box-shadow:0 5px 16px rgba(224,60,110,.18);
 }
-.att-emp-icon{font-size:1.3rem;flex-shrink:0}
-.att-emp-name{text-align:left}
-.att-emp-eng{font-size:1rem;font-weight:800;color:var(--text);line-height:1.1}
-.att-emp-nick{font-size:.72rem;color:var(--soft);font-weight:500}
+.att-emp-label{display:flex;align-items:baseline;gap:1px}
+.att-emp-eng{font-size:1.05rem;font-weight:800;color:var(--text);letter-spacing:.01em}
+.att-emp-nick{font-size:.72rem;color:var(--soft);font-weight:600}
 .att-emp-btn.selected .att-emp-eng{color:var(--rose)}
+.att-emp-btn.selected .att-emp-nick{color:var(--pink-dark)}
 
-/* 컨트롤 */
-.att-controls{background:white;border:1.5px solid var(--pink-mid);border-radius:16px;
-  padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px var(--shadow)}
+/* 컨트롤 박스 */
+.att-controls{border-top:1.5px solid #f5eeff;padding-top:16px;margin-bottom:14px}
 .att-ctrl-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
-.att-ctrl-item{display:flex;flex-direction:column;gap:4px}
-.att-ctrl-icon{font-size:.85rem}
-.att-ctrl-lbl{font-size:.68rem;font-weight:700;color:var(--soft)}
+.att-ctrl-item{display:flex;flex-direction:column;gap:3px}
+.att-ctrl-hd{display:flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;color:var(--soft)}
 .att-input-date{
-  border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;
+  border:1.5px solid #ede8f8;border-radius:8px;padding:7px 9px;
   font-family:inherit;font-size:.88rem;color:var(--text);outline:none;
-  background:var(--cream);
+  background:#fdfaff;
 }
 .att-input-date:focus{border-color:var(--rose)}
 .att-sel{
-  border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;
+  border:1.5px solid #ede8f8;border-radius:8px;padding:7px 6px;
   font-family:inherit;font-size:.88rem;color:var(--text);outline:none;
-  background:var(--cream);cursor:pointer;
+  background:#fdfaff;cursor:pointer;min-width:58px;
 }
 .att-sel:focus{border-color:var(--rose)}
 .att-off-lbl{display:flex;align-items:center;gap:5px;font-size:.85rem;
-  color:var(--soft);cursor:pointer;padding:6px 0}
+  color:var(--soft);cursor:pointer;padding:7px 0}
 .att-off-lbl input{accent-color:var(--rose);width:16px;height:16px}
 .att-btn-row{display:flex;gap:8px}
 .att-btn-save{
-  flex:1;padding:10px;border-radius:12px;border:none;
-  background:linear-gradient(135deg,#a8e6cf,#3dbb8f);
-  color:white;font-size:.9rem;font-weight:800;font-family:inherit;
-  box-shadow:0 3px 10px rgba(61,187,143,.3);cursor:pointer;transition:all .15s;
+  flex:1;padding:11px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#b8f0d8,#3dbb8f);
+  color:white;font-size:.92rem;font-weight:800;font-family:inherit;
+  box-shadow:0 3px 12px rgba(61,187,143,.28);cursor:pointer;transition:all .15s;
 }
-.att-btn-save:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(61,187,143,.4)}
+.att-btn-save:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(61,187,143,.38)}
 .att-btn-log{
-  padding:10px 18px;border-radius:12px;border:1.5px solid #ffe880;
-  background:#fffbe0;color:#b08020;font-size:.85rem;font-weight:700;
-  font-family:inherit;cursor:pointer;white-space:nowrap;
+  padding:11px 18px;border-radius:12px;border:1.5px solid #ffe066;
+  background:#fffce0;color:#a08010;font-size:.85rem;font-weight:700;
+  font-family:inherit;cursor:pointer;white-space:nowrap;transition:all .15s;
 }
-.att-btn-log:hover{background:#fff7b0}
+.att-btn-log:hover{background:#fff8b0}
 
 /* 인포 & 팁 */
 .att-info{
-  background:white;border:1.5px solid var(--pink-mid);border-radius:12px;
+  border:1.5px solid #ede8f8;border-radius:12px;
   padding:12px 16px;font-size:.9rem;color:var(--text);margin-bottom:10px;
-  min-height:44px;box-shadow:0 2px 6px var(--shadow);
+  min-height:44px;background:#fdfaff;
 }
-.att-tip{font-size:.75rem;color:#aaa;padding-left:2px}
+.att-tip{font-size:.74rem;color:#bbb;padding-left:2px}
 
-@media(max-width:480px){
+@media(max-width:520px){
   .member-grid{grid-template-columns:1fr}
   .summary-row .sum-card{min-width:80px}
   .att-emp-grid{grid-template-columns:repeat(2,1fr)}
+  .att-emp-eng{font-size:.92rem}
 }
 </style>
 </head>
@@ -292,8 +333,14 @@ button{font-family:inherit;cursor:pointer}
 
 <!-- ══ 출퇴근 탭 ══ -->
 <div class="subpage active" id="page-attendance">
-  <div class="att-wrap">
-    <div class="att-title">출퇴근</div>
+  <div class="att-card">
+    <div class="att-card-hd">
+      <div>
+        <div class="att-card-title">💗 출퇴근 ✨</div>
+        <div class="att-card-sub">이름 선택 → 날짜/시간 선택 → 저장 (휴무도 가능)</div>
+      </div>
+      <button class="att-admin-btn" onclick="goAdmin()">🔒 어드민</button>
+    </div>
 
     <div class="att-section-label">직원 선택 <span class="att-hint">하트 눌러서 체크</span></div>
     <div class="att-emp-grid" id="attEmpGrid"></div>
@@ -301,23 +348,23 @@ button{font-family:inherit;cursor:pointer}
     <div class="att-controls">
       <div class="att-ctrl-row">
         <div class="att-ctrl-item">
-          <span class="att-ctrl-icon">📅</span><span class="att-ctrl-lbl">날짜</span>
+          <div class="att-ctrl-hd"><span>📅</span><span>날짜</span></div>
           <input type="date" id="attDate" class="att-input-date">
         </div>
         <div class="att-ctrl-item">
-          <span class="att-ctrl-icon">⏰</span><span class="att-ctrl-lbl">시간</span>
+          <div class="att-ctrl-hd"><span>⏰</span><span>시간</span></div>
           <select id="attHour" class="att-sel">
             <script>for(let i=0;i<24;i++)document.write(`<option value="${i}">${i}</option>`)</script>
           </select>
         </div>
         <div class="att-ctrl-item">
-          <span class="att-ctrl-icon">⌛</span><span class="att-ctrl-lbl">분</span>
+          <div class="att-ctrl-hd"><span>⌛</span><span>분</span></div>
           <select id="attMin" class="att-sel">
             <script>for(let i=0;i<60;i+=5)document.write(`<option value="${i}">${i}</option>`)</script>
           </select>
         </div>
         <div class="att-ctrl-item">
-          <span class="att-ctrl-icon">🐻</span><span class="att-ctrl-lbl">휴무</span>
+          <div class="att-ctrl-hd"><span>🐻</span><span>휴무</span></div>
           <label class="att-off-lbl"><input type="checkbox" id="attOff"> 휴무</label>
         </div>
       </div>
@@ -508,10 +555,10 @@ function renderAttendance(){
   }
   grid.innerHTML=active.map(m=>`
     <button class="att-emp-btn${attSelected===m.id?' selected':''}" onclick="selectEmp('${m.id}')">
-      <span class="att-emp-icon">${attSelected===m.id?'❤️':'🌸'}</span>
-      <span class="att-emp-name">
-        <div class="att-emp-eng">${esc(m.eng||m.name.toUpperCase())}</div>
-        ${m.nick?`<div class="att-emp-nick">(${esc(m.nick)})</div>`:''}
+      <span class="att-flower">${attSelected===m.id?'❤️':'🌸'}</span>
+      <span class="att-emp-label">
+        <span class="att-emp-eng">${esc(m.eng||m.name.toUpperCase())}</span>
+        ${m.nick?`<span class="att-emp-nick">(${esc(m.nick)})</span>`:''}
       </span>
     </button>
   `).join('');
@@ -525,16 +572,12 @@ function selectEmp(id){
 
 function updateAttInfo(){
   const el=document.getElementById('attInfo');
-  if(!attSelected){el.textContent='이름을 선택해줘 💕';return}
+  if(!attSelected){el.innerHTML='이름을 선택해줘 💕';return}
   const m=members.find(x=>x.id===attSelected);
-  if(!m){el.textContent='이름을 선택해줘 💕';return}
-  const d=document.getElementById('attDate').value;
-  const h=document.getElementById('attHour').value;
-  const mn=document.getElementById('attMin').value;
-  const off=document.getElementById('attOff').checked;
-  el.textContent=off
-    ? `${m.eng||m.name} (${m.nick||''}) — ${d} 휴무`
-    : `${m.eng||m.name} (${m.nick||''}) — ${d} ${h}시 ${mn}분`;
+  if(!m){el.innerHTML='이름을 선택해줘 💕';return}
+  const eng=m.eng||m.name.toUpperCase();
+  const nick=m.nick?`(${m.nick})`:'';
+  el.innerHTML=`<strong>${esc(eng)}${nick}</strong> 선택됨 💕 날짜/시간(또는 휴무)을 고르고 저장해줘!`;
 }
 
 function saveAttendance(){
@@ -552,6 +595,21 @@ function saveAttendance(){
   el.textContent=`✅ 저장됐어! ${m.eng||m.name}${isOff?' 휴무':' '+hour+'시 '+min+'분'}`;
   el.style.color='var(--rose)';
   setTimeout(()=>{el.style.color='';updateAttInfo()},2500);
+}
+
+function goAdmin(){
+  const pw=prompt('비밀번호를 입력해줘 🔒');
+  if(pw===null)return;
+  if(pw==='3636'){
+    document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-admin').classList.add('active');
+    document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.t-tab')[2].classList.add('active');
+    currentTab='admin';
+    renderCards();
+  } else {
+    alert('비밀번호가 틀렸어 🙅');
+  }
 }
 
 function openMyLog(){
@@ -589,7 +647,7 @@ function renderCards(){
       <div class="card-top">
         <div class="avatar" style="background:${avatarColor(m.name)}">${m.name.slice(0,1)}</div>
         <div class="card-info">
-          <div class="card-name">${m.eng?`<span style="font-size:.95rem;font-weight:800">${esc(m.eng)}</span><span style="font-size:.75rem;color:var(--soft);font-weight:500">(${esc(m.nick||m.name)})</span>`:esc(m.name)}</div>
+          <div class="card-name">${esc(m.name)}</div>
           <span>
             <span class="status-dot ${m.status==='active'?'on':'off'}"></span>
             <span class="status-txt">${m.status==='active'?'재직중':'퇴직/휴직'}</span>
