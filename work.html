@@ -1698,8 +1698,6 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
     <div style="font-size:1.3rem;font-weight:800;color:#7040c0">🎀 미리제작소</div>
     <div style="font-size:.8rem;color:#aaa">디자인관리 · 상품관리 · 문구추천리스트</div>
-    <button id="notif-req-btn" onclick="csRequestNotif()" style="margin-left:auto;background:linear-gradient(135deg,#fff0f5,#f7a8c0);border:1.5px solid #f7a8c0;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#c04070;cursor:pointer;font-family:Pretendard,sans-serif">🔔 알림허용</button>
-    <button onclick="csTestNotif()" style="background:linear-gradient(135deg,#e8f0ff,#b0c8f8);border:1.5px solid #b0c8f8;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;color:#1050a0;cursor:pointer;font-family:Pretendard,sans-serif">🧪 알림테스트</button>
   </div>
 
   <!-- 탭 + 동기화 버튼 -->
@@ -9016,10 +9014,6 @@ function initRender(pageId) {
   if (mn) mn.classList.add('active');
   updateTodaySchedBar();
   _cleanLocalStorageBase64 && _cleanLocalStorageBase64();
-  // 알림 버튼 상태 초기화
-  setTimeout(function(){
-    csUpdateNotifBtn && csUpdateNotifBtn();
-  }, 500);
   // Firebase 실시간 스트림 + 자동싱크 시작
   startFbStream();
   _startAutoSync();
@@ -9442,76 +9436,6 @@ function csUploadImg(file) {
 }
 
 
-function csTestNotif() {
-  if (!('Notification' in window)) {
-    toast('❌ 이 브라우저는 알림 지원 안해요');
-    return;
-  }
-  if (Notification.permission !== 'granted') {
-    toast('🔔 알림허용 버튼을 먼저 눌러주세요! (현재: ' + Notification.permission + ')');
-    return;
-  }
-  // 클릭 제스처로 AudioContext 활성화
-  try {
-    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (_audioCtx.state === 'suspended') _audioCtx.resume();
-  } catch(e) {}
-  _showNotif('🧪 알림 테스트', '알림이 정상 작동해요! CS 새 글 등록 시 이렇게 와요 ✅', 'test-'+Date.now());
-  toast('✅ 테스트 알림 전송! (소리도 활성화됐어요)');
-}
-
-function csRequestNotif() {
-  if (!('Notification' in window)) {
-    toast('이 브라우저는 알림을 지원하지 않아요');
-    return;
-  }
-  if (Notification.permission === 'granted') {
-    toast('✅ 알림이 이미 허용됐어요!');
-    csUpdateNotifBtn();
-    return;
-  }
-  if (Notification.permission === 'denied') {
-    toast('🚫 알림이 차단됐어요. 브라우저 주소창 왼쪽 🔒 아이콘 → 알림 → 허용으로 변경해주세요');
-    return;
-  }
-  Notification.requestPermission().then(function(p) {
-    if (p === 'granted') {
-      toast('🔔 알림 허용됐어요! 새 CS 등록 시 알림이 와요');
-      // 테스트 알림
-      setTimeout(function(){
-        _showNotif('🔔 알림 테스트', '알림이 정상 작동해요 ✅', 'req-test');
-      }, 500);
-    } else {
-      toast('알림을 허용하지 않으셨어요');
-    }
-    csUpdateNotifBtn();
-  });
-}
-
-function csUpdateNotifBtn() {
-  var btn = document.getElementById('notif-req-btn');
-  if (!btn) return;
-  if (!('Notification' in window)) { btn.style.display='none'; return; }
-  if (Notification.permission === 'granted') {
-    // 이미 허용 → 버튼 숨김 (매번 누를 필요 없음)
-    btn.style.display = 'none';
-  } else if (Notification.permission === 'denied') {
-    btn.style.display = '';
-    btn.textContent = '🔕 알림 차단됨';
-    btn.style.background = '#f5f5f5';
-    btn.style.borderColor = '#ccc';
-    btn.style.color = '#999';
-    btn.title = '브라우저 설정에서 알림을 허용해주세요';
-  } else {
-    // default - 아직 선택 안 함 → 버튼 표시
-    btn.style.display = '';
-    btn.textContent = '🔔 알림허용';
-    btn.style.background = 'linear-gradient(135deg,#fff0f5,#f7a8c0)';
-    btn.style.borderColor = '#f7a8c0';
-    btn.style.color = '#c04070';
-    btn.onclick = function(){ csRequestNotif(); };
-  }
-}
 
 
 function addCsShare() {
