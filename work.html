@@ -2081,7 +2081,6 @@ function _csAlarmStart() {
       .then(function(data) {
         if (!data || !data.list || !data.list.length) return;
         var newest = data.list[0];
-        toast('체크중: newest.id=' + newest.id + ' / 기준=' + _csLastSeenId);
         if (newest && newest.id && newest.id > _csLastSeenId) {
           var newItems = data.list.filter(function(it) { return it.id > _csLastSeenId; });
           _csLastSeenId = data.list[0].id;
