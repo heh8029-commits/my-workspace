@@ -185,7 +185,7 @@ tr.today-row{background:#fffbe6}
         <tr>
           <th rowspan="2" style="vertical-align:middle">날짜</th>
           <th colspan="5" class="group-label">쿠팡</th>
-          <th colspan="4" class="group-label group-label-mong">네이버</th>
+          <th colspan="6" class="group-label group-label-mong">네이버</th>
           <th colspan="3" class="group-label" style="background:#fff7e0;color:#b8860b">전체</th>
         </tr>
         <tr>
@@ -196,7 +196,9 @@ tr.today-row{background:#fffbe6}
           <th class="group-miri">광고%</th>
           <th class="group-mong"><a href="https://sell.smartstore.naver.com/#/store-diagnosis" target="_blank" class="th-link">매출</a></th>
           <th class="group-mong"><a href="https://ads.naver.com/manage/ad-accounts/1992742/sa/campaigns/cmp-a001-02-000000006059416" target="_blank" class="th-link">검색광고</a></th>
+          <th class="group-mong">검색%</th>
           <th class="group-mong"><a href="https://sell.smartstore.naver.com/#/smart-ads/manage" target="_blank" class="th-link">AI광고</a></th>
+          <th class="group-mong">AI%</th>
           <th class="group-mong">광고%</th>
           <th style="background:#fff7e0;color:#b8860b">총매출</th>
           <th style="background:#fff7e0;color:#b8860b">총광고비</th>
@@ -720,7 +722,7 @@ function renderSales() {
 
   if (!allDates.length) {
     document.getElementById('sales-body').innerHTML =
-      '<tr><td colspan="13" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 8시 10분에 수집됩니다</small></td></tr>';
+      '<tr><td colspan="15" style="text-align:center;padding:40px;color:#ccc">매출 데이터가 없습니다<br><small>매일 오후 8시 10분에 수집됩니다</small></td></tr>';
     return;
   }
 
@@ -745,7 +747,9 @@ function renderSales() {
     const naverSearchAd = ad[fNvSe] || 0;
     const naverAiAd     = ad[fNvAi] || 0;
     const naverAdTotal  = naverSearchAd + naverAiAd;
-    const naverAdPct    = naverSales ? (naverAdTotal / naverSales * 100) : 0;
+    const naverSearchPct = naverSales ? (naverSearchAd / naverSales * 100) : 0;
+    const naverAiPct     = naverSales ? (naverAiAd     / naverSales * 100) : 0;
+    const naverAdPct     = naverSales ? (naverAdTotal   / naverSales * 100) : 0;
 
     const totalSales  = cpTotal + naverSales;
     const totalAdCost = cpAdCost + naverAdTotal;
@@ -766,7 +770,9 @@ function renderSales() {
       <td class="sd-col">${fmtPct(cpAdPct)}</td>
       ${inputCell(date, fNvS, naverSales)}
       ${inputCell(date, fNvSe, naverSearchAd)}
+      <td class="sd-col">${fmtPct(naverSearchPct)}</td>
       ${inputCell(date, fNvAi, naverAiAd)}
+      <td class="sd-col">${fmtPct(naverAiPct)}</td>
       <td class="sd-col">${fmtPct(naverAdPct)}</td>
       <td class="total-col">${fmtNum(totalSales)}</td>
       <td class="total-col">${fmtNum(totalAdCost)}</td>
@@ -781,9 +787,11 @@ function renderSales() {
   const sNaverAdTotal = sumAd.naverSearchAd + sumAd.naverAiAd;
   const sTotalSales = sumRow.total + sumAd.naverSales;
   const sTotalAdCost = sumAd.cpAdCost + sNaverAdTotal;
-  const sCpAdPct = sCpTotal ? sumAd.cpAdCost / sCpTotal * 100 : 0;
-  const sNaverAdPct = sumAd.naverSales ? sNaverAdTotal / sumAd.naverSales * 100 : 0;
-  const sTotalAdPct = sTotalSales ? sTotalAdCost / sTotalSales * 100 : 0;
+  const sCpAdPct       = sCpTotal           ? sumAd.cpAdCost    / sCpTotal           * 100 : 0;
+  const sNaverSearchPct = sumAd.naverSales  ? sumAd.naverSearchAd / sumAd.naverSales * 100 : 0;
+  const sNaverAiPct     = sumAd.naverSales  ? sumAd.naverAiAd    / sumAd.naverSales * 100 : 0;
+  const sNaverAdPct     = sumAd.naverSales  ? sNaverAdTotal      / sumAd.naverSales * 100 : 0;
+  const sTotalAdPct     = sTotalSales       ? sTotalAdCost       / sTotalSales       * 100 : 0;
   const avg = v => n ? v / n : 0;
 
   const footRow = (label, cls, vals, pcts) => `<tr class="${cls}">
@@ -795,14 +803,16 @@ function renderSales() {
     <td>${fmtPct(pcts.cpAdPct)}</td>
     <td>${fmtNum(vals.naverSales)}</td>
     <td>${fmtNum(vals.naverSearchAd)}</td>
+    <td>${fmtPct(pcts.naverSearchPct)}</td>
     <td>${fmtNum(vals.naverAiAd)}</td>
+    <td>${fmtPct(pcts.naverAiPct)}</td>
     <td>${fmtPct(pcts.naverAdPct)}</td>
     <td>${fmtNum(vals.totalSales)}</td>
     <td>${fmtNum(vals.totalAdCost)}</td>
     <td>${fmtPct(pcts.totalAdPct)}</td>
   </tr>`;
 
-  const pcts = { cpAdPct: sCpAdPct, naverAdPct: sNaverAdPct, totalAdPct: sTotalAdPct };
+  const pcts = { cpAdPct: sCpAdPct, naverSearchPct: sNaverSearchPct, naverAiPct: sNaverAiPct, naverAdPct: sNaverAdPct, totalAdPct: sTotalAdPct };
 
   document.getElementById('sales-foot').innerHTML =
     footRow('합계', 'foot-sum', {

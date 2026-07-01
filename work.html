@@ -1722,7 +1722,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
         <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 등록</div>
-          <button onclick="csCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="7일 지난 글 삭제">🗑️ 7일정리</button>
+          <button onclick="csCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="2일 지난 글 삭제">🗑️ 2일정리</button>
         <!-- 수→은→슬 순서 -->
         <div style="display:flex;gap:5px;align-items:center">
           <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
@@ -7543,12 +7543,12 @@ function setView(mode) {
   const btnMobile = document.getElementById('btn-mobile');
   if (mode === 'mobile') {
     body.classList.add('mobile-view');
-    btnMobile.classList.add('active-view');
-    btnPc.classList.remove('active-view');
+    if (btnMobile) btnMobile.classList.add('active-view');
+    if (btnPc)     btnPc.classList.remove('active-view');
   } else {
     body.classList.remove('mobile-view');
-    btnPc.classList.add('active-view');
-    btnMobile.classList.remove('active-view');
+    if (btnPc)     btnPc.classList.add('active-view');
+    if (btnMobile) btnMobile.classList.remove('active-view');
   }
   localStorage.setItem('ws5_viewmode', mode);
 }
@@ -9093,8 +9093,7 @@ function initRender(pageId) {
   const collapsed = localStorage.getItem('ws5_gnavcollapsed') === 'true';
   if (collapsed) collapseGnav(true);
   // 날짜
-  updateDate();
-  setInterval(updateDate, 60000);
+  if (typeof updateDate === 'function') { updateDate(); setInterval(updateDate, 60000); }
   // 1분마다 업무순서 시간 갱신
   setInterval(function() { renderFlow('boss'); }, 60000);
   // 초기 탭 표시
@@ -9525,50 +9524,15 @@ function csHandleDrop(e) {
   var files = e.dataTransfer&&e.dataTransfer.files;
   if (files) Array.from(files).forEach(function(f){ if(f.type.startsWith('image/')) csUploadImg(f); });
 }
-function csUploadImg(file, retry) {
-  retry = retry || 0;
+function csUploadImg(file) {
   toast('⬆️ 업로드 중...');
-
-  // 이미지 압축 후 업로드
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    var img = new Image();
-    img.onload = function() {
-      // 최대 1200px로 압축
-      var maxW = 1200, maxH = 1200;
-      var w = img.width, h = img.height;
-      var ratio = Math.min(1, maxW/w, maxH/h);
-      var nw = Math.round(w*ratio), nh = Math.round(h*ratio);
-      var canvas = document.createElement('canvas');
-      canvas.width = nw; canvas.height = nh;
-      canvas.getContext('2d').drawImage(img, 0, 0, nw, nh);
-      canvas.toBlob(function(blob) {
-        var fd = new FormData();
-        fd.append('file', blob, 'image.jpg');
-        fd.append('upload_preset', 'hwx2iwfz');
-        fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload', {method:'POST', body:fd})
-          .then(function(r){ return r.json(); })
-          .then(function(data) {
-            if (data.secure_url) {
-              _csShareImgs.push(data.secure_url);
-              renderCsImgPreview();
-              toast('✅ 이미지 추가 (' + _csShareImgs.length + '장)');
-            } else {
-              // 재시도 1회
-              if (retry < 1) { setTimeout(function(){ csUploadImg(file, 1); }, 1000); }
-              else toast('❌ 업로드 실패 (다시 시도해요)');
-            }
-          }).catch(function(e) {
-            if (retry < 1) { setTimeout(function(){ csUploadImg(file, 1); }, 1500); }
-            else toast('❌ 네트워크 오류 (다시 시도해요)');
-          });
-      }, 'image/jpeg', 0.85);
-    };
-    img.onerror = function(){ toast('❌ 이미지 읽기 실패'); };
-    img.src = ev.target.result;
-  };
-  reader.onerror = function(){ toast('❌ 파일 읽기 실패'); };
-  reader.readAsDataURL(file);
+  cloudinaryUpload(file, function(url) {
+    _csShareImgs.push(url);
+    renderCsImgPreview();
+    toast('✅ 이미지 추가 (' + _csShareImgs.length + '장)');
+  }, function(err) {
+    toast('❌ 업로드 실패: ' + (err||'오류'));
+  });
 }
 
 
@@ -9703,13 +9667,13 @@ function addCsShare() {
 }
 
 function csCleanOld() {
-  var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  var cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
   var list = loadCsShare();
   var before = list.length;
   var filtered = list.filter(function(x){ return (x.createdAt||x.id) > cutoff; });
   var removed = before - filtered.length;
-  if (removed === 0) { toast('7일 지난 글이 없어요 😊'); return; }
-  if (!confirm(removed + '개의 글을 삭제할까요? (7일 이상 지난 글)')) return;
+  if (removed === 0) { toast('2일 지난 글이 없어요 😊'); return; }
+  if (!confirm(removed + '개의 글을 삭제할까요? (2일 이상 지난 글)')) return;
   localStorage.setItem('ws5_cs_share', JSON.stringify({list: filtered}));
   fetch(FB_URL + '/cs_share.json', {
     method: 'PUT',
@@ -9976,7 +9940,7 @@ function renderCsShare() {
     if (imgs.length) {
       var mi = document.createElement('img');
       mi.src = imgs[0];
-      mi.style.cssText = 'width:100%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff';
+      mi.style.cssText = 'width:70%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff;margin-left:auto;margin-right:auto';
       mi.onclick = (function(a,i){ return function(){ _csGallery=a; _csGalleryIdx=i; csShowGallery(); }; })(imgs,0);
       body.appendChild(mi);
 
