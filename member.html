@@ -308,6 +308,67 @@ button{font-family:inherit;cursor:pointer}
 }
 .att-tip{font-size:.74rem;color:#bbb;padding-left:2px}
 
+/* ── 근로계약서 버튼 ── */
+.contract-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:10px;padding:5px 12px;border-radius:20px;
+  border:1.5px solid #d0e8ff;background:#f0f7ff;
+  font-size:.75rem;font-weight:700;color:#1a6bbf;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+}
+.contract-btn:hover{background:#daeeff;border-color:#90c0f8}
+.contract-btn.has{border-color:#a8d8a8;background:#f0fdf0;color:#1a8c3a}
+.contract-btn.has:hover{background:#d4f4d4}
+
+/* 계약서 모달 */
+.contract-modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(58,26,46,.35);
+  z-index:700;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(3px);
+}
+.contract-modal-bg.open{display:flex}
+.contract-modal{
+  background:white;border-radius:22px;width:100%;max-width:420px;
+  box-shadow:0 20px 60px rgba(100,160,240,.2);padding:26px 22px 22px;
+}
+.contract-modal h3{font-size:1rem;font-weight:800;color:#1a6bbf;margin-bottom:6px}
+.contract-modal-name{font-size:.82rem;color:var(--soft);margin-bottom:16px}
+.contract-section label{display:block;font-size:.75rem;font-weight:700;color:var(--soft);margin-bottom:5px}
+.contract-section input[type=text]{
+  width:100%;padding:9px 12px;border:1.5px solid #d0e8ff;border-radius:10px;
+  font-family:inherit;font-size:.85rem;color:var(--text);outline:none;background:#f8fbff;
+}
+.contract-section input[type=text]:focus{border-color:#5aabf8}
+.contract-divider{text-align:center;font-size:.75rem;color:#bbb;margin:12px 0}
+.contract-file-btn{
+  width:100%;padding:9px;border-radius:10px;border:1.5px dashed #c0d8f8;
+  background:#f8fbff;color:#5a90c8;font-size:.82rem;font-weight:700;
+  font-family:inherit;cursor:pointer;transition:all .15s;
+}
+.contract-file-btn:hover{background:#e8f4ff;border-color:#90c0f8}
+.contract-current{
+  background:#f0fdf0;border:1.5px solid #a8d8a8;border-radius:10px;
+  padding:8px 12px;font-size:.78rem;color:#1a7a3a;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.contract-current a{color:#1a6bbf;text-decoration:underline;word-break:break-all;flex:1}
+.contract-del-btn{
+  flex-shrink:0;padding:2px 8px;border-radius:8px;border:1px solid #f08888;
+  background:white;color:#e04444;font-size:.72rem;cursor:pointer;
+}
+.contract-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.contract-modal-cancel{
+  padding:8px 18px;border-radius:20px;border:2px solid #d0e8ff;
+  background:white;color:var(--soft);font-size:.85rem;font-weight:700;cursor:pointer;
+}
+.contract-modal-save{
+  padding:8px 22px;border-radius:20px;border:none;
+  background:linear-gradient(135deg,#5ab8f8,#1a6bbf);
+  color:white;font-size:.85rem;font-weight:700;cursor:pointer;
+  box-shadow:0 3px 10px rgba(26,107,191,.28);
+}
+.contract-modal-save:hover{transform:translateY(-1px)}
+
 @media(max-width:520px){
   .member-grid{grid-template-columns:1fr}
   .summary-row .sum-card{min-width:80px}
@@ -445,6 +506,41 @@ button{font-family:inherit;cursor:pointer}
       <button class="btn-del" id="btnDel" onclick="deleteMember()" style="display:none">🗑 삭제</button>
       <button class="btn-cancel" onclick="closeModal()">취소</button>
       <button class="btn-save" onclick="saveMember()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 근로계약서 모달 -->
+<div class="contract-modal-bg" id="contractModalBg" onclick="closeContractModalBg(event)">
+  <div class="contract-modal">
+    <h3>📄 근로계약서</h3>
+    <div class="contract-modal-name" id="contractModalName"></div>
+    <input type="hidden" id="contractMemberId">
+
+    <div id="contractCurrentBox" style="display:none" class="contract-current">
+      <a id="contractCurrentLink" href="#" target="_blank">현재 파일</a>
+      <button class="contract-del-btn" onclick="removeContract()">삭제</button>
+    </div>
+
+    <div class="contract-section" style="margin-bottom:10px">
+      <label>🔗 링크 붙여넣기 (구글드라이브, 드롭박스 등)</label>
+      <input type="text" id="contractUrl" placeholder="https://drive.google.com/...">
+    </div>
+
+    <div class="contract-divider">— 또는 —</div>
+
+    <div class="contract-section">
+      <label>📎 파일 첨부 (소용량 권장 · 2MB 이하)</label>
+      <button class="contract-file-btn" onclick="document.getElementById('contractFileInput').click()">
+        파일 선택하기
+      </button>
+      <input type="file" id="contractFileInput" accept=".pdf,.jpg,.jpeg,.png,.docx" style="display:none" onchange="handleContractFile(event)">
+      <div id="contractFileName" style="font-size:.75rem;color:var(--soft);margin-top:6px"></div>
+    </div>
+
+    <div class="contract-modal-btns">
+      <button class="contract-modal-cancel" onclick="closeContractModal()">닫기</button>
+      <button class="contract-modal-save" onclick="saveContract()">저장</button>
     </div>
   </div>
 </div>
@@ -662,8 +758,77 @@ function renderCards(){
       <div class="card-footer">
         <span class="card-since">${m.join?'입사 '+m.join:''}</span>
       </div>
+      <button class="contract-btn${m.contractUrl||m.contractFile?' has':''}" onclick="openContractModal('${m.id}')">
+        📄 ${m.contractUrl||m.contractFile?'근로계약서 보기':'근로계약서 등록'}
+      </button>
     </div>
   `).join('');
+}
+
+/* ── 근로계약서 ── */
+let contractFileData=null;
+let contractFileName='';
+
+function openContractModal(id){
+  const m=members.find(x=>x.id===id);
+  if(!m)return;
+  document.getElementById('contractMemberId').value=id;
+  document.getElementById('contractModalName').textContent=m.name+(m.eng?` (${m.eng})` :'');
+  document.getElementById('contractUrl').value='';
+  document.getElementById('contractFileName').textContent='';
+  contractFileData=null;contractFileName='';
+  // 현재 파일 표시
+  const box=document.getElementById('contractCurrentBox');
+  const link=document.getElementById('contractCurrentLink');
+  if(m.contractUrl){
+    box.style.display='flex';
+    link.href=m.contractUrl;
+    link.textContent=m.contractName||m.contractUrl.slice(0,40)+'...';
+  } else if(m.contractFile){
+    box.style.display='flex';
+    link.href=m.contractFile;
+    link.textContent=m.contractName||'첨부파일 보기';
+  } else {
+    box.style.display='none';
+  }
+  document.getElementById('contractModalBg').classList.add('open');
+}
+function closeContractModal(){document.getElementById('contractModalBg').classList.remove('open')}
+function closeContractModalBg(e){if(e.target===document.getElementById('contractModalBg'))closeContractModal()}
+
+function handleContractFile(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){alert('2MB 이하 파일만 첨부 가능해요');return}
+  contractFileName=file.name;
+  document.getElementById('contractFileName').textContent='선택됨: '+file.name;
+  const reader=new FileReader();
+  reader.onload=ev=>{contractFileData=ev.target.result};
+  reader.readAsDataURL(file);
+}
+
+function saveContract(){
+  const id=document.getElementById('contractMemberId').value;
+  const url=document.getElementById('contractUrl').value.trim();
+  const m=members.find(x=>x.id===id);
+  if(!m)return;
+  if(url){
+    m.contractUrl=url;m.contractFile='';m.contractName=url.slice(0,50);
+  } else if(contractFileData){
+    m.contractFile=contractFileData;m.contractUrl='';m.contractName=contractFileName;
+  } else {
+    alert('링크를 붙여넣거나 파일을 선택해줘');return;
+  }
+  save();renderCards();closeContractModal();
+}
+
+function removeContract(){
+  const id=document.getElementById('contractMemberId').value;
+  const m=members.find(x=>x.id===id);
+  if(!m)return;
+  if(!confirm('근로계약서를 삭제할까요?'))return;
+  m.contractUrl='';m.contractFile='';m.contractName='';
+  save();renderCards();closeContractModal();
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
