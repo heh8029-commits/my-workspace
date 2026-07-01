@@ -9976,7 +9976,7 @@ function renderCsShare() {
     if (imgs.length) {
       var mi = document.createElement('img');
       mi.src = imgs[0];
-      mi.style.cssText = 'width:100%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff';
+      mi.style.cssText = 'width:70%;display:block;object-fit:contain;cursor:zoom-in;border-radius:10px;border:1.5px solid #e8eef8;margin-bottom:6px;background:#f8f9ff;margin-left:auto;margin-right:auto';
       mi.onclick = (function(a,i){ return function(){ _csGallery=a; _csGalleryIdx=i; csShowGallery(); }; })(imgs,0);
       body.appendChild(mi);
 
