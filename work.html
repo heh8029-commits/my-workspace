@@ -2058,99 +2058,6 @@ function _fbApplyData(all) {
 }
 
 
-/* ══ CS 실시간 알림 (완전 새 버전) ══ */
-var _csLastSeenId = 0; // 마지막으로 본 글의 id
-var _audioCtx = null; // 전역 AudioContext (사용자 클릭 후 초기화)
-var _csAlarmInterval = null;
-
-function _csAlarmStart() {
-  if (_csAlarmInterval) { toast('CS알림: 이미 실행중'); return; }
-  
-  try {
-    var cur = loadObj('cs_share');
-    if (cur && cur.list && cur.list.length > 0) {
-      _csLastSeenId = cur.list[0].id || 0;
-    }
-  } catch(e) {}
-  
-  console.log('CS알림 시작, 기준id:', _csLastSeenId);
-
-  _csAlarmInterval = setInterval(function() {
-    fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (!data || !data.list || !data.list.length) return;
-        var newest = data.list[0];
-        if (newest && newest.id && newest.id > _csLastSeenId) {
-          var newItems = data.list.filter(function(it) { return it.id > _csLastSeenId; });
-          _csLastSeenId = data.list[0].id;
-          localStorage.setItem('ws5_cs_share', JSON.stringify(data));
-          try { renderCsShare(); } catch(e) {}
-          newItems.forEach(function(item) { _csSendAlarm(item); });
-        }
-      }).catch(function(e) { toast('fetch실패:' + e.message); });
-  }, 5000);
-}
-
-
-// 알림 발송 - SW + 직접 둘 다 시도
-function _showNotif(title, body, tag) {
-  if (Notification.permission !== 'granted') return;
-  tag = tag || ('cs-' + Date.now());
-  var sent = false;
-  // SW 경유 (모바일)
-  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-    try {
-      navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title: title, body: body, tag: tag });
-      sent = true;
-    } catch(e) {}
-  }
-  // 직접 Notification (PC - SW 실패해도 시도)
-  if (!sent || !navigator.serviceWorker || !navigator.serviceWorker.controller) {
-    try { new Notification(title, { body: body, tag: tag }); } catch(e) {}
-  }
-}
-
-function _csSendAlarm(item) {
-  var author = item.author || '?';
-  var txt = item.text ? item.text.slice(0, 50) : (item.imgs&&item.imgs.length ? '이미지 '+item.imgs.length+'장' : '새 CS');
-
-  // 소리 (전역 AudioContext 재사용 - 사용자 클릭 후 활성화된 것)
-  try {
-    var ctx = _audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
-    [0, 0.4, 0.8].forEach(function(delay) {
-      var osc = ctx.createOscillator(); var gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
-      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + delay + 0.3);
-      gain.gain.setValueAtTime(0.6, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
-      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.5);
-    });
-  } catch(e) {}
-
-  // 토스트 3번
-  toast('🔔 새CS! ' + author + ' - ' + txt.slice(0, 15));
-  setTimeout(function(){ toast('🔔 새CS! ' + author + ' - ' + txt.slice(0, 15)); }, 3000);
-  setTimeout(function(){ toast('🔔 새CS! ' + author + ' - ' + txt.slice(0, 15)); }, 6000);
-
-  // 타이틀 깜박임
-  var origTitle = document.title;
-  var blink = 0;
-  var ti = setInterval(function(){
-    document.title = blink%2===0 ? '🔔 새 CS!' : origTitle;
-    if (++blink > 12) { clearInterval(ti); document.title = origTitle; }
-  }, 500);
-
-  // 알림 (SW 경유 - 모바일/PC 통합)
-  var uid = Date.now();
-  _showNotif('💬 새 CS - '+author, txt, 'cs-'+uid);
-  setTimeout(function(){
-    _showNotif('💬 새 CS - '+author, '📌 확인 안 됐어요! '+txt, 'cs-re-'+uid);
-  }, 10000);
-}
 
 function _fbRender() {
   setTimeout(function() {
@@ -10050,10 +9957,8 @@ function workSync() {
         localStorage.setItem('ws5_cs_share', JSON.stringify(data));
       }
       renderCsShare && renderCsShare();
-      setTimeout(function(){ _csAlarmStart && _csAlarmStart(); }, 500);
     }).catch(function(){
       renderCsShare && renderCsShare();
-      setTimeout(function(){ _csAlarmStart && _csAlarmStart(); }, 500);
     });
   // 자동 동기화
   workSync();
