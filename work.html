@@ -9093,8 +9093,7 @@ function initRender(pageId) {
   const collapsed = localStorage.getItem('ws5_gnavcollapsed') === 'true';
   if (collapsed) collapseGnav(true);
   // 날짜
-  updateDate();
-  setInterval(updateDate, 60000);
+  if (typeof updateDate === 'function') { updateDate(); setInterval(updateDate, 60000); }
   // 1분마다 업무순서 시간 갱신
   setInterval(function() { renderFlow('boss'); }, 60000);
   // 초기 탭 표시
@@ -9525,50 +9524,15 @@ function csHandleDrop(e) {
   var files = e.dataTransfer&&e.dataTransfer.files;
   if (files) Array.from(files).forEach(function(f){ if(f.type.startsWith('image/')) csUploadImg(f); });
 }
-function csUploadImg(file, retry) {
-  retry = retry || 0;
+function csUploadImg(file) {
   toast('⬆️ 업로드 중...');
-
-  // 이미지 압축 후 업로드
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    var img = new Image();
-    img.onload = function() {
-      // 최대 1200px로 압축
-      var maxW = 1200, maxH = 1200;
-      var w = img.width, h = img.height;
-      var ratio = Math.min(1, maxW/w, maxH/h);
-      var nw = Math.round(w*ratio), nh = Math.round(h*ratio);
-      var canvas = document.createElement('canvas');
-      canvas.width = nw; canvas.height = nh;
-      canvas.getContext('2d').drawImage(img, 0, 0, nw, nh);
-      canvas.toBlob(function(blob) {
-        var fd = new FormData();
-        fd.append('file', blob, 'image.jpg');
-        fd.append('upload_preset', 'hwx2iwfz');
-        fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload', {method:'POST', body:fd})
-          .then(function(r){ return r.json(); })
-          .then(function(data) {
-            if (data.secure_url) {
-              _csShareImgs.push(data.secure_url);
-              renderCsImgPreview();
-              toast('✅ 이미지 추가 (' + _csShareImgs.length + '장)');
-            } else {
-              // 재시도 1회
-              if (retry < 1) { setTimeout(function(){ csUploadImg(file, 1); }, 1000); }
-              else toast('❌ 업로드 실패 (다시 시도해요)');
-            }
-          }).catch(function(e) {
-            if (retry < 1) { setTimeout(function(){ csUploadImg(file, 1); }, 1500); }
-            else toast('❌ 네트워크 오류 (다시 시도해요)');
-          });
-      }, 'image/jpeg', 0.85);
-    };
-    img.onerror = function(){ toast('❌ 이미지 읽기 실패'); };
-    img.src = ev.target.result;
-  };
-  reader.onerror = function(){ toast('❌ 파일 읽기 실패'); };
-  reader.readAsDataURL(file);
+  cloudinaryUpload(file, function(url) {
+    _csShareImgs.push(url);
+    renderCsImgPreview();
+    toast('✅ 이미지 추가 (' + _csShareImgs.length + '장)');
+  }, function(err) {
+    toast('❌ 업로드 실패: ' + (err||'오류'));
+  });
 }
 
 
