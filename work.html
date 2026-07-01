@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -1721,11 +1721,11 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
         <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 등록</div>
           <button onclick="csCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="2일 지난 글 삭제">🗑️ 2일정리</button>
-        <!-- 수→은→슬 순서 -->
+        <!-- 수→은→민 순서 -->
         <div style="display:flex;gap:5px;align-items:center">
           <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
           <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-          <button type="button" onclick="setCsAuthor('슬')" class="cs-author-btn" data-author="슬" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">슬</button>
+          <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
         </div>
         <!-- 분류 -->
         <div style="display:flex;gap:6px;margin-left:4px">
@@ -9068,8 +9068,8 @@ var _csShareCategory = 'CS'; // CS or 그로스
 var _csShareImgs = []; // Cloudinary URL 배열 (여러 이미지)
 
 var CS_TYPE_COLORS = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#999'};
-var CS_AUTHOR_COLORS = {'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
-var CS_AUTHOR_TEXT = {'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+var CS_AUTHOR_COLORS = {'은':'#f7a8c0','수':'#a0c8f8','민':'#b0e8c0'};
+var CS_AUTHOR_TEXT = {'은':'#c04070','수':'#1050a0','민':'#1a7a50'};
 
 function loadCsShare() { return loadObj('cs_share').list || []; }
 
@@ -9182,11 +9182,11 @@ function setCsCategory(cat) {
 
 function setCsAuthor(author) {
   _csShareAuthor = author;
-  var BG_ON  = {'은':'#f7a8c0', '수':'#a0c8f8', '슬':'#b0e8c0'};
-  var BG_OFF = {'은':'#fff0f5', '수':'#f0f8ff', '슬':'#f0fff8'};
-  var TC_ON  = {'은':'white',   '수':'white',   '슬':'white'};
-  var TC_OFF = {'은':'#c04070', '수':'#4a80d0', '슬':'#3dbb8f'};
-  var BD     = {'은':'#f7a8c0', '수':'#a0c8f8', '슬':'#b0e8c0'};
+  var BG_ON  = {'은':'#f7a8c0', '수':'#a0c8f8', '민':'#b0e8c0'};
+  var BG_OFF = {'은':'#fff0f5', '수':'#f0f8ff', '민':'#f0fff8'};
+  var TC_ON  = {'은':'white',   '수':'white',   '민':'white'};
+  var TC_OFF = {'은':'#c04070', '수':'#4a80d0', '민':'#3dbb8f'};
+  var BD     = {'은':'#f7a8c0', '수':'#a0c8f8', '민':'#b0e8c0'};
   // 입력 폼 안에 있는 버튼만 대상 (카드 내부 버튼과 혼동 방지)
   var container = document.querySelector('#work-sub-1 .card');
   var btns = container ? container.querySelectorAll('.cs-author-btn') : document.querySelectorAll('.cs-author-btn');
@@ -9603,8 +9603,8 @@ function renderCsShare() {
   if (_csShareFilter==='완료')   list = list.filter(function(it){ return it.done; });
   if (!list.length) { el.innerHTML='<div style="text-align:center;color:#bbb;padding:40px;font-size:.95rem">CS 내용을 등록해요 💬</div>'; return; }
 
-  var AC = {'은':'#f7a8c0','수':'#a0c8f8','슬':'#b0e8c0'};
-  var AT = {'은':'#c04070','수':'#1050a0','슬':'#1a7a50'};
+  var AC = {'은':'#f7a8c0','수':'#a0c8f8','민':'#b0e8c0'};
+  var AT = {'은':'#c04070','수':'#1050a0','민':'#1a7a50'};
   var TC = {'문의':'#4a80d0','교환':'#f0a000','반품':'#e03c6e','배송':'#3dbb8f','기타':'#999'};
 
   el.innerHTML = '';
@@ -9672,7 +9672,7 @@ function renderCsShare() {
     }
     card.appendChild(hdr);
 
-    // ── 3. 체크박스 - 그로스: 단일 / CS: 수슬 ──
+    // ── 3. 체크박스 - 그로스: 단일 / CS: 수민 ──
     var chkWrap = document.createElement('div');
     chkWrap.style.cssText = 'display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
     var confirmed = it.confirmed||[];
@@ -9701,8 +9701,8 @@ function renderCsShare() {
       }; })(it.text||'');
       chkWrap.appendChild(cpyBtn);
     } else {
-      // CS: 수/슬 이름 체크
-      ['은','수','슬'].forEach(function(name){
+      // CS: 수/민 이름 체크
+      ['은','수','민'].forEach(function(name){
         if (name===(it.author||'')) return;
         var lbl = document.createElement('label');
         lbl.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer';
@@ -9718,7 +9718,7 @@ function renderCsShare() {
             var idx=item.confirmed.indexOf(n);
             if(c.checked){if(idx===-1)item.confirmed.push(n);}
             else{if(idx!==-1)item.confirmed.splice(idx,1);}
-            var others=['은','수','슬'].filter(function(x){return x!==(item.author||'');});
+            var others=['은','수','민'].filter(function(x){return x!==(item.author||'');});
             item.done=others.length>0&&others.every(function(x){return item.confirmed.indexOf(x)!==-1;});
           });
         }; })(it.id,name,chk);
