@@ -320,6 +320,10 @@ button{font-family:inherit;cursor:pointer}
 .contract-btn:hover{background:#daeeff;border-color:#90c0f8}
 .contract-btn.has{border-color:#a8d8a8;background:#f0fdf0;color:#1a8c3a}
 .contract-btn.has:hover{background:#d4f4d4}
+.contract-thumb{
+  width:32px;height:32px;object-fit:cover;border-radius:6px;
+  border:1.5px solid #a8d8a8;vertical-align:middle;margin-left:4px;
+}
 
 /* 계약서 모달 */
 .contract-modal-bg{
@@ -340,6 +344,14 @@ button{font-family:inherit;cursor:pointer}
   font-family:inherit;font-size:.85rem;color:var(--text);outline:none;background:#f8fbff;
 }
 .contract-section input[type=text]:focus{border-color:#5aabf8}
+.contract-paste-area{
+  border:2px dashed #c0d8f8;border-radius:10px;padding:14px 12px;
+  background:#f8fbff;cursor:pointer;text-align:center;
+  font-size:.8rem;color:#7aaad8;transition:all .15s;outline:none;min-height:54px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.contract-paste-area:focus,.contract-paste-area.dragover{border-color:#5aabf8;background:#e8f4ff}
+.contract-paste-area.has-img{border-color:#a8d8a8;background:#f0fdf0}
 .contract-divider{text-align:center;font-size:.75rem;color:#bbb;margin:12px 0}
 .contract-file-btn{
   width:100%;padding:9px;border-radius:10px;border:1.5px dashed #c0d8f8;
@@ -522,14 +534,17 @@ button{font-family:inherit;cursor:pointer}
     </div>
 
     <div class="contract-section" style="margin-bottom:10px">
-      <label>🔗 링크 붙여넣기 (구글드라이브, 드롭박스 등)</label>
-      <input type="text" id="contractUrl" placeholder="https://drive.google.com/...">
+      <label>📋 클립보드 이미지 붙여넣기 (Ctrl+V)</label>
+      <div id="contractPasteArea" class="contract-paste-area" tabindex="0">
+        <span id="contractPasteHint">여기 클릭 후 Ctrl+V로 붙여넣기</span>
+        <img id="contractPastePreview" style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-top:8px">
+      </div>
     </div>
 
     <div class="contract-divider">— 또는 —</div>
 
     <div class="contract-section">
-      <label>📎 파일 첨부 (소용량 권장 · 2MB 이하)</label>
+      <label>📎 파일 첨부 (2MB 이하)</label>
       <button class="contract-file-btn" onclick="document.getElementById('contractFileInput').click()">
         파일 선택하기
       </button>
@@ -765,8 +780,9 @@ function renderCards(){
       <div class="card-footer">
         <span class="card-since">${m.join?'입사 '+m.join:''}</span>
       </div>
-      <button class="contract-btn${m.contractUrl||m.contractFile?' has':''}" onclick="openContractModal('${m.id}')">
-        📄 ${m.contractUrl||m.contractFile?'근로계약서 보기':'근로계약서 등록'}
+      <button class="contract-btn${m.contractFile||m.contractUrl?' has':''}" onclick="openContractModal('${m.id}')">
+        📄 ${m.contractFile||m.contractUrl?'근로계약서 보기':'근로계약서 등록'}
+        ${m.contractFile&&m.contractFile.startsWith('data:image')?`<img class="contract-thumb" src="${m.contractFile}">`:m.contractUrl?'🔗':''}
       </button>
     </div>
   `).join('');
@@ -780,26 +796,58 @@ function openContractModal(id){
   const m=members.find(x=>x.id===id);
   if(!m)return;
   document.getElementById('contractMemberId').value=id;
-  document.getElementById('contractModalName').textContent=m.name+(m.eng?` (${m.eng})` :'');
-  document.getElementById('contractUrl').value='';
+  document.getElementById('contractModalName').textContent=m.name+(m.eng?` (${m.eng})`:'');
   document.getElementById('contractFileName').textContent='';
   contractFileData=null;contractFileName='';
+  // 클립보드 미리보기 초기화
+  const preview=document.getElementById('contractPastePreview');
+  const hint=document.getElementById('contractPasteHint');
+  const area=document.getElementById('contractPasteArea');
+  preview.style.display='none';preview.src='';
+  hint.style.display='';area.classList.remove('has-img');
   // 현재 파일 표시
   const box=document.getElementById('contractCurrentBox');
   const link=document.getElementById('contractCurrentLink');
-  if(m.contractUrl){
-    box.style.display='flex';
-    link.href=m.contractUrl;
-    link.textContent=m.contractName||m.contractUrl.slice(0,40)+'...';
-  } else if(m.contractFile){
+  if(m.contractFile){
     box.style.display='flex';
     link.href=m.contractFile;
-    link.textContent=m.contractName||'첨부파일 보기';
+    link.textContent=m.contractName||'파일 보기';
+    if(m.contractFile.startsWith('data:image')){
+      preview.src=m.contractFile;preview.style.display='block';
+      hint.style.display='none';area.classList.add('has-img');
+    }
   } else {
     box.style.display='none';
   }
   document.getElementById('contractModalBg').classList.add('open');
+  // 포커스 → paste 이벤트 받기 위해
+  setTimeout(()=>document.getElementById('contractPasteArea').focus(),100);
 }
+
+// 클립보드 붙여넣기
+document.addEventListener('paste',function(e){
+  if(!document.getElementById('contractModalBg').classList.contains('open'))return;
+  const items=e.clipboardData&&e.clipboardData.items;
+  if(!items)return;
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      const file=item.getAsFile();
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        contractFileData=ev.target.result;
+        contractFileName='clipboard_image.png';
+        const preview=document.getElementById('contractPastePreview');
+        const hint=document.getElementById('contractPasteHint');
+        const area=document.getElementById('contractPasteArea');
+        preview.src=ev.target.result;preview.style.display='block';
+        hint.style.display='none';area.classList.add('has-img');
+        document.getElementById('contractFileName').textContent='';
+      };
+      reader.readAsDataURL(file);
+      break;
+    }
+  }
+});
 function closeContractModal(){document.getElementById('contractModalBg').classList.remove('open')}
 function closeContractModalBg(e){if(e.target===document.getElementById('contractModalBg'))closeContractModal()}
 
@@ -816,15 +864,12 @@ function handleContractFile(e){
 
 function saveContract(){
   const id=document.getElementById('contractMemberId').value;
-  const url=document.getElementById('contractUrl').value.trim();
   const m=members.find(x=>x.id===id);
   if(!m)return;
-  if(url){
-    m.contractUrl=url;m.contractFile='';m.contractName=url.slice(0,50);
-  } else if(contractFileData){
+  if(contractFileData){
     m.contractFile=contractFileData;m.contractUrl='';m.contractName=contractFileName;
   } else {
-    alert('링크를 붙여넣거나 파일을 선택해줘');return;
+    alert('클립보드 이미지를 붙여넣거나 파일을 선택해줘');return;
   }
   save();renderCards();closeContractModal();
 }
