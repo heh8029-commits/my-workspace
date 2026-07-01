@@ -1130,7 +1130,7 @@ async function renderAdmin(){
     totalFinal+=final;
     const color=COLORS[i%COLORS.length];
     tbl+=`<tr>
-      <td><div class="emp-name"><span style="color:${color}">✦</span>${esc(m.eng||m.name)}${m.nick?`<small style="color:var(--soft);font-weight:400"> (${esc(m.nick)})</small>`:''}</div></td>
+      <td><div class="emp-name"><span style="color:${color}">✦</span>${esc(m.name)}${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
       <td>${th}시간 ${tm}분</td>
       <td>${st.offDays}</td>
       <td>${raw?raw.toLocaleString():0}</td>
@@ -1177,7 +1177,7 @@ async function renderAdmin(){
       const label=md?.isOff?'휴무':`${mth}시간`;
       cal+=`<div class="admin-cal-emp">
         <div class="admin-cal-emp-dot" style="background:${color}"></div>
-        <span style="color:var(--soft)">${esc(m.nick||m.name)}</span>
+        <span style="color:var(--soft)">${esc(m.name)}</span>
         <span style="color:${color};margin-left:2px">${label}</span>
       </div>`;
     }
