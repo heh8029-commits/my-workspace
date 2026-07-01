@@ -385,7 +385,6 @@ button{font-family:inherit;cursor:pointer}
   <span class="topbar-title">👥 멤버</span>
   <div class="topbar-tabs">
     <button class="t-tab active" onclick="setTab('attendance',this)">출퇴근</button>
-    <button class="t-tab" onclick="setTab('calendar',this)">달력</button>
     <button class="t-tab" onclick="tryAdminTab(this)">어드민</button>
   </div>
   <div class="topbar-right">
@@ -401,7 +400,6 @@ button{font-family:inherit;cursor:pointer}
         <div class="att-card-title">💗 출퇴근 ✨</div>
         <div class="att-card-sub">이름 선택 → 날짜/시간 선택 → 저장 (휴무도 가능)</div>
       </div>
-      <button class="att-admin-btn" onclick="goAdmin()">🔒 어드민</button>
     </div>
 
     <div class="att-section-label">직원 선택 <span class="att-hint">하트 눌러서 체크</span></div>
@@ -707,7 +705,7 @@ function goAdmin(){
   document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-admin').classList.add('active');
   document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.t-tab')[2].classList.add('active');
+  document.querySelectorAll('.t-tab')[1].classList.add('active');
   currentTab='admin';
   renderCards();
 }
