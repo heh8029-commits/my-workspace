@@ -458,10 +458,13 @@ button{font-family:inherit;cursor:pointer}
           <div class="att-ctrl-hd"><span>🐻</span><span>휴무</span></div>
           <label class="att-off-lbl"><input type="checkbox" id="attOff"> 휴무</label>
         </div>
-      </div>
-      <div class="att-btn-row">
-        <button class="att-btn-save" onclick="saveAttendance()">💾 저장</button>
-        <button class="att-btn-log" onclick="openMyLog()">🗒 내 근무일정표</button>
+        <div class="att-ctrl-item" style="justify-content:flex-end;margin-left:auto">
+          <div class="att-ctrl-hd" style="visibility:hidden">버튼</div>
+          <div class="att-btn-row">
+            <button class="att-btn-save" onclick="saveAttendance()">💾 저장</button>
+            <button class="att-btn-log" onclick="openMyLog()">🗒 내 근무일정표</button>
+          </div>
+        </div>
       </div>
     </div>
 
