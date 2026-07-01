@@ -7543,12 +7543,12 @@ function setView(mode) {
   const btnMobile = document.getElementById('btn-mobile');
   if (mode === 'mobile') {
     body.classList.add('mobile-view');
-    btnMobile.classList.add('active-view');
-    btnPc.classList.remove('active-view');
+    if (btnMobile) btnMobile.classList.add('active-view');
+    if (btnPc)     btnPc.classList.remove('active-view');
   } else {
     body.classList.remove('mobile-view');
-    btnPc.classList.add('active-view');
-    btnMobile.classList.remove('active-view');
+    if (btnPc)     btnPc.classList.add('active-view');
+    if (btnMobile) btnMobile.classList.remove('active-view');
   }
   localStorage.setItem('ws5_viewmode', mode);
 }
