@@ -59,7 +59,7 @@ button{font-family:inherit;cursor:pointer}
 }
 .admin-nav-btn:hover{background:var(--pink-pale);}
 .admin-period-lbl{font-size:.92rem;font-weight:700;color:var(--text);min-width:130px;text-align:center;}
-.admin-action-row{display:flex;gap:8px;margin-left:auto;}
+.admin-action-row{display:flex;gap:8px;flex:1;justify-content:flex-end;}
 .admin-action-btn{
   padding:7px 16px;border-radius:20px;border:2px solid var(--pink);
   background:white;color:var(--text);font-size:.82rem;font-weight:700;
@@ -621,6 +621,7 @@ button{font-family:inherit;cursor:pointer}
 <!-- ══ 어드민 탭 ══ -->
 <div class="subpage" id="page-admin">
   <div class="admin-topnav">
+    <div style="flex:1"></div>
     <div class="admin-period-row" id="adminPeriodRow">
       <button class="admin-nav-btn" onclick="adminMove(-1)">‹</button>
       <span class="admin-period-lbl" id="adminPeriodLabel"></span>
