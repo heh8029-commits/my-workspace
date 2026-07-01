@@ -200,14 +200,14 @@ button{font-family:inherit;cursor:pointer}
 #page-attendance{
   min-height:calc(100vh - 54px);
   background:linear-gradient(140deg,#fce8f0 0%,#f0e8fc 50%,#e8eeff 100%);
-  padding:24px 16px 60px;
+  padding:28px 20px 60px;
 }
 
 /* ── 출퇴근 카드 ── */
 .att-card{
-  max-width:720px;margin:0 auto;
+  max-width:1100px;margin:0 auto;
   background:white;border-radius:24px;
-  padding:24px 24px 20px;
+  padding:30px 32px 24px;
   box-shadow:0 6px 36px rgba(200,150,220,.14);
 }
 
@@ -237,7 +237,7 @@ button{font-family:inherit;cursor:pointer}
   50%{transform:scale(1.4)}
 }
 .att-flower{
-  display:inline-block;font-size:1.25rem;flex-shrink:0;
+  display:inline-block;font-size:1.8rem;flex-shrink:0;
   animation:bloom 2.4s ease-in-out infinite;
 }
 .att-emp-btn.selected .att-flower{
@@ -245,23 +245,24 @@ button{font-family:inherit;cursor:pointer}
 }
 
 /* 직원 버튼 그리드 */
-.att-emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.att-emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
 .att-emp-btn{
-  background:white;border:2px solid #ede8f8;border-radius:16px;
-  padding:18px 12px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:white;border:2.5px solid #ede8f8;border-radius:20px;
+  padding:28px 16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:12px;
   font-family:inherit;transition:all .15s;
-  box-shadow:0 2px 8px rgba(200,180,240,.1);
+  box-shadow:0 2px 10px rgba(200,180,240,.13);
+  min-height:90px;
 }
-.att-emp-btn:hover{border-color:var(--pink);background:#fff5fa;transform:translateY(-1px)}
+.att-emp-btn:hover{border-color:var(--pink);background:#fff5fa;transform:translateY(-2px);box-shadow:0 6px 18px rgba(232,100,138,.15)}
 .att-emp-btn.selected{
   background:linear-gradient(135deg,#fff0f6,#ffe0ec);
   border-color:var(--rose);
-  box-shadow:0 5px 16px rgba(224,60,110,.18);
+  box-shadow:0 6px 20px rgba(224,60,110,.22);
 }
-.att-emp-label{display:flex;align-items:baseline;gap:1px}
-.att-emp-eng{font-size:1.05rem;font-weight:800;color:var(--text);letter-spacing:.01em}
-.att-emp-nick{font-size:.72rem;color:var(--soft);font-weight:600}
+.att-emp-label{display:flex;align-items:baseline;gap:2px}
+.att-emp-eng{font-size:1.3rem;font-weight:800;color:var(--text);letter-spacing:.02em}
+.att-emp-nick{font-size:.85rem;color:var(--soft);font-weight:600}
 .att-emp-btn.selected .att-emp-eng{color:var(--rose)}
 .att-emp-btn.selected .att-emp-nick{color:var(--pink-dark)}
 
@@ -385,7 +386,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="topbar-tabs">
     <button class="t-tab active" onclick="setTab('attendance',this)">출퇴근</button>
     <button class="t-tab" onclick="setTab('calendar',this)">달력</button>
-    <button class="t-tab" onclick="setTab('admin',this)">어드민</button>
+    <button class="t-tab" onclick="tryAdminTab(this)">어드민</button>
   </div>
   <div class="topbar-right">
     <button class="add-btn" onclick="openModal()">+ 추가</button>
@@ -693,19 +694,27 @@ function saveAttendance(){
   setTimeout(()=>{el.style.color='';updateAttInfo()},2500);
 }
 
-function goAdmin(){
+function checkAdminPw(){
   const pw=prompt('비밀번호를 입력해줘 🔒');
-  if(pw===null)return;
-  if(pw==='3636'){
-    document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-admin').classList.add('active');
-    document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.t-tab')[2].classList.add('active');
-    currentTab='admin';
-    renderCards();
-  } else {
-    alert('비밀번호가 틀렸어 🙅');
-  }
+  if(pw===null)return false;
+  if(pw==='3636')return true;
+  alert('비밀번호가 틀렸어 🙅');
+  return false;
+}
+
+function goAdmin(){
+  if(!checkAdminPw())return;
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-admin').classList.add('active');
+  document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.t-tab')[2].classList.add('active');
+  currentTab='admin';
+  renderCards();
+}
+
+function tryAdminTab(el){
+  if(!checkAdminPw())return;
+  setTab('admin',el);
 }
 
 function openMyLog(){
