@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-01 11:20",
+  "last_updated": "2026-07-01 11:45",
   "sales_data": {
     "last_updated": "2026-07-01",
     "미리토퍼": [
@@ -3869,6 +3869,12 @@
     },
     {
       "time": "2026-07-01 10:45",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "로그인 실패 (Akamai/인증 차단 추정)"
+    },
+    {
+      "time": "2026-07-01 11:45",
       "account": "몽몽토퍼",
       "status": "fail",
       "reason": "로그인 실패 (Akamai/인증 차단 추정)"
