@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-02 02:20",
+  "last_updated": "2026-07-02 02:45",
   "accounts": {
     "미리토퍼": {
       "current_amount": 40100,
@@ -9,11 +9,23 @@
           "amount": 40100
         }
       ]
+    },
+    "몽몽토퍼": {
+      "current_amount": 0,
+      "history": []
     }
   },
   "sales_data": {
     "last_updated": "",
     "미리토퍼": [],
     "몽몽토퍼": []
-  }
+  },
+  "run_log": [
+    {
+      "time": "2026-07-02 02:45",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
+    }
+  ]
 }
