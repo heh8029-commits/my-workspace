@@ -437,7 +437,10 @@ button{font-family:inherit;cursor:pointer}
       <div class="att-ctrl-row">
         <div class="att-ctrl-item">
           <div class="att-ctrl-hd"><span>📅</span><span>날짜</span></div>
-          <input type="date" id="attDate" class="att-input-date">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="date" id="attDate" class="att-input-date">
+            <button onclick="setYesterday()" style="padding:6px 10px;border-radius:8px;border:1.5px solid #ede8f8;background:#fdfaff;font-size:.78rem;font-weight:700;color:var(--soft);cursor:pointer;white-space:nowrap;font-family:inherit">어제</button>
+          </div>
         </div>
         <div class="att-ctrl-item">
           <div class="att-ctrl-hd"><span>⏰</span><span>시간</span></div>
@@ -699,6 +702,12 @@ function renderAttendance(){
 function selectEmp(id){
   attSelected=(attSelected===id)?null:id;
   renderAttendance();
+}
+
+function setYesterday(){
+  const d=new Date();d.setDate(d.getDate()-1);
+  document.getElementById('attDate').value=d.toISOString().slice(0,10);
+  updateAttInfo();
 }
 
 function updateAttInfo(){
