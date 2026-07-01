@@ -191,18 +191,87 @@ button{font-family:inherit;cursor:pointer}
 .ctx-item.danger{color:#ef4444}
 .ctx-item.danger:hover{background:#fef2f2}
 
-/* 역할 배지 색 */
-.role-대표{background:#fff4e0;color:#c47c00}
-.role-디자이너{background:#e8f4fd;color:#1a7bbf}
-.role-제작{background:#e8fdf4;color:#1a8c6b}
-.role-포장{background:#fdf0fd;color:#9c27b0}
-.role-배송{background:#fdeee8;color:#bf4a1a}
-.role-CS{background:#e8e8fd;color:#3f3fbf}
-.role-기타{background:var(--pink-pale);color:var(--rose)}
+
+/* ── 서브페이지 ── */
+.subpage{display:none}
+.subpage.active{display:block}
+
+/* ── 출퇴근 ── */
+.att-wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+.att-title{font-size:1.5rem;font-weight:800;color:var(--rose);margin-bottom:18px;letter-spacing:.02em}
+.att-section-label{font-size:.78rem;font-weight:700;color:var(--soft);margin-bottom:10px}
+.att-hint{font-size:.72rem;font-weight:500;color:#bbb;margin-left:6px}
+
+/* 직원 버튼 그리드 */
+.att-emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.att-emp-btn{
+  background:white;border:2px solid #ede8f8;border-radius:14px;
+  padding:16px 10px;cursor:pointer;text-align:center;
+  transition:all .15s;box-shadow:0 2px 8px rgba(200,180,240,.13);
+  display:flex;align-items:center;gap:10px;
+  font-family:inherit;
+}
+.att-emp-btn:hover{border-color:var(--pink);background:var(--pink-pale)}
+.att-emp-btn.selected{
+  background:linear-gradient(135deg,#fff0f5,#ffe0ed);
+  border-color:var(--rose);
+  box-shadow:0 4px 14px rgba(224,60,110,.18);
+}
+.att-emp-icon{font-size:1.3rem;flex-shrink:0}
+.att-emp-name{text-align:left}
+.att-emp-eng{font-size:1rem;font-weight:800;color:var(--text);line-height:1.1}
+.att-emp-nick{font-size:.72rem;color:var(--soft);font-weight:500}
+.att-emp-btn.selected .att-emp-eng{color:var(--rose)}
+
+/* 컨트롤 */
+.att-controls{background:white;border:1.5px solid var(--pink-mid);border-radius:16px;
+  padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px var(--shadow)}
+.att-ctrl-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.att-ctrl-item{display:flex;flex-direction:column;gap:4px}
+.att-ctrl-icon{font-size:.85rem}
+.att-ctrl-lbl{font-size:.68rem;font-weight:700;color:var(--soft)}
+.att-input-date{
+  border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;
+  font-family:inherit;font-size:.88rem;color:var(--text);outline:none;
+  background:var(--cream);
+}
+.att-input-date:focus{border-color:var(--rose)}
+.att-sel{
+  border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;
+  font-family:inherit;font-size:.88rem;color:var(--text);outline:none;
+  background:var(--cream);cursor:pointer;
+}
+.att-sel:focus{border-color:var(--rose)}
+.att-off-lbl{display:flex;align-items:center;gap:5px;font-size:.85rem;
+  color:var(--soft);cursor:pointer;padding:6px 0}
+.att-off-lbl input{accent-color:var(--rose);width:16px;height:16px}
+.att-btn-row{display:flex;gap:8px}
+.att-btn-save{
+  flex:1;padding:10px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#a8e6cf,#3dbb8f);
+  color:white;font-size:.9rem;font-weight:800;font-family:inherit;
+  box-shadow:0 3px 10px rgba(61,187,143,.3);cursor:pointer;transition:all .15s;
+}
+.att-btn-save:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(61,187,143,.4)}
+.att-btn-log{
+  padding:10px 18px;border-radius:12px;border:1.5px solid #ffe880;
+  background:#fffbe0;color:#b08020;font-size:.85rem;font-weight:700;
+  font-family:inherit;cursor:pointer;white-space:nowrap;
+}
+.att-btn-log:hover{background:#fff7b0}
+
+/* 인포 & 팁 */
+.att-info{
+  background:white;border:1.5px solid var(--pink-mid);border-radius:12px;
+  padding:12px 16px;font-size:.9rem;color:var(--text);margin-bottom:10px;
+  min-height:44px;box-shadow:0 2px 6px var(--shadow);
+}
+.att-tip{font-size:.75rem;color:#aaa;padding-left:2px}
 
 @media(max-width:480px){
   .member-grid{grid-template-columns:1fr}
   .summary-row .sum-card{min-width:80px}
+  .att-emp-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -212,35 +281,75 @@ button{font-family:inherit;cursor:pointer}
 <div class="topbar">
   <span class="topbar-title">👥 멤버</span>
   <div class="topbar-tabs">
-    <button class="t-tab active" onclick="setTab('all',this)">전체</button>
-    <button class="t-tab" onclick="setTab('active',this)">재직중</button>
-    <button class="t-tab" onclick="setTab('role',this)">역할별</button>
+    <button class="t-tab active" onclick="setTab('attendance',this)">출퇴근</button>
+    <button class="t-tab" onclick="setTab('calendar',this)">달력</button>
+    <button class="t-tab" onclick="setTab('admin',this)">어드민</button>
   </div>
   <div class="topbar-right">
     <button class="add-btn" onclick="openModal()">+ 멤버 추가</button>
   </div>
 </div>
 
-<!-- 메인 -->
-<div class="main">
-  <!-- 검색 -->
-  <div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="이름, 역할, 연락처로 검색..." oninput="renderCards()">
+<!-- ══ 출퇴근 탭 ══ -->
+<div class="subpage active" id="page-attendance">
+  <div class="att-wrap">
+    <div class="att-title">출퇴근</div>
+
+    <div class="att-section-label">직원 선택 <span class="att-hint">하트 눌러서 체크</span></div>
+    <div class="att-emp-grid" id="attEmpGrid"></div>
+
+    <div class="att-controls">
+      <div class="att-ctrl-row">
+        <div class="att-ctrl-item">
+          <span class="att-ctrl-icon">📅</span><span class="att-ctrl-lbl">날짜</span>
+          <input type="date" id="attDate" class="att-input-date">
+        </div>
+        <div class="att-ctrl-item">
+          <span class="att-ctrl-icon">⏰</span><span class="att-ctrl-lbl">시간</span>
+          <select id="attHour" class="att-sel">
+            <script>for(let i=0;i<24;i++)document.write(`<option value="${i}">${i}</option>`)</script>
+          </select>
+        </div>
+        <div class="att-ctrl-item">
+          <span class="att-ctrl-icon">⌛</span><span class="att-ctrl-lbl">분</span>
+          <select id="attMin" class="att-sel">
+            <script>for(let i=0;i<60;i+=5)document.write(`<option value="${i}">${i}</option>`)</script>
+          </select>
+        </div>
+        <div class="att-ctrl-item">
+          <span class="att-ctrl-icon">🐻</span><span class="att-ctrl-lbl">휴무</span>
+          <label class="att-off-lbl"><input type="checkbox" id="attOff"> 휴무</label>
+        </div>
+      </div>
+      <div class="att-btn-row">
+        <button class="att-btn-save" onclick="saveAttendance()">💾 저장</button>
+        <button class="att-btn-log" onclick="openMyLog()">🗒 내 근무일정표</button>
+      </div>
+    </div>
+
+    <div class="att-info" id="attInfo">이름을 선택해줘 💕</div>
+    <div class="att-tip">🌙 어제 못 찍었으면 날짜를 어제로 바꾸고 저장하면 돼.</div>
   </div>
+</div>
 
-  <!-- 요약 -->
-  <div class="summary-row">
-    <div class="sum-card"><div class="num" id="sumTotal">0</div><div class="lbl">전체 멤버</div></div>
-    <div class="sum-card"><div class="num" id="sumActive">0</div><div class="lbl">재직중</div></div>
-    <div class="sum-card"><div class="num" id="sumRole">0</div><div class="lbl">역할 종류</div></div>
+<!-- ══ 달력 탭 ══ -->
+<div class="subpage" id="page-calendar">
+  <div class="main"><div class="empty"><div class="ico">📅</div><p>달력 준비중</p></div></div>
+</div>
+
+<!-- ══ 어드민 탭 ══ -->
+<div class="subpage" id="page-admin">
+  <div class="main">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="이름, 연락처로 검색..." oninput="renderCards()">
+    </div>
+    <div class="summary-row">
+      <div class="sum-card"><div class="num" id="sumTotal">0</div><div class="lbl">전체</div></div>
+      <div class="sum-card"><div class="num" id="sumActive">0</div><div class="lbl">재직중</div></div>
+    </div>
+    <div class="member-grid" id="memberGrid"></div>
   </div>
-
-  <!-- 역할 필터 (역할별 탭) -->
-  <div id="roleFilters" style="display:none;margin-bottom:14px;display:flex;gap:6px;flex-wrap:wrap"></div>
-
-  <!-- 멤버 카드 -->
-  <div class="member-grid" id="memberGrid"></div>
 </div>
 
 <!-- 추가/편집 모달 -->
@@ -254,24 +363,16 @@ button{font-family:inherit;cursor:pointer}
       <input type="text" id="fName" placeholder="홍길동">
     </div>
     <div class="form-row">
-      <label>역할 / 직책 *</label>
-      <select id="fRole">
-        <option value="대표">대표</option>
-        <option value="디자이너">디자이너</option>
-        <option value="제작">제작</option>
-        <option value="포장">포장</option>
-        <option value="배송">배송</option>
-        <option value="CS">CS</option>
-        <option value="기타">기타</option>
-      </select>
+      <label>영문</label>
+      <input type="text" id="fEng" placeholder="HYEMIN" style="text-transform:uppercase">
+    </div>
+    <div class="form-row">
+      <label>별명</label>
+      <input type="text" id="fNick" placeholder="혜민">
     </div>
     <div class="form-row">
       <label>연락처</label>
       <input type="tel" id="fPhone" placeholder="010-0000-0000">
-    </div>
-    <div class="form-row">
-      <label>이메일</label>
-      <input type="email" id="fEmail" placeholder="example@email.com">
     </div>
     <div class="form-row">
       <label>입사일</label>
@@ -285,12 +386,12 @@ button{font-family:inherit;cursor:pointer}
       </select>
     </div>
     <div class="form-row">
-      <label>메모</label>
-      <textarea id="fMemo" placeholder="특이사항, 담당업무 등..."></textarea>
+      <label>계좌번호</label>
+      <input type="text" id="fAccount" placeholder="은행명 계좌번호">
     </div>
     <div class="form-row">
-      <label>아바타 색상</label>
-      <div class="color-row" id="colorRow"></div>
+      <label>메모</label>
+      <textarea id="fMemo" placeholder="특이사항, 담당업무 등..."></textarea>
     </div>
 
     <div class="form-btns">
@@ -310,8 +411,7 @@ button{font-family:inherit;cursor:pointer}
 <script>
 const COLORS=['#e8648a','#7040c0','#3dbb8f','#f0b429','#1a7bbf','#c47c00','#bf4a1a','#9c27b0'];
 let members=[];
-let currentTab='all';
-let selectedRoleFilter='all';
+let currentTab='attendance';
 let ctxTargetId=null;
 
 function load(){
@@ -321,19 +421,9 @@ function save(){localStorage.setItem('mirimembers',JSON.stringify(members))}
 
 function genId(){return Date.now()+Math.random().toString(36).slice(2)}
 
-function initColorRow(selected){
-  const cr=document.getElementById('colorRow');
-  cr.innerHTML=COLORS.map(c=>`
-    <div class="color-chip${selected===c?' selected':''}" style="background:${c}" data-c="${c}" onclick="selectColor(this)"></div>
-  `).join('');
-}
-function selectColor(el){
-  document.querySelectorAll('.color-chip').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-function getSelectedColor(){
-  const el=document.querySelector('.color-chip.selected');
-  return el?el.dataset.c:COLORS[0];
+function avatarColor(name){
+  const idx=name.charCodeAt(0)%COLORS.length;
+  return COLORS[idx];
 }
 
 function openModal(id){
@@ -346,24 +436,24 @@ function openModal(id){
     document.getElementById('modalTitle').textContent='멤버 편집';
     document.getElementById('editId').value=id;
     document.getElementById('fName').value=m.name;
-    document.getElementById('fRole').value=m.role;
+    document.getElementById('fEng').value=m.eng||'';
+    document.getElementById('fNick').value=m.nick||'';
     document.getElementById('fPhone').value=m.phone||'';
-    document.getElementById('fEmail').value=m.email||'';
     document.getElementById('fJoin').value=m.join||'';
     document.getElementById('fStatus').value=m.status||'active';
+    document.getElementById('fAccount').value=m.account||'';
     document.getElementById('fMemo').value=m.memo||'';
-    initColorRow(m.color||COLORS[0]);
     document.getElementById('btnDel').style.display='block';
   } else {
     document.getElementById('modalTitle').textContent='멤버 추가';
     document.getElementById('fName').value='';
-    document.getElementById('fRole').value='기타';
+    document.getElementById('fEng').value='';
+    document.getElementById('fNick').value='';
     document.getElementById('fPhone').value='';
-    document.getElementById('fEmail').value='';
     document.getElementById('fJoin').value=new Date().toISOString().slice(0,10);
     document.getElementById('fStatus').value='active';
+    document.getElementById('fAccount').value='';
     document.getElementById('fMemo').value='';
-    initColorRow(COLORS[0]);
   }
 }
 function closeModal(){document.getElementById('modalBg').classList.remove('open')}
@@ -375,13 +465,13 @@ function saveMember(){
   const id=document.getElementById('editId').value||genId();
   const m={
     id,name,
-    role:document.getElementById('fRole').value,
+    eng:document.getElementById('fEng').value.trim().toUpperCase(),
+    nick:document.getElementById('fNick').value.trim(),
     phone:document.getElementById('fPhone').value.trim(),
-    email:document.getElementById('fEmail').value.trim(),
     join:document.getElementById('fJoin').value,
     status:document.getElementById('fStatus').value,
+    account:document.getElementById('fAccount').value.trim(),
     memo:document.getElementById('fMemo').value.trim(),
-    color:getSelectedColor(),
   };
   const idx=members.findIndex(x=>x.id===id);
   if(idx>=0)members[idx]=m; else members.push(m);
@@ -398,38 +488,94 @@ function deleteMember(){
 
 function setTab(tab,el){
   currentTab=tab;
-  selectedRoleFilter='all';
   document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  const rf=document.getElementById('roleFilters');
-  rf.style.display=tab==='role'?'flex':'none';
-  renderCards();
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='attendance') renderAttendance();
+  else if(tab==='admin') renderCards();
+}
+
+/* ── 출퇴근 ── */
+let attSelected=null;
+
+function renderAttendance(){
+  const active=members.filter(m=>m.status==='active');
+  const grid=document.getElementById('attEmpGrid');
+  if(!active.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--soft);padding:30px">등록된 직원이 없어요</div>`;
+    return;
+  }
+  grid.innerHTML=active.map(m=>`
+    <button class="att-emp-btn${attSelected===m.id?' selected':''}" onclick="selectEmp('${m.id}')">
+      <span class="att-emp-icon">${attSelected===m.id?'❤️':'🌸'}</span>
+      <span class="att-emp-name">
+        <div class="att-emp-eng">${esc(m.eng||m.name.toUpperCase())}</div>
+        ${m.nick?`<div class="att-emp-nick">(${esc(m.nick)})</div>`:''}
+      </span>
+    </button>
+  `).join('');
+  updateAttInfo();
+}
+
+function selectEmp(id){
+  attSelected=(attSelected===id)?null:id;
+  renderAttendance();
+}
+
+function updateAttInfo(){
+  const el=document.getElementById('attInfo');
+  if(!attSelected){el.textContent='이름을 선택해줘 💕';return}
+  const m=members.find(x=>x.id===attSelected);
+  if(!m){el.textContent='이름을 선택해줘 💕';return}
+  const d=document.getElementById('attDate').value;
+  const h=document.getElementById('attHour').value;
+  const mn=document.getElementById('attMin').value;
+  const off=document.getElementById('attOff').checked;
+  el.textContent=off
+    ? `${m.eng||m.name} (${m.nick||''}) — ${d} 휴무`
+    : `${m.eng||m.name} (${m.nick||''}) — ${d} ${h}시 ${mn}분`;
+}
+
+function saveAttendance(){
+  if(!attSelected){alert('직원을 선택해주세요');return}
+  const m=members.find(x=>x.id===attSelected);
+  const date=document.getElementById('attDate').value;
+  const hour=document.getElementById('attHour').value;
+  const min=document.getElementById('attMin').value;
+  const isOff=document.getElementById('attOff').checked;
+  let logs=[];
+  try{logs=JSON.parse(localStorage.getItem('miriattendance')||'[]')}catch(e){}
+  logs.push({memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()});
+  localStorage.setItem('miriattendance',JSON.stringify(logs));
+  const el=document.getElementById('attInfo');
+  el.textContent=`✅ 저장됐어! ${m.eng||m.name}${isOff?' 휴무':' '+hour+'시 '+min+'분'}`;
+  el.style.color='var(--rose)';
+  setTimeout(()=>{el.style.color='';updateAttInfo()},2500);
+}
+
+function openMyLog(){
+  if(!attSelected){alert('직원을 선택해주세요');return}
+  const m=members.find(x=>x.id===attSelected);
+  let logs=[];
+  try{logs=JSON.parse(localStorage.getItem('miriattendance')||'[]')}catch(e){}
+  const mine=logs.filter(l=>l.memberId===attSelected).reverse();
+  if(!mine.length){alert(`${m.eng||m.name} 근무 기록이 없어요`);return}
+  const txt=mine.slice(0,30).map(l=>l.isOff?`${l.date} 휴무`:`${l.date} ${l.hour}시 ${l.min}분`).join('\n');
+  alert(`[ ${m.eng||m.name} 근무일정 ]\n\n${txt}`);
 }
 
 function renderCards(){
   const q=document.getElementById('searchInput').value.toLowerCase();
-  const rf=document.getElementById('roleFilters');
 
   let list=members.filter(m=>{
-    if(currentTab==='active'&&m.status!=='active')return false;
-    if(currentTab==='role'&&selectedRoleFilter!=='all'&&m.role!==selectedRoleFilter)return false;
     if(!q)return true;
-    return(m.name+m.role+(m.phone||'')+(m.email||'')).toLowerCase().includes(q);
+    return(m.name+(m.nick||'')+(m.phone||'')).toLowerCase().includes(q);
   });
-
-  // 역할 필터 버튼
-  if(currentTab==='role'){
-    const roles=[...new Set(members.map(m=>m.role))];
-    rf.innerHTML=['전체',...roles].map(r=>`
-      <button class="t-tab${selectedRoleFilter===(r==='전체'?'all':r)?' active':''}"
-        onclick="setRoleFilter('${r==='전체'?'all':r}')">${r}</button>
-    `).join('');
-  }
 
   // 요약
   document.getElementById('sumTotal').textContent=members.length;
   document.getElementById('sumActive').textContent=members.filter(m=>m.status==='active').length;
-  document.getElementById('sumRole').textContent=new Set(members.map(m=>m.role)).size;
 
   const grid=document.getElementById('memberGrid');
   if(!list.length){
@@ -441,31 +587,25 @@ function renderCards(){
     <div class="member-card${m.status==='inactive'?' inactive':''}">
       <button class="card-menu" onclick="openCtx(event,'${m.id}')">⋯</button>
       <div class="card-top">
-        <div class="avatar" style="background:${m.color||COLORS[0]}">${m.name.slice(0,1)}</div>
+        <div class="avatar" style="background:${avatarColor(m.name)}">${m.name.slice(0,1)}</div>
         <div class="card-info">
-          <div class="card-name">${esc(m.name)}</div>
-          <span class="card-role role-${m.role}">${m.role}</span>
+          <div class="card-name">${m.eng?`<span style="font-size:.95rem;font-weight:800">${esc(m.eng)}</span><span style="font-size:.75rem;color:var(--soft);font-weight:500">(${esc(m.nick||m.name)})</span>`:esc(m.name)}</div>
+          <span>
+            <span class="status-dot ${m.status==='active'?'on':'off'}"></span>
+            <span class="status-txt">${m.status==='active'?'재직중':'퇴직/휴직'}</span>
+          </span>
         </div>
       </div>
       <div class="card-body">
         ${m.phone?`<div class="row"><span class="ico">📞</span><span>${esc(m.phone)}</span></div>`:''}
-        ${m.email?`<div class="row"><span class="ico">✉️</span><span>${esc(m.email)}</span></div>`:''}
+        ${m.account?`<div class="row"><span class="ico">🏦</span><span>${esc(m.account)}</span></div>`:''}
         ${m.memo?`<div class="memo-tag">💬 ${esc(m.memo)}</div>`:''}
       </div>
       <div class="card-footer">
         <span class="card-since">${m.join?'입사 '+m.join:''}</span>
-        <span>
-          <span class="status-dot ${m.status==='active'?'on':'off'}"></span>
-          <span class="status-txt">${m.status==='active'?'재직중':'퇴직/휴직'}</span>
-        </span>
       </div>
     </div>
   `).join('');
-}
-
-function setRoleFilter(r){
-  selectedRoleFilter=r;
-  renderCards();
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -489,7 +629,18 @@ function ctxDelete(){
 }
 document.addEventListener('click',()=>closeCtx());
 
-load();renderCards();
+load();
+// 날짜 기본값 오늘
+document.getElementById('attDate').value=new Date().toISOString().slice(0,10);
+// 시간 기본값 현재
+const _now=new Date();
+document.getElementById('attHour').value=_now.getHours();
+document.getElementById('attMin').value=Math.floor(_now.getMinutes()/5)*5;
+// 컨트롤 변경 시 인포 갱신
+['attDate','attHour','attMin','attOff'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',updateAttInfo);
+});
+renderAttendance();
 </script>
 </body>
 </html>
