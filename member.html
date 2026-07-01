@@ -700,10 +700,27 @@ let members=[];
 let currentTab='attendance';
 let ctxTargetId=null;
 
-function load(){
-  try{members=JSON.parse(localStorage.getItem('mirimembers')||'[]')}catch(e){members=[]}
+const FB_MEMBERS   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_members.json';
+const FB_ATTENDANCE='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_attendance.json';
+
+async function fbGet(url){
+  const r=await fetch(url+'?t='+Date.now());
+  if(r.ok){const d=await r.json();return d;}
+  return null;
 }
-function save(){localStorage.setItem('mirimembers',JSON.stringify(members))}
+async function fbPut(url,data){
+  await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+}
+
+async function load(){
+  try{const d=await fbGet(FB_MEMBERS);members=Array.isArray(d)?d:[];}catch(e){members=[];}
+}
+async function save(){await fbPut(FB_MEMBERS,members);}
+
+async function loadAttLogs(){
+  try{const d=await fbGet(FB_ATTENDANCE);return Array.isArray(d)?d:[];}catch(e){return[];}
+}
+async function saveAttLogs(logs){await fbPut(FB_ATTENDANCE,logs);}
 
 function genId(){return Date.now()+Math.random().toString(36).slice(2)}
 
@@ -749,7 +766,7 @@ function openModal(id){
 function closeModal(){document.getElementById('modalBg').classList.remove('open')}
 function closeModalBg(e){if(e.target===document.getElementById('modalBg'))closeModal()}
 
-function saveMember(){
+async function saveMember(){
   const name=document.getElementById('fName').value.trim();
   if(!name){alert('이름을 입력해주세요');return}
   const id=document.getElementById('editId').value||genId();
@@ -767,15 +784,15 @@ function saveMember(){
   };
   const idx=members.findIndex(x=>x.id===id);
   if(idx>=0)members[idx]=m; else members.push(m);
-  save();renderCards();closeModal();
+  await save();renderCards();closeModal();
 }
 
-function deleteMember(){
+async function deleteMember(){
   const id=document.getElementById('editId').value;
   if(!id)return;
   if(!confirm('이 멤버를 삭제할까요?'))return;
   members=members.filter(x=>x.id!==id);
-  save();renderCards();closeModal();
+  await save();renderCards();closeModal();
 }
 
 function setTab(tab,el){
@@ -831,18 +848,18 @@ function updateAttInfo(){
   el.innerHTML=`<strong>${esc(eng)}${nick}</strong> 선택됨 💕 날짜/시간(또는 휴무)을 고르고 저장해줘!`;
 }
 
-function saveAttendance(){
+async function saveAttendance(){
   if(!attSelected){alert('직원을 선택해주세요');return}
   const m=members.find(x=>x.id===attSelected);
   const date=document.getElementById('attDate').value;
   const hour=document.getElementById('attHour').value;
   const min=document.getElementById('attMin').value;
   const isOff=document.getElementById('attOff').checked;
-  let logs=[];
-  try{logs=JSON.parse(localStorage.getItem('miriattendance')||'[]')}catch(e){}
-  logs.push({memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()});
-  localStorage.setItem('miriattendance',JSON.stringify(logs));
   const el=document.getElementById('attInfo');
+  el.textContent='저장 중...';el.style.color='var(--soft)';
+  const logs=await loadAttLogs();
+  logs.push({memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()});
+  await saveAttLogs(logs);
   el.textContent=`✅ 저장됐어! ${m.eng||m.name}${isOff?' 휴무':' '+hour+'시 '+min+'분'}`;
   el.style.color='var(--rose)';
   setTimeout(()=>{el.style.color='';updateAttInfo()},2500);
@@ -886,26 +903,27 @@ function getPeriodDates(offset){
   return{start:new Date(sy,sm,11),end:new Date(ey,em,10)};
 }
 
-function openMyLog(){
+async function openMyLog(){
   if(!attSelected){alert('직원을 선택해주세요');return}
   logPeriodOffset=0;
   document.getElementById('logOverlay').classList.add('open');
-  renderLog();
+  await renderLog();
 }
 function closeLog(){document.getElementById('logOverlay').classList.remove('open')}
 function logMove(d){logPeriodOffset+=d;renderLog();}
 
-function renderLog(){
+
+async function renderLog(){
   const m=members.find(x=>x.id===attSelected);
   if(!m)return;
+  document.getElementById('logCalendar').innerHTML='<div style="text-align:center;padding:40px;color:var(--soft)">불러오는 중...</div>';
   const{start,end}=getPeriodDates(logPeriodOffset);
   const fmt=d=>`${d.getMonth()+1}월${d.getDate()}일`;
   document.getElementById('logTitle').innerHTML=
     `💗 <strong>${esc(m.eng||m.name)}</strong>${m.nick?`(${esc(m.nick)})`:''}  근무일정표 ✨`;
   document.getElementById('logPeriodLabel').textContent=`${fmt(start)}~${fmt(end)}`;
 
-  let logs=[];
-  try{logs=JSON.parse(localStorage.getItem('miriattendance')||'[]')}catch(e){}
+  const logs=await loadAttLogs();
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===attSelected)){
     if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0};
@@ -1119,26 +1137,27 @@ function openCtx(e,id){
 }
 function closeCtx(){document.getElementById('ctxMenu').classList.remove('open')}
 function ctxEdit(){closeCtx();openModal(ctxTargetId)}
-function ctxDelete(){
+async function ctxDelete(){
   closeCtx();
   if(!confirm('이 멤버를 삭제할까요?'))return;
   members=members.filter(x=>x.id!==ctxTargetId);
-  save();renderCards();
+  await save();renderCards();
 }
 document.addEventListener('click',()=>closeCtx());
 
-load();
-// 날짜 기본값 오늘
-document.getElementById('attDate').value=new Date().toISOString().slice(0,10);
+// 초기 로드
+(async()=>{
+  await load();
+  document.getElementById('attDate').value=new Date().toISOString().slice(0,10);
 // 시간 기본값 현재
 const _now=new Date();
-document.getElementById('attHour').value=4;
-document.getElementById('attMin').value=Math.floor(_now.getMinutes()/5)*5;
-// 컨트롤 변경 시 인포 갱신
-['attDate','attHour','attMin','attOff'].forEach(id=>{
-  document.getElementById(id).addEventListener('change',updateAttInfo);
-});
-renderAttendance();
+  document.getElementById('attHour').value=4;
+  document.getElementById('attMin').value=Math.floor(_now.getMinutes()/5)*5;
+  ['attDate','attHour','attMin','attOff'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',updateAttInfo);
+  });
+  renderAttendance();
+})();
 </script>
 </body>
 </html>
