@@ -44,18 +44,83 @@ button{font-family:inherit;cursor:pointer}
 /* ── 메인 ── */
 .main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
 
-/* ── 검색 바 ── */
-.search-bar{
-  display:flex;gap:8px;align-items:center;margin-bottom:18px;
-  background:white;border:2px solid var(--pink-mid);border-radius:14px;padding:8px 14px;
-  box-shadow:0 2px 8px var(--shadow);
+/* ── 어드민 뷰 ── */
+.admin-topnav{
+  background:linear-gradient(180deg,#fff2f7,#ffe6f0);
+  border-bottom:2px solid var(--pink);padding:10px 20px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+  position:sticky;top:56px;z-index:100;
 }
-.search-bar input{
-  border:none;outline:none;flex:1;font-family:inherit;font-size:.88rem;
-  color:var(--text);background:transparent;
+.admin-period-row{display:flex;align-items:center;gap:6px;}
+.admin-nav-btn{
+  width:32px;height:32px;border-radius:50%;border:2px solid var(--pink);
+  background:white;color:var(--rose);font-size:1.2rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;line-height:1;
 }
-.search-bar input::placeholder{color:var(--soft)}
-.search-icon{font-size:1rem;color:var(--soft)}
+.admin-nav-btn:hover{background:var(--pink-pale);}
+.admin-period-lbl{font-size:.92rem;font-weight:700;color:var(--text);min-width:130px;text-align:center;}
+.admin-action-row{display:flex;gap:8px;margin-left:auto;}
+.admin-action-btn{
+  padding:7px 16px;border-radius:20px;border:2px solid var(--pink);
+  background:white;color:var(--text);font-size:.82rem;font-weight:700;
+}
+.admin-action-btn:hover{background:var(--pink-pale);}
+.admin-action-btn.pink-btn{
+  background:linear-gradient(135deg,#f0b0c8,var(--rose));
+  color:white;border-color:var(--rose);
+}
+.admin-card-inner{
+  background:white;border-radius:16px;
+  box-shadow:0 4px 16px var(--shadow);overflow:hidden;margin-bottom:20px;
+}
+.admin-card-title{padding:16px 20px 4px;font-size:1rem;font-weight:800;color:var(--text);}
+.admin-card-subtitle{padding:2px 20px 12px;font-size:.78rem;color:var(--soft);}
+.admin-tbl{width:100%;border-collapse:collapse;}
+.admin-tbl th{
+  background:linear-gradient(135deg,var(--pink-pale),#fff0fa);
+  padding:10px 14px;font-size:.78rem;font-weight:700;color:var(--soft);
+  border-bottom:1px solid var(--pink-mid);text-align:center;
+}
+.admin-tbl th:first-child{text-align:left;}
+.admin-tbl td{
+  padding:10px 14px;font-size:.82rem;border-bottom:1px solid var(--pink-mid);
+  text-align:center;color:var(--text);
+}
+.admin-tbl td:first-child{text-align:left;}
+.admin-tbl tr:last-child td{border-bottom:none;}
+.emp-name{display:flex;align-items:center;gap:6px;font-weight:700;}
+.admin-tbl .total-row td{background:var(--pink-pale);font-weight:700;color:var(--rose);}
+.admin-tbl .total-row td:first-child{text-align:right;font-size:.78rem;color:var(--soft);}
+.admin-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px;}
+.admin-cal-hd{text-align:center;font-size:.75rem;font-weight:700;color:var(--soft);padding:6px 0;}
+.admin-cal-day{border-radius:10px;background:var(--pink-pale);padding:7px 6px;min-height:80px;}
+.admin-cal-day.out-period{background:#f5f5f8;opacity:.55;}
+.admin-cal-day.weekend{background:#fff0fa;}
+.admin-cal-date{font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px;display:flex;align-items:center;gap:3px;}
+.admin-cal-total{font-size:.68rem;font-weight:700;color:var(--rose);margin-bottom:3px;}
+.admin-cal-emp{font-size:.62rem;color:var(--text);display:flex;align-items:center;gap:3px;margin:1px 0;line-height:1.3;}
+.admin-cal-emp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.member-overlay{
+  display:none;position:fixed;inset:0;z-index:400;
+  background:rgba(100,50,80,.4);backdrop-filter:blur(4px);
+  overflow:auto;
+}
+.member-overlay.open{display:block;}
+.member-overlay-card{
+  background:var(--cream);max-width:960px;margin:40px auto;
+  border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.2);overflow:hidden;
+}
+.member-overlay-hd{
+  background:linear-gradient(180deg,#fff2f7,#ffe6f0);
+  border-bottom:2px solid var(--pink);
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+  font-size:1rem;font-weight:800;color:var(--rose);position:sticky;top:0;
+}
+.member-overlay-close{
+  width:32px;height:32px;border-radius:50%;border:2px solid var(--pink);
+  background:white;color:var(--rose);font-size:1rem;font-weight:700;
+}
+.member-overlay-body{padding:16px;}
 
 /* ── 요약 카드 ── */
 .summary-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
@@ -553,16 +618,37 @@ button{font-family:inherit;cursor:pointer}
 
 <!-- ══ 어드민 탭 ══ -->
 <div class="subpage" id="page-admin">
-  <div class="main">
-    <div class="search-bar">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="이름, 연락처로 검색..." oninput="renderCards()">
+  <div class="admin-topnav">
+    <div class="admin-period-row">
+      <button class="admin-nav-btn" onclick="adminMove(-1)">‹</button>
+      <span class="admin-period-lbl" id="adminPeriodLabel"></span>
+      <button class="admin-nav-btn" onclick="adminMove(1)">›</button>
     </div>
-    <div class="summary-row">
-      <div class="sum-card"><div class="num" id="sumTotal">0</div><div class="lbl">전체</div></div>
-      <div class="sum-card"><div class="num" id="sumActive">0</div><div class="lbl">재직중</div></div>
+    <div class="admin-action-row">
+      <button class="admin-action-btn" onclick="openMemberManage()">👥 직원관리</button>
+      <button class="admin-action-btn pink-btn" onclick="goAttendanceTab()">💕 출퇴근으로</button>
     </div>
-    <div class="member-grid" id="memberGrid"></div>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;padding:16px 16px 60px">
+    <div id="adminSummaryTable"></div>
+    <div id="adminCalGrid"></div>
+  </div>
+</div>
+
+<!-- 직원관리 오버레이 -->
+<div class="member-overlay" id="memberManageOverlay" onclick="closeMemberManageBg(event)">
+  <div class="member-overlay-card">
+    <div class="member-overlay-hd">
+      <span>👥 직원관리</span>
+      <button class="member-overlay-close" onclick="closeMemberManage()">✕</button>
+    </div>
+    <div class="member-overlay-body">
+      <div class="summary-row">
+        <div class="sum-card"><div class="num" id="sumTotal">0</div><div class="lbl">전체</div></div>
+        <div class="sum-card"><div class="num" id="sumActive">0</div><div class="lbl">재직중</div></div>
+      </div>
+      <div class="member-grid" id="memberGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -784,7 +870,7 @@ async function saveMember(){
   };
   const idx=members.findIndex(x=>x.id===id);
   if(idx>=0)members[idx]=m; else members.push(m);
-  await save();renderCards();closeModal();
+  await save();renderCards();closeModal();if(currentTab==='admin')renderAdmin();
 }
 
 async function deleteMember(){
@@ -792,7 +878,7 @@ async function deleteMember(){
   if(!id)return;
   if(!confirm('이 멤버를 삭제할까요?'))return;
   members=members.filter(x=>x.id!==id);
-  await save();renderCards();closeModal();
+  await save();renderCards();closeModal();if(currentTab==='admin')renderAdmin();
 }
 
 function setTab(tab,el){
@@ -802,7 +888,7 @@ function setTab(tab,el){
   document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   if(tab==='attendance') renderAttendance();
-  else if(tab==='admin') renderCards();
+  else if(tab==='admin'){ isAdmin=true; adminOffset=0; renderAdmin(); }
 }
 
 /* ── 출퇴근 ── */
@@ -880,7 +966,9 @@ function goAdmin(){
   document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.t-tab')[1].classList.add('active');
   currentTab='admin';
-  renderCards();
+  isAdmin=true;
+  adminOffset=0;
+  renderAdmin();
 }
 
 function tryAdminTab(el){
@@ -889,6 +977,8 @@ function tryAdminTab(el){
 }
 
 let logPeriodOffset=0;
+let adminOffset=0;
+let isAdmin=false;
 
 function getPeriodDates(offset){
   const today=new Date();
@@ -970,16 +1060,136 @@ async function renderLog(){
     `<div class="log-sum-item">근무일 <span>${workDays}일</span></div>
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
      <div class="log-sum-item">휴무 <span>${offDays}일</span></div>
-     ${m.wage?`<div class="log-sum-item">예상급여 <span>${Math.round(totalMin/60*Number(m.wage)*(m.tax?0.967:1)).toLocaleString()}원</span>${m.tax?'<small style="font-size:.7rem;color:var(--soft)"> (3.3% 공제)</small>':''}</div>`:''}`;
+`;
+}
+
+function adminMove(d){adminOffset+=d;renderAdmin();}
+
+function goAttendanceTab(){
+  const tabs=document.querySelectorAll('.t-tab');
+  setTab('attendance',tabs[0]);
+}
+
+function openMemberManage(){
+  document.getElementById('memberManageOverlay').classList.add('open');
+  renderCards();
+}
+function closeMemberManage(){
+  document.getElementById('memberManageOverlay').classList.remove('open');
+}
+function closeMemberManageBg(e){
+  if(e.target===document.getElementById('memberManageOverlay'))closeMemberManage();
+}
+
+async function renderAdmin(){
+  const{start,end}=getPeriodDates(adminOffset);
+  const fmt=d=>`${d.getMonth()+1}월${d.getDate()}일`;
+  document.getElementById('adminPeriodLabel').textContent=`${fmt(start)}~${fmt(end)}`;
+  document.getElementById('adminSummaryTable').innerHTML=`<div style="text-align:center;padding:30px;color:var(--soft)">불러오는 중...</div>`;
+  document.getElementById('adminCalGrid').innerHTML='';
+
+  const logs=await loadAttLogs();
+  const activeMembers=members.filter(m=>m.status==='active');
+
+  const memberStats={};
+  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0};
+
+  const dayData={};
+  for(const l of logs){
+    const d=new Date(l.date+'T00:00:00');
+    if(d<start||d>end)continue;
+    const ms=memberStats[l.memberId];
+    if(!ms)continue;
+    if(!dayData[l.date])dayData[l.date]={};
+    if(!dayData[l.date][l.memberId])dayData[l.date][l.memberId]={totalMin:0,isOff:false};
+    if(l.isOff){
+      ms.offDays++;
+      dayData[l.date][l.memberId].isOff=true;
+    }else{
+      const mins=parseInt(l.hour)*60+parseInt(l.min);
+      ms.totalMin+=mins; ms.workDays++;
+      dayData[l.date][l.memberId].totalMin+=mins;
+    }
+  }
+
+  // 직원별 누적 테이블
+  let tbl=`<div class="admin-card-inner">
+    <div class="admin-card-title">🌟 직원별 누적 (${fmt(start)}~${fmt(end)})</div>
+    <div class="admin-card-subtitle">🌴 휴무는 "휴무(일)"만 증가 (근무시간/급여에는 영향 없음)</div>
+    <table class="admin-tbl"><thead><tr>
+      <th>직원</th><th>근무시간</th><th>휴무(일)</th><th>예상 급여(원)</th><th>최종급여(3.3% 공제후)</th>
+    </tr></thead><tbody>`;
+  let totalFinal=0;
+  for(let i=0;i<activeMembers.length;i++){
+    const m=activeMembers[i];
+    const st=memberStats[m.id]||{totalMin:0,offDays:0};
+    const th=Math.floor(st.totalMin/60),tm=st.totalMin%60;
+    const wage=Number(m.wage)||0;
+    const raw=wage?Math.round(st.totalMin/60*wage):0;
+    const final=wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0;
+    totalFinal+=final;
+    const color=COLORS[i%COLORS.length];
+    tbl+=`<tr>
+      <td><div class="emp-name"><span style="color:${color}">✦</span>${esc(m.eng||m.name)}${m.nick?`<small style="color:var(--soft);font-weight:400"> (${esc(m.nick)})</small>`:''}</div></td>
+      <td>${th}시간 ${tm}분</td>
+      <td>${st.offDays}</td>
+      <td>${raw?raw.toLocaleString():0}</td>
+      <td>${final?final.toLocaleString():0}${m.tax?'<small style="color:var(--soft);font-size:.7rem"> (3.3%)</small>':''}</td>
+    </tr>`;
+  }
+  tbl+=`<tr class="total-row">
+    <td colspan="4">총급여합계(최종급여)</td>
+    <td>${totalFinal.toLocaleString()}</td>
+  </tr></tbody></table></div>`;
+  document.getElementById('adminSummaryTable').innerHTML=tbl;
+
+  // 달력
+  const calStart=new Date(start);
+  const sd=calStart.getDay();
+  calStart.setDate(calStart.getDate()-(sd===0?6:sd-1));
+  const calEnd=new Date(end);
+  const ed=calEnd.getDay();
+  calEnd.setDate(calEnd.getDate()+(ed===0?0:7-ed));
+
+  let cal=`<div class="admin-card-inner"><div class="admin-card-title">📅 달력 (일별 직원 근무시간)</div><div class="admin-cal">`;
+  for(const h of['월','화','수','목','금','토','일'])
+    cal+=`<div class="admin-cal-hd">${h}</div>`;
+
+  const cur=new Date(calStart);
+  while(cur<=calEnd){
+    const ds=cur.toISOString().slice(0,10);
+    const inP=cur>=start&&cur<=end;
+    const dow=cur.getDay();
+    const isWE=dow===0||dow===6;
+    const dayMems=dayData[ds]||{};
+    let dayTotal=0;
+    for(const mid of Object.keys(dayMems)) if(!dayMems[mid].isOff) dayTotal+=dayMems[mid].totalMin;
+    const dth=Math.floor(dayTotal/60),dtm=dayTotal%60;
+    const weBadge=isWE&&inP?`<span style="font-size:.55rem;background:var(--pink-dark);color:white;border-radius:5px;padding:0 4px">주말</span>`:'';
+    cal+=`<div class="admin-cal-day${inP?'':' out-period'}${isWE?' weekend':''}">
+      <div class="admin-cal-date">${cur.getMonth()+1}/${cur.getDate()} ${weBadge}</div>
+      <div class="admin-cal-total">🕐 ${dth}시간 ${dtm}분</div>`;
+    for(let i=0;i<activeMembers.length;i++){
+      const m=activeMembers[i];
+      const md=dayMems[m.id];
+      const color=COLORS[i%COLORS.length];
+      const mth=md&&!md.isOff?Math.floor(md.totalMin/60):0;
+      const label=md?.isOff?'휴무':`${mth}시간`;
+      cal+=`<div class="admin-cal-emp">
+        <div class="admin-cal-emp-dot" style="background:${color}"></div>
+        <span style="color:var(--soft)">${esc(m.nick||m.name)}</span>
+        <span style="color:${color};margin-left:2px">${label}</span>
+      </div>`;
+    }
+    cal+='</div>';
+    cur.setDate(cur.getDate()+1);
+  }
+  cal+='</div></div>';
+  document.getElementById('adminCalGrid').innerHTML=cal;
 }
 
 function renderCards(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-
-  let list=members.filter(m=>{
-    if(!q)return true;
-    return(m.name+(m.nick||'')+(m.phone||'')).toLowerCase().includes(q);
-  });
+  let list=members.slice();
 
   // 요약
   document.getElementById('sumTotal').textContent=members.length;
@@ -1141,7 +1351,7 @@ async function ctxDelete(){
   closeCtx();
   if(!confirm('이 멤버를 삭제할까요?'))return;
   members=members.filter(x=>x.id!==ctxTargetId);
-  await save();renderCards();
+  await save();renderCards();if(currentTab==='admin')renderAdmin();
 }
 document.addEventListener('click',()=>closeCtx());
 
