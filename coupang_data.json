@@ -1,11 +1,15 @@
 {
-  "last_updated": "2026-07-02 02:45",
+  "last_updated": "2026-07-02 03:20",
   "accounts": {
     "미리토퍼": {
       "current_amount": 40100,
       "history": [
         {
           "time": "2026-07-02 02:20",
+          "amount": 40100
+        },
+        {
+          "time": "2026-07-02 03:20",
           "amount": 40100
         }
       ]
