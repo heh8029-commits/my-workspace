@@ -9902,6 +9902,17 @@ function addCsReply(id) {
   });
 }
 
+// 복사할 때 업체정보 첫 줄(업체명+업체메모)은 제외
+function csGetCopyText(it) {
+  var txt = it.text || '';
+  if (it.vendorOrder) {
+    var lines = txt.split('\n');
+    lines.shift();
+    return lines.join('\n');
+  }
+  return txt;
+}
+
 function renderCsShare() {
   var el = document.getElementById('cs-share-list');
   if (!el) return;
@@ -10012,7 +10023,7 @@ function renderCsShare() {
       cpyBtn.style.cssText = 'background:white;border:1.5px solid #e0a000;border-radius:10px;padding:6px 14px;font-size:.85rem;font-weight:800;color:#e0a000;cursor:pointer;margin-left:8px';
       cpyBtn.onclick = (function(txt){ return function(e){ e.stopPropagation();
         navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사됐어요!'); });
-      }; })(it.text||'');
+      }; })(csGetCopyText(it));
       chkWrap.appendChild(cpyBtn);
     } else {
       // CS: 수/민 이름 체크
@@ -10039,6 +10050,15 @@ function renderCsShare() {
         lbl.appendChild(chk); lbl.appendChild(nameEl);
         chkWrap.appendChild(lbl);
       });
+      // 복사 버튼
+      var cpyBtn2 = document.createElement('button');
+      cpyBtn2.type = 'button';
+      cpyBtn2.textContent = '📋 복사';
+      cpyBtn2.style.cssText = 'background:white;border:1.5px solid #4a80d0;border-radius:10px;padding:6px 14px;font-size:.85rem;font-weight:800;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif';
+      cpyBtn2.onclick = (function(txt){ return function(e){ e.stopPropagation();
+        navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사됐어요!'); });
+      }; })(csGetCopyText(it));
+      chkWrap.appendChild(cpyBtn2);
     }
     card.appendChild(chkWrap);
 
@@ -10147,7 +10167,7 @@ function renderCsShare() {
     editBtn.onclick=(function(id){return function(){csEditOpen(id);};})(it.id);
     var cpBtn=document.createElement('button'); cpBtn.textContent='📋'; cpBtn.type='button';
     cpBtn.style.cssText='padding:6px 12px;border-radius:9px;border:1.5px solid #b0c8f8;background:white;color:#4a80d0;font-size:.85rem;cursor:pointer';
-    cpBtn.onclick=(function(t){return function(){navigator.clipboard.writeText(t).then(function(){toast('📋 복사됐어요!');});};})(it.text||'');
+    cpBtn.onclick=(function(t){return function(){navigator.clipboard.writeText(t).then(function(){toast('📋 복사됐어요!');});};})(csGetCopyText(it));
     var dlBtn=document.createElement('button'); dlBtn.textContent='🗑️'; dlBtn.type='button';
     dlBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;margin-left:auto';
     dlBtn.onmouseover=function(){this.style.color='#e03c6e';}; dlBtn.onmouseout=function(){this.style.color='#ddd';};
