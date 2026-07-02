@@ -1752,6 +1752,15 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <select id="cs-vendor-select" onchange="csVendorSelectChange()" style="display:none;flex:1;min-width:110px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none"></select>
         <button type="button" id="cs-vendor-manage-btn" onclick="csVendorManageOpen()" style="display:none;background:white;border:1.5px solid #4a80d0;border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:700;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">🏢 업체관리</button>
       </div>
+      <div id="cs-vendor-calc" style="display:none;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+        <input type="number" id="cs-vendor-qty" placeholder="수량" oninput="csVendorCalcUpdate()" style="width:70px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
+        <span style="font-size:.78rem;color:#999">개 ·</span>
+        <input type="number" id="cs-vendor-price" placeholder="단가" oninput="csVendorCalcUpdate()" style="width:90px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
+        <span style="font-size:.78rem;color:#999">원 ·</span>
+        <input type="number" id="cs-vendor-shipping" placeholder="배송비" oninput="csVendorCalcUpdate()" style="width:90px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
+        <span style="font-size:.78rem;color:#999">원</span>
+        <span id="cs-vendor-total" style="margin-left:auto;font-size:.85rem;font-weight:800;color:#4a80d0">합계 0원</span>
+      </div>
       <!-- 메모 -->
       <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
         style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
@@ -9211,10 +9220,12 @@ function saveCsVendorsData(list) { stor('cs_vendors', {list:list}); }
 function csVendorToggle(on) {
   var sel = document.getElementById('cs-vendor-select');
   var btn = document.getElementById('cs-vendor-manage-btn');
+  var calc = document.getElementById('cs-vendor-calc');
   if (sel) sel.style.display = on ? '' : 'none';
   if (btn) btn.style.display = on ? '' : 'none';
+  if (calc) calc.style.display = on ? 'flex' : 'none';
   if (on) { renderCsVendorSelect(); }
-  else { _csShareVendorId = ''; }
+  else { _csShareVendorId = ''; csVendorCalcReset(); }
 }
 
 function renderCsVendorSelect() {
@@ -9230,10 +9241,35 @@ function renderCsVendorSelect() {
 function csVendorSelectChange() {
   var sel = document.getElementById('cs-vendor-select');
   _csShareVendorId = sel ? sel.value : '';
+  var vendor = loadCsVendors().find(function(v){ return String(v.id) === String(_csShareVendorId); });
+  var priceInp = document.getElementById('cs-vendor-price');
+  var shipInp = document.getElementById('cs-vendor-shipping');
+  if (priceInp) priceInp.value = (vendor && vendor.price != null) ? vendor.price : '';
+  if (shipInp)  shipInp.value  = (vendor && vendor.shipping != null) ? vendor.shipping : '';
+  csVendorCalcUpdate();
+}
+
+function csVendorCalcReset() {
+  ['cs-vendor-qty','cs-vendor-price','cs-vendor-shipping'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  csVendorCalcUpdate();
+}
+
+function csVendorCalcUpdate() {
+  var qty   = parseFloat((document.getElementById('cs-vendor-qty')||{}).value)      || 0;
+  var price = parseFloat((document.getElementById('cs-vendor-price')||{}).value)    || 0;
+  var ship  = parseFloat((document.getElementById('cs-vendor-shipping')||{}).value) || 0;
+  var total = qty * price + ship;
+  var totalEl = document.getElementById('cs-vendor-total');
+  if (totalEl) totalEl.textContent = '합계 ' + total.toLocaleString('ko-KR') + '원';
 }
 
 function csVendorManageOpen() {
-  _csVendorEditList = loadCsVendors().map(function(v) { return {id:v.id, name:v.name, memo:v.memo}; });
+  _csVendorEditList = loadCsVendors().map(function(v) {
+    return {id:v.id, name:v.name, memo:v.memo, price:v.price, shipping:v.shipping};
+  });
   renderCsVendorForm();
   document.getElementById('cs-vendor-popup').style.display = 'flex';
 }
@@ -9246,16 +9282,22 @@ function renderCsVendorForm() {
     return;
   }
   form.innerHTML = _csVendorEditList.map(function(v, i) {
-    return '<div style="display:flex;gap:6px;align-items:center;background:#f8fbff;border:1px solid #d0dff8;border-radius:9px;padding:7px 8px">'
-      + '<input type="text" placeholder="업체명" value="'+escHtml(v.name||'')+'" oninput="_csVendorEditList['+i+'].name=this.value" style="width:90px;flex-shrink:0;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
-      + '<input type="text" placeholder="업체 메모 (예: 사은품o opp붙이게)" value="'+escHtml(v.memo||'')+'" oninput="_csVendorEditList['+i+'].memo=this.value" style="flex:1;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+    return '<div style="display:flex;flex-direction:column;gap:5px;background:#f8fbff;border:1px solid #d0dff8;border-radius:9px;padding:8px">'
+      + '<div style="display:flex;gap:6px;align-items:center">'
+      + '<input type="text" placeholder="업체명" value="'+escHtml(v.name||'')+'" oninput="_csVendorEditList['+i+'].name=this.value" style="flex:1;min-width:0;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
       + '<span onclick="csVendorRemoveRow('+i+')" style="cursor:pointer;color:#e03c6e;font-size:.9rem;flex-shrink:0;padding:0 4px">✕</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px">'
+      + '<input type="number" placeholder="단가" value="'+escHtml(v.price||'')+'" oninput="_csVendorEditList['+i+'].price=this.value" style="width:50%;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="number" placeholder="배송비" value="'+escHtml(v.shipping||'')+'" oninput="_csVendorEditList['+i+'].shipping=this.value" style="width:50%;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '</div>'
+      + '<input type="text" placeholder="업체 메모 (예: 사은품o opp붙이게)" value="'+escHtml(v.memo||'')+'" oninput="_csVendorEditList['+i+'].memo=this.value" style="border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
       + '</div>';
   }).join('');
 }
 
 function csVendorAddRow() {
-  _csVendorEditList.push({id: Date.now()+Math.random(), name:'', memo:''});
+  _csVendorEditList.push({id: Date.now()+Math.random(), name:'', memo:'', price:'', shipping:''});
   renderCsVendorForm();
 }
 
@@ -9269,7 +9311,15 @@ function csVendorCancel() { document.getElementById('cs-vendor-popup').style.dis
 function csVendorSave() {
   var list = _csVendorEditList
     .filter(function(v) { return (v.name||'').trim(); })
-    .map(function(v) { return {id:v.id, name:v.name.trim(), memo:(v.memo||'').trim()}; });
+    .map(function(v) {
+      return {
+        id: v.id,
+        name: v.name.trim(),
+        memo: (v.memo||'').trim(),
+        price: v.price !== '' && v.price != null ? Number(v.price) : null,
+        shipping: v.shipping !== '' && v.shipping != null ? Number(v.shipping) : null,
+      };
+    });
   saveCsVendorsData(list);
   csVendorCancel();
   renderCsVendorSelect();
@@ -9540,14 +9590,28 @@ function addCsShare() {
   var txt = inpEl ? inpEl.value.trim() : '';
   var imgs = Array.isArray(_csShareImgs) ? _csShareImgs.slice() : [];
 
-  // 업체주문건: 업체명 + 업체 메모를 첫 줄로 붙이기
+  // 업체주문건: 업체명 + 수량/단가/배송비/합계 + 업체 메모를 첫 줄들로 붙이기
   var vendorCheck = document.getElementById('cs-vendor-check');
-  var vendorLine = '';
+  var vendorLines = [];
   if (vendorCheck && vendorCheck.checked && _csShareVendorId) {
     var vendor = loadCsVendors().find(function(v){ return String(v.id) === String(_csShareVendorId); });
-    if (vendor) vendorLine = vendor.name + (vendor.memo ? ' ' + vendor.memo : '');
+    if (vendor) {
+      vendorLines.push(vendor.name + (vendor.memo ? ' ' + vendor.memo : ''));
+      var qty   = parseFloat((document.getElementById('cs-vendor-qty')||{}).value)      || 0;
+      var price = parseFloat((document.getElementById('cs-vendor-price')||{}).value)    || 0;
+      var ship  = parseFloat((document.getElementById('cs-vendor-shipping')||{}).value) || 0;
+      if (qty || price || ship) {
+        var calcParts = [];
+        if (qty)   calcParts.push(qty.toLocaleString('ko-KR') + '개');
+        if (price) calcParts.push('단가 ' + price.toLocaleString('ko-KR') + '원');
+        if (ship)  calcParts.push('배송비 ' + ship.toLocaleString('ko-KR') + '원');
+        var total = qty * price + ship;
+        if (total) calcParts.push('합계 ' + total.toLocaleString('ko-KR') + '원');
+        vendorLines.push(calcParts.join(' · '));
+      }
+    }
   }
-  txt = [vendorLine, txt].filter(Boolean).join('\n');
+  txt = vendorLines.concat(txt ? [txt] : []).join('\n');
 
   if (!txt && imgs.length === 0) {
     toast('내용 또는 이미지를 입력해요 💬');
