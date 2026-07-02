@@ -1718,16 +1718,32 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
     <!-- 입력 폼 -->
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 등록</div>
-          <button onclick="csCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="2일 지난 글 삭제">🗑️ 2일정리</button>
-        <!-- 분류 -->
-        <div style="display:flex;gap:6px;margin-left:4px">
-          <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:8px 22px;border-radius:18px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:1rem;font-weight:900;cursor:pointer;transition:all .15s">💬 CS</button>
+      <!-- 상단: 제목 + 우측 버튼 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="font-size:1rem;font-weight:800;color:#1050a0">💬 등록</div>
+        <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:6px 18px;border-radius:16px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.85rem;font-weight:900;cursor:pointer">💬 CS</button>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button type="button" onclick="csSettleOpen()" style="background:#fff8e8;border:1.5px solid #e0a000;border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:800;color:#a06000;cursor:pointer;font-family:Pretendard,sans-serif">💰 업체 정산</button>
+          <button type="button" onclick="csCleanOld()" style="background:white;border:1.5px solid #ddd;border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:700;color:#999;cursor:pointer;font-family:Pretendard,sans-serif" title="2일 지난 글 삭제">🗑️ 2일정리</button>
         </div>
       </div>
+
+      <!-- 작성자 + 업체주문건 -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <span style="font-size:.78rem;font-weight:700;color:#aaa;flex-shrink:0">작성자</span>
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:38px;height:38px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
+          <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:38px;height:38px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
+          <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:38px;height:38px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:12px;border:2px solid #d0dff8;background:#f8fbff;cursor:pointer;margin-left:auto">
+          <input type="checkbox" id="cs-vendor-check" onchange="csVendorToggle(this.checked)" style="width:17px;height:17px;accent-color:#4a80d0;cursor:pointer">
+          <span style="font-size:.82rem;font-weight:800;color:#4a80d0;white-space:nowrap">🏢 업체주문건</span>
+        </label>
+      </div>
+
       <!-- 이미지 미리보기 (여러개) + 추가 버튼 -->
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:36px;margin-bottom:4px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:36px;margin-bottom:16px">
         <div id="cs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         <div id="cs-img-add" onclick="csImgModalOpen()" onpaste="csHandlePaste(event)" tabindex="0"
           style="width:60px;height:60px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none"
@@ -1737,18 +1753,66 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         </div>
         <input type="file" id="cs-file-inp" accept="image/*" multiple style="display:none" onchange="csHandleFile(event)">
       </div>
-      <!-- 수→은→민 순서 -->
-      <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px">
-        <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
-        <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-        <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
+
+      <!-- 업체주문건 상세 (체크 시에만 표시) -->
+      <div id="cs-vendor-detail" style="display:none;flex-direction:column;gap:10px;margin-bottom:14px;padding:14px;border:2px solid #d0dff8;border-radius:14px;background:#f8fbff">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="cs-vendor-select" onchange="csVendorSelectChange()" style="width:140px;flex-shrink:0;border:1.5px solid #c0d4f8;border-radius:9px;padding:8px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+          </select>
+          <button type="button" onclick="csVendorManageOpen()" style="background:white;border:1.5px solid #4a80d0;border-radius:9px;padding:8px 14px;font-size:.8rem;font-weight:800;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">🏢 업체관리</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="cs-vendor-qty" placeholder="수량" oninput="csVendorCalcUpdate()" style="width:64px;border:1.5px solid #c0d4f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <span style="font-size:.78rem;color:#aaa">개</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="cs-vendor-price" placeholder="단가" oninput="csVendorCalcUpdate()" style="width:84px;border:1.5px solid #c0d4f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <span style="font-size:.78rem;color:#aaa">원</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="cs-vendor-shipping" placeholder="배송비" oninput="csVendorCalcUpdate()" style="width:84px;border:1.5px solid #c0d4f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <span style="font-size:.78rem;color:#aaa">원</span>
+          </div>
+          <span id="cs-vendor-total" style="margin-left:auto;font-size:.92rem;font-weight:900;color:#4a80d0">합계 0원</span>
+        </div>
       </div>
+
       <!-- 메모 -->
       <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
         style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
         onpaste="csHandlePaste(event)"
+        oninput="csVendorAutoQty()"
         onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
-      <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
+      <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:12px;padding:13px;color:white;font-weight:800;font-size:1rem;cursor:pointer;width:100%;margin-top:10px;letter-spacing:.02em">📤 등록</button>
+    </div>
+
+    <!-- 업체 관리 팝업 -->
+    <div id="cs-vendor-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:white;border-radius:18px;padding:26px;width:min(440px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+        <div style="font-size:1.05rem;font-weight:800;color:#1050a0;margin-bottom:18px">🏢 업체 관리</div>
+        <div id="cs-vendor-form" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+        <button type="button" onclick="csVendorAddRow()" style="width:100%;border:2px dashed #b0c8f8;border-radius:11px;padding:11px;background:#f8fbff;color:#4a80d0;font-weight:800;cursor:pointer;font-size:.86rem;font-family:Pretendard,sans-serif;margin-bottom:18px">+ 업체 추가</button>
+        <div style="display:flex;gap:10px">
+          <button onclick="csVendorCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:11px;padding:11px;background:white;cursor:pointer;font-size:.88rem;font-weight:700;font-family:Pretendard,sans-serif;color:#888">취소</button>
+          <button onclick="csVendorSave()" style="flex:1.5;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:11px;padding:11px;color:white;font-weight:800;cursor:pointer;font-size:.88rem;font-family:Pretendard,sans-serif">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 업체 정산 팝업 -->
+    <div id="cs-settle-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:white;border-radius:16px;padding:24px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div style="font-size:.92rem;font-weight:700;color:#a06000">💰 업체 정산</div>
+          <label style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:.78rem;color:#888;cursor:pointer">
+            <input type="checkbox" id="cs-settle-show-paid" onchange="renderCsSettle()" style="width:14px;height:14px;cursor:pointer">
+            정산완료도 보기
+          </label>
+        </div>
+        <div id="cs-settle-body"></div>
+        <button onclick="csSettleCancel()" style="width:100%;margin-top:16px;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">닫기</button>
+      </div>
     </div>
 
     <!-- 필터 + 검색 -->
@@ -2040,7 +2104,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','cs_vendors','cs_vendor_orders','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -2175,7 +2239,7 @@ function _fixHeaderOffset() {
   apply();
 }
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_vendors','cs_vendor_orders','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -9179,6 +9243,214 @@ function setCsCategory(cat) {
   }
 }
 
+/* ── 업체 관리 (CS 등록 시 업체주문건 표시) ── */
+var _csShareVendorId = '';
+var _csVendorEditList = [];
+
+function loadCsVendors() { return loadObj('cs_vendors').list || []; }
+
+// 업체 주문 정산 기록 - CS 목록(cs_share)은 2일정리로 삭제되므로, 정산용 데이터는 따로 영구 보관
+function loadCsVendorOrders() { return loadObj('cs_vendor_orders').list || []; }
+function saveCsVendorOrders(list) { stor('cs_vendor_orders', {list:list}); }
+function addCsVendorOrder(order) {
+  var list = loadCsVendorOrders();
+  list.unshift(order);
+  saveCsVendorOrders(list);
+}
+function saveCsVendorsData(list) { stor('cs_vendors', {list:list}); }
+
+function csVendorToggle(on) {
+  var detail = document.getElementById('cs-vendor-detail');
+  if (detail) detail.style.display = on ? 'flex' : 'none';
+  if (on) { renderCsVendorSelect(); }
+  else { _csShareVendorId = ''; csVendorCalcReset(); }
+}
+
+function renderCsVendorSelect() {
+  var sel = document.getElementById('cs-vendor-select');
+  if (!sel) return;
+  var vendors = loadCsVendors();
+  sel.innerHTML = '<option value="">업체 선택...</option>' + vendors.map(function(v) {
+    return '<option value="'+v.id+'">'+escHtml(v.name)+'</option>';
+  }).join('');
+  sel.value = _csShareVendorId || '';
+}
+
+function csVendorSelectChange() {
+  var sel = document.getElementById('cs-vendor-select');
+  _csShareVendorId = sel ? sel.value : '';
+  var vendor = loadCsVendors().find(function(v){ return String(v.id) === String(_csShareVendorId); });
+  var priceInp = document.getElementById('cs-vendor-price');
+  var shipInp = document.getElementById('cs-vendor-shipping');
+  if (priceInp) priceInp.value = (vendor && vendor.price != null) ? vendor.price : '';
+  if (shipInp)  shipInp.value  = (vendor && vendor.shipping != null) ? vendor.shipping : '';
+  csVendorCalcUpdate();
+}
+
+function csVendorCalcReset() {
+  ['cs-vendor-qty','cs-vendor-price','cs-vendor-shipping'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  csVendorCalcUpdate();
+}
+
+function csVendorCalcUpdate() {
+  var qty   = parseFloat((document.getElementById('cs-vendor-qty')||{}).value)      || 0;
+  var price = parseFloat((document.getElementById('cs-vendor-price')||{}).value)    || 0;
+  var ship  = parseFloat((document.getElementById('cs-vendor-shipping')||{}).value) || 0;
+  var total = qty * price + ship;
+  var totalEl = document.getElementById('cs-vendor-total');
+  if (totalEl) totalEl.textContent = '합계 ' + total.toLocaleString('ko-KR') + '원';
+}
+
+// 메모에 명단/목록을 붙여넣으면 줄 수를 세서 수량에 자동으로 채워줌
+function csVendorAutoQty() {
+  var vendorCheck = document.getElementById('cs-vendor-check');
+  if (!vendorCheck || !vendorCheck.checked) return;
+  var inpEl = document.getElementById('cs-share-inp');
+  var qtyInp = document.getElementById('cs-vendor-qty');
+  if (!inpEl || !qtyInp) return;
+  var lines = inpEl.value.split('\n').filter(function(l){ return l.trim(); });
+  qtyInp.value = lines.length || '';
+  csVendorCalcUpdate();
+}
+
+function csVendorManageOpen() {
+  _csVendorEditList = loadCsVendors().map(function(v) {
+    return {id:v.id, name:v.name, memo:v.memo, price:v.price, shipping:v.shipping};
+  });
+  renderCsVendorForm();
+  document.getElementById('cs-vendor-popup').style.display = 'flex';
+}
+
+function renderCsVendorForm() {
+  var form = document.getElementById('cs-vendor-form');
+  if (!form) return;
+  if (!_csVendorEditList.length) {
+    form.innerHTML = '<div style="text-align:center;color:#bbb;font-size:.82rem;padding:10px 0">+ 업체 추가로 등록해요</div>';
+    return;
+  }
+  form.innerHTML = _csVendorEditList.map(function(v, i) {
+    return '<div style="display:flex;flex-direction:column;gap:7px;background:#f8fbff;border:1.5px solid #d0dff8;border-radius:12px;padding:12px">'
+      + '<div style="display:flex;gap:8px;align-items:center">'
+      + '<input type="text" placeholder="업체명" value="'+escHtml(v.name||'')+'" oninput="_csVendorEditList['+i+'].name=this.value" style="flex:1;min-width:0;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.85rem;font-weight:700;color:#333;font-family:Pretendard,sans-serif;outline:none">'
+      + '<span onclick="csVendorRemoveRow('+i+')" style="cursor:pointer;color:#e03c6e;font-size:1.05rem;flex-shrink:0;padding:2px 4px">✕</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:8px">'
+      + '<input type="number" placeholder="단가" value="'+escHtml(v.price||'')+'" oninput="_csVendorEditList['+i+'].price=this.value" style="width:50%;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="number" placeholder="배송비" value="'+escHtml(v.shipping||'')+'" oninput="_csVendorEditList['+i+'].shipping=this.value" style="width:50%;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '</div>'
+      + '<input type="text" placeholder="업체 메모 (예: 사은품o opp붙이게)" value="'+escHtml(v.memo||'')+'" oninput="_csVendorEditList['+i+'].memo=this.value" style="border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '</div>';
+  }).join('');
+}
+
+function csVendorAddRow() {
+  _csVendorEditList.push({id: Date.now()+Math.random(), name:'', memo:'', price:'', shipping:''});
+  renderCsVendorForm();
+}
+
+function csVendorRemoveRow(i) {
+  _csVendorEditList.splice(i, 1);
+  renderCsVendorForm();
+}
+
+function csVendorCancel() { document.getElementById('cs-vendor-popup').style.display = 'none'; }
+
+function csVendorSave() {
+  var list = _csVendorEditList
+    .filter(function(v) { return (v.name||'').trim(); })
+    .map(function(v) {
+      return {
+        id: v.id,
+        name: v.name.trim(),
+        memo: (v.memo||'').trim(),
+        price: v.price !== '' && v.price != null ? Number(v.price) : null,
+        shipping: v.shipping !== '' && v.shipping != null ? Number(v.shipping) : null,
+      };
+    });
+  saveCsVendorsData(list);
+  csVendorCancel();
+  renderCsVendorSelect();
+  toast('🏢 업체 저장됐어요!');
+}
+
+/* ── 업체 정산 (2일정리와 무관하게 영구 보관된 cs_vendor_orders 기준) ── */
+function csSettleOpen() {
+  renderCsSettle();
+  document.getElementById('cs-settle-popup').style.display = 'flex';
+}
+
+function csSettleCancel() { document.getElementById('cs-settle-popup').style.display = 'none'; }
+
+function csSettleTogglePaid(id, cur) {
+  var list = loadCsVendorOrders();
+  var order = list.find(function(o){ return o.id === id; });
+  if (!order) return;
+  order.paid = !cur;
+  saveCsVendorOrders(list);
+  renderCsSettle();
+}
+
+function csSettleDeleteOrder(id) {
+  if (!confirm('이 주문 기록을 삭제할까요?')) return;
+  var list = loadCsVendorOrders().filter(function(o){ return o.id !== id; });
+  saveCsVendorOrders(list);
+  renderCsSettle();
+  toast('🗑️ 삭제됐어요');
+}
+
+function renderCsSettle() {
+  var body = document.getElementById('cs-settle-body');
+  if (!body) return;
+  var showPaid = (document.getElementById('cs-settle-show-paid')||{}).checked;
+  var orders = loadCsVendorOrders().filter(function(o){ return showPaid || !o.paid; });
+
+  if (!orders.length) {
+    body.innerHTML = '<div style="text-align:center;color:#bbb;padding:30px 0;font-size:.85rem">'+(showPaid ? '정산 기록이 없어요' : '미정산 주문이 없어요 🎉')+'</div>';
+    return;
+  }
+
+  var byVendor = {};
+  orders.forEach(function(o){
+    var key = o.vendorId || o.vendorName;
+    if (!byVendor[key]) byVendor[key] = { name: o.vendorName, orders: [] };
+    byVendor[key].orders.push(o);
+  });
+
+  body.innerHTML = Object.keys(byVendor).map(function(key){
+    var g = byVendor[key];
+    g.orders.sort(function(a,b){ return b.createdAt - a.createdAt; });
+    var unpaidTotal = g.orders.filter(function(o){ return !o.paid; }).reduce(function(s,o){ return s + (o.total||0); }, 0);
+    var rows = g.orders.map(function(o){
+      var d = new Date(o.createdAt);
+      var dateStr = (d.getMonth()+1)+'/'+d.getDate();
+      var calcStr = [
+        o.qty ? o.qty.toLocaleString('ko-KR')+'개' : '',
+        o.price ? '단가 '+o.price.toLocaleString('ko-KR')+'원' : '',
+        o.shipping ? '배송비 '+o.shipping.toLocaleString('ko-KR')+'원' : ''
+      ].filter(Boolean).join(' · ');
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #f5f0e0;opacity:'+(o.paid?'.5':'1')+'">'
+        + '<span style="font-size:.72rem;color:#999;width:34px;flex-shrink:0">'+dateStr+'</span>'
+        + '<span style="flex:1;min-width:0;font-size:.8rem;color:#555">'+escHtml(calcStr||'-')+'</span>'
+        + '<span style="font-size:.85rem;font-weight:800;color:#a06000;flex-shrink:0">'+(o.total||0).toLocaleString('ko-KR')+'원</span>'
+        + '<label style="display:flex;align-items:center;gap:3px;font-size:.72rem;color:#888;cursor:pointer;flex-shrink:0">'
+        + '<input type="checkbox" '+(o.paid?'checked':'')+' onchange="csSettleTogglePaid('+o.id+','+!!o.paid+')" style="width:14px;height:14px;cursor:pointer">정산완료'
+        + '</label>'
+        + '<span onclick="csSettleDeleteOrder('+o.id+')" style="cursor:pointer;color:#e03c6e;font-size:1rem;flex-shrink:0;padding:0 2px" title="삭제">✕</span>'
+        + '</div>';
+    }).join('');
+    return '<div style="margin-bottom:14px;border:1.5px solid #f0e0b0;border-radius:12px;overflow:hidden">'
+      + '<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#fff8e8">'
+      + '<span style="font-weight:800;color:#a06000;font-size:.88rem">🏢 '+escHtml(g.name)+'</span>'
+      + '<span style="margin-left:auto;font-weight:900;color:#a06000;font-size:.92rem">미정산 '+unpaidTotal.toLocaleString('ko-KR')+'원</span>'
+      + '</div>'
+      + '<div style="padding:2px 12px">'+rows+'</div>'
+      + '</div>';
+  }).join('');
+}
+
 function setCsAuthor(author) {
   _csShareAuthor = author;
   var BG_ON  = {'은':'#f7a8c0', '수':'#a0c8f8', '민':'#b0e8c0'};
@@ -9442,6 +9714,24 @@ function addCsShare() {
   var inpEl = document.getElementById('cs-share-inp');
   var txt = inpEl ? inpEl.value.trim() : '';
   var imgs = Array.isArray(_csShareImgs) ? _csShareImgs.slice() : [];
+
+  // 업체주문건: 업체명 + 업체 메모만 목록 첫 줄로 붙이기 (단가/배송비/합계는 직원용 목록엔 안 보이게, 정산기록에만 저장)
+  var vendorCheck = document.getElementById('cs-vendor-check');
+  var vendorLines = [];
+  var vendorOrder = null;
+  if (vendorCheck && vendorCheck.checked && _csShareVendorId) {
+    var vendor = loadCsVendors().find(function(v){ return String(v.id) === String(_csShareVendorId); });
+    if (vendor) {
+      vendorLines.push(vendor.name + (vendor.memo ? ' ' + vendor.memo : ''));
+      var qty   = parseFloat((document.getElementById('cs-vendor-qty')||{}).value)      || 0;
+      var price = parseFloat((document.getElementById('cs-vendor-price')||{}).value)    || 0;
+      var ship  = parseFloat((document.getElementById('cs-vendor-shipping')||{}).value) || 0;
+      var total = qty * price + ship;
+      vendorOrder = { vendorId: vendor.id, vendorName: vendor.name, qty: qty, price: price, shipping: ship, total: total, paid: false };
+    }
+  }
+  txt = vendorLines.concat(txt ? [txt] : []).join('\n');
+
   if (!txt && imgs.length === 0) {
     toast('내용 또는 이미지를 입력해요 💬');
     return;
@@ -9454,11 +9744,30 @@ function addCsShare() {
     text: txt,
     imgs: imgs,
     img: imgs[0] || '',
+    vendorOrder: vendorOrder,
     done: false,
     createdAt: Date.now(),
     replies: [],
     confirmed: []
   };
+
+  // 업체 주문 정산 기록은 2일정리로 지워지지 않는 별도 저장소에 영구 보관
+  if (vendorOrder) {
+    addCsVendorOrder({
+      id: newItem.id,
+      csItemId: newItem.id,
+      vendorId: vendorOrder.vendorId,
+      vendorName: vendorOrder.vendorName,
+      qty: vendorOrder.qty,
+      price: vendorOrder.price,
+      shipping: vendorOrder.shipping,
+      total: vendorOrder.total,
+      paid: false,
+      memo: txt,
+      createdAt: newItem.createdAt
+    });
+  }
+
   // Firebase 최신 데이터 fetch 후 새 글 추가해서 저장
   _csLastSeenId = newItem.id;
   fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
@@ -9491,6 +9800,8 @@ function addCsShare() {
   if (inpEl) inpEl.value = '';
   _csShareImgs = [];
   renderCsImgPreview();
+  if (vendorCheck) vendorCheck.checked = false;
+  csVendorToggle(false);
   toast('📤 등록됐어요!');
   setTimeout(function(){ renderCsShare(); }, 100);
 }
@@ -9591,6 +9902,17 @@ function addCsReply(id) {
   });
 }
 
+// 복사할 때 업체정보 첫 줄(업체명+업체메모)은 제외
+function csGetCopyText(it) {
+  var txt = it.text || '';
+  if (it.vendorOrder) {
+    var lines = txt.split('\n');
+    lines.shift();
+    return lines.join('\n');
+  }
+  return txt;
+}
+
 function renderCsShare() {
   var el = document.getElementById('cs-share-list');
   if (!el) return;
@@ -9622,9 +9944,9 @@ function renderCsShare() {
     var card = document.createElement('div');
     card.style.cssText = 'background:'+(it.done?'#f5f5f5':'white')+';border:2px solid '+(it.done?'#ddd':tc)+';border-radius:14px;margin-bottom:14px;overflow:hidden;opacity:'+(it.done?'0.55':'1');
 
-    // ── 상단 헤더: 작성자 + 날짜시간 + 유형 ──
+    // ── 상단 헤더: 작성자 + 날짜시간 (중앙 배치) ──
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px 0;flex-wrap:wrap';
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px 0;flex-wrap:wrap';
 
     var ab = document.createElement('span');
     ab.style.cssText = 'width:38px;height:38px;border-radius:50%;background:'+ac+';color:'+atc+';font-size:1.05rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid '+atc;
@@ -9641,22 +9963,47 @@ function renderCsShare() {
     timeEl.textContent = timeStr;
     dtWrap.appendChild(dateEl); dtWrap.appendChild(timeEl);
     hdr.appendChild(dtWrap);
+    card.appendChild(hdr);
 
-    // 분류 뱃지 (CS / 그로스)
+    // ── 분류 뱃지 + 유형 뱃지 (오른쪽 정렬) ──
+    var badgeRow = document.createElement('div');
+    badgeRow.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px 16px 0;flex-wrap:wrap';
+
     var catBadge = document.createElement('span');
     var isCat = it.category || 'CS';
-    catBadge.style.cssText = 'border-radius:12px;padding:5px 14px;font-size:.9rem;font-weight:900;margin-left:auto;'
+    catBadge.style.cssText = 'border-radius:12px;padding:5px 14px;font-size:.9rem;font-weight:900;'
       + (isCat==='그로스' ? 'background:#e0a000;color:white' : 'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
     catBadge.textContent = isCat==='그로스' ? '📋 그로스리스트' : '💬 CS';
-    hdr.appendChild(catBadge);
+    badgeRow.appendChild(catBadge);
 
     if (it.type) {
       var tb = document.createElement('span');
       tb.style.cssText = 'background:'+tc+';color:white;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:800';
       tb.textContent = it.type;
-      hdr.appendChild(tb);
+      badgeRow.appendChild(tb);
     }
-    card.appendChild(hdr);
+    card.appendChild(badgeRow);
+
+    // 체크타입 토글 (줄마다 체크박스로 완성 여부 표시) - 헤더 밑 줄에 왼쪽 배치
+    var ctRow = document.createElement('div');
+    ctRow.style.cssText = 'padding:8px 16px 0';
+    var ctBtn = document.createElement('button');
+    ctBtn.type = 'button';
+    ctBtn.textContent = it.checkType ? '☑ 체크타입' : '☐ 체크타입';
+    ctBtn.style.cssText = 'background:'+(it.checkType?'#4a80d0':'white')+';color:'+(it.checkType?'white':'#4a80d0')+';border:2px solid #4a80d0;border-radius:10px;padding:5px 12px;font-size:.8rem;font-weight:800;cursor:pointer;font-family:Pretendard,sans-serif';
+    ctBtn.onclick = (function(id,cur){ return function(e){ e.stopPropagation();
+      csUpdateItem(id, function(item){ item.checkType = !cur; });
+    }; })(it.id, !!it.checkType);
+    ctRow.appendChild(ctBtn);
+    card.appendChild(ctRow);
+
+    // 업체주문건 라벨 (수/민 체크박스 위에 크게 표시)
+    if (it.vendorOrder) {
+      var vendorLabel = document.createElement('div');
+      vendorLabel.style.cssText = 'text-align:center;font-size:1.15rem;font-weight:900;color:#4a80d0;padding:10px 16px 0;letter-spacing:.02em';
+      vendorLabel.textContent = '🏢 업체주문';
+      card.appendChild(vendorLabel);
+    }
 
     // ── 3. 체크박스 - 그로스: 단일 / CS: 수민 ──
     var chkWrap = document.createElement('div');
@@ -9684,7 +10031,7 @@ function renderCsShare() {
       cpyBtn.style.cssText = 'background:white;border:1.5px solid #e0a000;border-radius:10px;padding:6px 14px;font-size:.85rem;font-weight:800;color:#e0a000;cursor:pointer;margin-left:8px';
       cpyBtn.onclick = (function(txt){ return function(e){ e.stopPropagation();
         navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사됐어요!'); });
-      }; })(it.text||'');
+      }; })(csGetCopyText(it));
       chkWrap.appendChild(cpyBtn);
     } else {
       // CS: 수/민 이름 체크
@@ -9711,6 +10058,15 @@ function renderCsShare() {
         lbl.appendChild(chk); lbl.appendChild(nameEl);
         chkWrap.appendChild(lbl);
       });
+      // 복사 버튼
+      var cpyBtn2 = document.createElement('button');
+      cpyBtn2.type = 'button';
+      cpyBtn2.textContent = '📋 복사';
+      cpyBtn2.style.cssText = 'background:white;border:1.5px solid #4a80d0;border-radius:10px;padding:6px 14px;font-size:.85rem;font-weight:800;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif';
+      cpyBtn2.onclick = (function(txt){ return function(e){ e.stopPropagation();
+        navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사됐어요!'); });
+      }; })(csGetCopyText(it));
+      chkWrap.appendChild(cpyBtn2);
     }
     card.appendChild(chkWrap);
 
@@ -9721,7 +10077,7 @@ function renderCsShare() {
     // 2. 메모 먼저 (이미지 위에)
     if (it.text) {
       var memoEl = document.createElement('div');
-      if (isCat === '그로스') {
+      if (isCat === '그로스' || it.checkType) {
         memoEl.style.cssText = 'padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
         var checks = it.lineChecks||[];
         it.text.split('\n').filter(function(l){ return l.trim(); }).forEach(function(line, i) {
@@ -9749,6 +10105,14 @@ function renderCsShare() {
         memoEl.textContent = it.text;
       }
       body.appendChild(memoEl);
+
+      // 업체주문건: 리스트 밑에 총 건수 표시 (금액 정보는 제외)
+      if (it.vendorOrder && it.vendorOrder.qty) {
+        var totalCntEl = document.createElement('div');
+        totalCntEl.style.cssText = 'text-align:center;font-size:.95rem;font-weight:800;color:#4a80d0;margin-top:-6px;margin-bottom:12px';
+        totalCntEl.textContent = '총 ' + it.vendorOrder.qty.toLocaleString('ko-KR') + '건';
+        body.appendChild(totalCntEl);
+      }
     }
 
     // 이미지 (메모 아래)
@@ -9819,7 +10183,7 @@ function renderCsShare() {
     editBtn.onclick=(function(id){return function(){csEditOpen(id);};})(it.id);
     var cpBtn=document.createElement('button'); cpBtn.textContent='📋'; cpBtn.type='button';
     cpBtn.style.cssText='padding:6px 12px;border-radius:9px;border:1.5px solid #b0c8f8;background:white;color:#4a80d0;font-size:.85rem;cursor:pointer';
-    cpBtn.onclick=(function(t){return function(){navigator.clipboard.writeText(t).then(function(){toast('📋 복사됐어요!');});};})(it.text||'');
+    cpBtn.onclick=(function(t){return function(){navigator.clipboard.writeText(t).then(function(){toast('📋 복사됐어요!');});};})(csGetCopyText(it));
     var dlBtn=document.createElement('button'); dlBtn.textContent='🗑️'; dlBtn.type='button';
     dlBtn.style.cssText='background:none;border:none;cursor:pointer;color:#ddd;font-size:.9rem;margin-left:auto';
     dlBtn.onmouseover=function(){this.style.color='#e03c6e';}; dlBtn.onmouseout=function(){this.style.color='#ddd';};
