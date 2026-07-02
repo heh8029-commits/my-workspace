@@ -9706,7 +9706,7 @@ function addCsShare() {
   var txt = inpEl ? inpEl.value.trim() : '';
   var imgs = Array.isArray(_csShareImgs) ? _csShareImgs.slice() : [];
 
-  // 업체주문건: 업체명 + 수량/단가/배송비/합계 + 업체 메모를 첫 줄들로 붙이기
+  // 업체주문건: 업체명 + 업체 메모만 목록 첫 줄로 붙이기 (단가/배송비/합계는 직원용 목록엔 안 보이게, 정산기록에만 저장)
   var vendorCheck = document.getElementById('cs-vendor-check');
   var vendorLines = [];
   var vendorOrder = null;
@@ -9718,14 +9718,6 @@ function addCsShare() {
       var price = parseFloat((document.getElementById('cs-vendor-price')||{}).value)    || 0;
       var ship  = parseFloat((document.getElementById('cs-vendor-shipping')||{}).value) || 0;
       var total = qty * price + ship;
-      if (qty || price || ship) {
-        var calcParts = [];
-        if (qty)   calcParts.push(qty.toLocaleString('ko-KR') + '개');
-        if (price) calcParts.push('단가 ' + price.toLocaleString('ko-KR') + '원');
-        if (ship)  calcParts.push('배송비 ' + ship.toLocaleString('ko-KR') + '원');
-        if (total) calcParts.push('합계 ' + total.toLocaleString('ko-KR') + '원');
-        vendorLines.push(calcParts.join(' · '));
-      }
       vendorOrder = { vendorId: vendor.id, vendorName: vendor.name, qty: qty, price: price, shipping: ship, total: total, paid: false };
     }
   }
