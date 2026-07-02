@@ -1721,16 +1721,9 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
         <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 등록</div>
           <button onclick="csCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="2일 지난 글 삭제">🗑️ 2일정리</button>
-        <!-- 수→은→민 순서 -->
-        <div style="display:flex;gap:5px;align-items:center">
-          <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
-          <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-          <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
-        </div>
         <!-- 분류 -->
         <div style="display:flex;gap:6px;margin-left:4px">
           <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:8px 22px;border-radius:18px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:1rem;font-weight:900;cursor:pointer;transition:all .15s">💬 CS</button>
-          <button type="button" onclick="setCsCategory('그로스')" id="cs-cat-gross" style="padding:8px 22px;border-radius:18px;border:2.5px solid #e0a000;background:white;color:#e0a000;font-size:1rem;font-weight:900;cursor:pointer;transition:all .15s">📋 그로스리스트</button>
         </div>
       </div>
       <!-- 이미지 미리보기 (여러개) + 추가 버튼 -->
@@ -1743,6 +1736,12 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           <span style="font-size:.58rem;color:#b0c0e0">이미지</span>
         </div>
         <input type="file" id="cs-file-inp" accept="image/*" multiple style="display:none" onchange="csHandleFile(event)">
+      </div>
+      <!-- 수→은→민 순서 -->
+      <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px">
+        <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
+        <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
+        <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
       </div>
       <!-- 메모 -->
       <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
@@ -9650,19 +9649,6 @@ function renderCsShare() {
       + (isCat==='그로스' ? 'background:#e0a000;color:white' : 'background:#e8f0ff;color:#4a80d0;border:1.5px solid #b0c8f8');
     catBadge.textContent = isCat==='그로스' ? '📋 그로스리스트' : '💬 CS';
     hdr.appendChild(catBadge);
-
-    // 그로스 새창 버튼
-    if (isCat === '그로스') {
-      var newWinBtn = document.createElement('button');
-      newWinBtn.textContent = '🔲 새창으로';
-      newWinBtn.title = '새창으로 보기';
-      newWinBtn.style.cssText = 'background:#e0a000;border:none;border-radius:12px;padding:7px 16px;cursor:pointer;font-size:.9rem;font-weight:900;color:white;flex-shrink:0';
-      newWinBtn.onclick = (function(item){ return function(e) {
-        e.stopPropagation();
-        csOpenGrossWindow(item);
-      }; })(it);
-      hdr.appendChild(newWinBtn);
-    }
 
     if (it.type) {
       var tb = document.createElement('span');
