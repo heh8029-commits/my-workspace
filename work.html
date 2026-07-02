@@ -1718,16 +1718,32 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 
     <!-- 입력 폼 -->
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <div style="font-size:.92rem;font-weight:800;color:#1050a0">💬 등록</div>
-          <button onclick="csCleanOld()" style="margin-left:auto;background:white;border:1.5px solid #ddd;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;color:#aaa;cursor:pointer" title="2일 지난 글 삭제">🗑️ 2일정리</button>
-        <!-- 분류 -->
-        <div style="display:flex;gap:6px;margin-left:4px">
-          <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:8px 22px;border-radius:18px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:1rem;font-weight:900;cursor:pointer;transition:all .15s">💬 CS</button>
+      <!-- 상단: 제목 + 우측 버튼 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="font-size:1rem;font-weight:800;color:#1050a0">💬 등록</div>
+        <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:6px 18px;border-radius:16px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.85rem;font-weight:900;cursor:pointer">💬 CS</button>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button type="button" onclick="csSettleOpen()" style="background:#fff8e8;border:1.5px solid #e0a000;border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:800;color:#a06000;cursor:pointer;font-family:Pretendard,sans-serif">💰 업체 정산</button>
+          <button type="button" onclick="csCleanOld()" style="background:white;border:1.5px solid #ddd;border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:700;color:#999;cursor:pointer;font-family:Pretendard,sans-serif" title="2일 지난 글 삭제">🗑️ 2일정리</button>
         </div>
       </div>
+
+      <!-- 작성자 + 업체주문건 -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <span style="font-size:.78rem;font-weight:700;color:#aaa;flex-shrink:0">작성자</span>
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:38px;height:38px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
+          <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:38px;height:38px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
+          <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:38px;height:38px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:12px;border:2px solid #d0dff8;background:#f8fbff;cursor:pointer;margin-left:auto">
+          <input type="checkbox" id="cs-vendor-check" onchange="csVendorToggle(this.checked)" style="width:17px;height:17px;accent-color:#4a80d0;cursor:pointer">
+          <span style="font-size:.82rem;font-weight:800;color:#4a80d0;white-space:nowrap">🏢 업체주문건</span>
+        </label>
+      </div>
+
       <!-- 이미지 미리보기 (여러개) + 추가 버튼 -->
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:36px;margin-bottom:4px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:36px;margin-bottom:16px">
         <div id="cs-img-preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         <div id="cs-img-add" onclick="csImgModalOpen()" onpaste="csHandlePaste(event)" tabindex="0"
           style="width:60px;height:60px;flex-shrink:0;border:2px dashed #b0c8f8;border-radius:10px;background:#f8fbff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none"
@@ -1737,49 +1753,49 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         </div>
         <input type="file" id="cs-file-inp" accept="image/*" multiple style="display:none" onchange="csHandleFile(event)">
       </div>
-      <!-- 수→은→민 순서 -->
-      <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px">
-        <button type="button" onclick="setCsAuthor('수')" class="cs-author-btn" data-author="수" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #a0c8f8;background:#a0c8f8;color:white;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 0 0 3px rgba(160,200,248,.4)">수</button>
-        <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
-        <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
+
+      <!-- 업체주문건 상세 (체크 시에만 표시) -->
+      <div id="cs-vendor-detail" style="display:none;flex-direction:column;gap:10px;margin-bottom:14px;padding:14px;border:2px solid #d0dff8;border-radius:14px;background:#f8fbff">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="cs-vendor-select" onchange="csVendorSelectChange()" style="width:140px;flex-shrink:0;border:1.5px solid #c0d4f8;border-radius:9px;padding:8px 10px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+          </select>
+          <button type="button" onclick="csVendorManageOpen()" style="background:white;border:1.5px solid #4a80d0;border-radius:9px;padding:8px 14px;font-size:.8rem;font-weight:800;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">🏢 업체관리</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="cs-vendor-qty" placeholder="수량" oninput="csVendorCalcUpdate()" style="width:64px;border:1.5px solid #c0d4f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <span style="font-size:.78rem;color:#aaa">개</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="cs-vendor-price" placeholder="단가" oninput="csVendorCalcUpdate()" style="width:84px;border:1.5px solid #c0d4f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <span style="font-size:.78rem;color:#aaa">원</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="cs-vendor-shipping" placeholder="배송비" oninput="csVendorCalcUpdate()" style="width:84px;border:1.5px solid #c0d4f8;border-radius:9px;padding:7px 9px;font-size:.85rem;font-family:Pretendard,sans-serif;outline:none;background:white">
+            <span style="font-size:.78rem;color:#aaa">원</span>
+          </div>
+          <span id="cs-vendor-total" style="margin-left:auto;font-size:.92rem;font-weight:900;color:#4a80d0">합계 0원</span>
+        </div>
       </div>
-      <!-- 업체주문건 -->
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
-        <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;color:#4a80d0;cursor:pointer">
-          <input type="checkbox" id="cs-vendor-check" onchange="csVendorToggle(this.checked)" style="width:17px;height:17px;accent-color:#4a80d0;cursor:pointer">
-          🏢 업체주문건
-        </label>
-        <select id="cs-vendor-select" onchange="csVendorSelectChange()" style="display:none;flex:1;min-width:110px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none"></select>
-        <button type="button" id="cs-vendor-manage-btn" onclick="csVendorManageOpen()" style="display:none;background:white;border:1.5px solid #4a80d0;border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:700;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">🏢 업체관리</button>
-        <button type="button" onclick="csSettleOpen()" style="background:white;border:1.5px solid #e0a000;border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:700;color:#e0a000;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;margin-left:auto">💰 업체 정산</button>
-      </div>
-      <div id="cs-vendor-calc" style="display:none;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
-        <input type="number" id="cs-vendor-qty" placeholder="수량" oninput="csVendorCalcUpdate()" style="width:70px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
-        <span style="font-size:.78rem;color:#999">개 ·</span>
-        <input type="number" id="cs-vendor-price" placeholder="단가" oninput="csVendorCalcUpdate()" style="width:90px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
-        <span style="font-size:.78rem;color:#999">원 ·</span>
-        <input type="number" id="cs-vendor-shipping" placeholder="배송비" oninput="csVendorCalcUpdate()" style="width:90px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
-        <span style="font-size:.78rem;color:#999">원</span>
-        <span id="cs-vendor-total" style="margin-left:auto;font-size:.85rem;font-weight:800;color:#4a80d0">합계 0원</span>
-      </div>
+
       <!-- 메모 -->
       <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
         style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
         onpaste="csHandlePaste(event)"
         oninput="csVendorAutoQty()"
         onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
-      <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
+      <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:12px;padding:13px;color:white;font-weight:800;font-size:1rem;cursor:pointer;width:100%;margin-top:10px;letter-spacing:.02em">📤 등록</button>
     </div>
 
     <!-- 업체 관리 팝업 -->
     <div id="cs-vendor-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
-      <div style="background:white;border-radius:16px;padding:24px;width:min(420px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
-        <div style="font-size:.92rem;font-weight:700;color:#1050a0;margin-bottom:14px">🏢 업체 관리</div>
-        <div id="cs-vendor-form" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
-        <button type="button" onclick="csVendorAddRow()" style="width:100%;border:1.5px dashed #b0c8f8;border-radius:9px;padding:8px;background:#f8fbff;color:#4a80d0;font-weight:700;cursor:pointer;font-size:.82rem;font-family:Pretendard,sans-serif;margin-bottom:16px">+ 업체 추가</button>
-        <div style="display:flex;gap:8px">
-          <button onclick="csVendorCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
-          <button onclick="csVendorSave()" style="flex:1;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:9px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif">저장</button>
+      <div style="background:white;border-radius:18px;padding:26px;width:min(440px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+        <div style="font-size:1.05rem;font-weight:800;color:#1050a0;margin-bottom:18px">🏢 업체 관리</div>
+        <div id="cs-vendor-form" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+        <button type="button" onclick="csVendorAddRow()" style="width:100%;border:2px dashed #b0c8f8;border-radius:11px;padding:11px;background:#f8fbff;color:#4a80d0;font-weight:800;cursor:pointer;font-size:.86rem;font-family:Pretendard,sans-serif;margin-bottom:18px">+ 업체 추가</button>
+        <div style="display:flex;gap:10px">
+          <button onclick="csVendorCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:11px;padding:11px;background:white;cursor:pointer;font-size:.88rem;font-weight:700;font-family:Pretendard,sans-serif;color:#888">취소</button>
+          <button onclick="csVendorSave()" style="flex:1.5;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:11px;padding:11px;color:white;font-weight:800;cursor:pointer;font-size:.88rem;font-family:Pretendard,sans-serif">저장</button>
         </div>
       </div>
     </div>
@@ -9244,12 +9260,8 @@ function addCsVendorOrder(order) {
 function saveCsVendorsData(list) { stor('cs_vendors', {list:list}); }
 
 function csVendorToggle(on) {
-  var sel = document.getElementById('cs-vendor-select');
-  var btn = document.getElementById('cs-vendor-manage-btn');
-  var calc = document.getElementById('cs-vendor-calc');
-  if (sel) sel.style.display = on ? '' : 'none';
-  if (btn) btn.style.display = on ? '' : 'none';
-  if (calc) calc.style.display = on ? 'flex' : 'none';
+  var detail = document.getElementById('cs-vendor-detail');
+  if (detail) detail.style.display = on ? 'flex' : 'none';
   if (on) { renderCsVendorSelect(); }
   else { _csShareVendorId = ''; csVendorCalcReset(); }
 }
@@ -9320,16 +9332,16 @@ function renderCsVendorForm() {
     return;
   }
   form.innerHTML = _csVendorEditList.map(function(v, i) {
-    return '<div style="display:flex;flex-direction:column;gap:5px;background:#f8fbff;border:1px solid #d0dff8;border-radius:9px;padding:8px">'
-      + '<div style="display:flex;gap:6px;align-items:center">'
-      + '<input type="text" placeholder="업체명" value="'+escHtml(v.name||'')+'" oninput="_csVendorEditList['+i+'].name=this.value" style="flex:1;min-width:0;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
-      + '<span onclick="csVendorRemoveRow('+i+')" style="cursor:pointer;color:#e03c6e;font-size:.9rem;flex-shrink:0;padding:0 4px">✕</span>'
+    return '<div style="display:flex;flex-direction:column;gap:7px;background:#f8fbff;border:1.5px solid #d0dff8;border-radius:12px;padding:12px">'
+      + '<div style="display:flex;gap:8px;align-items:center">'
+      + '<input type="text" placeholder="업체명" value="'+escHtml(v.name||'')+'" oninput="_csVendorEditList['+i+'].name=this.value" style="flex:1;min-width:0;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.85rem;font-weight:700;color:#333;font-family:Pretendard,sans-serif;outline:none">'
+      + '<span onclick="csVendorRemoveRow('+i+')" style="cursor:pointer;color:#e03c6e;font-size:1.05rem;flex-shrink:0;padding:2px 4px">✕</span>'
       + '</div>'
-      + '<div style="display:flex;gap:6px">'
-      + '<input type="number" placeholder="단가" value="'+escHtml(v.price||'')+'" oninput="_csVendorEditList['+i+'].price=this.value" style="width:50%;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
-      + '<input type="number" placeholder="배송비" value="'+escHtml(v.shipping||'')+'" oninput="_csVendorEditList['+i+'].shipping=this.value" style="width:50%;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<div style="display:flex;gap:8px">'
+      + '<input type="number" placeholder="단가" value="'+escHtml(v.price||'')+'" oninput="_csVendorEditList['+i+'].price=this.value" style="width:50%;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="number" placeholder="배송비" value="'+escHtml(v.shipping||'')+'" oninput="_csVendorEditList['+i+'].shipping=this.value" style="width:50%;border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">'
       + '</div>'
-      + '<input type="text" placeholder="업체 메모 (예: 사은품o opp붙이게)" value="'+escHtml(v.memo||'')+'" oninput="_csVendorEditList['+i+'].memo=this.value" style="border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="text" placeholder="업체 메모 (예: 사은품o opp붙이게)" value="'+escHtml(v.memo||'')+'" oninput="_csVendorEditList['+i+'].memo=this.value" style="border:1.5px solid #d0dff8;border-radius:8px;padding:7px 10px;font-size:.83rem;font-family:Pretendard,sans-serif;outline:none">'
       + '</div>';
   }).join('');
 }
