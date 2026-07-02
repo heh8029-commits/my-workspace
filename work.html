@@ -1765,6 +1765,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
         style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
         onpaste="csHandlePaste(event)"
+        oninput="csVendorAutoQty()"
         onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
       <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
     </div>
@@ -9264,6 +9265,18 @@ function csVendorCalcUpdate() {
   var total = qty * price + ship;
   var totalEl = document.getElementById('cs-vendor-total');
   if (totalEl) totalEl.textContent = '합계 ' + total.toLocaleString('ko-KR') + '원';
+}
+
+// 메모에 명단/목록을 붙여넣으면 줄 수를 세서 수량에 자동으로 채워줌
+function csVendorAutoQty() {
+  var vendorCheck = document.getElementById('cs-vendor-check');
+  if (!vendorCheck || !vendorCheck.checked) return;
+  var inpEl = document.getElementById('cs-share-inp');
+  var qtyInp = document.getElementById('cs-vendor-qty');
+  if (!inpEl || !qtyInp) return;
+  var lines = inpEl.value.split('\n').filter(function(l){ return l.trim(); });
+  qtyInp.value = lines.length || '';
+  csVendorCalcUpdate();
 }
 
 function csVendorManageOpen() {
