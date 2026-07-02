@@ -9393,6 +9393,14 @@ function csSettleTogglePaid(id, cur) {
   renderCsSettle();
 }
 
+function csSettleDeleteOrder(id) {
+  if (!confirm('이 주문 기록을 삭제할까요?')) return;
+  var list = loadCsVendorOrders().filter(function(o){ return o.id !== id; });
+  saveCsVendorOrders(list);
+  renderCsSettle();
+  toast('🗑️ 삭제됐어요');
+}
+
 function renderCsSettle() {
   var body = document.getElementById('cs-settle-body');
   if (!body) return;
@@ -9430,6 +9438,7 @@ function renderCsSettle() {
         + '<label style="display:flex;align-items:center;gap:3px;font-size:.72rem;color:#888;cursor:pointer;flex-shrink:0">'
         + '<input type="checkbox" '+(o.paid?'checked':'')+' onchange="csSettleTogglePaid('+o.id+','+!!o.paid+')" style="width:14px;height:14px;cursor:pointer">정산완료'
         + '</label>'
+        + '<span onclick="csSettleDeleteOrder('+o.id+')" style="cursor:pointer;color:#e03c6e;font-size:1rem;flex-shrink:0;padding:0 2px" title="삭제">✕</span>'
         + '</div>';
     }).join('');
     return '<div style="margin-bottom:14px;border:1.5px solid #f0e0b0;border-radius:12px;overflow:hidden">'
