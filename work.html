@@ -9997,6 +9997,14 @@ function renderCsShare() {
     ctRow.appendChild(ctBtn);
     card.appendChild(ctRow);
 
+    // 업체주문건 라벨 (수/민 체크박스 위에 크게 표시)
+    if (it.vendorOrder) {
+      var vendorLabel = document.createElement('div');
+      vendorLabel.style.cssText = 'text-align:center;font-size:1.15rem;font-weight:900;color:#4a80d0;padding:10px 16px 0;letter-spacing:.02em';
+      vendorLabel.textContent = '🏢 업체주문';
+      card.appendChild(vendorLabel);
+    }
+
     // ── 3. 체크박스 - 그로스: 단일 / CS: 수민 ──
     var chkWrap = document.createElement('div');
     chkWrap.style.cssText = 'display:flex;gap:24px;justify-content:center;align-items:center;padding:10px 16px 12px';
