@@ -1743,12 +1743,34 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         <button type="button" onclick="setCsAuthor('은')" class="cs-author-btn" data-author="은" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #f7a8c0;background:white;color:#c04070;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">은</button>
         <button type="button" onclick="setCsAuthor('민')" class="cs-author-btn" data-author="민" style="width:34px;height:34px;border-radius:50%;border:2.5px solid #b0e8c0;background:white;color:#3dbb8f;font-size:.85rem;font-weight:900;cursor:pointer;transition:all .15s">민</button>
       </div>
+      <!-- 업체주문건 -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;color:#4a80d0;cursor:pointer">
+          <input type="checkbox" id="cs-vendor-check" onchange="csVendorToggle(this.checked)" style="width:17px;height:17px;accent-color:#4a80d0;cursor:pointer">
+          🏢 업체주문건
+        </label>
+        <select id="cs-vendor-select" onchange="csVendorSelectChange()" style="display:none;flex:1;min-width:110px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none"></select>
+        <button type="button" id="cs-vendor-manage-btn" onclick="csVendorManageOpen()" style="display:none;background:white;border:1.5px solid #4a80d0;border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:700;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">🏢 업체관리</button>
+      </div>
       <!-- 메모 -->
       <textarea id="cs-share-inp" rows="3" placeholder="💡 등록하기 전에 새로고침 버튼 눌러주세요 🔄"
         style="width:100%;box-sizing:border-box;border:2px solid #b0c8f8;border-radius:10px;padding:9px 12px;font-size:.95rem;font-family:Pretendard,sans-serif;outline:none;resize:none;line-height:1.7;background:#f8fbff"
         onpaste="csHandlePaste(event)"
         onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addCsShare()}"></textarea>
       <button onclick="addCsShare()" style="background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:10px;padding:10px;color:white;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-top:8px">📤 등록</button>
+    </div>
+
+    <!-- 업체 관리 팝업 -->
+    <div id="cs-vendor-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:white;border-radius:16px;padding:24px;width:min(420px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+        <div style="font-size:.92rem;font-weight:700;color:#1050a0;margin-bottom:14px">🏢 업체 관리</div>
+        <div id="cs-vendor-form" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+        <button type="button" onclick="csVendorAddRow()" style="width:100%;border:1.5px dashed #b0c8f8;border-radius:9px;padding:8px;background:#f8fbff;color:#4a80d0;font-weight:700;cursor:pointer;font-size:.82rem;font-family:Pretendard,sans-serif;margin-bottom:16px">+ 업체 추가</button>
+        <div style="display:flex;gap:8px">
+          <button onclick="csVendorCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
+          <button onclick="csVendorSave()" style="flex:1;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:9px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif">저장</button>
+        </div>
+      </div>
     </div>
 
     <!-- 필터 + 검색 -->
@@ -2040,7 +2062,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','cs_vendors','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -2175,7 +2197,7 @@ function _fixHeaderOffset() {
   apply();
 }
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_vendors','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -9179,6 +9201,81 @@ function setCsCategory(cat) {
   }
 }
 
+/* ── 업체 관리 (CS 등록 시 업체주문건 표시) ── */
+var _csShareVendorId = '';
+var _csVendorEditList = [];
+
+function loadCsVendors() { return loadObj('cs_vendors').list || []; }
+function saveCsVendorsData(list) { stor('cs_vendors', {list:list}); }
+
+function csVendorToggle(on) {
+  var sel = document.getElementById('cs-vendor-select');
+  var btn = document.getElementById('cs-vendor-manage-btn');
+  if (sel) sel.style.display = on ? '' : 'none';
+  if (btn) btn.style.display = on ? '' : 'none';
+  if (on) { renderCsVendorSelect(); }
+  else { _csShareVendorId = ''; }
+}
+
+function renderCsVendorSelect() {
+  var sel = document.getElementById('cs-vendor-select');
+  if (!sel) return;
+  var vendors = loadCsVendors();
+  sel.innerHTML = '<option value="">업체 선택...</option>' + vendors.map(function(v) {
+    return '<option value="'+v.id+'">'+escHtml(v.name)+'</option>';
+  }).join('');
+  sel.value = _csShareVendorId || '';
+}
+
+function csVendorSelectChange() {
+  var sel = document.getElementById('cs-vendor-select');
+  _csShareVendorId = sel ? sel.value : '';
+}
+
+function csVendorManageOpen() {
+  _csVendorEditList = loadCsVendors().map(function(v) { return {id:v.id, name:v.name, memo:v.memo}; });
+  renderCsVendorForm();
+  document.getElementById('cs-vendor-popup').style.display = 'flex';
+}
+
+function renderCsVendorForm() {
+  var form = document.getElementById('cs-vendor-form');
+  if (!form) return;
+  if (!_csVendorEditList.length) {
+    form.innerHTML = '<div style="text-align:center;color:#bbb;font-size:.82rem;padding:10px 0">+ 업체 추가로 등록해요</div>';
+    return;
+  }
+  form.innerHTML = _csVendorEditList.map(function(v, i) {
+    return '<div style="display:flex;gap:6px;align-items:center;background:#f8fbff;border:1px solid #d0dff8;border-radius:9px;padding:7px 8px">'
+      + '<input type="text" placeholder="업체명" value="'+escHtml(v.name||'')+'" oninput="_csVendorEditList['+i+'].name=this.value" style="width:90px;flex-shrink:0;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<input type="text" placeholder="업체 메모 (예: 사은품o opp붙이게)" value="'+escHtml(v.memo||'')+'" oninput="_csVendorEditList['+i+'].memo=this.value" style="flex:1;border:1px solid #d0dff8;border-radius:6px;padding:5px 8px;font-size:.8rem;font-family:Pretendard,sans-serif;outline:none">'
+      + '<span onclick="csVendorRemoveRow('+i+')" style="cursor:pointer;color:#e03c6e;font-size:.9rem;flex-shrink:0;padding:0 4px">✕</span>'
+      + '</div>';
+  }).join('');
+}
+
+function csVendorAddRow() {
+  _csVendorEditList.push({id: Date.now()+Math.random(), name:'', memo:''});
+  renderCsVendorForm();
+}
+
+function csVendorRemoveRow(i) {
+  _csVendorEditList.splice(i, 1);
+  renderCsVendorForm();
+}
+
+function csVendorCancel() { document.getElementById('cs-vendor-popup').style.display = 'none'; }
+
+function csVendorSave() {
+  var list = _csVendorEditList
+    .filter(function(v) { return (v.name||'').trim(); })
+    .map(function(v) { return {id:v.id, name:v.name.trim(), memo:(v.memo||'').trim()}; });
+  saveCsVendorsData(list);
+  csVendorCancel();
+  renderCsVendorSelect();
+  toast('🏢 업체 저장됐어요!');
+}
+
 function setCsAuthor(author) {
   _csShareAuthor = author;
   var BG_ON  = {'은':'#f7a8c0', '수':'#a0c8f8', '민':'#b0e8c0'};
@@ -9442,6 +9539,16 @@ function addCsShare() {
   var inpEl = document.getElementById('cs-share-inp');
   var txt = inpEl ? inpEl.value.trim() : '';
   var imgs = Array.isArray(_csShareImgs) ? _csShareImgs.slice() : [];
+
+  // 업체주문건: 업체명 + 업체 메모를 첫 줄로 붙이기
+  var vendorCheck = document.getElementById('cs-vendor-check');
+  var vendorLine = '';
+  if (vendorCheck && vendorCheck.checked && _csShareVendorId) {
+    var vendor = loadCsVendors().find(function(v){ return String(v.id) === String(_csShareVendorId); });
+    if (vendor) vendorLine = vendor.name + (vendor.memo ? ' ' + vendor.memo : '');
+  }
+  txt = [vendorLine, txt].filter(Boolean).join('\n');
+
   if (!txt && imgs.length === 0) {
     toast('내용 또는 이미지를 입력해요 💬');
     return;
@@ -9491,6 +9598,8 @@ function addCsShare() {
   if (inpEl) inpEl.value = '';
   _csShareImgs = [];
   renderCsImgPreview();
+  if (vendorCheck) vendorCheck.checked = false;
+  csVendorToggle(false);
   toast('📤 등록됐어요!');
   setTimeout(function(){ renderCsShare(); }, 100);
 }
@@ -9656,6 +9765,16 @@ function renderCsShare() {
       tb.textContent = it.type;
       hdr.appendChild(tb);
     }
+
+    // 체크타입 토글 (줄마다 체크박스로 완성 여부 표시)
+    var ctBtn = document.createElement('button');
+    ctBtn.type = 'button';
+    ctBtn.textContent = it.checkType ? '☑ 체크형' : '☐ 체크형';
+    ctBtn.style.cssText = 'background:'+(it.checkType?'#4a80d0':'white')+';color:'+(it.checkType?'white':'#4a80d0')+';border:1.5px solid #4a80d0;border-radius:10px;padding:3px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0';
+    ctBtn.onclick = (function(id,cur){ return function(e){ e.stopPropagation();
+      csUpdateItem(id, function(item){ item.checkType = !cur; });
+    }; })(it.id, !!it.checkType);
+    hdr.appendChild(ctBtn);
     card.appendChild(hdr);
 
     // ── 3. 체크박스 - 그로스: 단일 / CS: 수민 ──
@@ -9721,7 +9840,7 @@ function renderCsShare() {
     // 2. 메모 먼저 (이미지 위에)
     if (it.text) {
       var memoEl = document.createElement('div');
-      if (isCat === '그로스') {
+      if (isCat === '그로스' || it.checkType) {
         memoEl.style.cssText = 'padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
         var checks = it.lineChecks||[];
         it.text.split('\n').filter(function(l){ return l.trim(); }).forEach(function(line, i) {
