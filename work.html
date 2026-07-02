@@ -10105,6 +10105,14 @@ function renderCsShare() {
         memoEl.textContent = it.text;
       }
       body.appendChild(memoEl);
+
+      // 업체주문건: 리스트 밑에 총 건수 표시 (금액 정보는 제외)
+      if (it.vendorOrder && it.vendorOrder.qty) {
+        var totalCntEl = document.createElement('div');
+        totalCntEl.style.cssText = 'text-align:center;font-size:.95rem;font-weight:800;color:#4a80d0;margin-top:-6px;margin-bottom:12px';
+        totalCntEl.textContent = '총 ' + it.vendorOrder.qty.toLocaleString('ko-KR') + '건';
+        body.appendChild(totalCntEl);
+      }
     }
 
     // 이미지 (메모 아래)
