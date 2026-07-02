@@ -805,6 +805,475 @@
                     }
                 ],
     "ad_data":  {
+                    "03/08":  {
+                                  "cpAdCost":  268023,
+                                  "naverSales":  220400,
+                                  "naverSearchAd":  12782,
+                                  "naverAiAd":  0
+                              },
+                    "03/09":  {
+                                  "cpAdCost":  372574,
+                                  "naverSales":  201300,
+                                  "naverSearchAd":  11099,
+                                  "naverAiAd":  0
+                              },
+                    "03/10":  {
+                                  "cpAdCost":  429677,
+                                  "naverSales":  410700,
+                                  "naverSearchAd":  8877,
+                                  "naverAiAd":  48278
+                              },
+                    "03/11":  {
+                                  "cpAdCost":  407336,
+                                  "naverSales":  337400,
+                                  "naverSearchAd":  10010,
+                                  "naverAiAd":  51773
+                              },
+                    "03/12":  {
+                                  "cpAdCost":  441268,
+                                  "naverSales":  358800,
+                                  "naverSearchAd":  8833,
+                                  "naverAiAd":  60128
+                              },
+                    "03/13":  {
+                                  "cpAdCost":  394684,
+                                  "naverSales":  318100,
+                                  "naverSearchAd":  7414,
+                                  "naverAiAd":  60207
+                              },
+                    "03/14":  {
+                                  "cpAdCost":  292038,
+                                  "naverSales":  200600,
+                                  "naverSearchAd":  10307,
+                                  "naverAiAd":  60117
+                              },
+                    "03/15":  {
+                                  "cpAdCost":  271844,
+                                  "naverSales":  296200,
+                                  "naverSearchAd":  11429,
+                                  "naverAiAd":  56941
+                              },
+                    "03/16":  {
+                                  "cpAdCost":  375289,
+                                  "naverSales":  396100,
+                                  "naverSearchAd":  13189,
+                                  "naverAiAd":  57936
+                              },
+                    "03/17":  {
+                                  "cpAdCost":  351834,
+                                  "naverSales":  390100,
+                                  "naverSearchAd":  7700,
+                                  "naverAiAd":  60047
+                              },
+                    "03/18":  {
+                                  "cpAdCost":  359555,
+                                  "naverSales":  304200,
+                                  "naverSearchAd":  7799,
+                                  "naverAiAd":  57578
+                              },
+                    "03/19":  {
+                                  "cpAdCost":  321271,
+                                  "naverSales":  740700,
+                                  "naverSearchAd":  7480,
+                                  "naverAiAd":  60820
+                              },
+                    "03/20":  {
+                                  "cpAdCost":  320420,
+                                  "naverSales":  165300,
+                                  "naverSearchAd":  5071,
+                                  "naverAiAd":  37938
+                              },
+                    "03/21":  {
+                                  "cpAdCost":  253758,
+                                  "naverSales":  129500,
+                                  "naverSearchAd":  9845,
+                                  "naverAiAd":  39993
+                              },
+                    "03/22":  {
+                                  "cpAdCost":  257456,
+                                  "naverSales":  166900,
+                                  "naverSearchAd":  8382,
+                                  "naverAiAd":  40388
+                              },
+                    "03/23":  {
+                                  "cpAdCost":  360847,
+                                  "naverSales":  336700,
+                                  "naverSearchAd":  12573,
+                                  "naverAiAd":  47814
+                              },
+                    "03/24":  {
+                                  "cpAdCost":  405381,
+                                  "naverSales":  448300,
+                                  "naverSearchAd":  9438,
+                                  "naverAiAd":  58642
+                              },
+                    "03/25":  {
+                                  "cpAdCost":  381487,
+                                  "naverSales":  350800,
+                                  "naverSearchAd":  11473,
+                                  "naverAiAd":  60333
+                              },
+                    "03/26":  {
+                                  "cpAdCost":  391417,
+                                  "naverSales":  322900,
+                                  "naverSearchAd":  5533,
+                                  "naverAiAd":  57064
+                              },
+                    "03/27":  {
+                                  "cpAdCost":  309551,
+                                  "naverSales":  225800,
+                                  "naverSearchAd":  6842,
+                                  "naverAiAd":  39590
+                              },
+                    "03/28":  {
+                                  "cpAdCost":  270347,
+                                  "naverSales":  113300,
+                                  "naverSearchAd":  4752,
+                                  "naverAiAd":  37776
+                              },
+                    "03/29":  {
+                                  "cpAdCost":  248151,
+                                  "naverSales":  202400,
+                                  "naverSearchAd":  8030,
+                                  "naverAiAd":  40404
+                              },
+                    "03/30":  {
+                                  "cpAdCost":  385421,
+                                  "naverSales":  425000,
+                                  "naverSearchAd":  50346,
+                                  "naverAiAd":  11330
+                              },
+                    "03/31":  {
+                                  "cpAdCost":  373820,
+                                  "naverSales":  299340,
+                                  "naverSearchAd":  6369,
+                                  "naverAiAd":  48782
+                              },
+                    "04/01":  {
+                                  "cpAdCost":  401651,
+                                  "naverSales":  314600,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  58450
+                              },
+                    "04/02":  {
+                                  "cpAdCost":  380737,
+                                  "naverSales":  290000,
+                                  "naverSearchAd":  8361,
+                                  "naverAiAd":  56468
+                              },
+                    "04/03":  {
+                                  "cpAdCost":  398291,
+                                  "naverSales":  249700,
+                                  "naverSearchAd":  5760,
+                                  "naverAiAd":  37655
+                              },
+                    "04/04":  {
+                                  "cpAdCost":  267137,
+                                  "naverSales":  124800,
+                                  "naverSearchAd":  8353,
+                                  "naverAiAd":  40181
+                              },
+                    "04/05":  {
+                                  "cpAdCost":  271526,
+                                  "naverSales":  224400,
+                                  "naverSearchAd":  7792,
+                                  "naverAiAd":  39336
+                              },
+                    "04/06":  {
+                                  "cpAdCost":  433744,
+                                  "naverSales":  331300,
+                                  "naverSearchAd":  8800,
+                                  "naverAiAd":  49004
+                              },
+                    "04/07":  {
+                                  "cpAdCost":  457139,
+                                  "naverSales":  358200,
+                                  "naverSearchAd":  9000,
+                                  "naverAiAd":  60439
+                              },
+                    "04/08":  {
+                                  "cpAdCost":  415167,
+                                  "naverSales":  260100,
+                                  "naverSearchAd":  9000,
+                                  "naverAiAd":  60439
+                              },
+                    "04/09":  {
+                                  "cpAdCost":  471212,
+                                  "naverSales":  383100,
+                                  "naverSearchAd":  9800,
+                                  "naverAiAd":  60439
+                              },
+                    "04/10":  {
+                                  "cpAdCost":  367418,
+                                  "naverSales":  370200,
+                                  "naverSearchAd":  9800,
+                                  "naverAiAd":  60439
+                              },
+                    "04/11":  {
+                                  "cpAdCost":  266891,
+                                  "naverSales":  36800,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  40000
+                              },
+                    "04/12":  {
+                                  "cpAdCost":  282652,
+                                  "naverSales":  196300,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  40000
+                              },
+                    "04/13":  {
+                                  "cpAdCost":  365052,
+                                  "naverSales":  549100,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/14":  {
+                                  "cpAdCost":  424399,
+                                  "naverSales":  395100,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  50000
+                              },
+                    "04/15":  {
+                                  "cpAdCost":  457074,
+                                  "naverSales":  412000,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/16":  {
+                                  "cpAdCost":  457541,
+                                  "naverSales":  453300,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/17":  {
+                                  "cpAdCost":  382523,
+                                  "naverSales":  351300,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/18":  {
+                                  "cpAdCost":  281982,
+                                  "naverSales":  110700,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  70000
+                              },
+                    "04/19":  {
+                                  "cpAdCost":  305749,
+                                  "naverSales":  306800,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/20":  {
+                                  "cpAdCost":  447255,
+                                  "naverSales":  494600,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/21":  {
+                                  "cpAdCost":  471524,
+                                  "naverSales":  549100,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/22":  {
+                                  "cpAdCost":  555029,
+                                  "naverSales":  369100,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  60000
+                              },
+                    "04/23":  {
+                                  "cpAdCost":  564613,
+                                  "naverSales":  428400,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  40000
+                              },
+                    "04/24":  {
+                                  "cpAdCost":  464720,
+                                  "naverSales":  336800,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  40000
+                              },
+                    "04/25":  {
+                                  "cpAdCost":  323905,
+                                  "naverSales":  194100,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  40000
+                              },
+                    "04/26":  {
+                                  "cpAdCost":  380178,
+                                  "naverSales":  173500,
+                                  "naverSearchAd":  10000,
+                                  "naverAiAd":  40000
+                              },
+                    "05/17":  {
+                                  "cpAdCost":  282039,
+                                  "naverSales":  153900,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  30000
+                              },
+                    "05/22":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  309700,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/23":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  176900,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/24":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  90700,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/25":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  143900,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/26":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  320690,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/27":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  293100,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/28":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  152600,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/29":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  272000,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/30":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  145300,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "05/31":  {
+                                  "cpAdCost":  0,
+                                  "naverSales":  276300,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "06/01":  {
+                                  "cpAdCost":  462301
+                              },
+                    "06/02":  {
+                                  "cpAdCost":  482976
+                              },
+                    "06/03":  {
+                                  "cpAdCost":  394304
+                              },
+                    "06/04":  {
+                                  "cpAdCost":  455723
+                              },
+                    "06/05":  {
+                                  "cpAdCost":  416630
+                              },
+                    "06/06":  {
+                                  "cpAdCost":  232426
+                              },
+                    "06/07":  {
+                                  "cpAdCost":  283260
+                              },
+                    "06/08":  {
+                                  "cpAdCost":  396249
+                              },
+                    "06/09":  {
+                                  "cpAdCost":  455828
+                              },
+                    "06/10":  {
+                                  "cpAdCost":  428452
+                              },
+                    "06/11":  {
+                                  "cpAdCost":  429322
+                              },
+                    "06/12":  {
+                                  "cpAdCost":  384867
+                              },
+                    "06/13":  {
+                                  "cpAdCost":  288921
+                              },
+                    "06/14":  {
+                                  "cpAdCost":  322738
+                              },
+                    "06/15":  {
+                                  "cpAdCost":  384779
+                              },
+                    "06/16":  {
+                                  "cpAdCost":  343989
+                              },
+                    "06/17":  {
+                                  "cpAdCost":  320408
+                              },
+                    "06/18":  {
+                                  "cpAdCost":  344536,
+                                  "naverSales":  0,
+                                  "naverSearchAd":  0,
+                                  "naverAiAd":  0
+                              },
+                    "06/19":  {
+                                  "cpAdCost":  322151,
+                                  "mongAdCost":  45043
+                              },
+                    "06/20":  {
+                                  "cpAdCost":  282849
+                              },
+                    "06/21":  {
+                                  "cpAdCost":  277015
+                              },
+                    "06/22":  {
+                                  "mongCpAdCost":  45456,
+                                  "cpAdCost":  412336
+                              },
+                    "06/23":  {
+                                  "cpAdCost":  481349,
+                                  "mongCpAdCost":  37844
+                              },
+                    "06/24":  {
+                                  "cpAdCost":  443008,
+                                  "mongCpAdCost":  38909
+                              },
+                    "06/25":  {
+                                  "cpAdCost":  344801,
+                                  "mongCpAdCost":  37110
+                              },
+                    "06/26":  {
+                                  "cpAdCost":  276533,
+                                  "mongCpAdCost":  37198
+                              },
+                    "06/27":  {
+                                  "cpAdCost":  164462,
+                                  "mongCpAdCost":  34750
+                              },
+                    "06/28":  {
+                                  "cpAdCost":  104378,
+                                  "mongCpAdCost":  40934
+                              },
+                    "06/29":  {
+                                  "cpAdCost":  104689,
+                                  "mongCpAdCost":  21844
+                              },
+                    "06/30":  {
+                                  "cpAdCost":  144233,
+                                  "mongCpAdCost":  20871
+                              },
                     "07/01":  {
                                   "cpAdCost":  219280,
                                   "mongCpAdCost":  37819
