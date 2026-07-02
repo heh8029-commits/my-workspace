@@ -1751,6 +1751,7 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
         </label>
         <select id="cs-vendor-select" onchange="csVendorSelectChange()" style="display:none;flex:1;min-width:110px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none"></select>
         <button type="button" id="cs-vendor-manage-btn" onclick="csVendorManageOpen()" style="display:none;background:white;border:1.5px solid #4a80d0;border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:700;color:#4a80d0;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0">🏢 업체관리</button>
+        <button type="button" onclick="csSettleOpen()" style="background:white;border:1.5px solid #e0a000;border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:700;color:#e0a000;cursor:pointer;font-family:Pretendard,sans-serif;flex-shrink:0;margin-left:auto">💰 업체 정산</button>
       </div>
       <div id="cs-vendor-calc" style="display:none;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
         <input type="number" id="cs-vendor-qty" placeholder="수량" oninput="csVendorCalcUpdate()" style="width:70px;border:1.5px solid #d0dff8;border-radius:8px;padding:5px 8px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
@@ -1780,6 +1781,21 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
           <button onclick="csVendorCancel()" style="flex:1;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">취소</button>
           <button onclick="csVendorSave()" style="flex:1;background:linear-gradient(135deg,#4a80d0,#2060c0);border:none;border-radius:9px;padding:8px;color:white;font-weight:700;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif">저장</button>
         </div>
+      </div>
+    </div>
+
+    <!-- 업체 정산 팝업 -->
+    <div id="cs-settle-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:white;border-radius:16px;padding:24px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div style="font-size:.92rem;font-weight:700;color:#a06000">💰 업체 정산</div>
+          <label style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:.78rem;color:#888;cursor:pointer">
+            <input type="checkbox" id="cs-settle-show-paid" onchange="renderCsSettle()" style="width:14px;height:14px;cursor:pointer">
+            정산완료도 보기
+          </label>
+        </div>
+        <div id="cs-settle-body"></div>
+        <button onclick="csSettleCancel()" style="width:100%;margin-top:16px;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">닫기</button>
       </div>
     </div>
 
@@ -2072,7 +2088,7 @@ var _fbSyncThrottle = null;
 
 function _fbApplyData(all) {
   if (!all) return;
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','cs_vendors','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_share','cs_vendors','cs_vendor_orders','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   const allKeys = [...fixedKeys, ...Object.keys(all).filter(k => k.startsWith('sales_') || k.startsWith('hourly_') || k.startsWith('staff_pay_') || k.startsWith('pnl_'))];
   for (const k of allKeys) {
     if (all[k] !== undefined && all[k] !== null) {
@@ -2207,7 +2223,7 @@ function _fixHeaderOffset() {
   apply();
 }
 async function syncFromSheet() {
-  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_vendors','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
+  const fixedKeys = ['boss_flow','basic_flow','design_flow','week','todo','sched','memo','eun','jin','app','cs_list','cs_vendors','cs_vendor_orders','order_list','shortcuts','shortcuts2','recipe','exp_fixed','fridge_ingredient','fridge_side','tax-2026-vat','tax-2025-vat','tax-2026-income','tax-2025-income','tax-memo','money_check','sub_list','etc_memo','staff_master','pnl_expense_template','pnl_notes','pnl_note_box','tax_note_box','sales_note_box','shop_list','week_menu','cal_scheds','imp_check','imp_offline','imp_online','imp_mino','imp_check2','jinu_scheds','jinu_tt','jinu_memos','jinu_notes','event_rec','event_side_memo','design_links','design_cards','design_card_cats','design_comments','product_mgmt','card_mgmt','phrase_list','cti_list','ad_list','trip_checks','trip_trips','trip_memos','inv_list','inv_notes','inv_memo_box','inv_cats','cm_notes','info_cats','info_notes','pw_list','tax_notes','m5_assets','m5_asset_cats','m5_asset_plan','m5_asset_loan','m5_asset_notes','m5_autotx','m5_autotx_memo','m5_card_spend','cost_calc_saved','m5_invest','m5_invest_notes','m5_invest_routine','m5_invest_memo','m5_loans','m5_loan_notes','m5_health_check','m5_health_notes','m5_know_links','m5_know_notes'];
   toast('🔄 동기화 중...');
   try {
     const res = await fetch(FB_URL + '.json?t=' + Date.now(), { cache: 'no-store' });
@@ -9216,6 +9232,15 @@ var _csShareVendorId = '';
 var _csVendorEditList = [];
 
 function loadCsVendors() { return loadObj('cs_vendors').list || []; }
+
+// 업체 주문 정산 기록 - CS 목록(cs_share)은 2일정리로 삭제되므로, 정산용 데이터는 따로 영구 보관
+function loadCsVendorOrders() { return loadObj('cs_vendor_orders').list || []; }
+function saveCsVendorOrders(list) { stor('cs_vendor_orders', {list:list}); }
+function addCsVendorOrder(order) {
+  var list = loadCsVendorOrders();
+  list.unshift(order);
+  saveCsVendorOrders(list);
+}
 function saveCsVendorsData(list) { stor('cs_vendors', {list:list}); }
 
 function csVendorToggle(on) {
@@ -9337,6 +9362,72 @@ function csVendorSave() {
   csVendorCancel();
   renderCsVendorSelect();
   toast('🏢 업체 저장됐어요!');
+}
+
+/* ── 업체 정산 (2일정리와 무관하게 영구 보관된 cs_vendor_orders 기준) ── */
+function csSettleOpen() {
+  renderCsSettle();
+  document.getElementById('cs-settle-popup').style.display = 'flex';
+}
+
+function csSettleCancel() { document.getElementById('cs-settle-popup').style.display = 'none'; }
+
+function csSettleTogglePaid(id, cur) {
+  var list = loadCsVendorOrders();
+  var order = list.find(function(o){ return o.id === id; });
+  if (!order) return;
+  order.paid = !cur;
+  saveCsVendorOrders(list);
+  renderCsSettle();
+}
+
+function renderCsSettle() {
+  var body = document.getElementById('cs-settle-body');
+  if (!body) return;
+  var showPaid = (document.getElementById('cs-settle-show-paid')||{}).checked;
+  var orders = loadCsVendorOrders().filter(function(o){ return showPaid || !o.paid; });
+
+  if (!orders.length) {
+    body.innerHTML = '<div style="text-align:center;color:#bbb;padding:30px 0;font-size:.85rem">'+(showPaid ? '정산 기록이 없어요' : '미정산 주문이 없어요 🎉')+'</div>';
+    return;
+  }
+
+  var byVendor = {};
+  orders.forEach(function(o){
+    var key = o.vendorId || o.vendorName;
+    if (!byVendor[key]) byVendor[key] = { name: o.vendorName, orders: [] };
+    byVendor[key].orders.push(o);
+  });
+
+  body.innerHTML = Object.keys(byVendor).map(function(key){
+    var g = byVendor[key];
+    g.orders.sort(function(a,b){ return b.createdAt - a.createdAt; });
+    var unpaidTotal = g.orders.filter(function(o){ return !o.paid; }).reduce(function(s,o){ return s + (o.total||0); }, 0);
+    var rows = g.orders.map(function(o){
+      var d = new Date(o.createdAt);
+      var dateStr = (d.getMonth()+1)+'/'+d.getDate();
+      var calcStr = [
+        o.qty ? o.qty.toLocaleString('ko-KR')+'개' : '',
+        o.price ? '단가 '+o.price.toLocaleString('ko-KR')+'원' : '',
+        o.shipping ? '배송비 '+o.shipping.toLocaleString('ko-KR')+'원' : ''
+      ].filter(Boolean).join(' · ');
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #f5f0e0;opacity:'+(o.paid?'.5':'1')+'">'
+        + '<span style="font-size:.72rem;color:#999;width:34px;flex-shrink:0">'+dateStr+'</span>'
+        + '<span style="flex:1;min-width:0;font-size:.8rem;color:#555">'+escHtml(calcStr||'-')+'</span>'
+        + '<span style="font-size:.85rem;font-weight:800;color:#a06000;flex-shrink:0">'+(o.total||0).toLocaleString('ko-KR')+'원</span>'
+        + '<label style="display:flex;align-items:center;gap:3px;font-size:.72rem;color:#888;cursor:pointer;flex-shrink:0">'
+        + '<input type="checkbox" '+(o.paid?'checked':'')+' onchange="csSettleTogglePaid('+o.id+','+!!o.paid+')" style="width:14px;height:14px;cursor:pointer">정산완료'
+        + '</label>'
+        + '</div>';
+    }).join('');
+    return '<div style="margin-bottom:14px;border:1.5px solid #f0e0b0;border-radius:12px;overflow:hidden">'
+      + '<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#fff8e8">'
+      + '<span style="font-weight:800;color:#a06000;font-size:.88rem">🏢 '+escHtml(g.name)+'</span>'
+      + '<span style="margin-left:auto;font-weight:900;color:#a06000;font-size:.92rem">미정산 '+unpaidTotal.toLocaleString('ko-KR')+'원</span>'
+      + '</div>'
+      + '<div style="padding:2px 12px">'+rows+'</div>'
+      + '</div>';
+  }).join('');
 }
 
 function setCsAuthor(author) {
@@ -9606,6 +9697,7 @@ function addCsShare() {
   // 업체주문건: 업체명 + 수량/단가/배송비/합계 + 업체 메모를 첫 줄들로 붙이기
   var vendorCheck = document.getElementById('cs-vendor-check');
   var vendorLines = [];
+  var vendorOrder = null;
   if (vendorCheck && vendorCheck.checked && _csShareVendorId) {
     var vendor = loadCsVendors().find(function(v){ return String(v.id) === String(_csShareVendorId); });
     if (vendor) {
@@ -9613,15 +9705,16 @@ function addCsShare() {
       var qty   = parseFloat((document.getElementById('cs-vendor-qty')||{}).value)      || 0;
       var price = parseFloat((document.getElementById('cs-vendor-price')||{}).value)    || 0;
       var ship  = parseFloat((document.getElementById('cs-vendor-shipping')||{}).value) || 0;
+      var total = qty * price + ship;
       if (qty || price || ship) {
         var calcParts = [];
         if (qty)   calcParts.push(qty.toLocaleString('ko-KR') + '개');
         if (price) calcParts.push('단가 ' + price.toLocaleString('ko-KR') + '원');
         if (ship)  calcParts.push('배송비 ' + ship.toLocaleString('ko-KR') + '원');
-        var total = qty * price + ship;
         if (total) calcParts.push('합계 ' + total.toLocaleString('ko-KR') + '원');
         vendorLines.push(calcParts.join(' · '));
       }
+      vendorOrder = { vendorId: vendor.id, vendorName: vendor.name, qty: qty, price: price, shipping: ship, total: total, paid: false };
     }
   }
   txt = vendorLines.concat(txt ? [txt] : []).join('\n');
@@ -9638,11 +9731,30 @@ function addCsShare() {
     text: txt,
     imgs: imgs,
     img: imgs[0] || '',
+    vendorOrder: vendorOrder,
     done: false,
     createdAt: Date.now(),
     replies: [],
     confirmed: []
   };
+
+  // 업체 주문 정산 기록은 2일정리로 지워지지 않는 별도 저장소에 영구 보관
+  if (vendorOrder) {
+    addCsVendorOrder({
+      id: newItem.id,
+      csItemId: newItem.id,
+      vendorId: vendorOrder.vendorId,
+      vendorName: vendorOrder.vendorName,
+      qty: vendorOrder.qty,
+      price: vendorOrder.price,
+      shipping: vendorOrder.shipping,
+      total: vendorOrder.total,
+      paid: false,
+      memo: txt,
+      createdAt: newItem.createdAt
+    });
+  }
+
   // Firebase 최신 데이터 fetch 후 새 글 추가해서 저장
   _csLastSeenId = newItem.id;
   fetch(FB_URL + '/cs_share.json?t=' + Date.now(), { cache: 'no-store' })
