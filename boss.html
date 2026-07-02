@@ -2101,18 +2101,11 @@ function renderSidebar(){
       ${m.emoji} ${m.label}
     </button>`;
     if(m.sub && m.sub.length){
-      html += m.sub.map(s=>{
-        let sh = `<button class="sid-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
+      html += m.sub.map(s=>
+        `<button class="sid-item${activeSubMenu===s.id?' active':''}" onclick="setSub('${s.id}','${s.label}')">
           ${s.emoji} ${s.label}
-        </button>`;
-        if(s.id==='stock' && activeSubMenu==='stock'){
-          sh += _invData.cats.map(c=>{
-            const on = _invCatFilter===c.id;
-            return `<button class="sid-catitem${on?' active':''}" onclick="_invCatFilter='${c.id}';renderInvCats();renderInv();renderSidebar()">${c.name}</button>`;
-          }).join('');
-        }
-        return sh;
-      }).join('');
+        </button>`
+      ).join('');
     }
   }
   el.innerHTML = html;
