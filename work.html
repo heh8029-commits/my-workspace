@@ -1804,10 +1804,6 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       <div style="background:white;border-radius:16px;padding:24px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:Pretendard,sans-serif">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
           <div style="font-size:.92rem;font-weight:700;color:#a06000">💰 업체 정산</div>
-          <label style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:.78rem;color:#888;cursor:pointer">
-            <input type="checkbox" id="cs-settle-show-paid" onchange="renderCsSettle()" style="width:14px;height:14px;cursor:pointer">
-            정산완료도 보기
-          </label>
         </div>
         <div id="cs-settle-body"></div>
         <button onclick="csSettleCancel()" style="width:100%;margin-top:16px;border:1.5px solid #ddd;border-radius:9px;padding:8px;background:white;cursor:pointer;font-size:.83rem;font-family:Pretendard,sans-serif;color:#888">닫기</button>
@@ -9403,11 +9399,10 @@ function csSettleDeleteOrder(id) {
 function renderCsSettle() {
   var body = document.getElementById('cs-settle-body');
   if (!body) return;
-  var showPaid = (document.getElementById('cs-settle-show-paid')||{}).checked;
-  var orders = loadCsVendorOrders().filter(function(o){ return showPaid || !o.paid; });
+  var orders = loadCsVendorOrders();
 
   if (!orders.length) {
-    body.innerHTML = '<div style="text-align:center;color:#bbb;padding:30px 0;font-size:.85rem">'+(showPaid ? '정산 기록이 없어요' : '미정산 주문이 없어요 🎉')+'</div>';
+    body.innerHTML = '<div style="text-align:center;color:#bbb;padding:30px 0;font-size:.85rem">정산 기록이 없어요</div>';
     return;
   }
 
