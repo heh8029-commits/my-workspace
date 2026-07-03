@@ -9419,34 +9419,65 @@ function renderCsSettle() {
     byVendor[key].orders.push(o);
   });
 
+  function monthKey(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + '-' + (d.getMonth()+1);
+  }
+  function monthLabel(key) {
+    var parts = key.split('-');
+    return parts[0] + '년 ' + parts[1] + '월';
+  }
+
   body.innerHTML = Object.keys(byVendor).map(function(key){
     var g = byVendor[key];
     g.orders.sort(function(a,b){ return b.createdAt - a.createdAt; });
     var unpaidTotal = g.orders.filter(function(o){ return !o.paid; }).reduce(function(s,o){ return s + (o.total||0); }, 0);
-    var rows = g.orders.map(function(o){
-      var d = new Date(o.createdAt);
-      var dateStr = (d.getMonth()+1)+'/'+d.getDate();
-      var calcStr = [
-        o.qty ? o.qty.toLocaleString('ko-KR')+'개' : '',
-        o.price ? '단가 '+o.price.toLocaleString('ko-KR')+'원' : '',
-        o.shipping ? '배송비 '+o.shipping.toLocaleString('ko-KR')+'원' : ''
-      ].filter(Boolean).join(' · ');
-      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #f5f0e0;opacity:'+(o.paid?'.5':'1')+'">'
-        + '<span style="font-size:.72rem;color:#999;width:34px;flex-shrink:0">'+dateStr+'</span>'
-        + '<span style="flex:1;min-width:0;font-size:.8rem;color:#555">'+escHtml(calcStr||'-')+'</span>'
-        + '<span style="font-size:.85rem;font-weight:800;color:#a06000;flex-shrink:0">'+(o.total||0).toLocaleString('ko-KR')+'원</span>'
-        + '<label style="display:flex;align-items:center;gap:3px;font-size:.72rem;color:#888;cursor:pointer;flex-shrink:0">'
-        + '<input type="checkbox" '+(o.paid?'checked':'')+' onchange="csSettleTogglePaid('+o.id+','+!!o.paid+')" style="width:14px;height:14px;cursor:pointer">정산완료'
-        + '</label>'
-        + '<span onclick="csSettleDeleteOrder('+o.id+')" style="cursor:pointer;color:#e03c6e;font-size:1rem;flex-shrink:0;padding:0 2px" title="삭제">✕</span>'
+
+    // 월별로 묶기
+    var byMonth = {};
+    var monthOrder = [];
+    g.orders.forEach(function(o){
+      var mk = monthKey(o.createdAt);
+      if (!byMonth[mk]) { byMonth[mk] = []; monthOrder.push(mk); }
+      byMonth[mk].push(o);
+    });
+
+    var monthsHtml = monthOrder.map(function(mk){
+      var mOrders = byMonth[mk];
+      var monthUnpaid = mOrders.filter(function(o){ return !o.paid; }).reduce(function(s,o){ return s + (o.total||0); }, 0);
+      var rows = mOrders.map(function(o){
+        var d = new Date(o.createdAt);
+        var dateStr = (d.getMonth()+1)+'/'+d.getDate();
+        var calcStr = [
+          o.qty ? o.qty.toLocaleString('ko-KR')+'개' : '',
+          o.price ? '단가 '+o.price.toLocaleString('ko-KR')+'원' : '',
+          o.shipping ? '배송비 '+o.shipping.toLocaleString('ko-KR')+'원' : ''
+        ].filter(Boolean).join(' · ');
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #f5f0e0;opacity:'+(o.paid?'.5':'1')+'">'
+          + '<span style="font-size:.72rem;color:#999;width:34px;flex-shrink:0">'+dateStr+'</span>'
+          + '<span style="flex:1;min-width:0;font-size:.8rem;color:#555">'+escHtml(calcStr||'-')+'</span>'
+          + '<span style="font-size:.85rem;font-weight:800;color:#a06000;flex-shrink:0">'+(o.total||0).toLocaleString('ko-KR')+'원</span>'
+          + '<label style="display:flex;align-items:center;gap:3px;font-size:.72rem;color:#888;cursor:pointer;flex-shrink:0">'
+          + '<input type="checkbox" '+(o.paid?'checked':'')+' onchange="csSettleTogglePaid('+o.id+','+!!o.paid+')" style="width:14px;height:14px;cursor:pointer">정산완료'
+          + '</label>'
+          + '<span onclick="csSettleDeleteOrder('+o.id+')" style="cursor:pointer;color:#e03c6e;font-size:1rem;flex-shrink:0;padding:0 2px" title="삭제">✕</span>'
+          + '</div>';
+      }).join('');
+      return '<div style="margin-bottom:8px">'
+        + '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;background:#fdf4de;border-radius:7px;margin-bottom:2px">'
+        + '<span style="font-weight:800;color:#a06000;font-size:.78rem">📅 '+monthLabel(mk)+'</span>'
+        + '<span style="margin-left:auto;font-weight:800;color:#a06000;font-size:.8rem">월 합계 '+monthUnpaid.toLocaleString('ko-KR')+'원</span>'
+        + '</div>'
+        + rows
         + '</div>';
     }).join('');
+
     return '<div style="margin-bottom:14px;border:1.5px solid #f0e0b0;border-radius:12px;overflow:hidden">'
       + '<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#fff8e8">'
       + '<span style="font-weight:800;color:#a06000;font-size:.88rem">🏢 '+escHtml(g.name)+'</span>'
       + '<span style="margin-left:auto;font-weight:900;color:#a06000;font-size:.92rem">미정산 '+unpaidTotal.toLocaleString('ko-KR')+'원</span>'
       + '</div>'
-      + '<div style="padding:2px 12px">'+rows+'</div>'
+      + '<div style="padding:8px 12px 2px">'+monthsHtml+'</div>'
       + '</div>';
   }).join('');
 }
