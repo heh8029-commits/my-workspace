@@ -1720,10 +1720,9 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div class="card" style="border-top:3px solid #4a80d0;margin-bottom:14px">
       <!-- 상단: 제목 + 우측 버튼 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-        <div style="font-size:1rem;font-weight:800;color:#1050a0">💬 등록</div>
+        <div onclick="csSettleOpen()" style="font-size:1rem;font-weight:800;color:#1050a0;cursor:default">💬 등록</div>
         <button type="button" onclick="setCsCategory('CS')" id="cs-cat-cs" style="padding:6px 18px;border-radius:16px;border:2.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.85rem;font-weight:900;cursor:pointer">💬 CS</button>
         <div style="display:flex;gap:8px;margin-left:auto">
-          <button type="button" onclick="csSettleOpen()" style="background:#fff8e8;border:1.5px solid #e0a000;border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:800;color:#a06000;cursor:pointer;font-family:Pretendard,sans-serif">💰 업체 정산</button>
           <button type="button" onclick="csCleanOld()" style="background:white;border:1.5px solid #ddd;border-radius:10px;padding:7px 14px;font-size:.8rem;font-weight:700;color:#999;cursor:pointer;font-family:Pretendard,sans-serif" title="2일 지난 글 삭제">🗑️ 2일정리</button>
         </div>
       </div>
