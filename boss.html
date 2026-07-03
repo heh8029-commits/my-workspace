@@ -266,6 +266,20 @@ a{text-decoration:none;color:inherit}
 .ad-flow-item:hover .afi-edit{display:flex}
 .ad-flow-item .afi-drag{cursor:grab;color:#A9DFBF;font-size:.8rem;padding:0 2px;flex-shrink:0;user-select:none}
 
+/* ── 상품등록할거 ── */
+.reg-section{margin-top:20px}
+.reg-card{background:linear-gradient(135deg,#FFF8F0 0%,#FFF0E6 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(230,120,40,.1);border:1.5px solid #FDDBB4}
+.reg-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:900px){.reg-grid{grid-template-columns:repeat(3,1fr)}}
+.reg-item{position:relative;background:#fff;border:2px solid #FDDBB4;border-radius:12px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:80px;transition:all .15s}
+.reg-item.done{background:#f5f5f5;border-color:#ddd;opacity:.55}
+.reg-item input[type=checkbox]{width:22px;height:22px;accent-color:#E87820;cursor:pointer;flex-shrink:0}
+.reg-item .reg-name{font-size:.78rem;font-weight:700;color:#7A3A10;text-align:center;word-break:break-all;line-height:1.4;flex:1}
+.reg-item.done .reg-name{text-decoration:line-through;color:#aaa}
+.reg-item .reg-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#E87820;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
+.reg-item:hover .reg-del{display:flex}
+.reg-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#E87820,#C45A10);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
+
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 @media(max-width:960px){
@@ -1263,6 +1277,15 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <div class="design-flow-wrap" id="design-flow"></div>
           </div>
         </div>
+        <div class="reg-section">
+          <div class="design-flow-header">
+            <span style="font-size:1rem;font-weight:800;color:#C45A10">📦 상품등록할거</span>
+          </div>
+          <div class="reg-card">
+            <div class="reg-grid" id="reg-list"></div>
+            <button class="reg-add-btn" onclick="regAdd()">+ 추가</button>
+          </div>
+        </div>
         <div class="ad-flow-section">
           <div class="design-flow-header">
             <span class="ad-flow-title">📢 광고 업무 순서</span>
@@ -2135,7 +2158,7 @@ function setMenu(id){
   activeMenu=id; activeSubMenu=null;
   renderTopMenu(); renderSidebar(); renderMobileSub();
   if(id==='home'){ showPage('home'); }
-  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); }
+  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); regFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else { showPage('sub'); }
@@ -5755,6 +5778,48 @@ async function _afSaveNow(){
   try{await fetch(FB_AD_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(afData)});}catch(e){}
 }
 function afSave(){clearTimeout(_afSaveTimer);_afSaveTimer=setTimeout(_afSaveNow,600);}
+
+/* ── 상품등록할거 ── */
+const FB_REG = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/reg_items.json';
+let regItems = [];
+let _regSaveTimer = null;
+async function regFetch() {
+  try { const r = await fetch(FB_REG+'?t='+Date.now()); if(r.ok){const d=await r.json(); if(Array.isArray(d)) regItems=d;} } catch(e) {}
+  regRender();
+}
+async function _regSaveNow() {
+  try { await fetch(FB_REG,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(regItems)}); } catch(e) {}
+}
+function regSave() { clearTimeout(_regSaveTimer); _regSaveTimer = setTimeout(_regSaveNow, 600); }
+function regRender() {
+  const wrap = document.getElementById('reg-list'); if(!wrap) return;
+  wrap.innerHTML = '';
+  regItems.forEach(function(item, i) {
+    const div = document.createElement('div');
+    div.className = 'reg-item' + (item.done ? ' done' : '');
+    div.innerHTML = `
+      <input type="checkbox" ${item.done?'checked':''} onchange="regToggle(${i},this.checked)">
+      <div class="reg-name" contenteditable="true" onblur="regRename(${i},this.textContent)">${item.name||''}</div>
+      <button class="reg-del" onclick="regDel(${i})">✕</button>`;
+    wrap.appendChild(div);
+  });
+}
+function regAdd() {
+  const name = prompt('상품명 입력');
+  if (!name || !name.trim()) return;
+  regItems.push({name: name.trim(), done: false});
+  regRender(); regSave();
+}
+function regToggle(i, checked) {
+  regItems[i].done = checked; regRender(); regSave();
+}
+function regRename(i, text) {
+  regItems[i].name = text.trim(); regSave();
+}
+function regDel(i) {
+  regItems.splice(i, 1); regRender(); regSave();
+}
+
 function afRender(){
   const wrap=document.getElementById('ad-flow');if(!wrap)return;
   let h='';
