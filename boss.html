@@ -5698,6 +5698,7 @@ function dfRender(){
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
         style="outline:none;min-width:30px">${bfEsc(item.text)}</span>
       ${nowBadge}
+      ${item.url?`<a href="${bfEsc(item.url)}" target="_blank" style="font-size:.8rem;text-decoration:none;flex-shrink:0" title="${bfEsc(item.url)}">🔗</a>`:''}
       <button class="dfi-edit" onclick="dfEditPopup(${item.id})">✏️</button>
       <button class="dfi-del" onclick="dfDel(${item.id})">✕</button>
     </div>`;
@@ -5713,6 +5714,7 @@ function dfAdd(){
   ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
     <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">🎨 업무 추가</div>
     <input id="df-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <input id="df-add-url" type="url" placeholder="🔗 링크 URL (선택)" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
     <select id="df-add-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
       <option value="">시간대 없음</option>${opts}
     </select>
@@ -5724,7 +5726,8 @@ function dfAdd(){
   const inp=ov.querySelector('#df-add-txt');inp.focus();
   ov.querySelector('#df-add-ok').onclick=function(){
     const t=inp.value.trim();if(!t){inp.focus();return;}
-    dfData.push({id:Date.now(),text:t,time:ov.querySelector('#df-add-time').value});
+    const u=ov.querySelector('#df-add-url').value.trim();
+    dfData.push({id:Date.now(),text:t,time:ov.querySelector('#df-add-time').value,url:u||''});
     dfSave();dfRender();ov.remove();
   };
   inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#df-add-ok').click();};
@@ -5740,6 +5743,7 @@ function dfEditPopup(id){
   ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
     <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">✏️ 업무 편집</div>
     <input id="df-edit-txt" type="text" value="${bfEsc(item.text)}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <input id="df-edit-url" type="url" placeholder="🔗 링크 URL (선택)" value="${bfEsc(item.url||'')}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
     <select id="df-edit-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
       <option value=""${!item.time?' selected':''}>시간대 없음</option>${opts}
     </select>
@@ -5752,6 +5756,7 @@ function dfEditPopup(id){
   ov.querySelector('#df-edit-ok').onclick=function(){
     const t=inp.value.trim();if(!t){inp.focus();return;}
     item.text=t;item.time=ov.querySelector('#df-edit-time').value;
+    item.url=ov.querySelector('#df-edit-url').value.trim();
     dfSave();dfRender();ov.remove();
   };
   inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#df-edit-ok').click();};
