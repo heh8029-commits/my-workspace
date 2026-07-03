@@ -277,9 +277,6 @@ a{text-decoration:none;color:inherit}
 .reg-item .reg-name{font-size:.78rem;font-weight:700;color:#7A3A10;text-align:center;word-break:break-all;line-height:1.4;flex:1;width:100%;border:none;outline:none;background:transparent;font-family:Pretendard,sans-serif;resize:none;text-align:center;cursor:text}
 .reg-item.done .reg-name{text-decoration:line-through;color:#aaa}
 .reg-item .reg-title{font-size:.72rem;font-weight:800;color:#C45A10;text-align:center;width:100%;border:none;border-bottom:1.5px solid #FDDBB4;outline:none;background:transparent;font-family:Pretendard,sans-serif;padding-bottom:4px;margin-bottom:2px;cursor:text}
-.reg-item .reg-plat{font-size:.65rem;font-weight:800;border-radius:8px;padding:2px 7px;cursor:pointer;border:none;font-family:Pretendard,sans-serif;flex-shrink:0}
-.reg-item .reg-plat.both{background:#4A80D0;color:#fff}
-.reg-item .reg-plat.cp{background:#E87820;color:#fff}
 .reg-item .reg-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#E87820;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
 .reg-item:hover .reg-del{display:flex}
 .reg-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#E87820,#C45A10);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
@@ -5800,35 +5797,33 @@ function regRender() {
   wrap.innerHTML = '';
   regItems.forEach(function(item, i) {
     const div = document.createElement('div');
-    div.className = 'reg-item' + (item.done ? ' done' : '');
-    const isBoth = item.plat === 'both';
+    const allDone = item.cpDone && (item.nvDone || !item.useNaver);
+    div.className = 'reg-item' + (allDone ? ' done' : '');
     div.innerHTML = `
       <input class="reg-title" type="text" placeholder="타이틀" value="${(item.title||'').replace(/"/g,'&quot;')}" oninput="regItems[${i}].title=this.value;regSave()">
-      <input type="checkbox" ${item.done?'checked':''} onchange="regToggle(${i},this.checked)">
       <textarea class="reg-name" rows="2" placeholder="상품명" oninput="regRename(${i},this.value)">${item.name||''}</textarea>
-      <button class="reg-plat ${isBoth?'both':'cp'}" onclick="regTogglePlat(${i})">${isBoth?'쿠팡+네이버':'쿠팡'}</button>
+      <div style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:#E87820;cursor:pointer">
+          <input type="checkbox" ${item.cpDone?'checked':''} onchange="regItems[${i}].cpDone=this.checked;regRender();regSave()" style="width:16px;height:16px;accent-color:#E87820;cursor:pointer">쿠팡
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:#4A80D0;cursor:pointer">
+          <input type="checkbox" ${item.nvDone?'checked':''} onchange="regItems[${i}].nvDone=this.checked;regRender();regSave()" style="width:16px;height:16px;accent-color:#4A80D0;cursor:pointer">네이버
+        </label>
+      </div>
       <button class="reg-del" onclick="regDel(${i})">✕</button>`;
     wrap.appendChild(div);
   });
 }
 function regAdd() {
-  regItems.push({title:'', name:'', done:false, plat:'cp'});
+  regItems.push({title:'', name:'', cpDone:false, nvDone:false});
   regRender(); regSave();
-  // 새 카드 textarea 포커스
   setTimeout(function(){
     const items = document.querySelectorAll('.reg-item .reg-name');
     if(items.length) items[items.length-1].focus();
   }, 50);
 }
-function regToggle(i, checked) {
-  regItems[i].done = checked; regRender(); regSave();
-}
 function regRename(i, text) {
   regItems[i].name = text; regSave();
-}
-function regTogglePlat(i) {
-  regItems[i].plat = regItems[i].plat === 'both' ? 'cp' : 'both';
-  regRender(); regSave();
 }
 function regDel(i) {
   regItems.splice(i, 1); regRender(); regSave();
