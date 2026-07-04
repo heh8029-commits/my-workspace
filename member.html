@@ -450,10 +450,13 @@ button{font-family:inherit;cursor:pointer}
 .log-sum-item span{font-size:1.1rem;font-weight:800;color:var(--rose)}
 
 /* ── 부업 ── */
-.sj-field{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
-.sj-name-input{flex:2;border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:.82rem;outline:none;}
-.sj-price-input{width:80px;border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:.82rem;outline:none;text-align:right;}
-.sj-rm-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid #ddd;background:white;color:#aaa;font-size:.8rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.sj-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;background:var(--pink-pale);border-radius:10px;padding:8px 10px;}
+.sj-name-input{width:100%;border:1.5px solid var(--pink-mid);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:.88rem;outline:none;box-sizing:border-box;}
+.sj-name-input:focus{border-color:var(--rose);}
+.sj-field-row2{display:flex;gap:6px;align-items:center;}
+.sj-price-input{flex:1;border:1.5px solid var(--pink-mid);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:.88rem;outline:none;}
+.sj-price-input:focus{border-color:var(--rose);}
+.sj-rm-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #ddd;background:white;color:#aaa;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .sj-add-btn{margin-top:4px;padding:5px 14px;border-radius:20px;border:1.5px dashed var(--pink);background:var(--pink-pale);color:var(--rose);font-size:.8rem;font-weight:700;}
 .sj-overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(50,20,40,.45);backdrop-filter:blur(3px);align-items:center;justify-content:center;}
 .sj-overlay.open{display:flex;}
@@ -925,9 +928,12 @@ function addSjFieldItem(sj){
   const id=sj?sj.id:genId();
   const el=document.createElement('div');
   el.className='sj-field';el.dataset.sjid=id;
-  el.innerHTML=`<input type="text" class="sj-name-input" placeholder="부업명 (예: 사은품)" value="${sj?esc(sj.name):''}">
-    <input type="number" class="sj-price-input" placeholder="단가" value="${sj?sj.price:''}" min="0">
-    <button type="button" class="sj-rm-btn" onclick="this.closest('.sj-field').remove()">✕</button>`;
+  el.innerHTML=`<input type="text" class="sj-name-input" placeholder="부업명 (예: 사은품, 꽃다발만들기)" value="${sj?esc(sj.name):''}">
+    <div class="sj-field-row2">
+      <input type="number" class="sj-price-input" placeholder="단가 (원)" value="${sj?sj.price:''}" min="0">
+      <span style="font-size:.78rem;color:var(--soft);white-space:nowrap">원 / 개</span>
+      <button type="button" class="sj-rm-btn" onclick="this.closest('.sj-field').remove()">✕</button>
+    </div>`;
   document.getElementById('sjFieldList').appendChild(el);
 }
 function getSjFields(){
