@@ -266,6 +266,21 @@ a{text-decoration:none;color:inherit}
 .ad-flow-item:hover .afi-edit{display:flex}
 .ad-flow-item .afi-drag{cursor:grab;color:#A9DFBF;font-size:.8rem;padding:0 2px;flex-shrink:0;user-select:none}
 
+/* ── 상품등록할거 ── */
+.reg-section{margin-top:20px}
+.reg-card{background:linear-gradient(135deg,#FFF8F0 0%,#FFF0E6 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(230,120,40,.1);border:1.5px solid #FDDBB4}
+.reg-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:900px){.reg-grid{grid-template-columns:repeat(3,1fr)}}
+.reg-item{position:relative;background:#fff;border:2px solid #FDDBB4;border-radius:12px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:90px;transition:all .15s}
+.reg-item.done{background:#f5f5f5;border-color:#ddd;opacity:.55}
+.reg-item input[type=checkbox]{width:22px;height:22px;accent-color:#E87820;cursor:pointer;flex-shrink:0}
+.reg-item .reg-name{font-size:.78rem;font-weight:700;color:#7A3A10;text-align:center;word-break:break-all;line-height:1.4;flex:1;width:100%;border:none;outline:none;background:transparent;font-family:Pretendard,sans-serif;resize:none;text-align:center;cursor:text}
+.reg-item.done .reg-name{text-decoration:line-through;color:#aaa}
+.reg-item .reg-title{font-size:.72rem;font-weight:800;color:#C45A10;text-align:center;width:100%;border:none;border-bottom:1.5px solid #FDDBB4;outline:none;background:transparent;font-family:Pretendard,sans-serif;padding-bottom:4px;margin-bottom:2px;cursor:text}
+.reg-item .reg-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#E87820;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
+.reg-item:hover .reg-del{display:flex}
+.reg-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#E87820,#C45A10);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
+
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 @media(max-width:960px){
@@ -1263,6 +1278,15 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <div class="design-flow-wrap" id="design-flow"></div>
           </div>
         </div>
+        <div class="reg-section">
+          <div class="design-flow-header">
+            <span style="font-size:1rem;font-weight:800;color:#C45A10">📦 상품등록할거</span>
+          </div>
+          <div class="reg-card">
+            <div class="reg-grid" id="reg-list"></div>
+            <button class="reg-add-btn" onclick="regAdd()">+ 추가</button>
+          </div>
+        </div>
         <div class="ad-flow-section">
           <div class="design-flow-header">
             <span class="ad-flow-title">📢 광고 업무 순서</span>
@@ -1983,7 +2007,7 @@ const MENUS = [
     {id:'gross-time', label:'그로스시간별매출',  emoji:'⏰', url:'https://heh8029-commits.github.io/my-workspace/coupang.html'},
     {id:'profit',     label:'월별손익',         emoji:'📈'},
     {id:'tax',        label:'부가세/종소세/세금', emoji:'💰'},
-    {id:'design',     label:'디자인관리',        emoji:'🎨'},
+    {id:'design',     label:'디자인관리',        emoji:'🎨', url:'https://heh8029-commits.github.io/my-workspace/work.html?tab=design'},
     {id:'copy',       label:'문구추천&CT이미지', emoji:'✍️'},
     {id:'product',    label:'상품관리',          emoji:'📦'},
     {id:'ad-mgr',     label:'광고관리',          emoji:'📢'},
@@ -2135,7 +2159,7 @@ function setMenu(id){
   activeMenu=id; activeSubMenu=null;
   renderTopMenu(); renderSidebar(); renderMobileSub();
   if(id==='home'){ showPage('home'); }
-  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); }
+  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); regFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else { showPage('sub'); }
@@ -5674,6 +5698,7 @@ function dfRender(){
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
         style="outline:none;min-width:30px">${bfEsc(item.text)}</span>
       ${nowBadge}
+      ${item.url?`<a href="${bfEsc(item.url)}" target="_blank" style="font-size:.8rem;text-decoration:none;flex-shrink:0" title="${bfEsc(item.url)}">🔗</a>`:''}
       <button class="dfi-edit" onclick="dfEditPopup(${item.id})">✏️</button>
       <button class="dfi-del" onclick="dfDel(${item.id})">✕</button>
     </div>`;
@@ -5689,6 +5714,7 @@ function dfAdd(){
   ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
     <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">🎨 업무 추가</div>
     <input id="df-add-txt" type="text" placeholder="업무 내용" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <input id="df-add-url" type="url" placeholder="🔗 링크 URL (선택)" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
     <select id="df-add-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
       <option value="">시간대 없음</option>${opts}
     </select>
@@ -5700,7 +5726,8 @@ function dfAdd(){
   const inp=ov.querySelector('#df-add-txt');inp.focus();
   ov.querySelector('#df-add-ok').onclick=function(){
     const t=inp.value.trim();if(!t){inp.focus();return;}
-    dfData.push({id:Date.now(),text:t,time:ov.querySelector('#df-add-time').value});
+    const u=ov.querySelector('#df-add-url').value.trim();
+    dfData.push({id:Date.now(),text:t,time:ov.querySelector('#df-add-time').value,url:u||''});
     dfSave();dfRender();ov.remove();
   };
   inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#df-add-ok').click();};
@@ -5716,6 +5743,7 @@ function dfEditPopup(id){
   ov.innerHTML=`<div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:360px;font-family:inherit;box-shadow:0 8px 32px rgba(196,113,74,.25)">
     <div style="font-size:1rem;font-weight:700;color:#C4714A;margin-bottom:14px">✏️ 업무 편집</div>
     <input id="df-edit-txt" type="text" value="${bfEsc(item.text)}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
+    <input id="df-edit-url" type="url" placeholder="🔗 링크 URL (선택)" value="${bfEsc(item.url||'')}" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.9rem;font-family:inherit;box-sizing:border-box;margin-bottom:10px;outline:none">
     <select id="df-edit-time" style="width:100%;border:1.5px solid #EDD8CC;border-radius:10px;padding:9px 12px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:white;margin-bottom:16px">
       <option value=""${!item.time?' selected':''}>시간대 없음</option>${opts}
     </select>
@@ -5728,6 +5756,7 @@ function dfEditPopup(id){
   ov.querySelector('#df-edit-ok').onclick=function(){
     const t=inp.value.trim();if(!t){inp.focus();return;}
     item.text=t;item.time=ov.querySelector('#df-edit-time').value;
+    item.url=ov.querySelector('#df-edit-url').value.trim();
     dfSave();dfRender();ov.remove();
   };
   inp.onkeydown=e=>{if(e.key==='Enter')ov.querySelector('#df-edit-ok').click();};
@@ -5755,6 +5784,56 @@ async function _afSaveNow(){
   try{await fetch(FB_AD_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(afData)});}catch(e){}
 }
 function afSave(){clearTimeout(_afSaveTimer);_afSaveTimer=setTimeout(_afSaveNow,600);}
+
+/* ── 상품등록할거 ── */
+const FB_REG = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/reg_items.json';
+let regItems = [];
+let _regSaveTimer = null;
+async function regFetch() {
+  try { const r = await fetch(FB_REG+'?t='+Date.now()); if(r.ok){const d=await r.json(); if(Array.isArray(d)) regItems=d;} } catch(e) {}
+  regRender();
+}
+async function _regSaveNow() {
+  try { await fetch(FB_REG,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(regItems)}); } catch(e) {}
+}
+function regSave() { clearTimeout(_regSaveTimer); _regSaveTimer = setTimeout(_regSaveNow, 600); }
+function regRender() {
+  const wrap = document.getElementById('reg-list'); if(!wrap) return;
+  wrap.innerHTML = '';
+  regItems.forEach(function(item, i) {
+    const div = document.createElement('div');
+    const allDone = item.cpDone && (item.nvDone || !item.useNaver);
+    div.className = 'reg-item' + (allDone ? ' done' : '');
+    div.innerHTML = `
+      <input class="reg-title" type="text" placeholder="타이틀" value="${(item.title||'').replace(/"/g,'&quot;')}" oninput="regItems[${i}].title=this.value;regSave()">
+      <textarea class="reg-name" rows="2" placeholder="상품명" oninput="regRename(${i},this.value)">${item.name||''}</textarea>
+      <div style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:#E87820;cursor:pointer">
+          <input type="checkbox" ${item.cpDone?'checked':''} onchange="regItems[${i}].cpDone=this.checked;regRender();regSave()" style="width:16px;height:16px;accent-color:#E87820;cursor:pointer">쿠팡
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:#4A80D0;cursor:pointer">
+          <input type="checkbox" ${item.nvDone?'checked':''} onchange="regItems[${i}].nvDone=this.checked;regRender();regSave()" style="width:16px;height:16px;accent-color:#4A80D0;cursor:pointer">네이버
+        </label>
+      </div>
+      <button class="reg-del" onclick="regDel(${i})">✕</button>`;
+    wrap.appendChild(div);
+  });
+}
+function regAdd() {
+  regItems.push({title:'', name:'', cpDone:false, nvDone:false});
+  regRender(); regSave();
+  setTimeout(function(){
+    const items = document.querySelectorAll('.reg-item .reg-name');
+    if(items.length) items[items.length-1].focus();
+  }, 50);
+}
+function regRename(i, text) {
+  regItems[i].name = text; regSave();
+}
+function regDel(i) {
+  regItems.splice(i, 1); regRender(); regSave();
+}
+
 function afRender(){
   const wrap=document.getElementById('ad-flow');if(!wrap)return;
   let h='';
