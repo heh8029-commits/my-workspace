@@ -6591,6 +6591,14 @@ function bcscCopy(id){
     if(btn){btn.style.background='#e8f5e8';setTimeout(()=>{btn.style.background='';},800);}
   });
 }
+function bcscCopyBtn(id,btn){
+  const m=_bcscData.find(x=>x.id===id);if(!m)return;
+  navigator.clipboard.writeText(m.text||'').then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✅';
+    setTimeout(()=>{btn.textContent=orig;},1000);
+  });
+}
 let _bcscDragId=null;
 function bcscRender(){
   const el=document.getElementById('bcsc-list');if(!el)return;
@@ -6610,6 +6618,7 @@ function bcscRender(){
       <span style="font-size:.75rem;color:#ccc;flex-shrink:0;cursor:grab">☰</span>
       <span class="bm-text" style="font-size:.8rem">${(m.text||'').replace(/</g,'&lt;')}</span>
       <div style="display:flex;gap:2px;flex-shrink:0" onclick="event.stopPropagation()">
+        <button class="bno-icon" id="bcsc-copy-btn-${m.id}" onclick="bcscCopyBtn(${m.id},this)" title="복사">📋</button>
         <button class="bno-icon" onclick="bcscEditOpen(${m.id})" title="편집">✏️</button>
         <button class="bno-icon del" onclick="bcscDel(${m.id})" title="삭제">🗑️</button>
       </div>
