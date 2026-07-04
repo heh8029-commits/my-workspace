@@ -281,6 +281,25 @@ a{text-decoration:none;color:inherit}
 .reg-item:hover .reg-del{display:flex}
 .reg-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#E87820,#C45A10);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
 
+/* ── 클립보드 이미지 보드 ── */
+.clipboard-section{margin-top:20px}
+.clipboard-card{background:linear-gradient(135deg,#F0F4FF 0%,#EAF0FF 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(74,95,207,.1);border:1.5px solid #C5CFF5}
+.clipboard-title{font-size:1rem;font-weight:800;color:#3040A0;letter-spacing:-.3px}
+.clipboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+@media(max-width:900px){.clipboard-grid{grid-template-columns:repeat(2,1fr)}}
+.clip-item{position:relative;background:#fff;border:2px solid #C5CFF5;border-radius:14px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:6px;transition:all .15s}
+.clip-item:hover{border-color:#7080D0;box-shadow:0 3px 10px rgba(74,95,207,.13)}
+.clip-img-wrap{width:100%;aspect-ratio:4/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed #C5CFF5;transition:border-color .15s}
+.clip-img-wrap:hover{border-color:#7080D0}
+.clip-img-wrap img{width:100%;height:100%;object-fit:contain}
+.clip-img-empty{font-size:.72rem;color:#B0B8E0;text-align:center;line-height:1.5;pointer-events:none}
+.clip-memo{width:100%;border:none;border-top:1.5px solid #E8ECFA;outline:none;background:transparent;font-family:Pretendard,sans-serif;font-size:.78rem;color:#3040A0;resize:none;padding-top:5px;line-height:1.5}
+.clip-date{font-size:.68rem;color:#A0AACC;font-weight:600;text-align:right}
+.clip-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#7080D0;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
+.clip-item:hover .clip-del{display:flex}
+.clip-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#5060C0,#3040A0);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
+.clip-paste-hint{text-align:center;font-size:.75rem;color:#A0AACC;margin-bottom:8px}
+
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 @media(max-width:960px){
@@ -1295,6 +1314,16 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <div class="ad-flow-wrap" id="ad-flow"></div>
           </div>
         </div>
+        <div class="clipboard-section">
+          <div class="design-flow-header">
+            <span class="clipboard-title">🖼️ 클립보드 이미지</span>
+          </div>
+          <div class="clipboard-card">
+            <div class="clip-paste-hint">📋 아무 곳이나 클릭 후 Ctrl+V 로 이미지 붙여넣기</div>
+            <div class="clipboard-grid" id="clip-list"></div>
+            <button class="clip-add-btn" onclick="clipAdd()">+ 빈 칸 추가</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2159,7 +2188,7 @@ function setMenu(id){
   activeMenu=id; activeSubMenu=null;
   renderTopMenu(); renderSidebar(); renderMobileSub();
   if(id==='home'){ showPage('home'); }
-  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); regFetch(); }
+  else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); regFetch(); clipFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else { showPage('sub'); }
@@ -5833,6 +5862,83 @@ function regRename(i, text) {
 function regDel(i) {
   regItems.splice(i, 1); regRender(); regSave();
 }
+
+/* ── 클립보드 이미지 보드 ── */
+const FB_CLIP = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_clipimgs.json';
+let clipItems = [];
+let _clipSaveTimer = null;
+
+async function clipFetch() {
+  try {
+    const r = await fetch(FB_CLIP + '?t=' + Date.now());
+    if (r.ok) { const d = await r.json(); if (Array.isArray(d)) clipItems = d; }
+  } catch(e) {}
+  clipRender();
+}
+async function _clipSaveNow() {
+  try {
+    await fetch(FB_CLIP, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(clipItems)});
+  } catch(e) {}
+}
+function clipSave() { clearTimeout(_clipSaveTimer); _clipSaveTimer = setTimeout(_clipSaveNow, 800); }
+
+function clipRender() {
+  const wrap = document.getElementById('clip-list'); if (!wrap) return;
+  wrap.innerHTML = '';
+  clipItems.forEach(function(item, i) {
+    const div = document.createElement('div');
+    div.className = 'clip-item';
+    const imgHtml = item.img
+      ? `<img src="${item.img}" alt="">`
+      : `<span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span>`;
+    div.innerHTML = `
+      <div class="clip-img-wrap" id="clip-img-wrap-${i}" onclick="clipFocusItem(${i})" title="클릭 후 Ctrl+V">${imgHtml}</div>
+      <textarea class="clip-memo" rows="2" placeholder="메모..." oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
+      <div class="clip-date">${item.date||''}</div>
+      <button class="clip-del" onclick="clipDel(${i})">✕</button>`;
+    wrap.appendChild(div);
+  });
+}
+
+function clipAdd() {
+  const now = new Date();
+  const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
+  clipItems.push({img:'', memo:'', date});
+  clipRender(); clipSave();
+}
+
+function clipDel(i) {
+  clipItems.splice(i, 1); clipRender(); clipSave();
+}
+
+let _clipFocusIdx = -1;
+function clipFocusItem(i) { _clipFocusIdx = i; }
+
+document.addEventListener('paste', function(e) {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.startsWith('image/')) {
+      const file = items[i].getAsFile();
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const dataUrl = ev.target.result;
+        if (_clipFocusIdx >= 0 && _clipFocusIdx < clipItems.length) {
+          clipItems[_clipFocusIdx].img = dataUrl;
+          clipRender(); clipSave();
+          _clipFocusIdx = -1;
+        } else {
+          const now = new Date();
+          const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
+          clipItems.push({img: dataUrl, memo:'', date});
+          clipRender(); clipSave();
+        }
+      };
+      reader.readAsDataURL(file);
+      break;
+    }
+  }
+});
 
 function afRender(){
   const wrap=document.getElementById('ad-flow');if(!wrap)return;
