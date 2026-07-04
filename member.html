@@ -809,6 +809,11 @@ button{font-family:inherit;cursor:pointer}
       <button class="log-nav-btn" onclick="logMove(1)">›</button>
     </div>
     <div class="log-period-hint">📅 기간은 항상 11일 ~ 다음달 10일 기준이에요</div>
+    <div id="logSjSection" style="display:none;margin-bottom:18px;background:linear-gradient(135deg,#f0f8ff,#fff0fa);border-radius:14px;padding:14px 18px;border:1.5px solid var(--lav)">
+      <div style="font-size:.85rem;font-weight:800;color:var(--lav-dark);margin-bottom:10px">📦 이번달 부업 수량</div>
+      <div id="logSjInputs"></div>
+      <button onclick="saveLogSjMonth()" style="margin-top:8px;padding:7px 20px;border-radius:20px;background:linear-gradient(135deg,var(--lav-dark),#6040a0);color:white;border:none;font-size:.82rem;font-weight:700;cursor:pointer">💾 저장</button>
+    </div>
     <div id="logCalendar"></div>
     <div class="log-summary" id="logSummary"></div>
   </div>
@@ -919,6 +924,7 @@ const FB_MEMBERS   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/
 const FB_ATT_BASE  ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_attendance';
 const FB_SJ_BASE   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_sjlogs';
 const FB_TAXDOCS   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_taxdocs';
+const FB_SJMONTH   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_sjmonth';
 
 async function fbGet(url){
   const r=await fetch(url+'?t='+Date.now());
@@ -957,6 +963,15 @@ async function loadSjLogs(){
     return[];
   }catch(e){return[];}
 }
+function getPeriodKey(offset){const{start}=getPeriodDates(offset);return`${start.getFullYear()}_${start.getMonth()}`;}
+async function loadSjMonth(memberId,periodKey){
+  try{const d=await fbGet(`${FB_SJMONTH}/${memberId}_${periodKey}.json`);return d||null;}catch(e){return null;}
+}
+async function saveSjMonth(memberId,periodKey,items){
+  const grandTotal=items.reduce((s,i)=>s+i.total,0);
+  await fbPut(`${FB_SJMONTH}/${memberId}_${periodKey}.json`,{memberId,periodKey,items,grandTotal,at:Date.now()});
+}
+
 async function saveSjEntry(memberId,date,sjId,sjName,price,qty){
   const key=`${memberId}_${date}_${sjId}`;
   await fbPut(`${FB_SJ_BASE}/${key}.json`,{memberId,date,sjId,sjName,price:Number(price),qty:Number(qty),total:Number(price)*Number(qty),at:Date.now()});
@@ -1180,6 +1195,27 @@ async function openMyLog(){
 function closeLog(){document.getElementById('logOverlay').classList.remove('open')}
 function logMove(d){logPeriodOffset+=d;renderLog();}
 
+function updateSjPreview(inp){
+  const qty=Number(inp.value)||0;
+  const price=Number(inp.dataset.price)||0;
+  const total=qty*price;
+  inp.parentElement.querySelector('.sj-preview-amt').textContent=total?total.toLocaleString()+'원':'-';
+}
+
+async function saveLogSjMonth(){
+  const inputs=document.querySelectorAll('#logSjInputs input[type=number]');
+  const items=[...inputs].map(inp=>({
+    sjId:inp.dataset.sjid,
+    sjName:inp.dataset.sjname,
+    price:Number(inp.dataset.price),
+    qty:Number(inp.value)||0,
+    total:(Number(inp.value)||0)*Number(inp.dataset.price),
+  }));
+  const periodKey=getPeriodKey(logPeriodOffset);
+  await saveSjMonth(attSelected,periodKey,items);
+  renderLog();
+}
+
 let sjOverlayDate=null;
 async function openSjOverlay(date){
   const m=members.find(x=>x.id===attSelected);
@@ -1223,18 +1259,36 @@ async function renderLog(){
 
   const m2=members.find(x=>x.id===attSelected);
   const hasSj=m2&&m2.sidejobs&&m2.sidejobs.length>0;
-  const [logs,sjLogs]=await Promise.all([loadAttLogs(),hasSj?loadSjLogs():Promise.resolve([])]);
+  const periodKey=getPeriodKey(logPeriodOffset);
+  const [logs,sjMonthData]=await Promise.all([loadAttLogs(),hasSj?loadSjMonth(attSelected,periodKey):Promise.resolve(null)]);
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===attSelected)){
     if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0};
     if(l.isOff){dayMap[l.date].isOff=true;}
     else{dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);dayMap[l.date].count++;}
   }
-  const sjDayMap={};
-  for(const l of sjLogs.filter(l=>l.memberId===attSelected)){
-    if(!sjDayMap[l.date])sjDayMap[l.date]={total:0,items:[]};
-    sjDayMap[l.date].total+=l.total||0;
-    sjDayMap[l.date].items.push(l);
+
+  // 부업 월별 입력 섹션
+  const sjSec=document.getElementById('logSjSection');
+  const sjInp=document.getElementById('logSjInputs');
+  if(hasSj){
+    sjSec.style.display='';
+    const existItems=sjMonthData?sjMonthData.items:[];
+    sjInp.innerHTML=m2.sidejobs.map(sj=>{
+      const ex=existItems.find(i=>i.sjId===sj.id);
+      const qty=ex?ex.qty:0;
+      const total=qty*sj.price;
+      return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="flex:1;font-size:.84rem;font-weight:700;color:var(--text)">${esc(sj.name)}</span>
+        <input type="number" min="0" value="${qty}" data-sjid="${sj.id}" data-sjname="${esc(sj.name)}" data-price="${sj.price}"
+          style="width:70px;border:1.5px solid var(--lav);border-radius:8px;padding:5px 8px;font-family:inherit;font-size:.88rem;text-align:center;outline:none"
+          oninput="updateSjPreview(this)">
+        <span style="font-size:.78rem;color:var(--soft)">개</span>
+        <span class="sj-preview-amt" style="min-width:70px;text-align:right;font-size:.82rem;font-weight:700;color:var(--lav-dark)">${total?total.toLocaleString()+'원':'-'}</span>
+      </div>`;
+    }).join('');
+  } else {
+    sjSec.style.display='none';
   }
 
   // 월요일부터 시작하는 캘린더 범위
@@ -1261,12 +1315,9 @@ async function renderLog(){
     if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;}}
     const h=Math.floor(mins/60),mn=mins%60;
     const lbl=isOff?'🌴 휴무':`⏰ ${h}시간 ${mn}분`;
-    const sjDay=sjDayMap[ds];
-    const clickable=inP&&hasSj?`onclick="openSjOverlay('${ds}')" style="cursor:pointer"`:'';
-    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}" ${clickable}>
+    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}">
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
       <div class="log-day-time">${lbl}</div>
-      ${hasSj&&inP?`<div class="log-day-sj">💼 ${sjDay?sjDay.total.toLocaleString()+'원':'부업 입력'}</div>`:''}
     </div>`;
     cur.setDate(cur.getDate()+1);
   }
@@ -1274,11 +1325,7 @@ async function renderLog(){
   document.getElementById('logCalendar').innerHTML=html;
 
   const th=Math.floor(totalMin/60),tm=totalMin%60;
-  let sjPeriodTotal=0;
-  for(const ds of Object.keys(sjDayMap)){
-    const d=new Date(ds+'T00:00:00');
-    if(d>=start&&d<=end) sjPeriodTotal+=sjDayMap[ds].total||0;
-  }
+  const sjPeriodTotal=sjMonthData?sjMonthData.grandTotal||0:0;
   document.getElementById('logSummary').innerHTML=
     `<div class="log-sum-item">근무일 <span>${workDays}일</span></div>
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
@@ -1496,17 +1543,20 @@ async function renderAdmin(){
   document.getElementById('adminSummaryTable').innerHTML=`<div style="text-align:center;padding:30px;color:var(--soft)">불러오는 중...</div>`;
   document.getElementById('adminCalGrid').innerHTML='';
 
-  const [logs,sjLogs]=await Promise.all([loadAttLogs(),loadSjLogs()]);
   const activeMembers=members.filter(m=>m.status==='active');
+  const adminPeriodKey=getPeriodKey(adminOffset);
+
+  // 부업 월별 데이터 로드 (부업있는 직원만)
+  const sjMemberLoads=activeMembers.filter(m=>m.sidejobs&&m.sidejobs.length)
+    .map(m=>loadSjMonth(m.id,adminPeriodKey).then(d=>({id:m.id,data:d})));
+  const [logs,...sjMonthResults]=await Promise.all([loadAttLogs(),...sjMemberLoads]);
 
   const memberStats={};
   for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0,sjTotal:0};
 
   // 부업 집계
-  for(const l of sjLogs){
-    const d=new Date(l.date+'T00:00:00');
-    if(d<start||d>end)continue;
-    if(memberStats[l.memberId]!==undefined) memberStats[l.memberId].sjTotal+=l.total||0;
+  for(const r of sjMonthResults){
+    if(r.data&&memberStats[r.id]!==undefined) memberStats[r.id].sjTotal=r.data.grandTotal||0;
   }
 
   const dayData={};
