@@ -783,7 +783,7 @@ let currentTab='attendance';
 let ctxTargetId=null;
 
 const FB_MEMBERS   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_members.json';
-const FB_ATTENDANCE='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_attendance.json';
+const FB_ATT_BASE  ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_attendance';
 
 async function fbGet(url){
   const r=await fetch(url+'?t='+Date.now());
@@ -799,10 +799,19 @@ async function load(){
 }
 async function save(){await fbPut(FB_MEMBERS,members);}
 
-async function loadAttLogs(){
-  try{const d=await fbGet(FB_ATTENDANCE);return Array.isArray(d)?d:[];}catch(e){return[];}
+async function fbPost(url,data){
+  await fetch(url+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
 }
-async function saveAttLogs(logs){await fbPut(FB_ATTENDANCE,logs);}
+async function loadAttLogs(){
+  try{
+    const d=await fbGet(FB_ATT_BASE+'.json');
+    if(!d)return[];
+    if(Array.isArray(d))return d.filter(Boolean);
+    if(typeof d==='object')return Object.values(d).filter(Boolean);
+    return[];
+  }catch(e){return[];}
+}
+async function saveAttLog(entry){await fbPost(FB_ATT_BASE,entry);}
 
 function genId(){return Date.now()+Math.random().toString(36).slice(2)}
 
@@ -939,9 +948,7 @@ async function saveAttendance(){
   const isOff=document.getElementById('attOff').checked;
   const el=document.getElementById('attInfo');
   el.textContent='저장 중...';el.style.color='var(--soft)';
-  const logs=await loadAttLogs();
-  logs.push({memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()});
-  await saveAttLogs(logs);
+  await saveAttLog({memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()});
   el.textContent=`✅ 저장됐어! ${m.eng||m.name}${isOff?' 휴무':' '+hour+'시 '+min+'분'}`;
   el.style.color='var(--rose)';
   setTimeout(()=>{el.style.color='';updateAttInfo()},2500);
