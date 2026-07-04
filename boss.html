@@ -997,6 +997,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-calc-pct{width:36px;font-size:.71rem;color:#E03A3A;font-weight:700;text-align:right;flex-shrink:0}
 .pnl-calc-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;font-size:.68rem;cursor:pointer;color:#D0D0D0;flex-shrink:0;transition:all .12s;padding:0}
 .pnl-calc-del:hover{background:#FFE8E8;color:#E03A3A}
+.pnl-calc-drag{cursor:grab;color:#D0D0D0;font-size:.85rem;flex-shrink:0;padding:0 2px;user-select:none}
+.pnl-calc-row.drag-over{outline:2px dashed #C4714A;border-radius:7px}
 /* ── 월별지출 ── */
 .exp-month-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;border:1px solid #EDE8E1;padding:11px 16px;margin-bottom:12px}
 .exp-month-btn{width:30px;height:30px;border-radius:50%;border:none;background:#F5F0EB;color:#C4714A;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .13s;line-height:1}
@@ -3257,7 +3259,13 @@ function renderCalc(){
     const hasPct = r.pct != null && r.pct !== '';
     const dispPct = totalInc && amt ? (amt/totalInc*100).toFixed(1) : '0';
     return `
-    <div class="pnl-calc-row">
+    <div class="pnl-calc-row" draggable="true"
+      ondragstart="calcExpDragStart(${i})"
+      ondragover="calcExpDragOver(event,${i})"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="calcExpDrop(event,${i})"
+      ondragend="calcExpDragEnd()">
+      <span class="pnl-calc-drag">⠿</span>
       <input class="pnl-calc-name" value="${r.name.replace(/"/g,'&quot;')}" placeholder="항목명"
         onchange="calcData.expenses[${i}].name=this.value" onblur="saveCalcData()">
       <input class="pnl-calc-amount${hasPct?' from-pct':''}" value="${_fmtAmt(amt)}" placeholder="금액"
@@ -3316,6 +3324,27 @@ function onCalcPctChange(idx, val){
   calcData.expenses[idx].pct = v === '' ? '' : +v;
   if(v !== '') calcData.expenses[idx].amount = 0;
   renderCalc();
+}
+
+let _calcDragIdx = -1;
+function calcExpDragStart(i){ _calcDragIdx = i; }
+function calcExpDragOver(e, i){
+  e.preventDefault();
+  document.querySelectorAll('#pnl-calc-cont .pnl-calc-row').forEach(el=>el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function calcExpDrop(e, i){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(_calcDragIdx < 0 || _calcDragIdx === i) return;
+  const moved = calcData.expenses.splice(_calcDragIdx, 1)[0];
+  calcData.expenses.splice(i, 0, moved);
+  _calcDragIdx = -1;
+  renderCalc(); saveCalcData();
+}
+function calcExpDragEnd(){
+  _calcDragIdx = -1;
+  document.querySelectorAll('#pnl-calc-cont .pnl-calc-row').forEach(el=>el.classList.remove('drag-over'));
 }
 
 function addCalcRow(type){
