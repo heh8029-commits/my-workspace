@@ -285,15 +285,16 @@ a{text-decoration:none;color:inherit}
 .clipboard-section{margin-top:20px}
 .clipboard-card{background:linear-gradient(135deg,#F0F4FF 0%,#EAF0FF 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(74,95,207,.1);border:1.5px solid #C5CFF5}
 .clipboard-title{font-size:1rem;font-weight:800;color:#3040A0;letter-spacing:-.3px}
-.clipboard-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
-.clip-item{position:relative;background:#fff;border:2px solid #C5CFF5;border-radius:14px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:6px;transition:all .15s}
+.clipboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+@media(max-width:900px){.clipboard-grid{grid-template-columns:repeat(2,1fr)}}
+.clip-item{position:relative;background:#fff;border:2px solid #C5CFF5;border-radius:14px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:0;transition:all .15s}
 .clip-item:hover{border-color:#7080D0;box-shadow:0 3px 10px rgba(74,95,207,.13)}
-.clip-img-wrap{width:100%;aspect-ratio:6/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed #C5CFF5;transition:border-color .15s}
-.clip-img-wrap:hover{border-color:#7080D0}
+.clip-imgs{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.clip-img-wrap{width:100%;aspect-ratio:5/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1.5px dashed #C5CFF5}
 .clip-img-wrap img{width:100%;height:100%;object-fit:contain}
 .clip-img-empty{font-size:.72rem;color:#B0B8E0;text-align:center;line-height:1.5;pointer-events:none}
-.clip-memo{width:100%;border:none;border-top:1.5px solid #E8ECFA;outline:none;background:transparent;font-family:Pretendard,sans-serif;font-size:.78rem;color:#3040A0;resize:none;padding-top:5px;line-height:1.5}
-.clip-date{font-size:.68rem;color:#A0AACC;font-weight:600;text-align:right}
+.clip-memo{width:100%;border:none;border-top:1.5px solid #E8ECFA;outline:none;background:transparent;font-family:Pretendard,sans-serif;font-size:.78rem;color:#3040A0;resize:none;padding-top:6px;line-height:1.5;cursor:text}
+.clip-date{font-size:.68rem;color:#A0AACC;font-weight:600;text-align:right;margin-top:2px}
 .clip-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#7080D0;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
 .clip-item:hover .clip-del{display:flex}
 .clip-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#5060C0,#3040A0);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
@@ -5887,12 +5888,15 @@ function clipRender() {
   clipItems.forEach(function(item, i) {
     const div = document.createElement('div');
     div.className = 'clip-item';
-    const imgHtml = item.img
-      ? `<img src="${item.img}" alt="">`
-      : `<span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span>`;
+    const imgs = Array.isArray(item.imgs) ? item.imgs : (item.img ? [item.img] : []);
+    const imgsHtml = imgs.length
+      ? imgs.map(function(src, j) {
+          return `<div class="clip-img-wrap"><img src="${src}" alt=""></div>`;
+        }).join('')
+      : `<div class="clip-img-wrap"><span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span></div>`;
     div.innerHTML = `
-      <div class="clip-img-wrap" id="clip-img-wrap-${i}" onclick="clipFocusItem(${i},'img')" title="클릭 후 Ctrl+V → 이미지 교체">${imgHtml}</div>
-      <textarea class="clip-memo" rows="2" placeholder="메모..." onclick="clipFocusItem(${i},'memo')" oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
+      <div class="clip-imgs" id="clip-imgs-${i}">${imgsHtml}</div>
+      <textarea class="clip-memo" rows="2" placeholder="메모..." onclick="clipFocusIdx=${i}" oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
       <div class="clip-date">${item.date||''}</div>
       <button class="clip-del" onclick="clipDel(${i})">✕</button>`;
     wrap.appendChild(div);
@@ -5902,7 +5906,7 @@ function clipRender() {
 function clipAdd() {
   const now = new Date();
   const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
-  clipItems.push({img:'', memo:'', date});
+  clipItems.push({imgs:[], memo:'', date});
   clipRender(); clipSave();
 }
 
@@ -5910,33 +5914,27 @@ function clipDel(i) {
   clipItems.splice(i, 1); clipRender(); clipSave();
 }
 
-let _clipFocusIdx = -1;
-let _clipFocusType = ''; // 'img' or 'memo'
-function clipFocusItem(i, type) { _clipFocusIdx = i; _clipFocusType = type || 'img'; }
+let clipFocusIdx = -1;
 
 document.addEventListener('paste', function(e) {
   const items = e.clipboardData && e.clipboardData.items;
   if (!items) return;
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.startsWith('image/')) {
-      const file = items[i].getAsFile();
+  for (let k = 0; k < items.length; k++) {
+    if (items[k].type.startsWith('image/')) {
+      const file = items[k].getAsFile();
       const reader = new FileReader();
       reader.onload = function(ev) {
         const dataUrl = ev.target.result;
         const now = new Date();
         const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
-        if (_clipFocusIdx >= 0 && _clipFocusIdx < clipItems.length) {
-          if (_clipFocusType === 'memo') {
-            // 메모 클릭 후 붙여넣기 → 바로 아래에 새 카드 삽입
-            clipItems.splice(_clipFocusIdx + 1, 0, {img: dataUrl, memo:'', date});
-          } else {
-            // 이미지 박스 클릭 후 붙여넣기 → 해당 카드 이미지 교체
-            clipItems[_clipFocusIdx].img = dataUrl;
-          }
+        if (clipFocusIdx >= 0 && clipFocusIdx < clipItems.length) {
+          // 포커스된 카드 안에 이미지 추가
+          if (!Array.isArray(clipItems[clipFocusIdx].imgs)) clipItems[clipFocusIdx].imgs = [];
+          clipItems[clipFocusIdx].imgs.push(dataUrl);
         } else {
-          clipItems.push({img: dataUrl, memo:'', date});
+          // 포커스 없으면 새 카드 추가
+          clipItems.push({imgs:[dataUrl], memo:'', date});
         }
-        _clipFocusIdx = -1;
         clipRender(); clipSave();
       };
       reader.readAsDataURL(file);
