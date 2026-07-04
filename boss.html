@@ -285,11 +285,10 @@ a{text-decoration:none;color:inherit}
 .clipboard-section{margin-top:20px}
 .clipboard-card{background:linear-gradient(135deg,#F0F4FF 0%,#EAF0FF 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(74,95,207,.1);border:1.5px solid #C5CFF5}
 .clipboard-title{font-size:1rem;font-weight:800;color:#3040A0;letter-spacing:-.3px}
-.clipboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
-@media(max-width:900px){.clipboard-grid{grid-template-columns:repeat(2,1fr)}}
+.clipboard-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
 .clip-item{position:relative;background:#fff;border:2px solid #C5CFF5;border-radius:14px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:6px;transition:all .15s}
 .clip-item:hover{border-color:#7080D0;box-shadow:0 3px 10px rgba(74,95,207,.13)}
-.clip-img-wrap{width:100%;aspect-ratio:4/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed #C5CFF5;transition:border-color .15s}
+.clip-img-wrap{width:100%;aspect-ratio:6/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px dashed #C5CFF5;transition:border-color .15s}
 .clip-img-wrap:hover{border-color:#7080D0}
 .clip-img-wrap img{width:100%;height:100%;object-fit:contain}
 .clip-img-empty{font-size:.72rem;color:#B0B8E0;text-align:center;line-height:1.5;pointer-events:none}
@@ -5893,7 +5892,7 @@ function clipRender() {
       : `<span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span>`;
     div.innerHTML = `
       <div class="clip-img-wrap" id="clip-img-wrap-${i}" onclick="clipFocusItem(${i})" title="클릭 후 Ctrl+V">${imgHtml}</div>
-      <textarea class="clip-memo" rows="2" placeholder="메모..." oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
+      <textarea class="clip-memo" rows="2" placeholder="메모..." onclick="clipFocusItem(${i})" oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
       <div class="clip-date">${item.date||''}</div>
       <button class="clip-del" onclick="clipDel(${i})">✕</button>`;
     wrap.appendChild(div);
