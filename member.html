@@ -1338,12 +1338,15 @@ async function renderLog(){
   document.getElementById('logCalendar').innerHTML=html;
 
   const th=Math.floor(totalMin/60),tm=totalMin%60;
-  const sjPeriodTotal=sjMonthData?sjMonthData.grandTotal||0:0;
+  const sjItems=sjMonthData&&sjMonthData.items?sjMonthData.items:[];
+  const sjSummary=sjItems.filter(it=>it.qty>0).map(it=>
+    `<div class="log-sum-item">${esc(it.sjName||it.sjId)} <span>${it.qty}개</span></div>`
+  ).join('');
   document.getElementById('logSummary').innerHTML=
     `<div class="log-sum-item">근무일 <span>${workDays}일</span></div>
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
      <div class="log-sum-item">휴무 <span>${offDays}일</span></div>
-
+     ${sjSummary}
 `;
 }
 
