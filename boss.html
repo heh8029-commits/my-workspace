@@ -1451,16 +1451,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <div class="bcal-body">
           <div class="bcal-label">제목 <span style="color:#CCC;font-size:.68rem">(예: 부가세 1기 예정고지, 종소세 확정신고 등)</span></div>
           <input class="bcal-inp" id="tax-entry-title" placeholder="자유롭게 입력" maxlength="80">
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <div style="flex:1">
-              <div class="bcal-label">날짜</div>
-              <input type="date" class="bcal-inp" id="tax-entry-date">
-            </div>
-            <div style="flex:1">
-              <div class="bcal-label">금액 (원)</div>
-              <input class="bcal-inp" id="tax-entry-amount" type="text" placeholder="납부액" oninput="taxFmtAmt(this)">
-            </div>
-          </div>
+          <input type="hidden" id="tax-entry-date">
+          <input type="hidden" id="tax-entry-amount">
           <div class="bcal-label" style="margin-top:8px">내용 메모 (이미지 Ctrl+V 붙여넣기 가능)</div>
           <textarea class="bcal-ta" id="tax-entry-content" placeholder="자유롭게 입력" onpaste="taxEntryHandlePaste(event)"></textarea>
           <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
