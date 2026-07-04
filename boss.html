@@ -988,8 +988,12 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-calc-row:last-child{border-bottom:none}
 .pnl-calc-name{flex:1;padding:5px 7px;border-radius:7px;border:1px solid transparent;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:transparent;min-width:0}
 .pnl-calc-name:focus{border-color:#C4714A;background:#FFFDF9}
-.pnl-calc-amount{width:115px;padding:5px 7px;border-radius:7px;border:1px solid transparent;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:transparent;text-align:right;flex-shrink:0}
+.pnl-calc-amount{width:110px;padding:5px 7px;border-radius:7px;border:1px solid transparent;font-size:.82rem;font-family:inherit;color:#333;outline:none;background:transparent;text-align:right;flex-shrink:0}
 .pnl-calc-amount:focus{border-color:#C4714A;background:#FFFDF9}
+.pnl-calc-amount.from-pct{color:#B06000;background:#FFF8EE}
+.pnl-calc-pct-input{width:52px;padding:5px 4px;border-radius:7px;border:1px solid #EDE8E1;font-size:.78rem;font-family:inherit;color:#C06000;outline:none;background:#FFF8EE;text-align:center;flex-shrink:0}
+.pnl-calc-pct-input:focus{border-color:#C4714A}
+.pnl-calc-pct-input::placeholder{color:#DDB080}
 .pnl-calc-pct{width:36px;font-size:.71rem;color:#E03A3A;font-weight:700;text-align:right;flex-shrink:0}
 .pnl-calc-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;font-size:.68rem;cursor:pointer;color:#D0D0D0;flex-shrink:0;transition:all .12s;padding:0}
 .pnl-calc-del:hover{background:#FFE8E8;color:#E03A3A}
@@ -3227,11 +3231,16 @@ async function saveCalcData(){
 
 function _fmtAmt(n){ return Math.round(n).toLocaleString('ko-KR'); }
 
+function _calcExpAmount(r, totalInc){
+  if(r.pct != null && r.pct !== '') return Math.round(totalInc * (+r.pct) / 100);
+  return +r.amount || 0;
+}
+
 function renderCalc(){
   const cont = document.getElementById('pnl-calc-cont');
   if(!cont || !calcData) return;
   const totalInc = calcData.income.reduce((s,r)=>s+(+r.amount||0),0);
-  const totalExp = calcData.expenses.reduce((s,r)=>s+(+r.amount||0),0);
+  const totalExp = calcData.expenses.reduce((s,r)=>s+_calcExpAmount(r,totalInc),0);
   const profit = totalInc - totalExp;
   const profitPct = totalInc ? Math.round(profit/totalInc*100) : 0;
   const expPct = totalInc ? Math.round(totalExp/totalInc*100) : 0;
@@ -3244,14 +3253,17 @@ function renderCalc(){
       <button class="pnl-calc-del" onclick="delCalcRow('income',${i})">✕</button>
     </div>`).join('');
   const expRows = calcData.expenses.map((r,i)=>{
-    const pct = totalExp ? Math.round((+r.amount||0)/totalExp*1000)/10 : 0;
+    const amt = _calcExpAmount(r, totalInc);
+    const hasPct = r.pct != null && r.pct !== '';
     return `
     <div class="pnl-calc-row">
       <input class="pnl-calc-name" value="${r.name.replace(/"/g,'&quot;')}" placeholder="항목명"
         onchange="calcData.expenses[${i}].name=this.value" onblur="saveCalcData()">
-      <input class="pnl-calc-amount" value="${_fmtAmt(+r.amount||0)}" placeholder="금액"
-        onchange="onCalcAmtChange('expenses',${i},this.value)" onblur="saveCalcData()">
-      <span class="pnl-calc-pct">${pct}%</span>
+      <input class="pnl-calc-amount${hasPct?' from-pct':''}" value="${_fmtAmt(amt)}" placeholder="금액"
+        ${hasPct?'readonly':''} onchange="onCalcAmtChange('expenses',${i},this.value)" onblur="saveCalcData()">
+      <input class="pnl-calc-pct-input" type="number" min="0" max="100" step="0.1"
+        value="${hasPct?r.pct:''}" placeholder="% 입력"
+        oninput="onCalcPctChange(${i},this.value)" onblur="saveCalcData()">
       <button class="pnl-calc-del" onclick="delCalcRow('expenses',${i})">✕</button>
     </div>`;
   }).join('');
@@ -3293,6 +3305,14 @@ function renderCalc(){
 
 function onCalcAmtChange(type, idx, val){
   calcData[type][idx].amount = parseInt(val.replace(/,/g,'')) || 0;
+  if(type === 'expenses') calcData[type][idx].pct = '';  // 금액 직접 입력시 % 모드 해제
+  renderCalc();
+}
+
+function onCalcPctChange(idx, val){
+  const v = val.trim();
+  calcData.expenses[idx].pct = v === '' ? '' : +v;
+  if(v !== '') calcData.expenses[idx].amount = 0;
   renderCalc();
 }
 
