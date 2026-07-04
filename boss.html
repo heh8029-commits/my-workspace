@@ -5891,8 +5891,8 @@ function clipRender() {
       ? `<img src="${item.img}" alt="">`
       : `<span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span>`;
     div.innerHTML = `
-      <div class="clip-img-wrap" id="clip-img-wrap-${i}" onclick="clipFocusItem(${i})" title="클릭 후 Ctrl+V">${imgHtml}</div>
-      <textarea class="clip-memo" rows="2" placeholder="메모..." onclick="clipFocusItem(${i})" oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
+      <div class="clip-img-wrap" id="clip-img-wrap-${i}" onclick="clipFocusItem(${i},'img')" title="클릭 후 Ctrl+V → 이미지 교체">${imgHtml}</div>
+      <textarea class="clip-memo" rows="2" placeholder="메모..." onclick="clipFocusItem(${i},'memo')" oninput="clipItems[${i}].memo=this.value;clipSave()">${item.memo||''}</textarea>
       <div class="clip-date">${item.date||''}</div>
       <button class="clip-del" onclick="clipDel(${i})">✕</button>`;
     wrap.appendChild(div);
@@ -5911,7 +5911,8 @@ function clipDel(i) {
 }
 
 let _clipFocusIdx = -1;
-function clipFocusItem(i) { _clipFocusIdx = i; }
+let _clipFocusType = ''; // 'img' or 'memo'
+function clipFocusItem(i, type) { _clipFocusIdx = i; _clipFocusType = type || 'img'; }
 
 document.addEventListener('paste', function(e) {
   const items = e.clipboardData && e.clipboardData.items;
@@ -5922,16 +5923,21 @@ document.addEventListener('paste', function(e) {
       const reader = new FileReader();
       reader.onload = function(ev) {
         const dataUrl = ev.target.result;
+        const now = new Date();
+        const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
         if (_clipFocusIdx >= 0 && _clipFocusIdx < clipItems.length) {
-          clipItems[_clipFocusIdx].img = dataUrl;
-          clipRender(); clipSave();
-          _clipFocusIdx = -1;
+          if (_clipFocusType === 'memo') {
+            // 메모 클릭 후 붙여넣기 → 바로 아래에 새 카드 삽입
+            clipItems.splice(_clipFocusIdx + 1, 0, {img: dataUrl, memo:'', date});
+          } else {
+            // 이미지 박스 클릭 후 붙여넣기 → 해당 카드 이미지 교체
+            clipItems[_clipFocusIdx].img = dataUrl;
+          }
         } else {
-          const now = new Date();
-          const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
           clipItems.push({img: dataUrl, memo:'', date});
-          clipRender(); clipSave();
         }
+        _clipFocusIdx = -1;
+        clipRender(); clipSave();
       };
       reader.readAsDataURL(file);
       break;
