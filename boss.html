@@ -3255,12 +3255,14 @@ function renderCalc(){
   const expRows = calcData.expenses.map((r,i)=>{
     const amt = _calcExpAmount(r, totalInc);
     const hasPct = r.pct != null && r.pct !== '';
+    const dispPct = totalInc && amt ? (amt/totalInc*100).toFixed(1) : '0';
     return `
     <div class="pnl-calc-row">
       <input class="pnl-calc-name" value="${r.name.replace(/"/g,'&quot;')}" placeholder="항목명"
         onchange="calcData.expenses[${i}].name=this.value" onblur="saveCalcData()">
       <input class="pnl-calc-amount${hasPct?' from-pct':''}" value="${_fmtAmt(amt)}" placeholder="금액"
         ${hasPct?'readonly':''} onchange="onCalcAmtChange('expenses',${i},this.value)" onblur="saveCalcData()">
+      <span class="pnl-calc-pct">${dispPct}%</span>
       <input class="pnl-calc-pct-input" type="number" min="0" max="100" step="0.1"
         value="${hasPct?r.pct:''}" placeholder="% 입력"
         oninput="onCalcPctChange(${i},this.value)" onblur="saveCalcData()">
