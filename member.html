@@ -449,6 +449,29 @@ button{font-family:inherit;cursor:pointer}
 }
 .log-sum-item span{font-size:1.1rem;font-weight:800;color:var(--rose)}
 
+/* ── 부업 ── */
+.sj-field{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+.sj-name-input{flex:2;border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:.82rem;outline:none;}
+.sj-price-input{width:80px;border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:.82rem;outline:none;text-align:right;}
+.sj-rm-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid #ddd;background:white;color:#aaa;font-size:.8rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.sj-add-btn{margin-top:4px;padding:5px 14px;border-radius:20px;border:1.5px dashed var(--pink);background:var(--pink-pale);color:var(--rose);font-size:.8rem;font-weight:700;}
+.sj-overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(50,20,40,.45);backdrop-filter:blur(3px);align-items:center;justify-content:center;}
+.sj-overlay.open{display:flex;}
+.sj-card{background:white;border-radius:20px;padding:24px;min-width:300px;max-width:420px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.22);}
+.sj-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.sj-hd-title{font-size:1rem;font-weight:800;color:var(--text);}
+.sj-hd-close{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--pink);background:white;color:var(--rose);font-size:.9rem;}
+.sj-date-lbl{font-size:.8rem;color:var(--soft);margin-bottom:14px;}
+.sj-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--pink-mid);}
+.sj-item:last-child{border-bottom:none;}
+.sj-item-info{flex:1;}
+.sj-item-name{font-size:.9rem;font-weight:700;color:var(--text);}
+.sj-item-price{font-size:.72rem;color:var(--soft);}
+.sj-qty-input{width:72px;border:2px solid var(--pink);border-radius:10px;padding:6px 8px;font-family:inherit;font-size:.95rem;text-align:center;outline:none;color:var(--text);}
+.sj-qty-input:focus{border-color:var(--rose);}
+.sj-save-btn{width:100%;margin-top:18px;padding:13px;border-radius:12px;background:linear-gradient(135deg,var(--pink-dark),var(--rose));color:white;border:none;font-size:.9rem;font-weight:700;cursor:pointer;}
+.log-day-sj{font-size:.68rem;color:var(--lav-dark);font-weight:600;margin-top:3px;cursor:pointer;}
+.log-day.has-sj{cursor:pointer;}
 /* ── 근로계약서 버튼 ── */
 .contract-btn{
   display:inline-flex;align-items:center;gap:4px;
@@ -566,6 +589,10 @@ button{font-family:inherit;cursor:pointer}
       <div>
         <div class="att-card-title">💗 출퇴근 ✨</div>
         <div class="att-card-sub">이름 선택 → 날짜/시간 선택 → 저장 (휴무도 가능)</div>
+      </div>
+      <div style="text-align:center">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://heh8029-commits.github.io/my-workspace/member.html&bgcolor=ffffff&color=e8648a&margin=6" width="130" height="130" style="border-radius:12px;border:2px solid var(--pink-mid);display:block" alt="QR">
+        <div style="font-size:.65rem;color:var(--soft);margin-top:4px">이 페이지 QR</div>
       </div>
     </div>
 
@@ -700,6 +727,11 @@ button{font-family:inherit;cursor:pointer}
       <label>메모</label>
       <textarea id="fMemo" placeholder="특이사항, 담당업무 등..."></textarea>
     </div>
+    <div class="form-row">
+      <label>부업 종류</label>
+      <div id="sjFieldList"></div>
+      <button type="button" class="sj-add-btn" onclick="addSjField()">+ 부업 추가</button>
+    </div>
 
     <div class="form-btns">
       <button class="btn-del" id="btnDel" onclick="deleteMember()" style="display:none">🗑 삭제</button>
@@ -730,6 +762,19 @@ button{font-family:inherit;cursor:pointer}
 <!-- 라이트박스 -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+</div>
+
+<!-- 부업 수량 입력 오버레이 -->
+<div class="sj-overlay" id="sjOverlay">
+  <div class="sj-card">
+    <div class="sj-hd">
+      <div class="sj-hd-title">🌟 부업 수량 입력</div>
+      <button class="sj-hd-close" onclick="closeSjOverlay()">✕</button>
+    </div>
+    <div class="sj-date-lbl" id="sjOverlayDate"></div>
+    <div id="sjOverlayBody"></div>
+    <button class="sj-save-btn" onclick="saveSjOverlayEntry()">저장</button>
+  </div>
 </div>
 
 <!-- 근로계약서 모달 -->
@@ -784,6 +829,7 @@ let ctxTargetId=null;
 
 const FB_MEMBERS   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_members.json';
 const FB_ATT_BASE  ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_attendance';
+const FB_SJ_BASE   ='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/member_sjlogs';
 
 async function fbGet(url){
   const r=await fetch(url+'?t='+Date.now());
@@ -813,6 +859,20 @@ async function loadAttLogs(){
 }
 async function saveAttLog(entry){await fbPost(FB_ATT_BASE,entry);}
 
+async function loadSjLogs(){
+  try{
+    const d=await fbGet(FB_SJ_BASE+'.json');
+    if(!d)return[];
+    if(Array.isArray(d))return d.filter(Boolean);
+    if(typeof d==='object')return Object.values(d).filter(Boolean);
+    return[];
+  }catch(e){return[];}
+}
+async function saveSjEntry(memberId,date,sjId,sjName,price,qty){
+  const key=`${memberId}_${date}_${sjId}`;
+  await fbPut(`${FB_SJ_BASE}/${key}.json`,{memberId,date,sjId,sjName,price:Number(price),qty:Number(qty),total:Number(price)*Number(qty),at:Date.now()});
+}
+
 function genId(){return Date.now()+Math.random().toString(36).slice(2)}
 
 function avatarColor(name){
@@ -839,6 +899,7 @@ function openModal(id){
     document.getElementById('fTax').checked=!!m.tax;
     document.getElementById('fAccount').value=m.account||'';
     document.getElementById('fMemo').value=m.memo||'';
+    renderSjFields(m.sidejobs||[]);
     document.getElementById('btnDel').style.display='block';
   } else {
     document.getElementById('modalTitle').textContent='멤버 추가';
@@ -852,7 +913,29 @@ function openModal(id){
     document.getElementById('fTax').checked=false;
     document.getElementById('fAccount').value='';
     document.getElementById('fMemo').value='';
+    renderSjFields([]);
   }
+}
+function renderSjFields(list){
+  document.getElementById('sjFieldList').innerHTML='';
+  list.forEach(sj=>addSjFieldItem(sj));
+}
+function addSjField(){addSjFieldItem();}
+function addSjFieldItem(sj){
+  const id=sj?sj.id:genId();
+  const el=document.createElement('div');
+  el.className='sj-field';el.dataset.sjid=id;
+  el.innerHTML=`<input type="text" class="sj-name-input" placeholder="부업명 (예: 사은품)" value="${sj?esc(sj.name):''}">
+    <input type="number" class="sj-price-input" placeholder="단가" value="${sj?sj.price:''}" min="0">
+    <button type="button" class="sj-rm-btn" onclick="this.closest('.sj-field').remove()">✕</button>`;
+  document.getElementById('sjFieldList').appendChild(el);
+}
+function getSjFields(){
+  return[...document.querySelectorAll('#sjFieldList .sj-field')].map(el=>({
+    id:el.dataset.sjid,
+    name:el.querySelector('.sj-name-input').value.trim(),
+    price:Number(el.querySelector('.sj-price-input').value)||0,
+  })).filter(sj=>sj.name);
 }
 function closeModal(){document.getElementById('modalBg').classList.remove('open')}
 function closeModalBg(e){if(e.target===document.getElementById('modalBg'))closeModal()}
@@ -872,6 +955,7 @@ async function saveMember(){
     tax:document.getElementById('fTax').checked,
     account:document.getElementById('fAccount').value.trim(),
     memo:document.getElementById('fMemo').value.trim(),
+    sidejobs:getSjFields(),
   };
   const idx=members.findIndex(x=>x.id===id);
   if(idx>=0)members[idx]=m; else members.push(m);
@@ -1004,6 +1088,36 @@ async function openMyLog(){
 function closeLog(){document.getElementById('logOverlay').classList.remove('open')}
 function logMove(d){logPeriodOffset+=d;renderLog();}
 
+let sjOverlayDate=null;
+async function openSjOverlay(date){
+  const m=members.find(x=>x.id===attSelected);
+  if(!m||!m.sidejobs||!m.sidejobs.length)return;
+  sjOverlayDate=date;
+  document.getElementById('sjOverlayDate').textContent=`📅 ${date}`;
+  const sjLogs=await loadSjLogs();
+  const existing={};
+  for(const l of sjLogs.filter(l=>l.memberId===attSelected&&l.date===date)) existing[l.sjId]=l.qty;
+  let html='';
+  for(const sj of m.sidejobs){
+    html+=`<div class="sj-item">
+      <div class="sj-item-info">
+        <div class="sj-item-name">${esc(sj.name)}</div>
+        <div class="sj-item-price">단가 ${Number(sj.price).toLocaleString()}원</div>
+      </div>
+      <input type="number" class="sj-qty-input" data-sjid="${sj.id}" data-sjname="${esc(sj.name)}" data-price="${sj.price}" value="${existing[sj.id]||0}" min="0">
+    </div>`;
+  }
+  document.getElementById('sjOverlayBody').innerHTML=html;
+  document.getElementById('sjOverlay').classList.add('open');
+}
+function closeSjOverlay(){document.getElementById('sjOverlay').classList.remove('open');}
+async function saveSjOverlayEntry(){
+  const inputs=document.querySelectorAll('.sj-qty-input');
+  await Promise.all([...inputs].map(inp=>saveSjEntry(attSelected,sjOverlayDate,inp.dataset.sjid,inp.dataset.sjname,Number(inp.dataset.price),Number(inp.value)||0)));
+  closeSjOverlay();
+  renderLog();
+}
+
 
 async function renderLog(){
   const m=members.find(x=>x.id===attSelected);
@@ -1015,12 +1129,20 @@ async function renderLog(){
     `💗 <strong>${esc(m.eng||m.name)}</strong>${m.nick?`(${esc(m.nick)})`:''}  근무일정표 ✨`;
   document.getElementById('logPeriodLabel').textContent=`${fmt(start)}~${fmt(end)}`;
 
-  const logs=await loadAttLogs();
+  const m2=members.find(x=>x.id===attSelected);
+  const hasSj=m2&&m2.sidejobs&&m2.sidejobs.length>0;
+  const [logs,sjLogs]=await Promise.all([loadAttLogs(),hasSj?loadSjLogs():Promise.resolve([])]);
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===attSelected)){
     if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0};
     if(l.isOff){dayMap[l.date].isOff=true;}
     else{dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);dayMap[l.date].count++;}
+  }
+  const sjDayMap={};
+  for(const l of sjLogs.filter(l=>l.memberId===attSelected)){
+    if(!sjDayMap[l.date])sjDayMap[l.date]={total:0,items:[]};
+    sjDayMap[l.date].total+=l.total||0;
+    sjDayMap[l.date].items.push(l);
   }
 
   // 월요일부터 시작하는 캘린더 범위
@@ -1047,10 +1169,12 @@ async function renderLog(){
     if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;}}
     const h=Math.floor(mins/60),mn=mins%60;
     const lbl=isOff?'🌴 휴무':`⏰ ${h}시간 ${mn}분`;
-    const activeIco=hasData&&!isOff;
-    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}">
+    const sjDay=sjDayMap[ds];
+    const clickable=inP&&hasSj?`onclick="openSjOverlay('${ds}')" style="cursor:pointer"`:'';
+    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}" ${clickable}>
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
       <div class="log-day-time">${lbl}</div>
+      ${hasSj&&inP?`<div class="log-day-sj">💼 ${sjDay?sjDay.total.toLocaleString()+'원':'부업 입력'}</div>`:''}
     </div>`;
     cur.setDate(cur.getDate()+1);
   }
@@ -1058,10 +1182,16 @@ async function renderLog(){
   document.getElementById('logCalendar').innerHTML=html;
 
   const th=Math.floor(totalMin/60),tm=totalMin%60;
+  let sjPeriodTotal=0;
+  for(const ds of Object.keys(sjDayMap)){
+    const d=new Date(ds+'T00:00:00');
+    if(d>=start&&d<=end) sjPeriodTotal+=sjDayMap[ds].total||0;
+  }
   document.getElementById('logSummary').innerHTML=
     `<div class="log-sum-item">근무일 <span>${workDays}일</span></div>
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
      <div class="log-sum-item">휴무 <span>${offDays}일</span></div>
+     ${hasSj?`<div class="log-sum-item">부업 수입 <span>${sjPeriodTotal.toLocaleString()}원</span></div>`:''}
 `;
 }
 
@@ -1092,11 +1222,18 @@ async function renderAdmin(){
   document.getElementById('adminSummaryTable').innerHTML=`<div style="text-align:center;padding:30px;color:var(--soft)">불러오는 중...</div>`;
   document.getElementById('adminCalGrid').innerHTML='';
 
-  const logs=await loadAttLogs();
+  const [logs,sjLogs]=await Promise.all([loadAttLogs(),loadSjLogs()]);
   const activeMembers=members.filter(m=>m.status==='active');
 
   const memberStats={};
-  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0};
+  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0,sjTotal:0};
+
+  // 부업 집계
+  for(const l of sjLogs){
+    const d=new Date(l.date+'T00:00:00');
+    if(d<start||d>end)continue;
+    if(memberStats[l.memberId]!==undefined) memberStats[l.memberId].sjTotal+=l.total||0;
+  }
 
   const dayData={};
   for(const l of logs){
@@ -1121,29 +1258,32 @@ async function renderAdmin(){
     <div class="admin-card-title">🌟 직원별 누적 (${fmt(start)}~${fmt(end)})</div>
     <div class="admin-card-subtitle">🌴 휴무는 "휴무(일)"만 증가 (근무시간/급여에는 영향 없음)</div>
     <table class="admin-tbl"><thead><tr>
-      <th>직원</th><th>근무시간</th><th>휴무(일)</th><th>예상 급여(원)</th><th>최종급여(3.3% 공제후)</th>
+      <th>직원</th><th>근무시간</th><th>휴무(일)</th><th>예상 급여(원)</th><th>부업 수입</th><th>최종합계</th>
     </tr></thead><tbody>`;
-  let totalFinal=0;
+  let totalFinal=0,totalSj=0;
   for(let i=0;i<activeMembers.length;i++){
     const m=activeMembers[i];
-    const st=memberStats[m.id]||{totalMin:0,offDays:0};
+    const st=memberStats[m.id]||{totalMin:0,offDays:0,sjTotal:0};
     const th=Math.floor(st.totalMin/60),tm=st.totalMin%60;
     const wage=Number(m.wage)||0;
-    const raw=wage?Math.round(st.totalMin/60*wage):0;
-    const final=wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0;
-    totalFinal+=final;
+    const wageFinal=wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0;
+    const rowTotal=wageFinal+(st.sjTotal||0);
+    totalFinal+=wageFinal; totalSj+=st.sjTotal||0;
     const color=COLORS[i%COLORS.length];
     tbl+=`<tr>
       <td><div class="emp-name"><span style="color:${color}">✦</span>${esc(m.name)}${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
       <td>${th}시간 ${tm}분</td>
       <td>${st.offDays}</td>
-      <td>${raw?raw.toLocaleString():0}</td>
-      <td>${final?final.toLocaleString():0}${m.tax?'<small style="color:var(--soft);font-size:.7rem"> (3.3%)</small>':''}</td>
+      <td>${wageFinal?wageFinal.toLocaleString():0}${m.tax?'<small style="color:var(--soft);font-size:.7rem"> (3.3%)</small>':''}</td>
+      <td>${st.sjTotal?(st.sjTotal).toLocaleString():'-'}</td>
+      <td><strong>${rowTotal.toLocaleString()}</strong></td>
     </tr>`;
   }
   tbl+=`<tr class="total-row">
-    <td colspan="4">총급여합계(최종급여)</td>
+    <td colspan="3">총합계</td>
     <td>${totalFinal.toLocaleString()}</td>
+    <td>${totalSj.toLocaleString()}</td>
+    <td><strong>${(totalFinal+totalSj).toLocaleString()}</strong></td>
   </tr></tbody></table></div>`;
   document.getElementById('adminSummaryTable').innerHTML=tbl;
 
