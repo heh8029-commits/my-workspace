@@ -453,9 +453,17 @@ button{font-family:inherit;cursor:pointer}
 .taxdoc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px;}
 .taxdoc-card{background:white;border-radius:16px;border:1.5px solid var(--pink-mid);padding:18px;box-shadow:0 2px 10px var(--shadow);}
 .taxdoc-card-title{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:10px;}
-.taxdoc-img-wrap{width:100%;border-radius:10px;overflow:hidden;border:1.5px solid var(--pink-mid);margin-bottom:12px;cursor:pointer;background:#fafafa;min-height:80px;display:flex;align-items:center;justify-content:center;}
-.taxdoc-img-wrap img{width:100%;display:block;object-fit:cover;}
-.taxdoc-img-empty{font-size:.78rem;color:var(--soft);padding:20px;}
+.taxdoc-imgs-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;}
+.taxdoc-img-slot{position:relative;flex-shrink:0;width:100px;height:100px;border-radius:10px;overflow:hidden;border:1.5px solid var(--pink-mid);cursor:pointer;background:#fafafa;}
+.taxdoc-img-slot img{width:100%;height:100%;object-fit:cover;display:block;}
+.taxdoc-img-num{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.65);color:white;font-size:1.1rem;font-weight:900;border-radius:8px;padding:2px 8px;line-height:1.3;}
+.taxdoc-img-empty{font-size:.78rem;color:var(--soft);padding:20px;background:#fafafa;border-radius:10px;border:1.5px solid var(--pink-mid);text-align:center;margin-bottom:12px;}
+/* 모달 이미지 목록 */
+.taxdoc-img-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.taxdoc-img-item{position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1.5px solid var(--pink-mid);}
+.taxdoc-img-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.taxdoc-img-item-num{position:absolute;top:2px;left:2px;background:rgba(0,0,0,.65);color:white;font-size:.9rem;font-weight:900;border-radius:6px;padding:0 6px;line-height:1.5;}
+.taxdoc-img-item-del{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(200,0,0,.8);color:white;border:none;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .taxdoc-checks{margin-bottom:10px;}
 .taxdoc-check-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--pink-mid);}
 .taxdoc-check-item:last-child{border-bottom:none;}
@@ -476,9 +484,8 @@ button{font-family:inherit;cursor:pointer}
 .taxdoc-form-row label{display:block;font-size:.78rem;font-weight:700;color:var(--soft);margin-bottom:5px;}
 .taxdoc-title-input{width:100%;border:1.5px solid var(--pink-mid);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:.92rem;outline:none;box-sizing:border-box;}
 .taxdoc-title-input:focus{border-color:var(--rose);}
-.taxdoc-img-drop{border:2px dashed var(--pink);border-radius:12px;padding:18px;text-align:center;cursor:pointer;color:var(--soft);font-size:.82rem;background:var(--pink-pale);position:relative;}
+.taxdoc-img-drop{border:2px dashed var(--pink);border-radius:12px;padding:14px;text-align:center;cursor:pointer;color:var(--soft);font-size:.82rem;background:var(--pink-pale);position:relative;margin-top:8px;}
 .taxdoc-img-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.taxdoc-img-preview{width:100%;border-radius:10px;margin-top:8px;display:none;}
 .taxdoc-check-fields{margin-bottom:6px;}
 .taxdoc-check-field{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
 .taxdoc-check-field input[type=text]{flex:1;border:1.5px solid var(--pink-mid);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:.84rem;outline:none;}
@@ -531,6 +538,11 @@ button{font-family:inherit;cursor:pointer}
 .contract-thumb:hover{transform:scale(1.12)}
 
 /* 라이트박스 */
+.lightbox-counter{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:white;font-size:1.2rem;font-weight:900;padding:4px 18px;border-radius:20px;letter-spacing:.05em;}
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:white;font-size:2.5rem;font-weight:700;padding:8px 18px;border-radius:12px;cursor:pointer;z-index:1;}
+.lightbox-nav:hover{background:rgba(255,255,255,.3);}
+.lightbox-prev{left:16px;}
+.lightbox-next{right:16px;}
 .lightbox{
   display:none;position:fixed;inset:0;z-index:900;
   background:rgba(20,10,30,.82);
@@ -821,7 +833,10 @@ button{font-family:inherit;cursor:pointer}
 
 <!-- 라이트박스 -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-counter" id="lightboxCounter" onclick="event.stopPropagation()" style="display:none"></div>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" onclick="event.stopPropagation();lightboxNav(-1)" style="display:none">‹</button>
   <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" onclick="event.stopPropagation();lightboxNav(1)" style="display:none">›</button>
 </div>
 
 <!-- 원천징수 고지서 모달 -->
@@ -837,9 +852,9 @@ button{font-family:inherit;cursor:pointer}
       <label>이미지 (클립보드 붙여넣기 또는 파일 첨부)</label>
       <div class="taxdoc-img-drop" id="taxdocImgDrop">
         📎 이미지를 여기에 붙여넣거나 클릭해서 파일 선택
-        <input type="file" accept="image/*" onchange="taxdocFileChange(event)">
+        <input type="file" accept="image/*" multiple onchange="taxdocFileChange(event)">
       </div>
-      <img class="taxdoc-img-preview" id="taxdocImgPreview" src="">
+      <div class="taxdoc-img-list" id="taxdocImgList"></div>
     </div>
     <div class="taxdoc-form-row">
       <label>체크 항목 (입금해야됨, 신고완료 등)</label>
@@ -1357,7 +1372,7 @@ function closeMemberManage(){showAdminView('cal');}
 function closeMemberManageBg(){}
 
 // ── 원천징수 고지서 ──
-let taxdocImgData='',taxdocImgName='';
+let taxdocImages=[];
 
 async function loadTaxDocs(){
   try{
@@ -1379,9 +1394,20 @@ async function renderTaxView(){
   if(!docs.length) html+=`<div style="color:var(--soft);font-size:.88rem;padding:10px">아직 등록된 고지서가 없어요</div>`;
   for(const doc of docs){
     const checks=doc.checkItems||[];
+    const imgs=doc.images&&doc.images.length?doc.images:(doc.imageData?[{data:doc.imageData,name:doc.imageName||''}]:[]);
+    let imgHtml='';
+    if(imgs.length){
+      imgHtml=`<div class="taxdoc-imgs-row">${imgs.map((img,i)=>`
+        <div class="taxdoc-img-slot" onclick="openTaxLightbox('${doc.id}',${i})">
+          <img src="${img.data}" alt="고지서 ${i+1}">
+          <div class="taxdoc-img-num">${i+1}</div>
+        </div>`).join('')}</div>`;
+    } else {
+      imgHtml=`<div class="taxdoc-img-wrap"><div class="taxdoc-img-empty">이미지 없음</div></div>`;
+    }
     html+=`<div class="taxdoc-card">
       <div class="taxdoc-card-title">${esc(doc.title||'제목 없음')}</div>
-      ${doc.imageData?`<div class="taxdoc-img-wrap" onclick="openTaxLightbox('${doc.id}')"><img src="${doc.imageData}" alt="고지서"></div>`:`<div class="taxdoc-img-wrap"><div class="taxdoc-img-empty">이미지 없음</div></div>`}
+      ${imgHtml}
       ${checks.length?`<div class="taxdoc-checks">${checks.map(c=>`
         <div class="taxdoc-check-item">
           <input type="checkbox" ${c.checked?'checked':''} onchange="toggleTaxCheck('${doc.id}','${c.id}',this.checked)">
@@ -1414,21 +1440,68 @@ async function deleteTaxdocCard(id){
   renderTaxView();
 }
 
-function openTaxLightbox(docId){
-  const docs_=[...document.querySelectorAll('.taxdoc-img-wrap img')];
-  // find the image data from the rendered img
-  const el=document.querySelector(`.taxdoc-card [onclick="openTaxLightbox('${docId}')"] img`);
-  if(!el)return;
-  document.getElementById('lightboxImg').src=el.src;
+let lbImages=[],lbIdx=0;
+function openTaxLightbox(docId,imgIdx){
+  const card=document.querySelectorAll('.taxdoc-card');
+  let imgs=[];
+  card.forEach(c=>{
+    const slots=c.querySelectorAll('.taxdoc-img-slot img');
+    if(slots.length&&c.querySelector(`.taxdoc-img-slot[onclick*="'${docId}'"]`)){
+      imgs=[...slots].map(s=>s.src);
+    }
+  });
+  if(!imgs.length)return;
+  lbImages=imgs;
+  lbIdx=imgIdx||0;
+  _showLightboxImg();
   document.getElementById('lightbox').classList.add('open');
 }
+function _showLightboxImg(){
+  document.getElementById('lightboxImg').src=lbImages[lbIdx];
+  const counter=document.getElementById('lightboxCounter');
+  const prev=document.getElementById('lightboxPrev');
+  const next=document.getElementById('lightboxNext');
+  if(lbImages.length>1){
+    counter.textContent=`${lbIdx+1} / ${lbImages.length}`;
+    counter.style.display='';
+    prev.style.display='';
+    next.style.display='';
+  } else {
+    counter.style.display='none';
+    prev.style.display='none';
+    next.style.display='none';
+  }
+}
+function lightboxNav(dir){
+  lbIdx=(lbIdx+dir+lbImages.length)%lbImages.length;
+  _showLightboxImg();
+}
 
-let _taxdocAll=[];
+function renderTaxdocImgList(){
+  const list=document.getElementById('taxdocImgList');
+  if(!taxdocImages.length){list.innerHTML='';return;}
+  list.innerHTML=taxdocImages.map((img,i)=>`
+    <div class="taxdoc-img-item">
+      <img src="${img.data}" alt="${i+1}번">
+      <div class="taxdoc-img-item-num">${i+1}</div>
+      <button class="taxdoc-img-item-del" onclick="removeTaxdocImg(${i})">✕</button>
+    </div>`).join('');
+}
+function removeTaxdocImg(idx){
+  taxdocImages.splice(idx,1);
+  renderTaxdocImgList();
+}
+function addTaxdocImgFile(file){
+  if(file.size>3*1024*1024){alert('3MB 이하 파일만 가능해');return;}
+  const reader=new FileReader();
+  reader.onload=ev=>{taxdocImages.push({data:ev.target.result,name:file.name});renderTaxdocImgList();};
+  reader.readAsDataURL(file);
+}
+
 async function openTaxdocModal(id){
-  taxdocImgData='';taxdocImgName='';
+  taxdocImages=[];
   document.getElementById('taxdocCheckFields').innerHTML='';
-  document.getElementById('taxdocImgPreview').style.display='none';
-  document.getElementById('taxdocImgPreview').src='';
+  document.getElementById('taxdocImgList').innerHTML='';
   document.getElementById('taxdocTitleInput').value='';
   document.getElementById('taxdocMemoInput').value='';
   document.getElementById('taxdocEditId').value='';
@@ -1440,7 +1513,12 @@ async function openTaxdocModal(id){
     if(doc){
       document.getElementById('taxdocTitleInput').value=doc.title||'';
       document.getElementById('taxdocMemoInput').value=doc.memo||'';
-      if(doc.imageData){taxdocImgData=doc.imageData;taxdocImgName=doc.imageName||'';document.getElementById('taxdocImgPreview').src=doc.imageData;document.getElementById('taxdocImgPreview').style.display='block';}
+      if(doc.images&&doc.images.length){
+        taxdocImages=doc.images.map(i=>({data:i.data,name:i.name||''}));
+      } else if(doc.imageData){
+        taxdocImages=[{data:doc.imageData,name:doc.imageName||''}];
+      }
+      renderTaxdocImgList();
       for(const c of doc.checkItems||[]) addTaxdocCheckField(c.label);
     }
   } else {
@@ -1452,11 +1530,8 @@ function closeTaxdocModal(){document.getElementById('taxdocModalBg').classList.r
 function closeTaxdocModalBg(e){if(e.target===document.getElementById('taxdocModalBg'))closeTaxdocModal();}
 
 function taxdocFileChange(e){
-  const file=e.target.files[0];if(!file)return;
-  if(file.size>3*1024*1024){alert('3MB 이하 파일만 가능해');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{taxdocImgData=ev.target.result;taxdocImgName=file.name;const p=document.getElementById('taxdocImgPreview');p.src=ev.target.result;p.style.display='block';};
-  reader.readAsDataURL(file);
+  [...e.target.files].forEach(file=>addTaxdocImgFile(file));
+  e.target.value='';
 }
 
 document.addEventListener('paste',e=>{
@@ -1464,10 +1539,8 @@ document.addEventListener('paste',e=>{
   const item=[...e.clipboardData.items].find(i=>i.type.startsWith('image/'));
   if(!item)return;
   const file=item.getAsFile();
-  if(file.size>3*1024*1024){alert('3MB 이하만 가능해');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{taxdocImgData=ev.target.result;taxdocImgName='clipboard.png';const p=document.getElementById('taxdocImgPreview');p.src=ev.target.result;p.style.display='block';};
-  reader.readAsDataURL(file);
+  file.name='clipboard.png';
+  addTaxdocImgFile(file);
 });
 
 function addTaxdocCheckField(label){
@@ -1496,7 +1569,7 @@ async function saveTaxdocModal(){
     const existing=existChecks.find(c=>c.label===lbl);
     return{id:el.dataset.cid,label:lbl,checked:existing?existing.checked:false};
   }).filter(c=>c.label);
-  const doc={id,title,imageData:taxdocImgData,imageName:taxdocImgName,checkItems,memo:document.getElementById('taxdocMemoInput').value.trim(),at:Date.now()};
+  const doc={id,title,images:taxdocImages,checkItems,memo:document.getElementById('taxdocMemoInput').value.trim(),at:Date.now()};
   await saveTaxDoc(doc);
   closeTaxdocModal();
   renderTaxView();
