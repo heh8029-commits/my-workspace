@@ -1296,10 +1296,8 @@ async function renderLog(){
       return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="flex:1;font-size:.84rem;font-weight:700;color:var(--text)">${esc(sj.name)}</span>
         <input type="number" min="0" value="${qty}" data-sjid="${sj.id}" data-sjname="${esc(sj.name)}" data-price="${sj.price}"
-          style="width:70px;border:1.5px solid var(--lav);border-radius:8px;padding:5px 8px;font-family:inherit;font-size:.88rem;text-align:center;outline:none"
-          oninput="updateSjPreview(this)">
+          style="width:70px;border:1.5px solid var(--lav);border-radius:8px;padding:5px 8px;font-family:inherit;font-size:.88rem;text-align:center;outline:none">
         <span style="font-size:.78rem;color:var(--soft)">개</span>
-        <span class="sj-preview-amt" style="min-width:70px;text-align:right;font-size:.82rem;font-weight:700;color:var(--lav-dark)">${total?total.toLocaleString()+'원':'-'}</span>
       </div>`;
     }).join('');
   } else {
@@ -1345,7 +1343,7 @@ async function renderLog(){
     `<div class="log-sum-item">근무일 <span>${workDays}일</span></div>
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
      <div class="log-sum-item">휴무 <span>${offDays}일</span></div>
-     ${hasSj?`<div class="log-sum-item">부업 수입 <span>${sjPeriodTotal.toLocaleString()}원</span></div>`:''}
+
 `;
 }
 
