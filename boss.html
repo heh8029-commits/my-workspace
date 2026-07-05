@@ -398,9 +398,11 @@ a{text-decoration:none;color:inherit}
 .pn-card.pn-focused{box-shadow:0 0 0 2px #4F6EF7,1px 2px 6px rgba(0,0,0,.09)}
 .pn-card-imgs{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;min-height:0}
 .pn-card-img{width:100%;border-radius:3px;object-fit:cover;flex-shrink:0;display:block;cursor:pointer}
-.pn-card-img-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:rgba(0,0,0,.25);text-align:center;line-height:1.4}
-.pn-card-text{font-size:.68rem;border:none;background:transparent;resize:none;width:100%;padding:0;color:rgba(0,0,0,.7);line-height:1.4;flex-shrink:0;font-family:inherit;height:auto}
-.pn-card-text::placeholder{color:rgba(0,0,0,.28)}
+.pn-memo-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
+.pn-card-text{border:none;background:transparent;resize:none;width:100%;padding:2px;color:rgba(0,0,0,.72);line-height:1.45;font-family:inherit}
+.pn-card-text.no-img{font-size:.82rem;font-weight:700;text-align:center;height:auto;overflow:hidden}
+.pn-card-text.has-img{font-size:.63rem;flex-shrink:0;margin-top:2px;height:auto}
+.pn-card-text::placeholder{color:rgba(0,0,0,.25);font-weight:400}
 .pn-card-foot{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-top:auto;padding-top:2px}
 .pn-card-date{font-size:.57rem;color:rgba(0,0,0,.28);flex:1;white-space:nowrap;overflow:hidden}
 .pn-card-del{border:none;background:transparent;font-size:.68rem;cursor:pointer;color:rgba(0,0,0,.22);padding:0;line-height:1;flex-shrink:0}
@@ -6723,19 +6725,25 @@ function pnRender(){
   const grid=document.getElementById('pn-grid'); if(!grid) return;
   grid.innerHTML=pnItems.map(function(item,i){
     const bg=item.color||PN_COLORS[0];
-    const imgsHtml=item.imgs&&item.imgs.length
-      ? item.imgs.map(function(src,si){
-          return `<img class="pn-card-img" src="${src}" alt="" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="클릭하면 삭제">`;
-        }).join('')
-      : `<div class="pn-card-img-empty">Ctrl+V<br>이미지</div>`;
+    const hasImg=item.imgs&&item.imgs.length>0;
     const dotsHtml=PN_COLORS.map(function(c){
       return `<span class="pn-color-dot${c===bg?' pn-col-active':''}" style="background:${c}" onclick="event.stopPropagation();pnSetColor(${i},'${c}')"></span>`;
     }).join('');
+    const textVal=(item.text||'').replace(/</g,'&lt;');
+    const body=hasImg
+      ? `<div class="pn-card-imgs">${item.imgs.map(function(src,si){
+            return `<img class="pn-card-img" src="${src}" alt="" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="클릭하면 삭제">`;
+          }).join('')}</div>
+         <textarea class="pn-card-text has-img" placeholder="메모..."
+           oninput="pnItems[${i}].text=this.value;pnSave()"
+           onclick="pnFocus(${i});event.stopPropagation()">${textVal}</textarea>`
+      : `<div class="pn-memo-wrap">
+           <textarea class="pn-card-text no-img" placeholder="메모..."
+             oninput="pnItems[${i}].text=this.value;pnSave()"
+             onclick="pnFocus(${i});event.stopPropagation()">${textVal}</textarea>
+         </div>`;
     return `<div class="pn-card${pnFocusIdx===i?' pn-focused':''}" style="background:${bg}" onclick="pnFocus(${i})">
-      <div class="pn-card-imgs">${imgsHtml}</div>
-      <textarea class="pn-card-text" rows="2" placeholder="메모..."
-        oninput="pnItems[${i}].text=this.value;pnSave()"
-        onclick="pnFocus(${i});event.stopPropagation()">${(item.text||'').replace(/</g,'&lt;')}</textarea>
+      ${body}
       <div class="pn-card-foot">
         <span class="pn-card-date">${item.date||''}</span>
         <div class="pn-colors">${dotsHtml}</div>
