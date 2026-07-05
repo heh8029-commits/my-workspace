@@ -6206,8 +6206,19 @@ document.addEventListener('paste', function(e) {
         const dataUrl = ev.target.result;
         const now = new Date();
         const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
-        // 포스트잇 포커스 우선
-        if (pnFocusIdx >= 0 && pnFocusIdx < pnItems.length) {
+        // 투자탭 포스트잇 우선
+        const investTabActive = document.getElementById('ai-tab-invest') && document.getElementById('ai-tab-invest').style.display !== 'none';
+        if (investTabActive) {
+          if (pniFocusIdx >= 0 && pniFocusIdx < pniItems.length) {
+            if (!Array.isArray(pniItems[pniFocusIdx].imgs)) pniItems[pniFocusIdx].imgs = [];
+            pniItems[pniFocusIdx].imgs.push(dataUrl);
+            pniRender(); pniSave();
+          } else {
+            pniItems.push({color:PN_COLORS[pniItems.length%PN_COLORS.length],text:'',imgs:[dataUrl],date});
+            pniFocusIdx=pniItems.length-1;
+            pniRender(); pniSave();
+          }
+        } else if (pnFocusIdx >= 0 && pnFocusIdx < pnItems.length) {
           if (!Array.isArray(pnItems[pnFocusIdx].imgs)) pnItems[pnFocusIdx].imgs = [];
           pnItems[pnFocusIdx].imgs.push(dataUrl);
           pnRender(); pnSave();
