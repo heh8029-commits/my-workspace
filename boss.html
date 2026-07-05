@@ -300,6 +300,73 @@ a{text-decoration:none;color:inherit}
 .clip-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#5060C0,#3040A0);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
 .clip-paste-hint{text-align:center;font-size:.75rem;color:#A0AACC;margin-bottom:8px}
 
+/* ── 현재자산정보 ── */
+.ai-wrap{max-width:960px;display:flex;gap:24px;align-items:flex-start}
+@media(max-width:700px){.ai-wrap{flex-direction:column}}
+.ai-left{flex:0 0 340px;display:flex;flex-direction:column;align-items:center;gap:0}
+@media(max-width:700px){.ai-left{flex:none;width:100%}}
+.ai-right{flex:1;min-width:0}
+.ai-chart-card{background:#fff;border-radius:22px;border:1.5px solid #E2E8F5;padding:24px 20px 18px;box-shadow:0 4px 18px rgba(79,110,247,.07);width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
+@media(prefers-color-scheme:dark){.ai-chart-card{background:#222838;border-color:#2E3650;box-shadow:0 4px 18px rgba(0,0,0,.25)}}
+:root[data-theme="light"] .ai-chart-card{background:#fff;border-color:#E2E8F5}
+:root[data-theme="dark"] .ai-chart-card{background:#222838;border-color:#2E3650}
+.ai-chart-title{font-size:.78rem;font-weight:800;color:#6B7799;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;align-self:flex-start}
+@media(prefers-color-scheme:dark){.ai-chart-title{color:#8B96B5}}
+:root[data-theme="dark"] .ai-chart-title{color:#8B96B5}
+:root[data-theme="light"] .ai-chart-title{color:#6B7799}
+.ai-donut-wrap{position:relative;width:200px;height:200px;flex-shrink:0}
+.ai-donut-wrap svg{width:200px;height:200px}
+.ai-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.ai-donut-total-label{font-size:.65rem;font-weight:700;color:#6B7799;letter-spacing:.05em;text-transform:uppercase}
+.ai-donut-total{font-size:1.05rem;font-weight:800;color:#1B2035;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+@media(prefers-color-scheme:dark){.ai-donut-total{color:#E4E9F5}}
+:root[data-theme="dark"] .ai-donut-total{color:#E4E9F5}
+:root[data-theme="light"] .ai-donut-total{color:#1B2035}
+.ai-legend{width:100%;margin-top:18px;display:flex;flex-direction:column;gap:7px}
+.ai-legend-item{display:flex;align-items:center;gap:8px;font-size:.78rem}
+.ai-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ai-legend-name{flex:1;color:#1B2035;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(prefers-color-scheme:dark){.ai-legend-name{color:#E4E9F5}}
+:root[data-theme="dark"] .ai-legend-name{color:#E4E9F5}
+:root[data-theme="light"] .ai-legend-name{color:#1B2035}
+.ai-legend-pct{font-weight:800;font-variant-numeric:tabular-nums;color:#4F6EF7;min-width:36px;text-align:right}
+.ai-legend-amt{font-variant-numeric:tabular-nums;color:#6B7799;font-size:.72rem;min-width:72px;text-align:right}
+@media(prefers-color-scheme:dark){.ai-legend-amt{color:#8B96B5}}
+:root[data-theme="dark"] .ai-legend-amt{color:#8B96B5}
+:root[data-theme="light"] .ai-legend-amt{color:#6B7799}
+.ai-input-card{background:#fff;border-radius:22px;border:1.5px solid #E2E8F5;padding:22px 20px;box-shadow:0 4px 18px rgba(79,110,247,.07);margin-bottom:14px}
+@media(prefers-color-scheme:dark){.ai-input-card{background:#222838;border-color:#2E3650}}
+:root[data-theme="dark"] .ai-input-card{background:#222838;border-color:#2E3650}
+:root[data-theme="light"] .ai-input-card{background:#fff;border-color:#E2E8F5}
+.ai-input-title{font-size:.78rem;font-weight:800;color:#6B7799;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+@media(prefers-color-scheme:dark){.ai-input-title{color:#8B96B5}}
+:root[data-theme="dark"] .ai-input-title{color:#8B96B5}
+:root[data-theme="light"] .ai-input-title{color:#6B7799}
+.ai-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-row-color{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.ai-row-name{flex:1;padding:7px 10px;border-radius:9px;border:1.5px solid #E2E8F5;font-size:.83rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;min-width:0}
+.ai-row-name:focus{border-color:#4F6EF7}
+@media(prefers-color-scheme:dark){.ai-row-name{border-color:#2E3650;color:#E4E9F5}}
+:root[data-theme="dark"] .ai-row-name{border-color:#2E3650;color:#E4E9F5}
+:root[data-theme="light"] .ai-row-name{border-color:#E2E8F5;color:#1B2035}
+.ai-row-amt{width:130px;padding:7px 10px;border-radius:9px;border:1.5px solid #E2E8F5;font-size:.83rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-row-amt:focus{border-color:#4F6EF7}
+@media(prefers-color-scheme:dark){.ai-row-amt{border-color:#2E3650;color:#E4E9F5}}
+:root[data-theme="dark"] .ai-row-amt{border-color:#2E3650;color:#E4E9F5}
+:root[data-theme="light"] .ai-row-amt{border-color:#E2E8F5;color:#1B2035}
+.ai-row-pct{width:40px;font-size:.74rem;font-weight:800;color:#4F6EF7;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-row-del{width:24px;height:24px;border-radius:7px;border:none;background:transparent;font-size:.7rem;cursor:pointer;color:#CCC;flex-shrink:0;transition:all .12s;padding:0}
+.ai-row-del:hover{background:#FFE8E8;color:#E03A3A}
+.ai-add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:11px;border:1.5px dashed #C5CFF5;background:transparent;color:#4F6EF7;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .13s;font-family:inherit;margin-top:4px}
+.ai-add-btn:hover{background:#EEF1FF;border-color:#4F6EF7}
+@media(prefers-color-scheme:dark){.ai-add-btn{border-color:#2E3650;color:#7B96F7}.ai-add-btn:hover{background:#2A3150}}
+:root[data-theme="dark"] .ai-add-btn{border-color:#2E3650;color:#7B96F7}
+:root[data-theme="dark"] .ai-add-btn:hover{background:#2A3150}
+:root[data-theme="light"] .ai-add-btn{border-color:#C5CFF5;color:#4F6EF7}
+:root[data-theme="light"] .ai-add-btn:hover{background:#EEF1FF}
+.ai-save-btn{display:block;width:100%;padding:10px;border-radius:12px;border:none;background:linear-gradient(135deg,#5C7BFF,#4F6EF7);color:#fff;font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px;transition:opacity .13s}
+.ai-save-btn:hover{opacity:.88}
+
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
 @media(max-width:960px){
@@ -1333,6 +1400,33 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- 현재자산정보 페이지 -->
+    <div class="page" id="page-asset-info">
+      <div class="ai-wrap">
+        <div class="ai-left">
+          <div class="ai-chart-card">
+            <div class="ai-chart-title">자산 배분</div>
+            <div class="ai-donut-wrap">
+              <svg viewBox="0 0 200 200" id="ai-donut-svg"></svg>
+              <div class="ai-donut-center">
+                <div class="ai-donut-total-label">총 자산</div>
+                <div class="ai-donut-total" id="ai-total-disp">-</div>
+              </div>
+            </div>
+            <div class="ai-legend" id="ai-legend"></div>
+          </div>
+        </div>
+        <div class="ai-right">
+          <div class="ai-input-card">
+            <div class="ai-input-title">자산 항목</div>
+            <div id="ai-rows"></div>
+            <button class="ai-add-btn" onclick="aiAddRow()">＋ 항목 추가</button>
+            <button class="ai-save-btn" onclick="aiSave()">💾 저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 서브메뉴 콘텐츠 (준비 중) -->
     <div class="page" id="page-sub">
       <div class="placeholder">
@@ -2248,6 +2342,9 @@ function setSub(id, label){
     showPage('cs');
     bCsRefresh();
     bCsAlarmStart();
+  } else if(id==='asset-info'){
+    showPage('asset-info');
+    aiFetch();
   } else if(id==='card'){
     showPage('card');
     cardFetch();
@@ -6546,6 +6643,116 @@ function bregRender(){
       ${m.memo?`<div style="font-size:.75rem;color:#aaa">${m.memo}</div>`:''}
     </div>`).join('');
 }
+
+// ── 현재자산정보 ──────────────────────────────────────────
+const FB_ASSET_INFO = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json';
+const AI_COLORS = ['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','#F5C842','#7BC98A'];
+let aiData = [];
+let _aiSaveTimer = null;
+
+async function aiFetch(){
+  try{
+    const r = await fetch(FB_ASSET_INFO+'?t='+Date.now());
+    if(r.ok){ const d=await r.json(); if(Array.isArray(d)&&d.length) aiData=d; }
+  }catch(e){}
+  if(!aiData.length) aiData=[
+    {name:'현금',amount:0},{name:'주식',amount:0},{name:'예금/적금',amount:0}
+  ];
+  aiRender();
+}
+async function _aiSaveNow(){
+  try{ await fetch(FB_ASSET_INFO,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(aiData)}); }catch(e){}
+}
+function aiSave(){ clearTimeout(_aiSaveTimer); _aiSaveTimer=setTimeout(_aiSaveNow,600); }
+function aiSaveBtn(){ aiReadInputs(); _aiSaveNow(); aiRenderChart(); }
+
+function aiReadInputs(){
+  document.querySelectorAll('#ai-rows .ai-row').forEach(function(row,i){
+    if(i>=aiData.length) return;
+    const n=row.querySelector('.ai-row-name'); if(n) aiData[i].name=n.value;
+    const a=row.querySelector('.ai-row-amt'); if(a) aiData[i].amount=parseInt((a.value||'').replace(/,/g,''))||0;
+  });
+}
+
+function aiRender(){ aiRenderRows(); aiRenderChart(); }
+
+function aiRenderRows(){
+  const wrap=document.getElementById('ai-rows'); if(!wrap) return;
+  wrap.innerHTML=aiData.map(function(item,i){
+    return `<div class="ai-row">
+      <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
+      <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
+        oninput="aiData[${i}].name=this.value;aiRenderChart()">
+      <input class="ai-row-amt" value="${item.amount?item.amount.toLocaleString('ko-KR'):''}" placeholder="금액 (원)"
+        oninput="aiData[${i}].amount=parseInt(this.value.replace(/,/g,''))||0;aiRenderChart()"
+        onfocus="this.value=this.value.replace(/,/g,'')"
+        onblur="this.value=aiData[${i}].amount?aiData[${i}].amount.toLocaleString('ko-KR'):''">
+      <span class="ai-row-pct" id="ai-pct-${i}">-</span>
+      <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function aiRenderChart(){
+  const svg=document.getElementById('ai-donut-svg'); if(!svg) return;
+  const totalDisp=document.getElementById('ai-total-disp');
+  const legend=document.getElementById('ai-legend');
+  const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
+  if(totalDisp) totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'입력해주세요';
+
+  const cx=100,cy=100,r=78,stroke=28;
+  const circ=2*Math.PI*r;
+  let offset=0;
+  let paths='';
+  const items=aiData.filter(function(d){return d.amount>0;});
+  if(!items.length){
+    svg.innerHTML=`<circle cx="100" cy="100" r="78" fill="none" stroke="#E2E8F5" stroke-width="28"/>`;
+    if(legend) legend.innerHTML='';
+    aiData.forEach(function(_,i){ const el=document.getElementById('ai-pct-'+i); if(el) el.textContent='-'; });
+    return;
+  }
+  items.forEach(function(item,idx){
+    const origIdx=aiData.indexOf(item);
+    const pct=item.amount/total;
+    const dash=pct*circ;
+    const gap=circ-dash;
+    const color=AI_COLORS[origIdx%AI_COLORS.length];
+    paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}"
+      stroke-width="${stroke}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset*circ/1+circ/4).toFixed(2)}" style="transform-origin:center;transform:rotate(-90deg)"/>`;
+    offset+=pct;
+  });
+  svg.innerHTML=`<circle cx="100" cy="100" r="78" fill="none" stroke="#E2E8F5" stroke-width="28" opacity=".3"/>${paths}`;
+
+  if(legend) legend.innerHTML=aiData.filter(function(d){return d.amount>0;}).map(function(item){
+    const origIdx=aiData.indexOf(item);
+    const pct=total?Math.round(item.amount/total*1000)/10:0;
+    return `<div class="ai-legend-item">
+      <div class="ai-legend-dot" style="background:${AI_COLORS[origIdx%AI_COLORS.length]}"></div>
+      <span class="ai-legend-name">${(item.name||'').replace(/</g,'&lt;')}</span>
+      <span class="ai-legend-pct">${pct}%</span>
+      <span class="ai-legend-amt">${item.amount.toLocaleString('ko-KR')}원</span>
+    </div>`;
+  }).join('');
+
+  aiData.forEach(function(item,i){
+    const pct=total&&item.amount?Math.round(item.amount/total*1000)/10:0;
+    const el=document.getElementById('ai-pct-'+i);
+    if(el) el.textContent=item.amount?(pct+'%'):'-';
+  });
+}
+
+function aiAddRow(){
+  aiReadInputs();
+  aiData.push({name:'',amount:0});
+  aiRender();
+  setTimeout(function(){
+    const names=document.querySelectorAll('#ai-rows .ai-row-name');
+    if(names.length) names[names.length-1].focus();
+  },50);
+}
+function aiDelRow(i){ aiReadInputs(); aiData.splice(i,1); aiRender(); }
+function aiSave(){ aiReadInputs(); _aiSaveNow(); const btn=document.querySelector('.ai-save-btn'); if(btn){const t=btn.textContent;btn.textContent='✅ 저장됨';setTimeout(()=>{btn.textContent=t;},1200);} }
 
 // ── CS복사 ────────────────────────────────────────────────
 let _bcscData=[], _bcscTimer=null;
