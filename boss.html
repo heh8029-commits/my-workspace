@@ -439,7 +439,9 @@ a{text-decoration:none;color:inherit}
 .pn-card.pn-focused{box-shadow:0 0 0 2px #4F6EF7,1px 2px 6px rgba(0,0,0,.09)}
 .pn-card-imgs{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;min-height:0}
 .pn-img-wrap{position:relative;flex-shrink:0}
-.pn-card-img{width:100%;border-radius:3px;object-fit:cover;display:block}
+.pn-card-img{width:100%;border-radius:3px;object-fit:cover;display:block;cursor:zoom-in}
+#pn-img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);align-items:center;justify-content:center;z-index:9999;cursor:zoom-out}
+#pn-img-modal img{max-width:90vw;max-height:90vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 48px rgba(0,0,0,.6);cursor:default}
 .pn-img-del{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;border:none;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;cursor:pointer;padding:0;line-height:1;display:none}
 .pn-img-wrap:hover .pn-img-del{display:block}
 .pn-memo-wrap{flex:1;display:flex;align-items:stretch;min-height:0;overflow:hidden}
@@ -6830,7 +6832,7 @@ function pnRender(){
     const textVal=(item.text||'').replace(/</g,'&lt;');
     const body=hasImg
       ? `<div class="pn-card-imgs">${item.imgs.map(function(src,si){
-            return `<div class="pn-img-wrap"><img class="pn-card-img" src="${src}" alt=""><button class="pn-img-del" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="삭제">✕</button></div>`;
+            return `<div class="pn-img-wrap"><img class="pn-card-img" src="${src}" alt="" onclick="event.stopPropagation();pnShowImg(this.src)"><button class="pn-img-del" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="삭제">✕</button></div>`;
           }).join('')}</div>
          <textarea class="pn-card-text has-img" placeholder="메모..."
            oninput="pnItems[${i}].text=this.value;pnSave()"
@@ -6934,7 +6936,7 @@ function pniRender(){
     }).join('');
     const textVal=(item.text||'').replace(/</g,'&lt;');
     const body=hasImg
-      ?('<div class="pn-card-imgs">'+item.imgs.map(function(src,si){return '<div class="pn-img-wrap"><img class="pn-card-img" src="'+src+'" alt=""><button class="pn-img-del" onclick="event.stopPropagation();pniImgDel('+i+','+si+')" title="삭제">✕</button></div>';}).join('')+'</div><textarea class="pn-card-text has-img" placeholder="메모..." oninput="pniItems['+i+'].text=this.value;pniSave()" onclick="pniFocus('+i+');event.stopPropagation()">'+textVal+'</textarea>')
+      ?('<div class="pn-card-imgs">'+item.imgs.map(function(src,si){return '<div class="pn-img-wrap"><img class="pn-card-img" src="'+src+'" alt="" onclick="event.stopPropagation();pnShowImg(this.src)"><button class="pn-img-del" onclick="event.stopPropagation();pniImgDel('+i+','+si+')" title="삭제">✕</button></div>';}).join('')+'</div><textarea class="pn-card-text has-img" placeholder="메모..." oninput="pniItems['+i+'].text=this.value;pniSave()" onclick="pniFocus('+i+');event.stopPropagation()">'+textVal+'</textarea>')
       :('<div class="pn-memo-wrap"><textarea class="pn-card-text no-img" placeholder="메모..." oninput="pniItems['+i+'].text=this.value;pniSave()" onclick="pniFocus('+i+');event.stopPropagation()">'+textVal+'</textarea></div>');
     return '<div class="pn-card'+(pniFocusIdx===i?' pn-focused':'')+'" style="background:'+bg+'" onclick="pniFocus('+i+')">'+body
       +'<div class="pn-card-foot"><span class="pn-card-date">'+(item.date||'')+'</span><div class="pn-colors">'+dotsHtml+'</div>'
@@ -6942,6 +6944,7 @@ function pniRender(){
       +'<button class="pn-card-del" onclick="event.stopPropagation();pniDel('+i+')">✕</button></div></div>';
   }).join('');
 }
+function pnShowImg(src){var m=document.getElementById('pn-img-modal'),img=document.getElementById('pn-img-modal-img');if(m&&img){img.src=src;m.style.display='flex';}}
 function pniSave(){clearTimeout(_pniSaveTimer);_pniSaveTimer=setTimeout(function(){fetch(FB_POSTIT_INV,{method:'PUT',body:JSON.stringify({pn_items:pniItems}),headers:{'Content-Type':'application/json'}}).catch(function(){});},600);}
 function pniFocus(i){
   if(pniFocusIdx===i) return;
@@ -7948,5 +7951,8 @@ async function taxDelGMemo(id){
   renderTaxGMemos();
 }
 </script>
+<div id="pn-img-modal" onclick="this.style.display='none'">
+  <img id="pn-img-modal-img" src="" alt="" onclick="event.stopPropagation()">
+</div>
 </body>
 </html>
