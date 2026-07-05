@@ -427,6 +427,21 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="dark"] .ai-target-input{border-color:#2E3650;color:#E4E9F5}
 .ai-target-pct{font-size:.68rem;color:#A0A8C0;flex-shrink:0}
 .ai-target-diff{font-size:.75rem;font-weight:700;flex:1;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ai-inv-calc-wrap{width:100%;margin-top:12px;border-top:1px solid #EDF0F8;padding-top:12px}
+@media(prefers-color-scheme:dark){.ai-inv-calc-wrap{border-color:#252B40}}
+:root[data-theme="dark"] .ai-inv-calc-wrap{border-color:#252B40}
+.ai-inv-calc-title{font-size:.68rem;font-weight:700;color:#A0A8C0;letter-spacing:.03em;margin-bottom:8px}
+.ai-inv-calc-row{display:flex;align-items:center;gap:6px;padding:4px 0}
+.ai-inv-calc-label{min-width:80px;font-size:.74rem;color:#6B7499;font-weight:600;flex-shrink:0}
+.ai-inv-calc-input{width:100px;padding:3px 6px;border-radius:7px;border:1.5px solid #E2E8F5;font-size:.74rem;font-family:inherit;text-align:right;outline:none;background:transparent;font-variant-numeric:tabular-nums}
+.ai-inv-calc-input:focus{border-color:#4F6EF7}
+@media(prefers-color-scheme:dark){.ai-inv-calc-input{border-color:#2E3650;color:#E4E9F5}}
+:root[data-theme="dark"] .ai-inv-calc-input{border-color:#2E3650;color:#E4E9F5}
+.ai-inv-calc-unit{font-size:.7rem;color:#A0A8C0;flex-shrink:0}
+.ai-inv-calc-result{font-size:.75rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ai-inv-calc-divider{border:none;border-top:1px dashed #E2E8F5;margin:6px 0}
+@media(prefers-color-scheme:dark){.ai-inv-calc-divider{border-color:#2E3650}}
+:root[data-theme="dark"] .ai-inv-calc-divider{border-color:#2E3650}
 
 /* ── 포스트잇 ── */
 .pn-section{margin-bottom:16px;max-width:960px}
@@ -1521,6 +1536,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
               </div>
               <div class="ai-legend" id="ai-legend"></div>
               <div id="ai-targets"></div>
+              <div id="ai-inv-calc"></div>
             </div>
           </div>
           <div class="ai-right">
@@ -6965,7 +6981,7 @@ function createAssetSection(P, fbUrl){
   function readInputs(){getRows().forEach(function(row,i){if(i>=data.length)return;var n=row.querySelector('.ai-row-name');if(n)data[i].name=n.value;var a=row.querySelector('.ai-row-amt');if(a&&!a.classList.contains('calc'))data[i].amount=parseInt((a.value||'').replace(/,/g,''))||0;var g=row.querySelector('.ai-row-group');if(g)data[i].group=g.value;});}
   async function doSave(){try{await fetch(fbUrl,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}}
   function save(){clearTimeout(saveTimer);saveTimer=setTimeout(function(){readInputs();doSave();var h=getEl('autosave-hint');if(h){h.style.opacity='1';setTimeout(function(){h.style.opacity='0';},1500);}},600);}
-  async function fetchData(){if(saveTimer!==null){clearTimeout(saveTimer);saveTimer=null;readInputs();await doSave();}try{var r=await fetch(fbUrl+'?t='+Date.now());if(r.ok){var d=await r.json();if(Array.isArray(d)&&d.length)data=d;}}catch(e){}if(!data.length)data=[{name:'현금',amount:0},{name:'주식',amount:0},{name:'예금/적금',amount:0}];render();}
+  async function fetchData(){if(saveTimer!==null){clearTimeout(saveTimer);saveTimer=null;readInputs();await doSave();}try{var r=await fetch(fbUrl+'?t='+Date.now());if(r.ok){var d=await r.json();if(Array.isArray(d)&&d.length)data=d;}}catch(e){}if(!data.length)data=[{name:'현금',amount:0},{name:'주식',amount:0},{name:'예금/적금',amount:0}];render();renderInvestCalc_();}
   function updateInvTotal(i){var rows=getRows();if(!rows[i])return;var a=rows[i].querySelector('.ai-row-amt');if(a)a.value=data[i].amount.toLocaleString('ko-KR');var t=rows[i].querySelector('.ai-inv-total');if(t){var pr=data[i].principal||0,pf=data[i].profit||0;var pv=pr>0?parseFloat(((pf/pr)*100).toFixed(1)):null;t.innerHTML='= '+(pr+pf).toLocaleString('ko-KR')+'원'+(pv!=null?'<span style="color:'+(pv>=0?'#E03A3A':'#4F6EF7')+'">'+(pv>=0?'+':'')+pv+'%)</span>':'');}}
   function renderRows(){
     var wrap=getEl('rows');if(!wrap)return;
@@ -7097,6 +7113,28 @@ function createAssetSection(P, fbUrl){
   function logDel(i,li){if(data[i]&&Array.isArray(data[i].profitLog))data[i].profitLog.splice(li,1);save();render();}
   function toggleLog(i){if(logOpen.has(i))logOpen.delete(i);else logOpen.add(i);renderRows();renderChart();}
   function setTarget(ci,val){var item=chartItems_[ci];if(!item)return;tgts[item.name]=val!==''?parseFloat(val):null;renderTargets_();}
+  function renderInvestCalc_(){
+    if(P!=='ai')return;
+    var el=document.getElementById('ai-inv-calc');if(!el)return;
+    if(el.dataset.init)return;
+    el.dataset.init='1';
+    el.innerHTML='<div class="ai-inv-calc-wrap">'
+      +'<div class="ai-inv-calc-title">투자기준 계산기</div>'
+      +'<div class="ai-inv-calc-row"><span class="ai-inv-calc-label">현금</span>'
+        +'<input id="ai-ic-cash" class="ai-inv-calc-input" type="text" inputmode="numeric" placeholder="0" oninput="aiInvCalcInput()">'
+        +'<span class="ai-inv-calc-unit">원</span></div>'
+      +'<div class="ai-inv-calc-row"><span class="ai-inv-calc-label">투자자산</span>'
+        +'<input id="ai-ic-invest" class="ai-inv-calc-input" type="text" inputmode="numeric" placeholder="0" oninput="aiInvCalcInput()">'
+        +'<span class="ai-inv-calc-unit">원</span></div>'
+      +'<div class="ai-inv-calc-row"><span class="ai-inv-calc-label">목표현금비율</span>'
+        +'<input id="ai-ic-pct" class="ai-inv-calc-input" type="number" min="0" max="100" step="0.1" placeholder="40" value="40" oninput="aiInvCalcInput()">'
+        +'<span class="ai-inv-calc-unit">%</span></div>'
+      +'<hr class="ai-inv-calc-divider">'
+      +'<div class="ai-inv-calc-row"><span class="ai-inv-calc-label">투자기준금액</span><span id="ai-ic-base" class="ai-inv-calc-result" style="color:#1B2035">-</span></div>'
+      +'<div class="ai-inv-calc-row"><span class="ai-inv-calc-label">목표현금</span><span id="ai-ic-goal" class="ai-inv-calc-result" style="color:#1B2035">-</span></div>'
+      +'<div class="ai-inv-calc-row"><span class="ai-inv-calc-label">추가투자가능</span><span id="ai-ic-avail" class="ai-inv-calc-result">-</span></div>'
+      +'</div>';
+  }
   function setField(i,k,v){if(data[i])data[i][k]=v;}
   window[P+'Field']=setField; window[P+'Fetch']=fetchData; window[P+'Save']=save; window[P+'Render']=render;
   window[P+'RenderRows']=renderRows; window[P+'RenderChart']=renderChart; window[P+'AddRow']=addRow;
@@ -7108,6 +7146,24 @@ function createAssetSection(P, fbUrl){
 }
 createAssetSection('ai','https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json');
 createAssetSection('inv','https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_invest_info.json');
+function aiInvCalcInput(){
+  var c=parseInt((document.getElementById('ai-ic-cash').value||'').replace(/[^0-9]/g,''))||0;
+  var inv=parseInt((document.getElementById('ai-ic-invest').value||'').replace(/[^0-9]/g,''))||0;
+  var pct=parseFloat(document.getElementById('ai-ic-pct').value)||0;
+  var base=c+inv;
+  var goalCash=Math.round(base*pct/100);
+  var avail=c-goalCash;
+  var baseEl=document.getElementById('ai-ic-base');
+  var goalEl=document.getElementById('ai-ic-goal');
+  var availEl=document.getElementById('ai-ic-avail');
+  if(!baseEl)return;
+  baseEl.textContent=base?base.toLocaleString('ko-KR')+'원':'-';
+  goalEl.textContent=base?goalCash.toLocaleString('ko-KR')+'원':'-';
+  if(base){
+    availEl.textContent=(avail>0?'+':'')+avail.toLocaleString('ko-KR')+'원';
+    availEl.style.color=avail>0?'#E03A3A':avail<0?'#4F6EF7':'#27AE60';
+  }else{availEl.textContent='-';availEl.style.color='';}
+}
 // ── CS복사 ────────────────────────────────────────────────
 let _bcscData=[], _bcscTimer=null;
 async function bcscFetch(){
