@@ -6856,6 +6856,7 @@ function aiReadInputs(){
 function aiToggleLog(i){
   if(aiLogOpen.has(i)) aiLogOpen.delete(i); else aiLogOpen.add(i);
   aiRenderRows();
+  aiRenderChart();
 }
 
 function aiAmtInput(idx, el){
@@ -6916,7 +6917,7 @@ function aiLogProfit(i){
 
 function aiLogDel(i,li){
   if(aiData[i]&&Array.isArray(aiData[i].profitLog)) aiData[i].profitLog.splice(li,1);
-  aiSave(); aiRenderRows();
+  aiSave(); aiRender();
 }
 
 function aiRender(){ aiRenderRows(); aiRenderChart(); }
