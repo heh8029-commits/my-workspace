@@ -7044,7 +7044,7 @@ function aiRenderChart(){
     if(!groupMap[key]){ groupMap[key]={name:label,amount:0,colorIdx:i}; groupOrder.push(key); }
     groupMap[key].amount+=item.amount||0;
   });
-  const chartItems=groupOrder.map(function(k){ return groupMap[k]; });
+  const chartItems=groupOrder.map(function(k,ci){ var item=groupMap[k]; item.ci=ci; return item; });
   _aiChartItems=chartItems;
 
   const cx=100,cy=100,r=92;
@@ -7064,7 +7064,7 @@ function aiRenderChart(){
     const x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
     const x2=cx+r*Math.cos(endAngle),   y2=cy+r*Math.sin(endAngle);
     const largeArc=arcAngle>Math.PI?1:0;
-    const color=AI_COLORS[item.colorIdx%AI_COLORS.length];
+    const color=AI_COLORS[item.ci%AI_COLORS.length];
     slices+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${color}"/>`;
     if(pct>=0.07){
       const mid=startAngle+arcAngle/2;
@@ -7081,7 +7081,7 @@ function aiRenderChart(){
   if(legend) legend.innerHTML=[].concat(chartItems).sort(function(a,b){return b.amount-a.amount;}).map(function(item){
     const pct=total?Math.round(item.amount/total*1000)/10:0;
     return `<div class="ai-legend-item">
-      <div class="ai-legend-dot" style="background:${AI_COLORS[item.colorIdx%AI_COLORS.length]}"></div>
+      <div class="ai-legend-dot" style="background:${AI_COLORS[item.ci%AI_COLORS.length]}"></div>
       <span class="ai-legend-name">${(item.name||'').replace(/</g,'&lt;')}</span>
       <span class="ai-legend-pct">${pct}%</span>
       <span class="ai-legend-amt">${item.amount.toLocaleString('ko-KR')}원</span>
@@ -7111,7 +7111,7 @@ function aiRenderTargets(){
     const tgt=aiTargets[item.name]!=null?aiTargets[item.name]:'';
     const tgtAmt=tgt!==''?Math.round(parseFloat(tgt)/100*total):null;
     const diff=tgtAmt!=null?tgtAmt-item.amount:null;
-    const color=AI_COLORS[item.colorIdx%AI_COLORS.length];
+    const color=AI_COLORS[item.ci%AI_COLORS.length];
     let diffHtml='<span class="ai-target-diff"></span>';
     if(diff!=null){
       const col=diff>0?'#E03A3A':diff<0?'#4F6EF7':'#27AE60';
