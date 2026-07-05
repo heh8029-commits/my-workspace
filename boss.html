@@ -6874,8 +6874,9 @@ function _aiUpdateInvTotal(i){
   const t=rows[i].querySelector('.ai-inv-total');
   if(t){
     const pr=aiData[i].principal||0, pf=aiData[i].profit||0;
-    const pct=pr>0?' ('+((pf/pr)*100).toFixed(1)+'%)':'';
-    t.textContent='= '+(pr+pf).toLocaleString('ko-KR')+'원'+pct;
+    const pctVal=pr>0?parseFloat(((pf/pr)*100).toFixed(1)):null;
+    const pctHtml=pctVal!=null?`<span style="color:${pctVal>=0?'#E03A3A':'#4F6EF7'}"> (${pctVal>=0?'+':''}${pctVal}%)</span>`:'';
+    t.innerHTML='= '+(pr+pf).toLocaleString('ko-KR')+'원'+pctHtml;
   }
 }
 
@@ -6950,7 +6951,8 @@ function aiRenderRows(){
     const hasInvest=principal>0||profit!==0;
     const total=hasInvest?principal+profit:item.amount;
     const amtDisp=total?total.toLocaleString('ko-KR'):'';
-    const profitPctStr=principal>0?' ('+((profit/principal)*100).toFixed(1)+'%)':'';
+    const profitPctVal=principal>0?parseFloat(((profit/principal)*100).toFixed(1)):null;
+    const profitPctStr=profitPctVal!=null?`<span style="color:${profitPctVal>=0?'#E03A3A':'#4F6EF7'}"> (${profitPctVal>=0?'+':''}${profitPctVal}%)</span>`:'';
     const logCount=item.profitLog&&item.profitLog.length?item.profitLog.length:0;
     const isLogOpen=aiLogOpen.has(i);
     const logHtml=isLogOpen&&logCount
@@ -6964,7 +6966,7 @@ function aiRenderRows(){
             <span class="ai-inv-log-meta">원금 ${pr.toLocaleString('ko-KR')}</span>
             <span class="ai-inv-log-meta">수익 <span class="${p<0?'neg':'pos'}">${p>=0?'+':''}${p.toLocaleString('ko-KR')}</span></span>
             <span class="ai-inv-log-meta">합계 ${tot.toLocaleString('ko-KR')}</span>
-            ${pctStr?`<span class="ai-inv-log-profit${p<0?' neg':''}">${p>=0?'+':''}${pctStr}</span>`:''}
+            ${pctStr?`<span style="font-size:.7rem;font-weight:700;color:${p>=0?'#E03A3A':'#4F6EF7'}">${p>=0?'+':''}${pctStr}</span>`:''}
             <button class="ai-inv-log-del" onclick="aiLogDel(${i},${li})">✕</button>
           </div>`;
         }).join('')
