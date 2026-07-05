@@ -361,6 +361,9 @@ a{text-decoration:none;color:inherit}
 .ai-row-amt.calc{color:#9B6FF5;font-weight:700}
 .ai-row-pct{width:38px;font-size:.72rem;font-weight:700;color:#4F6EF7;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
 .ai-row-drag{cursor:grab;color:#CCC;font-size:.85rem;flex-shrink:0;padding:0;user-select:none}
+.ai-row-group{width:46px;padding:3px 7px;border-radius:12px;border:1.5px solid #E8EBF5;font-size:.68rem;font-family:inherit;color:#9B9EBB;outline:none;background:transparent;text-align:center;flex-shrink:0;transition:all .12s}
+.ai-row-group:focus{border-color:#9B6FF5;background:#fff;color:#1B2035}
+.ai-row-group:not(:placeholder-shown){background:#F5F0FF;border-color:#D4C8FF;color:#9B6FF5;font-weight:700}
 .ai-row-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;font-size:.65rem;cursor:pointer;color:#CCC;flex-shrink:0;padding:0}
 .ai-row-del:hover{background:#FFE8E8;color:#E03A3A}
 .ai-inv-label{font-size:.64rem;color:#8B96B5;flex-shrink:0;white-space:nowrap}
@@ -383,7 +386,10 @@ a{text-decoration:none;color:inherit}
 @media(prefers-color-scheme:dark){.ai-inv-log{border-color:#252B40}}
 :root[data-theme="dark"] .ai-inv-log{border-color:#252B40}
 .ai-inv-log-entry{display:flex;align-items:center;gap:8px;font-size:.7rem}
-.ai-inv-log-date{color:#8B96B5;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-inv-log-date{color:#8B96B5;flex-shrink:0;font-variant-numeric:tabular-nums;min-width:70px}
+.ai-inv-log-meta{font-size:.68rem;color:#6B7799;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ai-inv-log-meta .pos{color:#E03A3A;font-weight:700}
+.ai-inv-log-meta .neg{color:#4F6EF7;font-weight:700}
 .ai-inv-log-profit{font-weight:700;font-variant-numeric:tabular-nums;color:#E03A3A}
 .ai-inv-log-profit.neg{color:#4F6EF7}
 .ai-inv-log-del{border:none;background:transparent;font-size:.58rem;cursor:pointer;color:#CCC;padding:0;line-height:1}
@@ -6898,10 +6904,11 @@ function aiLogProfit(i){
   const now=new Date();
   const date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
   if(!Array.isArray(aiData[i].profitLog)) aiData[i].profitLog=[];
-  const profit=aiData[i].profit||0;
   const principal=aiData[i].principal||0;
+  const profit=aiData[i].profit||0;
+  const total=principal+profit;
   const pct=principal>0?parseFloat(((profit/principal)*100).toFixed(1)):null;
-  aiData[i].profitLog.unshift({date:date, profit:profit, pct:pct});
+  aiData[i].profitLog.unshift({date:date, principal:principal, profit:profit, total:total, pct:pct});
   aiLogOpen.add(i);
   aiSave(); aiRenderRows();
 }
@@ -6949,10 +6956,15 @@ function aiRenderRows(){
     const logHtml=isLogOpen&&logCount
       ? item.profitLog.slice(0,20).map(function(e,li){
           const p=e.profit||0;
-          const pctStr=e.pct!=null?' ('+e.pct+'%)':'';
+          const pr=e.principal!=null?e.principal:(item.principal||0);
+          const tot=e.total!=null?e.total:(pr+p);
+          const pctStr=e.pct!=null?e.pct+'%':'';
           return `<div class="ai-inv-log-entry">
             <span class="ai-inv-log-date">${e.date}</span>
-            <span class="ai-inv-log-profit${p<0?' neg':''}">${p>=0?'+':''}${p.toLocaleString('ko-KR')}원${pctStr}</span>
+            <span class="ai-inv-log-meta">원금 ${pr.toLocaleString('ko-KR')}</span>
+            <span class="ai-inv-log-meta">수익 <span class="${p<0?'neg':'pos'}">${p>=0?'+':''}${p.toLocaleString('ko-KR')}</span></span>
+            <span class="ai-inv-log-meta">합계 ${tot.toLocaleString('ko-KR')}</span>
+            ${pctStr?`<span class="ai-inv-log-profit${p<0?' neg':''}">${p>=0?'+':''}${pctStr}</span>`:''}
             <button class="ai-inv-log-del" onclick="aiLogDel(${i},${li})">✕</button>
           </div>`;
         }).join('')
@@ -6967,6 +6979,8 @@ function aiRenderRows(){
         <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
         <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
           oninput="aiData[${i}].name=this.value;aiRenderChart();aiSave()">
+        <input class="ai-row-group" value="${(item.group||'').replace(/"/g,'&quot;')}" placeholder="그룹"
+          oninput="aiData[${i}].group=this.value;aiRenderChart();aiSave()" title="같은 그룹명은 차트에서 합산">
         <input class="ai-row-amt${hasInvest?' calc':''}" value="${amtDisp}" placeholder="금액"
           ${hasInvest?'readonly':`oninput="aiAmtInput(${i},this)"`}>
         <span class="ai-row-pct" id="ai-pct-${i}">-</span>
@@ -6984,9 +6998,6 @@ function aiRenderRows(){
         <button class="ai-inv-view-btn${isLogOpen?' open':''}" onclick="aiToggleLog(${i})">📋 기록보기${logCount?' ('+logCount+')':''}</button>
         <input class="ai-row-memo" value="${(item.memo||'').replace(/"/g,'&quot;')}" placeholder="메모"
           oninput="aiData[${i}].memo=this.value;aiSave()">
-        <span class="ai-inv-label" title="같은 그룹명은 차트에서 하나로 합쳐 표시">그룹</span>
-        <input class="ai-inv-input ai-row-group" style="width:60px" value="${(item.group||'').replace(/"/g,'&quot;')}" placeholder="주식"
-          oninput="aiData[${i}].group=this.value;aiRenderChart();aiSave()">
       </div>
       ${logSection}
     </div>`;
