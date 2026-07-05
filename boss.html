@@ -342,49 +342,51 @@ a{text-decoration:none;color:inherit}
 @media(prefers-color-scheme:dark){.ai-input-title{color:#8B96B5}}
 :root[data-theme="dark"] .ai-input-title{color:#8B96B5}
 :root[data-theme="light"] .ai-input-title{color:#6B7799}
-.ai-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.ai-row-color{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-.ai-row-name{flex:1;padding:7px 10px;border-radius:9px;border:1.5px solid #E2E8F5;font-size:.83rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;min-width:0}
-.ai-row-name:focus{border-color:#4F6EF7}
-@media(prefers-color-scheme:dark){.ai-row-name{border-color:#2E3650;color:#E4E9F5}}
-:root[data-theme="dark"] .ai-row-name{border-color:#2E3650;color:#E4E9F5}
-:root[data-theme="light"] .ai-row-name{border-color:#E2E8F5;color:#1B2035}
-.ai-row-amt{width:130px;padding:7px 10px;border-radius:9px;border:1.5px solid #E2E8F5;font-size:.83rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
-.ai-row-amt:focus{border-color:#4F6EF7}
-@media(prefers-color-scheme:dark){.ai-row-amt{border-color:#2E3650;color:#E4E9F5}}
-:root[data-theme="dark"] .ai-row-amt{border-color:#2E3650;color:#E4E9F5}
-:root[data-theme="light"] .ai-row-amt{border-color:#E2E8F5;color:#1B2035}
-.ai-row-pct{width:40px;font-size:.74rem;font-weight:800;color:#4F6EF7;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
-.ai-row-memo{flex:1;padding:5px 10px;border-radius:9px;border:1.5px solid #E2E8F5;font-size:.75rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;min-width:0}
-.ai-row-memo:focus{border-color:#B0BBDD}
-@media(prefers-color-scheme:dark){.ai-row-memo{border-color:#2E3650;color:#E4E9F5}}
-:root[data-theme="dark"] .ai-row-memo{border-color:#2E3650;color:#E4E9F5}
-:root[data-theme="light"] .ai-row-memo{border-color:#E2E8F5;color:#1B2035}
-.ai-row-drag{cursor:grab;color:#CCC;font-size:.9rem;flex-shrink:0;padding:0 2px;user-select:none}
-.ai-row-del{width:24px;height:24px;border-radius:7px;border:none;background:transparent;font-size:.7rem;cursor:pointer;color:#CCC;flex-shrink:0;transition:all .12s;padding:0}
+.ai-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;padding:10px 12px;border-radius:12px;border:1.5px solid #EDF0F8;background:#FAFBFF}
+@media(prefers-color-scheme:dark){.ai-row{border-color:#252B40;background:#1E2333}}
+:root[data-theme="dark"] .ai-row{border-color:#252B40;background:#1E2333}
+:root[data-theme="light"] .ai-row{border-color:#EDF0F8;background:#FAFBFF}
+.ai-row.drag-over{outline:2px dashed #4F6EF7;border-radius:12px}
+.ai-row-l1{display:flex;align-items:center;gap:8px}
+.ai-row-l2{display:flex;align-items:center;gap:6px;padding-left:20px}
+.ai-row-color{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ai-row-name{flex:1;padding:5px 9px;border-radius:8px;border:1.5px solid transparent;font-size:.86rem;font-weight:600;font-family:inherit;color:#1B2035;outline:none;background:transparent;min-width:0;transition:border-color .12s}
+.ai-row-name:focus{border-color:#4F6EF7;background:#fff}
+@media(prefers-color-scheme:dark){.ai-row-name{color:#E4E9F5}}
+:root[data-theme="dark"] .ai-row-name{color:#E4E9F5}
+.ai-row-amt{width:120px;padding:5px 9px;border-radius:8px;border:1.5px solid transparent;font-size:.86rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;transition:border-color .12s}
+.ai-row-amt:focus{border-color:#4F6EF7;background:#fff}
+@media(prefers-color-scheme:dark){.ai-row-amt{color:#E4E9F5}}
+:root[data-theme="dark"] .ai-row-amt{color:#E4E9F5}
+.ai-row-amt.calc{color:#9B6FF5;font-weight:700}
+.ai-row-pct{width:38px;font-size:.72rem;font-weight:700;color:#4F6EF7;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-row-drag{cursor:grab;color:#CCC;font-size:.85rem;flex-shrink:0;padding:0;user-select:none}
+.ai-row-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;font-size:.65rem;cursor:pointer;color:#CCC;flex-shrink:0;padding:0}
 .ai-row-del:hover{background:#FFE8E8;color:#E03A3A}
-.ai-row.drag-over{outline:2px dashed #4F6EF7;border-radius:9px}
-.ai-row-invest-btn{font-size:.62rem;padding:3px 7px;border-radius:6px;border:1.5px solid #D4C8FF;background:transparent;color:#9B6FF5;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;line-height:1.3;transition:background .12s}
-.ai-row-invest-btn:hover{background:#F5F0FF}
-.ai-row-invest-btn.active{background:#F5F0FF;border-color:#9B6FF5}
-.ai-row-amt.calc{background:#F8F4FF;color:#9B6FF5;border-color:#D4C8FF}
-.ai-inv-sub{display:flex;align-items:center;gap:6px;padding:4px 4px 8px 34px;margin-top:-4px}
-.ai-inv-label{font-size:.68rem;color:#6B7799;flex-shrink:0}
-.ai-inv-input{flex:1;padding:5px 9px;border-radius:8px;border:1.5px solid #E2E8F5;font-size:.78rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;text-align:right;font-variant-numeric:tabular-nums;min-width:0}
+.ai-inv-label{font-size:.64rem;color:#8B96B5;flex-shrink:0;white-space:nowrap}
+.ai-inv-input{width:90px;padding:4px 8px;border-radius:7px;border:1.5px solid #E2E8F5;font-size:.75rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0}
 .ai-inv-input:focus{border-color:#9B6FF5}
-.ai-inv-profit{color:#27AE60}
-.ai-inv-profit.neg{color:#E03A3A}
-.ai-inv-total{font-size:.72rem;font-weight:700;color:#9B6FF5;flex-shrink:0;font-variant-numeric:tabular-nums;min-width:60px;text-align:right}
 @media(prefers-color-scheme:dark){.ai-inv-input{border-color:#2E3650;color:#E4E9F5}}
 :root[data-theme="dark"] .ai-inv-input{border-color:#2E3650;color:#E4E9F5}
-.ai-inv-log-btn{font-size:.6rem;padding:2px 7px;border-radius:5px;border:1.5px solid #B8D0FF;background:transparent;color:#4F6EF7;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap}
-.ai-inv-log-btn:hover{background:#EEF1FF}
-.ai-inv-log{padding:3px 4px 6px 34px;display:flex;flex-direction:column;gap:3px}
+.ai-inv-profit{color:#27AE60}
+.ai-inv-profit.neg{color:#E03A3A}
+.ai-inv-total{font-size:.72rem;font-weight:700;color:#9B6FF5;flex-shrink:0;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ai-row-memo{flex:1;padding:4px 8px;border-radius:7px;border:1.5px solid transparent;font-size:.74rem;font-family:inherit;color:#6B7799;outline:none;background:transparent;min-width:0}
+.ai-row-memo:focus{border-color:#B0BBDD;background:#fff;color:#1B2035}
+@media(prefers-color-scheme:dark){.ai-row-memo{color:#6B7799}}
+.ai-inv-save-btn{font-size:.6rem;padding:2px 7px;border-radius:5px;border:1.5px solid #D4C8FF;background:transparent;color:#9B6FF5;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap}
+.ai-inv-save-btn:hover{background:#F5F0FF}
+.ai-inv-view-btn{font-size:.6rem;padding:2px 7px;border-radius:5px;border:1.5px solid #B8D0FF;background:transparent;color:#4F6EF7;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap}
+.ai-inv-view-btn:hover{background:#EEF1FF}
+.ai-inv-view-btn.open{background:#EEF1FF;border-color:#4F6EF7}
+.ai-inv-log{padding:6px 0 2px 20px;display:flex;flex-direction:column;gap:3px;border-top:1px solid #EDF0F8;margin-top:2px}
+@media(prefers-color-scheme:dark){.ai-inv-log{border-color:#252B40}}
+:root[data-theme="dark"] .ai-inv-log{border-color:#252B40}
 .ai-inv-log-entry{display:flex;align-items:center;gap:8px;font-size:.7rem}
 .ai-inv-log-date{color:#8B96B5;flex-shrink:0;font-variant-numeric:tabular-nums}
 .ai-inv-log-profit{font-weight:700;font-variant-numeric:tabular-nums;color:#27AE60}
 .ai-inv-log-profit.neg{color:#E03A3A}
-.ai-inv-log-del{border:none;background:transparent;font-size:.6rem;cursor:pointer;color:#CCC;padding:0;line-height:1}
+.ai-inv-log-del{border:none;background:transparent;font-size:.58rem;cursor:pointer;color:#CCC;padding:0;line-height:1}
 .ai-inv-log-del:hover{color:#E03A3A}
 .ai-add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:11px;border:1.5px dashed #C5CFF5;background:transparent;color:#4F6EF7;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .13s;font-family:inherit;margin-top:4px}
 .ai-add-btn:hover{background:#EEF1FF;border-color:#4F6EF7}
@@ -6816,6 +6818,7 @@ const FB_ASSET_INFO = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws
 const AI_COLORS = ['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','#F5C842','#7BC98A'];
 let aiData = [];
 let _aiSaveTimer = null;
+let aiLogOpen = new Set();
 
 async function aiFetch(){
   if(_aiSaveTimer!==null){ clearTimeout(_aiSaveTimer); _aiSaveTimer=null; aiReadInputs(); await _aiSaveNow(); }
@@ -6840,21 +6843,13 @@ function aiReadInputs(){
     const a=row.querySelector('.ai-row-amt');
     if(a && !a.classList.contains('calc')) aiData[i].amount=parseInt((a.value||'').replace(/,/g,''))||0;
     const m=row.querySelector('.ai-row-memo'); if(m) aiData[i].memo=m.value;
+    const g=row.querySelector('.ai-row-group'); if(g) aiData[i].group=g.value;
   });
 }
 
-function aiToggleInvest(i){
-  if(aiData[i].investMode){
-    aiData[i].amount=(aiData[i].principal||0)+(aiData[i].profit||0);
-    aiData[i].investMode=false;
-    delete aiData[i].principal;
-    delete aiData[i].profit;
-  } else {
-    aiData[i].principal=aiData[i].amount||0;
-    aiData[i].profit=0;
-    aiData[i].investMode=true;
-  }
-  aiRender();
+function aiToggleLog(i){
+  if(aiLogOpen.has(i)) aiLogOpen.delete(i); else aiLogOpen.add(i);
+  aiRenderRows();
 }
 
 function aiAmtInput(idx, el){
@@ -6866,6 +6861,18 @@ function aiAmtInput(idx, el){
   aiRenderChart(); aiSave();
 }
 
+function _aiUpdateInvTotal(i){
+  const rows=document.querySelectorAll('#ai-rows .ai-row');
+  if(!rows[i]) return;
+  const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR');
+  const t=rows[i].querySelector('.ai-inv-total');
+  if(t){
+    const pr=aiData[i].principal||0, pf=aiData[i].profit||0;
+    const pct=pr>0?' ('+((pf/pr)*100).toFixed(1)+'%)':'';
+    t.textContent='= '+(pr+pf).toLocaleString('ko-KR')+'원'+pct;
+  }
+}
+
 function aiSetPrincipal(i, el){
   const raw=(el.value||'').replace(/[^0-9]/g,'');
   const n=parseInt(raw)||0;
@@ -6873,11 +6880,7 @@ function aiSetPrincipal(i, el){
   aiData[i].amount=n+(aiData[i].profit||0);
   const fmt=n?n.toLocaleString('ko-KR'):'';
   if(el.value!==fmt) el.value=fmt;
-  const rows=document.querySelectorAll('#ai-rows .ai-row');
-  if(rows[i]){ const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR'); }
-  const sub=rows[i]&&rows[i].nextElementSibling;
-  if(sub&&sub.classList.contains('ai-inv-sub')){ const t=sub.querySelector('.ai-inv-total'); if(t) t.textContent='= '+aiData[i].amount.toLocaleString('ko-KR')+'원'; }
-  aiRenderChart(); aiSave();
+  _aiUpdateInvTotal(i); aiRenderChart(); aiSave();
 }
 
 function aiSetProfit(i, el){
@@ -6888,18 +6891,18 @@ function aiSetProfit(i, el){
   const fmt=n?n.toLocaleString('ko-KR'):'';
   if(el.value!==fmt) el.value=fmt;
   el.classList.toggle('neg',n<0);
-  const rows=document.querySelectorAll('#ai-rows .ai-row');
-  if(rows[i]){ const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR'); }
-  const sub=rows[i]&&rows[i].nextElementSibling;
-  if(sub&&sub.classList.contains('ai-inv-sub')){ const t=sub.querySelector('.ai-inv-total'); if(t) t.textContent='= '+aiData[i].amount.toLocaleString('ko-KR')+'원'; }
-  aiRenderChart(); aiSave();
+  _aiUpdateInvTotal(i); aiRenderChart(); aiSave();
 }
 
 function aiLogProfit(i){
   const now=new Date();
   const date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
   if(!Array.isArray(aiData[i].profitLog)) aiData[i].profitLog=[];
-  aiData[i].profitLog.unshift({date:date, profit:aiData[i].profit||0});
+  const profit=aiData[i].profit||0;
+  const principal=aiData[i].principal||0;
+  const pct=principal>0?parseFloat(((profit/principal)*100).toFixed(1)):null;
+  aiData[i].profitLog.unshift({date:date, profit:profit, pct:pct});
+  aiLogOpen.add(i);
   aiSave(); aiRenderRows();
 }
 
@@ -6935,48 +6938,58 @@ function aiDragEnd(){
 function aiRenderRows(){
   const wrap=document.getElementById('ai-rows'); if(!wrap) return;
   wrap.innerHTML=aiData.map(function(item,i){
-    const inv=item.investMode===true;
-    const principal=inv?(item.principal||0):0;
-    const profit=inv?(item.profit||0):0;
-    const total=inv?principal+profit:item.amount;
+    const principal=item.principal||0;
+    const profit=item.profit||0;
+    const hasInvest=principal>0||profit!==0;
+    const total=hasInvest?principal+profit:item.amount;
     const amtDisp=total?total.toLocaleString('ko-KR'):'';
-    const profitDisp=profit?(profit.toLocaleString('ko-KR')):'';
-    const logHtml=(item.profitLog&&item.profitLog.length)
-      ? item.profitLog.slice(0,8).map(function(e,li){
+    const profitPctStr=principal>0?' ('+((profit/principal)*100).toFixed(1)+'%)':'';
+    const logCount=item.profitLog&&item.profitLog.length?item.profitLog.length:0;
+    const isLogOpen=aiLogOpen.has(i);
+    const logHtml=isLogOpen&&logCount
+      ? item.profitLog.slice(0,20).map(function(e,li){
+          const p=e.profit||0;
+          const pctStr=e.pct!=null?' ('+e.pct+'%)':'';
           return `<div class="ai-inv-log-entry">
             <span class="ai-inv-log-date">${e.date}</span>
-            <span class="ai-inv-log-profit${(e.profit||0)<0?' neg':''}">${(e.profit||0)<0?'':'+'} ${(e.profit||0).toLocaleString('ko-KR')}원</span>
+            <span class="ai-inv-log-profit${p<0?' neg':''}">${p>=0?'+':''}${p.toLocaleString('ko-KR')}원${pctStr}</span>
             <button class="ai-inv-log-del" onclick="aiLogDel(${i},${li})">✕</button>
           </div>`;
         }).join('')
       : '';
-    const subRow=inv?`<div class="ai-inv-sub">
-      <span class="ai-inv-label">원금</span>
-      <input class="ai-inv-input" value="${principal?principal.toLocaleString('ko-KR'):''}" placeholder="0"
-        oninput="aiSetPrincipal(${i},this)">
-      <span class="ai-inv-label">수익</span>
-      <input class="ai-inv-input ai-inv-profit${profit<0?' neg':''}" value="${profitDisp}" placeholder="±0"
-        oninput="aiSetProfit(${i},this)">
-      <span class="ai-inv-total">= ${total.toLocaleString('ko-KR')}원</span>
-      <button class="ai-inv-log-btn" onclick="aiLogProfit(${i})">📊 기록</button>
-    </div>`:'';
-    const logSection=logHtml?`<div class="ai-inv-log">${logHtml}</div>`:'';
+    const logSection=isLogOpen?`<div class="ai-inv-log">${logHtml||'<span style="font-size:.68rem;color:#AAB0C8">기록 없음</span>'}</div>`:'';
     return `<div class="ai-row" draggable="true"
       ondragstart="aiDragStart(${i})" ondragover="aiDragOver(event,${i})"
       ondragleave="this.classList.remove('drag-over')"
       ondrop="aiDrop(event,${i})" ondragend="aiDragEnd()">
-      <span class="ai-row-drag">⠿</span>
-      <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
-      <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
-        oninput="aiData[${i}].name=this.value;aiRenderChart();aiSave()">
-      <input class="ai-row-amt${inv?' calc':''}" value="${amtDisp}" placeholder="금액 (원)"
-        ${inv?'readonly':`oninput="aiAmtInput(${i},this)"`}>
-      <input class="ai-row-memo" value="${(item.memo||'').replace(/"/g,'&quot;')}" placeholder="메모"
-        oninput="aiData[${i}].memo=this.value;aiSave()">
-      <span class="ai-row-pct" id="ai-pct-${i}">-</span>
-      <button class="ai-row-invest-btn${inv?' active':''}" onclick="aiToggleInvest(${i})">${inv?'▲원금/수익':'원금/수익'}</button>
-      <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
-    </div>${subRow}${logSection}`;
+      <div class="ai-row-l1">
+        <span class="ai-row-drag">⠿</span>
+        <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
+        <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
+          oninput="aiData[${i}].name=this.value;aiRenderChart();aiSave()">
+        <input class="ai-row-amt${hasInvest?' calc':''}" value="${amtDisp}" placeholder="금액"
+          ${hasInvest?'readonly':`oninput="aiAmtInput(${i},this)"`}>
+        <span class="ai-row-pct" id="ai-pct-${i}">-</span>
+        <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
+      </div>
+      <div class="ai-row-l2">
+        <span class="ai-inv-label">원금</span>
+        <input class="ai-inv-input" value="${principal?principal.toLocaleString('ko-KR'):''}" placeholder="0"
+          oninput="aiSetPrincipal(${i},this)">
+        <span class="ai-inv-label">수익</span>
+        <input class="ai-inv-input ai-inv-profit${profit<0?' neg':''}" value="${profit?profit.toLocaleString('ko-KR'):''}" placeholder="±0"
+          oninput="aiSetProfit(${i},this)">
+        ${hasInvest?`<span class="ai-inv-total">= ${total.toLocaleString('ko-KR')}원${profitPctStr}</span>`:''}
+        <button class="ai-inv-save-btn" onclick="aiLogProfit(${i})">📊 기록저장</button>
+        <button class="ai-inv-view-btn${isLogOpen?' open':''}" onclick="aiToggleLog(${i})">📋 기록보기${logCount?' ('+logCount+')':''}</button>
+        <input class="ai-row-memo" value="${(item.memo||'').replace(/"/g,'&quot;')}" placeholder="메모"
+          oninput="aiData[${i}].memo=this.value;aiSave()">
+        <span class="ai-inv-label" title="같은 그룹명은 차트에서 하나로 합쳐 표시">그룹</span>
+        <input class="ai-inv-input ai-row-group" style="width:60px" value="${(item.group||'').replace(/"/g,'&quot;')}" placeholder="주식"
+          oninput="aiData[${i}].group=this.value;aiRenderChart();aiSave()">
+      </div>
+      ${logSection}
+    </div>`;
   }).join('');
 }
 
@@ -6987,9 +7000,19 @@ function aiRenderChart(){
   const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
   if(totalDisp) totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'-';
 
+  // Build grouped items: same group name → merged into one chart slice
+  const groupOrder=[], groupMap={};
+  aiData.forEach(function(item,i){
+    if(!item.amount) return;
+    const key=item.group?('g:'+item.group):('i:'+i);
+    const label=item.group||item.name||'기타';
+    if(!groupMap[key]){ groupMap[key]={name:label,amount:0,colorIdx:i}; groupOrder.push(key); }
+    groupMap[key].amount+=item.amount||0;
+  });
+  const chartItems=groupOrder.map(function(k){ return groupMap[k]; });
+
   const cx=100,cy=100,r=92;
-  const items=aiData.filter(function(d){return d.amount>0;});
-  if(!items.length){
+  if(!chartItems.length){
     svg.innerHTML=`<circle cx="100" cy="100" r="92" fill="#E2E8F5"/>`;
     if(legend) legend.innerHTML='';
     aiData.forEach(function(_,i){ const el=document.getElementById('ai-pct-'+i); if(el) el.textContent='-'; });
@@ -6997,42 +7020,32 @@ function aiRenderChart(){
   }
 
   let startAngle=-Math.PI/2;
-  let slices='';
-  let labels='';
-
-  items.forEach(function(item){
-    const origIdx=aiData.indexOf(item);
+  let slices='', labels='';
+  chartItems.forEach(function(item){
     const pct=item.amount/total;
     const arcAngle=pct*2*Math.PI;
     const endAngle=startAngle+arcAngle;
-    const x1=cx+r*Math.cos(startAngle);
-    const y1=cy+r*Math.sin(startAngle);
-    const x2=cx+r*Math.cos(endAngle);
-    const y2=cy+r*Math.sin(endAngle);
+    const x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
+    const x2=cx+r*Math.cos(endAngle),   y2=cy+r*Math.sin(endAngle);
     const largeArc=arcAngle>Math.PI?1:0;
-    const color=AI_COLORS[origIdx%AI_COLORS.length];
+    const color=AI_COLORS[item.colorIdx%AI_COLORS.length];
     slices+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${color}"/>`;
-
     if(pct>=0.07){
       const mid=startAngle+arcAngle/2;
       const tr=r*0.62;
       const tx=(cx+tr*Math.cos(mid)).toFixed(1);
       const ty=(cy+tr*Math.sin(mid)).toFixed(1);
-      const pctLabel=Math.round(pct*100)+'%';
-      const nameLabel=(item.name||'').substring(0,5);
-      labels+=`<text x="${tx}" y="${parseFloat(ty)-5}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="white" pointer-events="none">${nameLabel}</text>`;
-      labels+=`<text x="${tx}" y="${parseFloat(ty)+6}" text-anchor="middle" dominant-baseline="middle" font-size="8.5" fill="rgba(255,255,255,0.88)" pointer-events="none">${pctLabel}</text>`;
+      labels+=`<text x="${tx}" y="${parseFloat(ty)-5}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="white" pointer-events="none">${(item.name||'').substring(0,5)}</text>`;
+      labels+=`<text x="${tx}" y="${parseFloat(ty)+6}" text-anchor="middle" dominant-baseline="middle" font-size="8.5" fill="rgba(255,255,255,0.88)" pointer-events="none">${Math.round(pct*100)}%</text>`;
     }
     startAngle=endAngle;
   });
-
   svg.innerHTML=slices+labels;
 
-  if(legend) legend.innerHTML=aiData.filter(function(d){return d.amount>0;}).map(function(item){
-    const origIdx=aiData.indexOf(item);
+  if(legend) legend.innerHTML=chartItems.map(function(item){
     const pct=total?Math.round(item.amount/total*1000)/10:0;
     return `<div class="ai-legend-item">
-      <div class="ai-legend-dot" style="background:${AI_COLORS[origIdx%AI_COLORS.length]}"></div>
+      <div class="ai-legend-dot" style="background:${AI_COLORS[item.colorIdx%AI_COLORS.length]}"></div>
       <span class="ai-legend-name">${(item.name||'').replace(/</g,'&lt;')}</span>
       <span class="ai-legend-pct">${pct}%</span>
       <span class="ai-legend-amt">${item.amount.toLocaleString('ko-KR')}원</span>
