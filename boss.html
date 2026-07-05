@@ -7096,11 +7096,17 @@ function aiRenderChart(){
   aiRenderTargets();
 }
 
+function aiSetTarget(ci, val){
+  const item=_aiChartItems[ci]; if(!item) return;
+  aiTargets[item.name]=val!==''?parseFloat(val):null;
+  aiRenderTargets();
+}
+
 function aiRenderTargets(){
   const wrap=document.getElementById('ai-targets'); if(!wrap) return;
   const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
   if(!total||!_aiChartItems.length){ wrap.innerHTML=''; return; }
-  const rows=_aiChartItems.map(function(item){
+  const rows=_aiChartItems.map(function(item,ci){
     const curPct=(item.amount/total*100).toFixed(1);
     const tgt=aiTargets[item.name]!=null?aiTargets[item.name]:'';
     const tgtAmt=tgt!==''?Math.round(parseFloat(tgt)/100*total):null;
@@ -7108,9 +7114,9 @@ function aiRenderTargets(){
     const color=AI_COLORS[item.colorIdx%AI_COLORS.length];
     let diffHtml='<span class="ai-target-diff"></span>';
     if(diff!=null){
-      const sign=diff>0?'+':'';
       const col=diff>0?'#E03A3A':diff<0?'#4F6EF7':'#27AE60';
-      diffHtml=`<span class="ai-target-diff" style="color:${col}">${sign}${Math.abs(diff).toLocaleString('ko-KR')}원${diff>0?' 추가':diff<0?' 감소':' 동일'}</span>`;
+      const label=diff>0?' 추가':diff<0?' 감소':' 동일';
+      diffHtml=`<span class="ai-target-diff" style="color:${col}">${diff>0?'+':''}${diff.toLocaleString('ko-KR')}원${label}</span>`;
     }
     return `<div class="ai-target-row">
       <div class="ai-target-dot" style="background:${color}"></div>
@@ -7118,7 +7124,7 @@ function aiRenderTargets(){
       <span class="ai-target-cur">${curPct}%</span>
       <span class="ai-target-sep">→</span>
       <input class="ai-target-input" type="number" min="0" max="100" step="0.1" value="${tgt}" placeholder="%"
-        oninput="aiTargets[${JSON.stringify(item.name)}]=this.value!==''?parseFloat(this.value):null;aiRenderTargets()">
+        oninput="aiSetTarget(${ci},this.value)">
       <span class="ai-target-pct">%</span>
       ${diffHtml}
     </div>`;
