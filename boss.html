@@ -355,6 +355,11 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="dark"] .ai-row-amt{border-color:#2E3650;color:#E4E9F5}
 :root[data-theme="light"] .ai-row-amt{border-color:#E2E8F5;color:#1B2035}
 .ai-row-pct{width:40px;font-size:.74rem;font-weight:800;color:#4F6EF7;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-row-memo{flex:1;padding:5px 10px;border-radius:9px;border:1.5px solid #E2E8F5;font-size:.75rem;font-family:inherit;color:#1B2035;outline:none;background:transparent;min-width:0}
+.ai-row-memo:focus{border-color:#B0BBDD}
+@media(prefers-color-scheme:dark){.ai-row-memo{border-color:#2E3650;color:#E4E9F5}}
+:root[data-theme="dark"] .ai-row-memo{border-color:#2E3650;color:#E4E9F5}
+:root[data-theme="light"] .ai-row-memo{border-color:#E2E8F5;color:#1B2035}
 .ai-row-drag{cursor:grab;color:#CCC;font-size:.9rem;flex-shrink:0;padding:0 2px;user-select:none}
 .ai-row-del{width:24px;height:24px;border-radius:7px;border:none;background:transparent;font-size:.7rem;cursor:pointer;color:#CCC;flex-shrink:0;transition:all .12s;padding:0}
 .ai-row-del:hover{background:#FFE8E8;color:#E03A3A}
@@ -368,6 +373,30 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="light"] .ai-add-btn:hover{background:#EEF1FF}
 .ai-save-btn{display:block;width:100%;padding:10px;border-radius:12px;border:none;background:linear-gradient(135deg,#5C7BFF,#4F6EF7);color:#fff;font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px;transition:opacity .13s}
 .ai-save-btn:hover{opacity:.88}
+
+/* ── 포스트잇 ── */
+.pn-section{margin-bottom:20px}
+.pn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pn-title{font-size:.78rem;font-weight:800;color:#6B7799;letter-spacing:.06em;text-transform:uppercase}
+.pn-add-btn{font-size:.75rem;padding:4px 10px;border-radius:8px;border:1.5px solid #C5CFF5;background:transparent;color:#4F6EF7;cursor:pointer;font-weight:700;font-family:inherit;transition:background .12s}
+.pn-add-btn:hover{background:#EEF1FF}
+.pn-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.pn-card{aspect-ratio:1/1;border-radius:8px;padding:8px 8px 6px;position:relative;display:flex;flex-direction:column;gap:2px;box-shadow:1px 3px 8px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .15s;overflow:hidden}
+.pn-card.pn-focused{box-shadow:0 0 0 2.5px #4F6EF7,1px 3px 8px rgba(0,0,0,.10)}
+.pn-card-imgs{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;min-height:0}
+.pn-card-img{width:100%;border-radius:3px;object-fit:cover;flex-shrink:0;display:block;cursor:pointer}
+.pn-card-img-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:rgba(0,0,0,.25);text-align:center;line-height:1.4}
+.pn-card-text{font-size:.68rem;border:none;background:transparent;resize:none;width:100%;padding:0;color:rgba(0,0,0,.7);line-height:1.4;flex-shrink:0;font-family:inherit;height:auto}
+.pn-card-text::placeholder{color:rgba(0,0,0,.28)}
+.pn-card-foot{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-top:auto;padding-top:2px}
+.pn-card-date{font-size:.57rem;color:rgba(0,0,0,.28);flex:1;white-space:nowrap;overflow:hidden}
+.pn-card-del{border:none;background:transparent;font-size:.68rem;cursor:pointer;color:rgba(0,0,0,.22);padding:0;line-height:1;flex-shrink:0}
+.pn-card-del:hover{color:#E03A3A}
+.pn-card-attach{border:none;background:transparent;font-size:.68rem;cursor:pointer;color:rgba(0,0,0,.22);padding:0;line-height:1;flex-shrink:0}
+.pn-card-attach:hover{color:#4F6EF7}
+.pn-colors{display:flex;gap:2px;flex-shrink:0}
+.pn-color-dot{width:8px;height:8px;border-radius:50%;cursor:pointer;border:1.5px solid transparent;flex-shrink:0;transition:border-color .1s}
+.pn-color-dot.pn-col-active{border-color:rgba(0,0,0,.45)}
 
 /* ── 홈 3단 메모 그리드 ── */
 .boss-memo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
@@ -1404,6 +1433,14 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
     <!-- 현재자산정보 페이지 -->
     <div class="page" id="page-asset-info">
+      <!-- 포스트잇 -->
+      <div class="pn-section">
+        <div class="pn-header">
+          <span class="pn-title">📌 포스트잇</span>
+          <button class="pn-add-btn" onclick="pnAdd()">＋ 추가</button>
+        </div>
+        <div class="pn-grid" id="pn-grid"></div>
+      </div>
       <div class="ai-wrap">
         <div class="ai-left">
           <div class="ai-chart-card">
@@ -2346,7 +2383,7 @@ function setSub(id, label){
     bCsAlarmStart();
   } else if(id==='asset-info'){
     showPage('asset-info');
-    aiFetch();
+    pnFetch(); aiFetch();
   } else if(id==='card'){
     showPage('card');
     cardFetch();
@@ -6068,15 +6105,23 @@ document.addEventListener('paste', function(e) {
         const dataUrl = ev.target.result;
         const now = new Date();
         const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
-        if (clipFocusIdx >= 0 && clipFocusIdx < clipItems.length) {
-          // 포커스된 카드 안에 이미지 추가
+        // 포스트잇 포커스 우선
+        if (pnFocusIdx >= 0 && pnFocusIdx < pnItems.length) {
+          if (!Array.isArray(pnItems[pnFocusIdx].imgs)) pnItems[pnFocusIdx].imgs = [];
+          pnItems[pnFocusIdx].imgs.push(dataUrl);
+          pnRender(); pnSave();
+        } else if (document.getElementById('page-asset-info') && document.getElementById('page-asset-info').classList.contains('active')) {
+          pnItems.push({color:PN_COLORS[pnItems.length%PN_COLORS.length],text:'',imgs:[dataUrl],date});
+          pnFocusIdx=pnItems.length-1;
+          pnRender(); pnSave();
+        } else if (clipFocusIdx >= 0 && clipFocusIdx < clipItems.length) {
           if (!Array.isArray(clipItems[clipFocusIdx].imgs)) clipItems[clipFocusIdx].imgs = [];
           clipItems[clipFocusIdx].imgs.push(dataUrl);
+          clipRender(); clipSave();
         } else {
-          // 포커스 없으면 새 카드 추가
           clipItems.push({imgs:[dataUrl], memo:'', date});
+          clipRender(); clipSave();
         }
-        clipRender(); clipSave();
       };
       reader.readAsDataURL(file);
       break;
@@ -6646,6 +6691,96 @@ function bregRender(){
     </div>`).join('');
 }
 
+// ── 포스트잇 ──────────────────────────────────────────────
+const FB_POSTIT = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_postit.json';
+const PN_COLORS = ['#FFF9C4','#D4F4DD','#FFD6D6','#D6EAFF','#FFE5CC','#F5D6FF'];
+let pnItems = [];
+let pnFocusIdx = -1;
+let _pnSaveTimer = null;
+
+async function pnFetch(){
+  try{
+    const r=await fetch(FB_POSTIT+'?t='+Date.now());
+    if(r.ok){ const d=await r.json(); if(d&&Array.isArray(d.pn_items)) pnItems=d.pn_items; }
+  }catch(e){ pnItems=[]; }
+  pnRender();
+}
+
+function pnRender(){
+  const grid=document.getElementById('pn-grid'); if(!grid) return;
+  grid.innerHTML=pnItems.map(function(item,i){
+    const bg=item.color||PN_COLORS[0];
+    const imgsHtml=item.imgs&&item.imgs.length
+      ? item.imgs.map(function(src,si){
+          return `<img class="pn-card-img" src="${src}" alt="" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="클릭하면 삭제">`;
+        }).join('')
+      : `<div class="pn-card-img-empty">Ctrl+V<br>이미지</div>`;
+    const dotsHtml=PN_COLORS.map(function(c){
+      return `<span class="pn-color-dot${c===bg?' pn-col-active':''}" style="background:${c}" onclick="event.stopPropagation();pnSetColor(${i},'${c}')"></span>`;
+    }).join('');
+    return `<div class="pn-card${pnFocusIdx===i?' pn-focused':''}" style="background:${bg}" onclick="pnFocus(${i})">
+      <div class="pn-card-imgs">${imgsHtml}</div>
+      <textarea class="pn-card-text" rows="2" placeholder="메모..."
+        oninput="pnItems[${i}].text=this.value;pnSave()"
+        onclick="pnFocus(${i});event.stopPropagation()">${(item.text||'').replace(/</g,'&lt;')}</textarea>
+      <div class="pn-card-foot">
+        <span class="pn-card-date">${item.date||''}</span>
+        <div class="pn-colors">${dotsHtml}</div>
+        <input type="file" id="pn-file-${i}" accept="image/*" style="display:none"
+          onchange="pnAddFile(${i},this.files[0]);this.value=''">
+        <button class="pn-card-attach" onclick="event.stopPropagation();document.getElementById('pn-file-${i}').click()" title="파일 첨부">📎</button>
+        <button class="pn-card-del" onclick="event.stopPropagation();pnDel(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pnFocus(i){
+  pnFocusIdx=i;
+  document.querySelectorAll('.pn-card').forEach(function(c,idx){ c.classList.toggle('pn-focused',idx===i); });
+}
+
+function pnAdd(){
+  const now=new Date();
+  const date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
+  pnItems.push({color:PN_COLORS[pnItems.length%PN_COLORS.length],text:'',imgs:[],date});
+  pnFocusIdx=pnItems.length-1;
+  pnRender(); pnSave();
+}
+
+function pnDel(i){
+  pnItems.splice(i,1);
+  if(pnFocusIdx>=pnItems.length) pnFocusIdx=pnItems.length-1;
+  pnRender(); pnSave();
+}
+
+function pnImgDel(cardIdx,imgIdx){
+  if(pnItems[cardIdx]&&pnItems[cardIdx].imgs) pnItems[cardIdx].imgs.splice(imgIdx,1);
+  pnRender(); pnSave();
+}
+
+function pnSetColor(i,color){
+  pnItems[i].color=color; pnRender(); pnSave();
+}
+
+function pnAddFile(i,file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    if(!Array.isArray(pnItems[i].imgs)) pnItems[i].imgs=[];
+    pnItems[i].imgs.push(ev.target.result);
+    pnRender(); pnSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+function pnSave(){
+  clearTimeout(_pnSaveTimer);
+  _pnSaveTimer=setTimeout(function(){
+    fetch(FB_POSTIT,{method:'PUT',body:JSON.stringify({pn_items:pnItems}),headers:{'Content-Type':'application/json'}}).catch(function(){});
+  },600);
+}
+
 // ── 현재자산정보 ──────────────────────────────────────────
 const FB_ASSET_INFO = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json';
 const AI_COLORS = ['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','#F5C842','#7BC98A'];
@@ -6673,6 +6808,7 @@ function aiReadInputs(){
     if(i>=aiData.length) return;
     const n=row.querySelector('.ai-row-name'); if(n) aiData[i].name=n.value;
     const a=row.querySelector('.ai-row-amt'); if(a) aiData[i].amount=parseInt((a.value||'').replace(/,/g,''))||0;
+    const m=row.querySelector('.ai-row-memo'); if(m) aiData[i].memo=m.value;
   });
 }
 
@@ -6715,6 +6851,8 @@ function aiRenderRows(){
         oninput="aiData[${i}].amount=parseInt(this.value.replace(/,/g,''))||0;aiRenderChart()"
         onfocus="this.value=this.value.replace(/,/g,'')"
         onblur="this.value=aiData[${i}].amount?aiData[${i}].amount.toLocaleString('ko-KR'):''">
+      <input class="ai-row-memo" value="${(item.memo||'').replace(/"/g,'&quot;')}" placeholder="메모"
+        oninput="aiData[${i}].memo=this.value">
       <span class="ai-row-pct" id="ai-pct-${i}">-</span>
       <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
     </div>`;
