@@ -7017,16 +7017,32 @@ function createAssetSection(P, fbUrl){
   function renderChart(){
     var svg=getEl('donut-svg');if(!svg)return;
     var totalDisp=getEl('total-disp'),legend=getEl('legend');
-    var total=data.reduce(function(s,r){return s+(+r.amount||0);},0);
-    if(totalDisp)totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'-';
+    var totalPos=data.reduce(function(s,r){return s+(r.amount>0?+r.amount:0);},0);
+    var totalNet=data.reduce(function(s,r){return s+(+r.amount||0);},0);
+    var hasDebt=totalNet<totalPos;
+    if(totalDisp){
+      if(hasDebt){
+        totalDisp.innerHTML=totalNet.toLocaleString('ko-KR')+'원'
+          +'<span style="font-size:.65rem;color:#8B96B5;display:block;margin-top:2px">자산 '+totalPos.toLocaleString('ko-KR')+' / 부채 '+Math.abs(totalNet-totalPos).toLocaleString('ko-KR')+'</span>';
+      } else {
+        totalDisp.textContent=totalNet?totalNet.toLocaleString('ko-KR')+'원':'-';
+      }
+    }
+    // 차트는 양수 항목만
     chartItems_=[];var groupOrder=[],groupMap={};
-    data.forEach(function(item,i){if(!item.amount)return;var key=item.group?('g:'+item.group):('i:'+i),label=item.group||item.name||'기타';if(!groupMap[key]){groupMap[key]={name:label,amount:0,ci:groupOrder.length};groupOrder.push(key);}groupMap[key].amount+=item.amount||0;});
+    data.forEach(function(item,i){
+      if(!item.amount||item.amount<=0)return;
+      var key=item.group?('g:'+item.group):('i:'+i),label=item.group||item.name||'기타';
+      if(!groupMap[key]){groupMap[key]={name:label,amount:0,ci:groupOrder.length};groupOrder.push(key);}
+      groupMap[key].amount+=item.amount||0;
+    });
     var chartItems=groupOrder.map(function(k){return groupMap[k];});chartItems_=chartItems;
+    var debtItems=data.filter(function(item){return item.amount<0;});
     var cx=100,cy=100,r=92;
     if(!chartItems.length){svg.innerHTML='<circle cx="100" cy="100" r="92" fill="#E2E8F5"/>';if(legend)legend.innerHTML='';data.forEach(function(_,i){var e=document.getElementById(P+'-pct-'+i);if(e)e.textContent='-';});renderTargets_();return;}
     var startAngle=-Math.PI/2,slices='',labels='';
     chartItems.forEach(function(item){
-      var pct=item.amount/total,arcAngle=pct*2*Math.PI,endAngle=startAngle+arcAngle;
+      var pct=item.amount/totalPos,arcAngle=pct*2*Math.PI,endAngle=startAngle+arcAngle;
       var x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle),x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);
       var largeArc=arcAngle>Math.PI?1:0,color=AI_COLORS[item.ci%AI_COLORS.length];
       slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(2)+','+y1.toFixed(2)+' A'+r+','+r+' 0 '+largeArc+',1 '+x2.toFixed(2)+','+y2.toFixed(2)+' Z" fill="'+color+'"/>';
@@ -7036,11 +7052,22 @@ function createAssetSection(P, fbUrl){
       startAngle=endAngle;
     });
     svg.innerHTML=slices+labels;
-    if(legend)legend.innerHTML=[].concat(chartItems).sort(function(a,b){return b.amount-a.amount;}).map(function(item){
-      var pct=total?Math.round(item.amount/total*1000)/10:0;
-      return '<div class="ai-legend-item"><div class="ai-legend-dot" style="background:'+AI_COLORS[item.ci%AI_COLORS.length]+'"></div><span class="ai-legend-name">'+(item.name||'').replace(/</g,'&lt;')+'</span><span class="ai-legend-pct">'+pct+'%</span><span class="ai-legend-amt">'+item.amount.toLocaleString('ko-KR')+'원</span></div>';
-    }).join('');
-    data.forEach(function(item,i){var pct=total&&item.amount?Math.round(item.amount/total*1000)/10:0;var e=document.getElementById(P+'-pct-'+i);if(e)e.textContent=item.amount?(pct+'%'):'-';});
+    if(legend){
+      var posHtml=[].concat(chartItems).sort(function(a,b){return b.amount-a.amount;}).map(function(item){
+        var pct=totalPos?Math.round(item.amount/totalPos*1000)/10:0;
+        return '<div class="ai-legend-item"><div class="ai-legend-dot" style="background:'+AI_COLORS[item.ci%AI_COLORS.length]+'"></div><span class="ai-legend-name">'+(item.name||'').replace(/</g,'&lt;')+'</span><span class="ai-legend-pct">'+pct+'%</span><span class="ai-legend-amt">'+item.amount.toLocaleString('ko-KR')+'원</span></div>';
+      }).join('');
+      var debtHtml=debtItems.map(function(item){
+        return '<div class="ai-legend-item"><div class="ai-legend-dot" style="background:#E03A3A;opacity:.5"></div><span class="ai-legend-name" style="color:#E03A3A">'+(item.name||'').replace(/</g,'&lt;')+'</span><span class="ai-legend-pct" style="color:#E03A3A">부채</span><span class="ai-legend-amt" style="color:#E03A3A">'+item.amount.toLocaleString('ko-KR')+'원</span></div>';
+      }).join('');
+      legend.innerHTML=posHtml+debtHtml;
+    }
+    data.forEach(function(item,i){
+      var e=document.getElementById(P+'-pct-'+i);if(!e)return;
+      if(item.amount>0){e.textContent=totalPos?Math.round(item.amount/totalPos*1000)/10+'%':'-';}
+      else if(item.amount<0){e.textContent='부채';e.style.color='#E03A3A';}
+      else{e.textContent='-';e.style.color='';}
+    });
     renderTargets_();
   }
   function renderTargets_(){
