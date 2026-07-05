@@ -377,6 +377,15 @@ a{text-decoration:none;color:inherit}
 .ai-inv-total{font-size:.72rem;font-weight:700;color:#9B6FF5;flex-shrink:0;font-variant-numeric:tabular-nums;min-width:60px;text-align:right}
 @media(prefers-color-scheme:dark){.ai-inv-input{border-color:#2E3650;color:#E4E9F5}}
 :root[data-theme="dark"] .ai-inv-input{border-color:#2E3650;color:#E4E9F5}
+.ai-inv-log-btn{font-size:.6rem;padding:2px 7px;border-radius:5px;border:1.5px solid #B8D0FF;background:transparent;color:#4F6EF7;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap}
+.ai-inv-log-btn:hover{background:#EEF1FF}
+.ai-inv-log{padding:3px 4px 6px 34px;display:flex;flex-direction:column;gap:3px}
+.ai-inv-log-entry{display:flex;align-items:center;gap:8px;font-size:.7rem}
+.ai-inv-log-date{color:#8B96B5;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-inv-log-profit{font-weight:700;font-variant-numeric:tabular-nums;color:#27AE60}
+.ai-inv-log-profit.neg{color:#E03A3A}
+.ai-inv-log-del{border:none;background:transparent;font-size:.6rem;cursor:pointer;color:#CCC;padding:0;line-height:1}
+.ai-inv-log-del:hover{color:#E03A3A}
 .ai-add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:11px;border:1.5px dashed #C5CFF5;background:transparent;color:#4F6EF7;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .13s;font-family:inherit;margin-top:4px}
 .ai-add-btn:hover{background:#EEF1FF;border-color:#4F6EF7}
 @media(prefers-color-scheme:dark){.ai-add-btn{border-color:#2E3650;color:#7B96F7}.ai-add-btn:hover{background:#2A3150}}
@@ -6714,6 +6723,7 @@ let pnFocusIdx = -1;
 let _pnSaveTimer = null;
 
 async function pnFetch(){
+  if(_pnSaveTimer!==null){ clearTimeout(_pnSaveTimer); _pnSaveTimer=null; await fetch(FB_POSTIT,{method:'PUT',body:JSON.stringify({pn_items:pnItems}),headers:{'Content-Type':'application/json'}}).catch(function(){}); }
   try{
     const r=await fetch(FB_POSTIT+'?t='+Date.now());
     if(r.ok){ const d=await r.json(); if(d&&Array.isArray(d.pn_items)) pnItems=d.pn_items; }
@@ -6809,6 +6819,7 @@ let aiData = [];
 let _aiSaveTimer = null;
 
 async function aiFetch(){
+  if(_aiSaveTimer!==null){ clearTimeout(_aiSaveTimer); _aiSaveTimer=null; aiReadInputs(); await _aiSaveNow(); }
   try{
     const r = await fetch(FB_ASSET_INFO+'?t='+Date.now());
     if(r.ok){ const d=await r.json(); if(Array.isArray(d)&&d.length) aiData=d; }
@@ -6848,26 +6859,55 @@ function aiToggleInvest(i){
   aiRender();
 }
 
-function aiSetPrincipal(i,val){
-  const n=parseInt((val||'').replace(/,/g,''))||0;
-  aiData[i].principal=n;
-  aiData[i].amount=n+(aiData[i].profit||0);
-  const rows=document.querySelectorAll('#ai-rows .ai-row');
-  if(rows[i]){ const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR'); }
-  const sub=rows[i]&&rows[i].nextElementSibling;
-  if(sub&&sub.classList.contains('ai-inv-sub')){ const t=sub.querySelector('.ai-inv-total'); if(t) t.textContent='= '+aiData[i].amount.toLocaleString('ko-KR')+'원'; }
-  aiRenderChart();
+function aiAmtInput(idx, el){
+  const raw=el.value.replace(/[^0-9-]/g,'');
+  const n=parseInt(raw)||0;
+  aiData[idx].amount=n;
+  const fmt=n?n.toLocaleString('ko-KR'):'';
+  if(el.value!==fmt) el.value=fmt;
+  aiRenderChart(); aiSave();
 }
 
-function aiSetProfit(i,val){
-  const n=parseInt((val||'').replace(/,/g,''))||0;
-  aiData[i].profit=n;
-  aiData[i].amount=(aiData[i].principal||0)+n;
+function aiSetPrincipal(i, el){
+  const raw=(el.value||'').replace(/[^0-9]/g,'');
+  const n=parseInt(raw)||0;
+  aiData[i].principal=n;
+  aiData[i].amount=n+(aiData[i].profit||0);
+  const fmt=n?n.toLocaleString('ko-KR'):'';
+  if(el.value!==fmt) el.value=fmt;
   const rows=document.querySelectorAll('#ai-rows .ai-row');
   if(rows[i]){ const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR'); }
   const sub=rows[i]&&rows[i].nextElementSibling;
   if(sub&&sub.classList.contains('ai-inv-sub')){ const t=sub.querySelector('.ai-inv-total'); if(t) t.textContent='= '+aiData[i].amount.toLocaleString('ko-KR')+'원'; }
-  aiRenderChart();
+  aiRenderChart(); aiSave();
+}
+
+function aiSetProfit(i, el){
+  const raw=(el.value||'').replace(/[^0-9-]/g,'');
+  const n=parseInt(raw)||0;
+  aiData[i].profit=n;
+  aiData[i].amount=(aiData[i].principal||0)+n;
+  const fmt=n?n.toLocaleString('ko-KR'):'';
+  if(el.value!==fmt) el.value=fmt;
+  el.classList.toggle('neg',n<0);
+  const rows=document.querySelectorAll('#ai-rows .ai-row');
+  if(rows[i]){ const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR'); }
+  const sub=rows[i]&&rows[i].nextElementSibling;
+  if(sub&&sub.classList.contains('ai-inv-sub')){ const t=sub.querySelector('.ai-inv-total'); if(t) t.textContent='= '+aiData[i].amount.toLocaleString('ko-KR')+'원'; }
+  aiRenderChart(); aiSave();
+}
+
+function aiLogProfit(i){
+  const now=new Date();
+  const date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
+  if(!Array.isArray(aiData[i].profitLog)) aiData[i].profitLog=[];
+  aiData[i].profitLog.unshift({date:date, profit:aiData[i].profit||0});
+  aiSave(); aiRenderRows();
+}
+
+function aiLogDel(i,li){
+  if(aiData[i]&&Array.isArray(aiData[i].profitLog)) aiData[i].profitLog.splice(li,1);
+  aiSave(); aiRenderRows();
 }
 
 function aiRender(){ aiRenderRows(); aiRenderChart(); }
@@ -6902,20 +6942,26 @@ function aiRenderRows(){
     const profit=inv?(item.profit||0):0;
     const total=inv?principal+profit:item.amount;
     const amtDisp=total?total.toLocaleString('ko-KR'):'';
-    const profitDisp=inv?(item.profit||0).toLocaleString('ko-KR'):'';
+    const profitDisp=profit?(profit.toLocaleString('ko-KR')):'';
+    const logHtml=(item.profitLog&&item.profitLog.length)
+      ? item.profitLog.slice(0,8).map(function(e,li){
+          return `<div class="ai-inv-log-entry">
+            <span class="ai-inv-log-date">${e.date}</span>
+            <span class="ai-inv-log-profit${(e.profit||0)<0?' neg':''}">${(e.profit||0)<0?'':'+'} ${(e.profit||0).toLocaleString('ko-KR')}원</span>
+            <button class="ai-inv-log-del" onclick="aiLogDel(${i},${li})">✕</button>
+          </div>`;
+        }).join('')
+      : '';
     const subRow=inv?`<div class="ai-inv-sub">
       <span class="ai-inv-label">원금</span>
       <input class="ai-inv-input" value="${principal?principal.toLocaleString('ko-KR'):''}" placeholder="0"
-        oninput="aiSetPrincipal(${i},this.value)"
-        onfocus="this.value=(this.value||'').replace(/,/g,'')"
-        onblur="this.value=(aiData[${i}].principal||0).toLocaleString('ko-KR')">
+        oninput="aiSetPrincipal(${i},this)">
       <span class="ai-inv-label">수익</span>
       <input class="ai-inv-input ai-inv-profit${profit<0?' neg':''}" value="${profitDisp}" placeholder="±0"
-        oninput="aiSetProfit(${i},this.value)"
-        onfocus="this.value=(this.value||'').replace(/,/g,'')"
-        onblur="this.value=(aiData[${i}].profit||0).toLocaleString('ko-KR');this.classList.toggle('neg',(aiData[${i}].profit||0)<0)">
+        oninput="aiSetProfit(${i},this)">
       <span class="ai-inv-total">= ${total.toLocaleString('ko-KR')}원</span>
-    </div>`:'';
+      <button class="ai-inv-log-btn" onclick="aiLogProfit(${i})">📊 기록</button>
+    </div>${logHtml?'<div class="ai-inv-log">'+logHtml+'</div>':''}`:'';
     return `<div class="ai-row" draggable="true"
       ondragstart="aiDragStart(${i})" ondragover="aiDragOver(event,${i})"
       ondragleave="this.classList.remove('drag-over')"
@@ -6923,16 +6969,13 @@ function aiRenderRows(){
       <span class="ai-row-drag">⠿</span>
       <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
       <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
-        oninput="aiData[${i}].name=this.value;aiRenderChart()">
+        oninput="aiData[${i}].name=this.value;aiRenderChart();aiSave()">
       <input class="ai-row-amt${inv?' calc':''}" value="${amtDisp}" placeholder="금액 (원)"
-        ${inv?'readonly':
-        `oninput="aiData[${i}].amount=parseInt(this.value.replace(/,/g,''))||0;aiRenderChart()"
-        onfocus="this.value=this.value.replace(/,/g,'')"
-        onblur="this.value=aiData[${i}].amount?aiData[${i}].amount.toLocaleString('ko-KR'):''"` }>
+        ${inv?'readonly':`oninput="aiAmtInput(${i},this)"`}>
       <input class="ai-row-memo" value="${(item.memo||'').replace(/"/g,'&quot;')}" placeholder="메모"
-        oninput="aiData[${i}].memo=this.value">
+        oninput="aiData[${i}].memo=this.value;aiSave()">
       <span class="ai-row-pct" id="ai-pct-${i}">-</span>
-      <button class="ai-row-invest-btn${inv?' active':''}" onclick="aiToggleInvest(${i})" title="원금/수익 분리입력">${inv?'▲원금/수익':'원금/수익'}</button>
+      <button class="ai-row-invest-btn${inv?' active':''}" onclick="aiToggleInvest(${i})">${inv?'▲원금/수익':'원금/수익'}</button>
       <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
     </div>${subRow}`;
   }).join('');
