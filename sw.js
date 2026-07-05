@@ -1,4 +1,4 @@
-const CACHE_NAME = 'urij-v135';
+﻿const CACHE_NAME = 'urij-v136';
 const ASSETS = [
   './index.html', './hee.html', './work.html', './husband.html',
   './manifest.json', './manifest-hee.json', './manifest-husband.json',
@@ -27,7 +27,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request)));
 });
 
-// 페이지에서 postMessage로 알림 요청
+// ?섏씠吏?먯꽌 postMessage濡??뚮┝ ?붿껌
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SHOW_NOTIFICATION') {
     self.registration.showNotification(e.data.title, {
