@@ -303,10 +303,10 @@ a{text-decoration:none;color:inherit}
 /* ── 현재자산정보 ── */
 .ai-wrap{max-width:960px;display:flex;gap:24px;align-items:flex-start}
 @media(max-width:700px){.ai-wrap{flex-direction:column}}
-.ai-left{flex:0 0 340px;display:flex;flex-direction:column;align-items:center;gap:0}
+.ai-left{flex:0 0 300px;display:flex;flex-direction:column;align-items:center;gap:0}
 @media(max-width:700px){.ai-left{flex:none;width:100%}}
 .ai-right{flex:1;min-width:0}
-.ai-chart-card{background:#fff;border-radius:22px;border:1.5px solid #E2E8F5;padding:24px 20px 18px;box-shadow:0 4px 18px rgba(79,110,247,.07);width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
+.ai-chart-card{background:#fff;border-radius:22px;border:1.5px solid #E2E8F5;padding:14px 14px 14px;box-shadow:0 4px 18px rgba(79,110,247,.07);width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
 @media(prefers-color-scheme:dark){.ai-chart-card{background:#222838;border-color:#2E3650;box-shadow:0 4px 18px rgba(0,0,0,.25)}}
 :root[data-theme="light"] .ai-chart-card{background:#fff;border-color:#E2E8F5}
 :root[data-theme="dark"] .ai-chart-card{background:#222838;border-color:#2E3650}
@@ -314,8 +314,8 @@ a{text-decoration:none;color:inherit}
 @media(prefers-color-scheme:dark){.ai-chart-title{color:#8B96B5}}
 :root[data-theme="dark"] .ai-chart-title{color:#8B96B5}
 :root[data-theme="light"] .ai-chart-title{color:#6B7799}
-.ai-donut-wrap{position:relative;width:200px;height:200px;flex-shrink:0}
-.ai-donut-wrap svg{width:200px;height:200px}
+.ai-donut-wrap{position:relative;width:260px;height:260px;flex-shrink:0}
+.ai-donut-wrap svg{width:260px;height:260px}
 .ai-chart-total-row{display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:center}
 .ai-donut-total-label{font-size:.65rem;font-weight:700;color:#6B7799;letter-spacing:.05em;text-transform:uppercase}
 .ai-donut-total{font-size:1.05rem;font-weight:800;color:#1B2035;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
@@ -393,8 +393,7 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="dark"] .ai-add-btn:hover{background:#2A3150}
 :root[data-theme="light"] .ai-add-btn{border-color:#C5CFF5;color:#4F6EF7}
 :root[data-theme="light"] .ai-add-btn:hover{background:#EEF1FF}
-.ai-save-btn{display:block;width:100%;padding:10px;border-radius:12px;border:none;background:linear-gradient(135deg,#5C7BFF,#4F6EF7);color:#fff;font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px;transition:opacity .13s}
-.ai-save-btn:hover{opacity:.88}
+.ai-autosave-hint{font-size:.68rem;color:#B0B8CC;margin-top:8px;text-align:center;opacity:0;transition:opacity .3s}
 
 /* ── 포스트잇 ── */
 .pn-section{margin-bottom:16px;max-width:960px}
@@ -1484,7 +1483,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <div class="ai-input-title">자산 항목</div>
             <div id="ai-rows"></div>
             <button class="ai-add-btn" onclick="aiAddRow()">＋ 항목 추가</button>
-            <button class="ai-save-btn" onclick="aiSave()">💾 저장</button>
+            <div class="ai-autosave-hint" id="ai-autosave-hint">자동 저장됨</div>
           </div>
         </div>
       </div>
@@ -6832,8 +6831,7 @@ async function aiFetch(){
 async function _aiSaveNow(){
   try{ await fetch(FB_ASSET_INFO,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(aiData)}); }catch(e){}
 }
-function aiSave(){ clearTimeout(_aiSaveTimer); _aiSaveTimer=setTimeout(_aiSaveNow,600); }
-function aiSaveBtn(){ aiReadInputs(); _aiSaveNow(); aiRenderChart(); }
+
 
 function aiReadInputs(){
   document.querySelectorAll('#ai-rows .ai-row').forEach(function(row,i){
@@ -7058,7 +7056,14 @@ function aiAddRow(){
   },50);
 }
 function aiDelRow(i){ aiReadInputs(); aiData.splice(i,1); aiRender(); }
-function aiSave(){ aiReadInputs(); _aiSaveNow(); const btn=document.querySelector('.ai-save-btn'); if(btn){const t=btn.textContent;btn.textContent='✅ 저장됨';setTimeout(()=>{btn.textContent=t;},1200);} }
+function aiSave(){
+  clearTimeout(_aiSaveTimer);
+  _aiSaveTimer=setTimeout(function(){
+    aiReadInputs(); _aiSaveNow();
+    const hint=document.getElementById('ai-autosave-hint');
+    if(hint){hint.style.opacity='1';setTimeout(function(){hint.style.opacity='0';},1500);}
+  },600);
+}
 
 // ── CS복사 ────────────────────────────────────────────────
 let _bcscData=[], _bcscTimer=null;
