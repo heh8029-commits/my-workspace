@@ -6961,7 +6961,8 @@ function aiRenderRows(){
         oninput="aiSetProfit(${i},this)">
       <span class="ai-inv-total">= ${total.toLocaleString('ko-KR')}원</span>
       <button class="ai-inv-log-btn" onclick="aiLogProfit(${i})">📊 기록</button>
-    </div>${logHtml?'<div class="ai-inv-log">'+logHtml+'</div>':''}`:'';
+    </div>`:'';
+    const logSection=logHtml?`<div class="ai-inv-log">${logHtml}</div>`:'';
     return `<div class="ai-row" draggable="true"
       ondragstart="aiDragStart(${i})" ondragover="aiDragOver(event,${i})"
       ondragleave="this.classList.remove('drag-over')"
@@ -6977,7 +6978,7 @@ function aiRenderRows(){
       <span class="ai-row-pct" id="ai-pct-${i}">-</span>
       <button class="ai-row-invest-btn${inv?' active':''}" onclick="aiToggleInvest(${i})">${inv?'▲원금/수익':'원금/수익'}</button>
       <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
-    </div>${subRow}`;
+    </div>${subRow}${logSection}`;
   }).join('');
 }
 
