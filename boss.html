@@ -6998,8 +6998,6 @@ function aiRenderRows(){
         ${hasInvest?`<span class="ai-inv-total">= ${total.toLocaleString('ko-KR')}원${profitPctStr}</span>`:''}
         <button class="ai-inv-save-btn" onclick="aiLogProfit(${i})">📊 기록저장</button>
         <button class="ai-inv-view-btn${isLogOpen?' open':''}" onclick="aiToggleLog(${i})">📋 기록보기${logCount?' ('+logCount+')':''}</button>
-        <input class="ai-row-memo" value="${(item.memo||'').replace(/"/g,'&quot;')}" placeholder="메모"
-          oninput="aiData[${i}].memo=this.value;aiSave()">
       </div>
       ${logSection}
     </div>`;
