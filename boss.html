@@ -301,6 +301,13 @@ a{text-decoration:none;color:inherit}
 .clip-paste-hint{text-align:center;font-size:.75rem;color:#A0AACC;margin-bottom:8px}
 
 /* ── 현재자산정보 ── */
+.ai-page-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #EDF0F8;padding-bottom:0}
+@media(prefers-color-scheme:dark){.ai-page-tabs{border-color:#252B40}}
+:root[data-theme="dark"] .ai-page-tabs{border-color:#252B40}
+.ai-page-tab{padding:8px 20px;border:none;background:transparent;font-size:.88rem;font-weight:600;font-family:inherit;color:#A0A8C0;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s}
+.ai-page-tab:hover{color:#4F6EF7}
+.ai-page-tab.active{color:#4F6EF7;border-bottom-color:#4F6EF7}
+.ai-invest-placeholder{text-align:center;padding:60px 20px;color:#8B96B5}
 .ai-wrap{max-width:960px;display:flex;gap:24px;align-items:flex-start}
 @media(max-width:800px){.ai-wrap{flex-direction:column}}
 .ai-left{flex:0 0 300px;display:flex;flex-direction:column;align-items:center;gap:0}
@@ -1482,36 +1489,51 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
     <!-- 현재자산정보 페이지 -->
     <div class="page" id="page-asset-info">
-      <!-- 포스트잇 -->
-      <div class="pn-section">
-        <div class="pn-header">
-          <span class="pn-title">📌 포스트잇</span>
-          <button class="pn-add-btn" onclick="pnAdd()">＋ 추가</button>
-        </div>
-        <div class="pn-grid" id="pn-grid"></div>
+      <div class="ai-page-tabs">
+        <button class="ai-page-tab active" id="ai-ptab-info" onclick="aiPageTab('info')">현재자산정보</button>
+        <button class="ai-page-tab" id="ai-ptab-invest" onclick="aiPageTab('invest')">투자정보</button>
       </div>
-      <div class="ai-wrap">
-        <div class="ai-left">
-          <div class="ai-chart-card">
-            <div class="ai-chart-title">자산 배분</div>
-            <div class="ai-donut-wrap">
-              <svg viewBox="0 0 200 200" id="ai-donut-svg"></svg>
+      <!-- 탭1: 현재자산정보 -->
+      <div id="ai-tab-info">
+        <!-- 포스트잇 -->
+        <div class="pn-section">
+          <div class="pn-header">
+            <span class="pn-title">📌 포스트잇</span>
+            <button class="pn-add-btn" onclick="pnAdd()">＋ 추가</button>
+          </div>
+          <div class="pn-grid" id="pn-grid"></div>
+        </div>
+        <div class="ai-wrap">
+          <div class="ai-left">
+            <div class="ai-chart-card">
+              <div class="ai-chart-title">자산 배분</div>
+              <div class="ai-donut-wrap">
+                <svg viewBox="0 0 200 200" id="ai-donut-svg"></svg>
+              </div>
+              <div class="ai-chart-total-row">
+                <span class="ai-donut-total-label">총 자산</span>
+                <span class="ai-donut-total" id="ai-total-disp">-</span>
+              </div>
+              <div class="ai-legend" id="ai-legend"></div>
+              <div id="ai-targets"></div>
             </div>
-            <div class="ai-chart-total-row">
-              <span class="ai-donut-total-label">총 자산</span>
-              <span class="ai-donut-total" id="ai-total-disp">-</span>
+          </div>
+          <div class="ai-right">
+            <div class="ai-input-card">
+              <div class="ai-input-title">자산 항목</div>
+              <div id="ai-rows"></div>
+              <button class="ai-add-btn" onclick="aiAddRow()">＋ 항목 추가</button>
+              <div class="ai-autosave-hint" id="ai-autosave-hint">자동 저장됨</div>
             </div>
-            <div class="ai-legend" id="ai-legend"></div>
-            <div id="ai-targets"></div>
           </div>
         </div>
-        <div class="ai-right">
-          <div class="ai-input-card">
-            <div class="ai-input-title">자산 항목</div>
-            <div id="ai-rows"></div>
-            <button class="ai-add-btn" onclick="aiAddRow()">＋ 항목 추가</button>
-            <div class="ai-autosave-hint" id="ai-autosave-hint">자동 저장됨</div>
-          </div>
+      </div>
+      <!-- 탭2: 투자정보 -->
+      <div id="ai-tab-invest" style="display:none">
+        <div class="ai-invest-placeholder">
+          <div style="font-size:2rem">📈</div>
+          <div style="font-size:.9rem;font-weight:700;color:#4F6EF7;margin-top:8px">투자정보</div>
+          <div style="font-size:.78rem;color:#8B96B5;margin-top:4px">준비 중입니다</div>
         </div>
       </div>
     </div>
@@ -2238,7 +2260,6 @@ const MENUS = [
   {id:'asset', label:'자산', emoji:'💼', sub:[
     {id:'asset-info',  label:'현재자산정보',    emoji:'💰'},
     {id:'auto-pay',    label:'자동이체&카드값', emoji:'🔄'},
-    {id:'invest',      label:'투자&연금',        emoji:'📈'},
   ]},
   {id:'recipe', label:'요리', emoji:'🍳'},
   {id:'info',   label:'정보', emoji:'🔒'},
@@ -6840,6 +6861,15 @@ function pnSave(){
 }
 
 // ── 현재자산정보 ──────────────────────────────────────────
+function aiPageTab(name){
+  ['info','invest'].forEach(function(t){
+    const tab=document.getElementById('ai-tab-'+t);
+    const btn=document.getElementById('ai-ptab-'+t);
+    if(tab) tab.style.display=t===name?'':'none';
+    if(btn) btn.classList.toggle('active',t===name);
+  });
+}
+
 const FB_ASSET_INFO = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json';
 const AI_COLORS = ['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','#F5C842','#7BC98A'];
 let aiData = [];
