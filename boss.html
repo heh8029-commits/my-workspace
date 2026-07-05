@@ -438,10 +438,13 @@ a{text-decoration:none;color:inherit}
 .pn-card{aspect-ratio:1/1;border-radius:7px;padding:6px 6px 5px;position:relative;display:flex;flex-direction:column;gap:2px;box-shadow:1px 2px 6px rgba(0,0,0,.09),0 1px 2px rgba(0,0,0,.05);cursor:pointer;transition:box-shadow .15s;overflow:hidden}
 .pn-card.pn-focused{box-shadow:0 0 0 2px #4F6EF7,1px 2px 6px rgba(0,0,0,.09)}
 .pn-card-imgs{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;min-height:0}
-.pn-card-img{width:100%;border-radius:3px;object-fit:cover;flex-shrink:0;display:block;cursor:pointer}
-.pn-memo-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
+.pn-img-wrap{position:relative;flex-shrink:0}
+.pn-card-img{width:100%;border-radius:3px;object-fit:cover;display:block}
+.pn-img-del{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;border:none;background:rgba(0,0,0,.45);color:#fff;font-size:.55rem;cursor:pointer;padding:0;line-height:1;display:none}
+.pn-img-wrap:hover .pn-img-del{display:block}
+.pn-memo-wrap{flex:1;display:flex;align-items:stretch;min-height:0;overflow:hidden}
 .pn-card-text{border:none;background:transparent;resize:none;width:100%;padding:2px;color:rgba(0,0,0,.72);line-height:1.45;font-family:inherit}
-.pn-card-text.no-img{font-size:.82rem;font-weight:700;text-align:center;height:auto;overflow:hidden}
+.pn-card-text.no-img{font-size:.82rem;font-weight:700;text-align:center;flex:1;height:100%;min-height:0}
 .pn-card-text.has-img{font-size:.63rem;flex-shrink:0;margin-top:2px;height:auto}
 .pn-card-text::placeholder{color:rgba(0,0,0,.25);font-weight:400}
 .pn-card-foot{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-top:auto;padding-top:2px}
@@ -1530,10 +1533,36 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
       <!-- 탭2: 투자정보 -->
       <div id="ai-tab-invest" style="display:none">
-        <div class="ai-invest-placeholder">
-          <div style="font-size:2rem">📈</div>
-          <div style="font-size:.9rem;font-weight:700;color:#4F6EF7;margin-top:8px">투자정보</div>
-          <div style="font-size:.78rem;color:#8B96B5;margin-top:4px">준비 중입니다</div>
+        <div class="pn-section">
+          <div class="pn-header">
+            <span class="pn-title">📌 포스트잇</span>
+            <button class="pn-add-btn" onclick="pniAdd()">＋ 추가</button>
+          </div>
+          <div class="pn-grid" id="pni-grid"></div>
+        </div>
+        <div class="ai-wrap">
+          <div class="ai-left">
+            <div class="ai-chart-card">
+              <div class="ai-chart-title">투자 배분</div>
+              <div class="ai-donut-wrap">
+                <svg viewBox="0 0 200 200" id="inv-donut-svg"></svg>
+              </div>
+              <div class="ai-chart-total-row">
+                <span class="ai-donut-total-label">총 투자</span>
+                <span class="ai-donut-total" id="inv-total-disp">-</span>
+              </div>
+              <div class="ai-legend" id="inv-legend"></div>
+              <div id="inv-targets"></div>
+            </div>
+          </div>
+          <div class="ai-right">
+            <div class="ai-input-card">
+              <div class="ai-input-title">투자 항목</div>
+              <div id="inv-rows"></div>
+              <button class="ai-add-btn" onclick="invAddRow()">＋ 항목 추가</button>
+              <div class="ai-autosave-hint" id="inv-autosave-hint">자동 저장됨</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -6790,7 +6819,7 @@ function pnRender(){
     const textVal=(item.text||'').replace(/</g,'&lt;');
     const body=hasImg
       ? `<div class="pn-card-imgs">${item.imgs.map(function(src,si){
-            return `<img class="pn-card-img" src="${src}" alt="" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="클릭하면 삭제">`;
+            return `<div class="pn-img-wrap"><img class="pn-card-img" src="${src}" alt=""><button class="pn-img-del" onclick="event.stopPropagation();pnImgDel(${i},${si})" title="삭제">✕</button></div>`;
           }).join('')}</div>
          <textarea class="pn-card-text has-img" placeholder="메모..."
            oninput="pnItems[${i}].text=this.value;pnSave()"
@@ -6863,324 +6892,176 @@ function pnSave(){
 // ── 현재자산정보 ──────────────────────────────────────────
 function aiPageTab(name){
   ['info','invest'].forEach(function(t){
-    const tab=document.getElementById('ai-tab-'+t);
-    const btn=document.getElementById('ai-ptab-'+t);
+    var tab=document.getElementById('ai-tab-'+t);
+    var btn=document.getElementById('ai-ptab-'+t);
     if(tab) tab.style.display=t===name?'':'none';
     if(btn) btn.classList.toggle('active',t===name);
   });
+  if(name==='invest'){ invFetch(); pniFetch(); }
 }
 
-const FB_ASSET_INFO = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json';
-const AI_COLORS = ['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','#F5C842','#7BC98A'];
-let aiData = [];
-let _aiSaveTimer = null;
-let aiLogOpen = new Set();
-let aiTargets = {};
-let _aiChartItems = [];
+const FB_ASSET_INFO='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json';
+const FB_INVEST_INFO='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_invest_info.json';
+const AI_COLORS=['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','#F5C842','#7BC98A'];
 
-async function aiFetch(){
-  if(_aiSaveTimer!==null){ clearTimeout(_aiSaveTimer); _aiSaveTimer=null; aiReadInputs(); await _aiSaveNow(); }
-  try{
-    const r = await fetch(FB_ASSET_INFO+'?t='+Date.now());
-    if(r.ok){ const d=await r.json(); if(Array.isArray(d)&&d.length) aiData=d; }
-  }catch(e){}
-  if(!aiData.length) aiData=[
-    {name:'현금',amount:0},{name:'주식',amount:0},{name:'예금/적금',amount:0}
-  ];
-  aiRender();
+// ── 포스트잇(투자탭) ─────────────────────────────────────
+const FB_POSTIT_INV='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_postit_inv.json';
+let pniItems=[],pniFocusIdx=-1,_pniSaveTimer=null;
+async function pniFetch(){
+  if(_pniSaveTimer!==null){clearTimeout(_pniSaveTimer);_pniSaveTimer=null;
+    await fetch(FB_POSTIT_INV,{method:'PUT',body:JSON.stringify({pn_items:pniItems}),headers:{'Content-Type':'application/json'}}).catch(function(){});}
+  try{const r=await fetch(FB_POSTIT_INV+'?t='+Date.now());if(r.ok){const d=await r.json();if(d&&Array.isArray(d.pn_items))pniItems=d.pn_items;}}catch(e){pniItems=[];}
+  pniRender();
 }
-async function _aiSaveNow(){
-  try{ await fetch(FB_ASSET_INFO,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(aiData)}); }catch(e){}
+function pniRender(){
+  const grid=document.getElementById('pni-grid'); if(!grid) return;
+  grid.innerHTML=pniItems.map(function(item,i){
+    const bg=item.color||PN_COLORS[0]; const hasImg=item.imgs&&item.imgs.length>0;
+    const dotsHtml=PN_COLORS.map(function(c){
+      return '<span class="pn-color-dot'+(c===bg?' pn-col-active':'')+'" style="background:'+c+'" onclick="event.stopPropagation();pniSetColor('+i+',\''+c+'\')"></span>';
+    }).join('');
+    const textVal=(item.text||'').replace(/</g,'&lt;');
+    const body=hasImg
+      ?('<div class="pn-card-imgs">'+item.imgs.map(function(src,si){return '<div class="pn-img-wrap"><img class="pn-card-img" src="'+src+'" alt=""><button class="pn-img-del" onclick="event.stopPropagation();pniImgDel('+i+','+si+')" title="삭제">✕</button></div>';}).join('')+'</div><textarea class="pn-card-text has-img" placeholder="메모..." oninput="pniItems['+i+'].text=this.value;pniSave()" onclick="pniFocus('+i+');event.stopPropagation()">'+textVal+'</textarea>')
+      :('<div class="pn-memo-wrap"><textarea class="pn-card-text no-img" placeholder="메모..." oninput="pniItems['+i+'].text=this.value;pniSave()" onclick="pniFocus('+i+');event.stopPropagation()">'+textVal+'</textarea></div>');
+    return '<div class="pn-card'+(pniFocusIdx===i?' pn-focused':'')+'" style="background:'+bg+'" onclick="pniFocus('+i+')">'+body
+      +'<div class="pn-card-foot"><span class="pn-card-date">'+(item.date||'')+'</span><div class="pn-colors">'+dotsHtml+'</div>'
+      +'<input type="file" id="pni-file-'+i+'" accept="image/*" style="display:none" onchange="pniAddFile('+i+',this.files[0]);this.value=\'\'"><button class="pn-card-attach" onclick="event.stopPropagation();document.getElementById(\'pni-file-'+i+'\').click()" title="파일 첨부">📎</button>'
+      +'<button class="pn-card-del" onclick="event.stopPropagation();pniDel('+i+')">✕</button></div></div>';
+  }).join('');
 }
+function pniSave(){clearTimeout(_pniSaveTimer);_pniSaveTimer=setTimeout(function(){fetch(FB_POSTIT_INV,{method:'PUT',body:JSON.stringify({pn_items:pniItems}),headers:{'Content-Type':'application/json'}}).catch(function(){});},600);}
+function pniFocus(i){pniFocusIdx=i;pniRender();}
+function pniAdd(){const now=new Date();const date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');pniItems.push({color:PN_COLORS[pniItems.length%PN_COLORS.length],text:'',imgs:[],date:date});pniFocusIdx=pniItems.length-1;pniRender();pniSave();}
+function pniDel(i){pniItems.splice(i,1);if(pniFocusIdx>=pniItems.length)pniFocusIdx=pniItems.length-1;pniRender();pniSave();}
+function pniSetColor(i,c){pniItems[i].color=c;pniRender();pniSave();}
+function pniAddFile(i,file){if(!file)return;const reader=new FileReader();reader.onload=function(ev){if(!Array.isArray(pniItems[i].imgs))pniItems[i].imgs=[];pniItems[i].imgs.push(ev.target.result);pniRender();pniSave();};reader.readAsDataURL(file);}
+function pniImgDel(i,si){if(pniItems[i]&&Array.isArray(pniItems[i].imgs))pniItems[i].imgs.splice(si,1);pniRender();pniSave();}
 
-
-function aiReadInputs(){
-  document.querySelectorAll('#ai-rows .ai-row').forEach(function(row,i){
-    if(i>=aiData.length) return;
-    const n=row.querySelector('.ai-row-name'); if(n) aiData[i].name=n.value;
-    const a=row.querySelector('.ai-row-amt');
-    if(a && !a.classList.contains('calc')) aiData[i].amount=parseInt((a.value||'').replace(/,/g,''))||0;
-    const m=row.querySelector('.ai-row-memo'); if(m) aiData[i].memo=m.value;
-    const g=row.querySelector('.ai-row-group'); if(g) aiData[i].group=g.value;
-  });
-}
-
-function aiToggleLog(i){
-  if(aiLogOpen.has(i)) aiLogOpen.delete(i); else aiLogOpen.add(i);
-  aiRenderRows();
-  aiRenderChart();
-}
-
-function aiAmtInput(idx, el){
-  const raw=el.value.replace(/[^0-9-]/g,'');
-  const n=parseInt(raw)||0;
-  aiData[idx].amount=n;
-  const fmt=n?n.toLocaleString('ko-KR'):'';
-  if(el.value!==fmt) el.value=fmt;
-  aiRenderChart(); aiSave();
-}
-
-function _aiUpdateInvTotal(i){
-  const rows=document.querySelectorAll('#ai-rows .ai-row');
-  if(!rows[i]) return;
-  const a=rows[i].querySelector('.ai-row-amt'); if(a) a.value=aiData[i].amount.toLocaleString('ko-KR');
-  const t=rows[i].querySelector('.ai-inv-total');
-  if(t){
-    const pr=aiData[i].principal||0, pf=aiData[i].profit||0;
-    const pctVal=pr>0?parseFloat(((pf/pr)*100).toFixed(1)):null;
-    const pctHtml=pctVal!=null?`<span style="color:${pctVal>=0?'#E03A3A':'#4F6EF7'}"> (${pctVal>=0?'+':''}${pctVal}%)</span>`:'';
-    t.innerHTML='= '+(pr+pf).toLocaleString('ko-KR')+'원'+pctHtml;
+// ── 자산/투자 공통 섹션 팩토리 ──────────────────────────
+function createAssetSection(P, fbUrl){
+  var data=[],saveTimer=null,logOpen=new Set(),tgts={},chartItems_=[],dragIdx_=null;
+  function getEl(s){return document.getElementById(P+'-'+s);}
+  function getRows(){return document.querySelectorAll('#'+P+'-rows .ai-row');}
+  function readInputs(){getRows().forEach(function(row,i){if(i>=data.length)return;var n=row.querySelector('.ai-row-name');if(n)data[i].name=n.value;var a=row.querySelector('.ai-row-amt');if(a&&!a.classList.contains('calc'))data[i].amount=parseInt((a.value||'').replace(/,/g,''))||0;var g=row.querySelector('.ai-row-group');if(g)data[i].group=g.value;});}
+  async function doSave(){try{await fetch(fbUrl,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}}
+  function save(){clearTimeout(saveTimer);saveTimer=setTimeout(function(){readInputs();doSave();var h=getEl('autosave-hint');if(h){h.style.opacity='1';setTimeout(function(){h.style.opacity='0';},1500);}},600);}
+  async function fetchData(){if(saveTimer!==null){clearTimeout(saveTimer);saveTimer=null;readInputs();await doSave();}try{var r=await fetch(fbUrl+'?t='+Date.now());if(r.ok){var d=await r.json();if(Array.isArray(d)&&d.length)data=d;}}catch(e){}if(!data.length)data=[{name:'현금',amount:0},{name:'주식',amount:0},{name:'예금/적금',amount:0}];render();}
+  function updateInvTotal(i){var rows=getRows();if(!rows[i])return;var a=rows[i].querySelector('.ai-row-amt');if(a)a.value=data[i].amount.toLocaleString('ko-KR');var t=rows[i].querySelector('.ai-inv-total');if(t){var pr=data[i].principal||0,pf=data[i].profit||0;var pv=pr>0?parseFloat(((pf/pr)*100).toFixed(1)):null;t.innerHTML='= '+(pr+pf).toLocaleString('ko-KR')+'원'+(pv!=null?'<span style="color:'+(pv>=0?'#E03A3A':'#4F6EF7')+'">'+(pv>=0?'+':'')+pv+'%)</span>':'');}}
+  function renderRows(){
+    var wrap=getEl('rows');if(!wrap)return;
+    wrap.innerHTML=data.map(function(item,i){
+      var pr=item.principal||0,pf=item.profit||0,hasInv=pr>0||pf!==0,tot=hasInv?pr+pf:item.amount;
+      var amtD=tot?tot.toLocaleString('ko-KR'):'';
+      var pv=pr>0?parseFloat(((pf/pr)*100).toFixed(1)):null;
+      var pvHtml=pv!=null?('<span style="color:'+(pv>=0?'#E03A3A':'#4F6EF7')+'">'+(pv>=0?'+':'')+pv+'%)</span>'):'';
+      var lc=item.profitLog&&item.profitLog.length?item.profitLog.length:0,lOpen=logOpen.has(i);
+      var logHtml=lOpen&&lc?item.profitLog.slice(0,20).map(function(e,li){
+        var p=e.profit||0,pr2=e.principal!=null?e.principal:(item.principal||0),tot2=e.total!=null?e.total:(pr2+p),ps=e.pct!=null?e.pct+'%':'';
+        return '<div class="ai-inv-log-entry"><span class="ai-inv-log-date">'+e.date+'</span>'
+          +'<span class="ai-inv-log-meta">원금 '+pr2.toLocaleString('ko-KR')+'</span>'
+          +'<span class="ai-inv-log-meta">수익 <span class="'+(p<0?'neg':'pos')+'">'+(p>=0?'+':'')+p.toLocaleString('ko-KR')+'</span></span>'
+          +'<span class="ai-inv-log-meta">합계 '+tot2.toLocaleString('ko-KR')+'</span>'
+          +(ps?'<span style="font-size:.7rem;font-weight:700;color:'+(p>=0?'#E03A3A':'#4F6EF7')+'">'+(p>=0?'+':'')+ps+'</span>':'')
+          +'<button class="ai-inv-log-del" onclick="'+P+'LogDel('+i+','+li+')">✕</button></div>';
+      }).join(''):'';
+      var logSec=lOpen?'<div class="ai-inv-log">'+(logHtml||'<span style="font-size:.68rem;color:#AAB0C8">기록 없음</span>')+'</div>':'';
+      return '<div class="ai-row" draggable="true"'
+        +' ondragstart="'+P+'DragStart('+i+')" ondragover="'+P+'DragOver(event,'+i+')"'
+        +' ondragleave="this.classList.remove(\'drag-over\')"'
+        +' ondrop="'+P+'Drop(event,'+i+')" ondragend="'+P+'DragEnd()">'
+        +'<div class="ai-row-l1">'
+        +'<span class="ai-row-drag">⠿</span>'
+        +'<div class="ai-row-color" style="background:'+AI_COLORS[i%AI_COLORS.length]+'"></div>'
+        +'<input class="ai-row-name" value="'+(item.name||'').replace(/"/g,'&quot;')+'" placeholder="항목명"'
+        +' oninput="'+P+'Field('+i+',\'name\',this.value);'+P+'RenderChart();'+P+'Save()">'
+        +'<input class="ai-row-group" value="'+(item.group||'').replace(/"/g,'&quot;')+'" placeholder="그룹"'
+        +' oninput="'+P+'Field('+i+',\'group\',this.value);'+P+'RenderChart();'+P+'Save()" title="같은 그룹명은 차트에서 합산">'
+        +'<input class="ai-row-amt'+(hasInv?' calc':'')+'" value="'+amtD+'" placeholder="금액"'
+        +(hasInv?' readonly':' oninput="'+P+'AmtInput('+i+',this)"')+'>'
+        +'<span class="ai-row-pct" id="'+P+'-pct-'+i+'">-</span>'
+        +'<button class="ai-row-del" onclick="'+P+'DelRow('+i+')">✕</button>'
+        +'</div>'
+        +'<div class="ai-row-l2">'
+        +'<span class="ai-inv-label">원금</span>'
+        +'<input class="ai-inv-input" value="'+(pr?pr.toLocaleString('ko-KR'):'')+'" placeholder="0" oninput="'+P+'SetPrincipal('+i+',this)">'
+        +'<span class="ai-inv-label">수익</span>'
+        +'<input class="ai-inv-input ai-inv-profit'+(pf<0?' neg':'')+'" value="'+(pf?pf.toLocaleString('ko-KR'):'')+'" placeholder="±0" oninput="'+P+'SetProfit('+i+',this)">'
+        +(hasInv?'<span class="ai-inv-total">= '+tot.toLocaleString('ko-KR')+'원'+pvHtml+'</span>':'')
+        +'<button class="ai-inv-save-btn" onclick="'+P+'LogProfit('+i+')">📊 기록저장</button>'
+        +'<button class="ai-inv-view-btn'+(lOpen?' open':'')+'" onclick="'+P+'ToggleLog('+i+')">'
+        +'📋 기록보기'+(lc?' ('+lc+')':'')+'</button>'
+        +'</div>'
+        +logSec+'</div>';
+    }).join('');
   }
-}
-
-function aiSetPrincipal(i, el){
-  const raw=(el.value||'').replace(/[^0-9]/g,'');
-  const n=parseInt(raw)||0;
-  aiData[i].principal=n;
-  aiData[i].amount=n+(aiData[i].profit||0);
-  const fmt=n?n.toLocaleString('ko-KR'):'';
-  if(el.value!==fmt) el.value=fmt;
-  _aiUpdateInvTotal(i); aiRenderChart(); aiSave();
-}
-
-function aiSetProfit(i, el){
-  const raw=(el.value||'').replace(/[^0-9-]/g,'');
-  const n=parseInt(raw)||0;
-  aiData[i].profit=n;
-  aiData[i].amount=(aiData[i].principal||0)+n;
-  const fmt=n?n.toLocaleString('ko-KR'):'';
-  if(el.value!==fmt) el.value=fmt;
-  el.classList.toggle('neg',n<0);
-  _aiUpdateInvTotal(i); aiRenderChart(); aiSave();
-}
-
-function aiLogProfit(i){
-  const now=new Date();
-  const date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
-  if(!Array.isArray(aiData[i].profitLog)) aiData[i].profitLog=[];
-  const principal=aiData[i].principal||0;
-  const profit=aiData[i].profit||0;
-  const total=principal+profit;
-  const pct=principal>0?parseFloat(((profit/principal)*100).toFixed(1)):null;
-  aiData[i].profitLog.unshift({date:date, principal:principal, profit:profit, total:total, pct:pct});
-  aiLogOpen.add(i);
-  aiSave(); aiRenderRows();
-}
-
-function aiLogDel(i,li){
-  if(aiData[i]&&Array.isArray(aiData[i].profitLog)) aiData[i].profitLog.splice(li,1);
-  aiSave(); aiRender();
-}
-
-function aiRender(){ aiRenderRows(); aiRenderChart(); }
-
-let _aiDragIdx=null;
-function aiDragStart(i){ _aiDragIdx=i; }
-function aiDragOver(e,i){
-  e.preventDefault();
-  if(_aiDragIdx===null||_aiDragIdx===i) return;
-  document.querySelectorAll('#ai-rows .ai-row').forEach(function(r){r.classList.remove('drag-over');});
-  document.querySelectorAll('#ai-rows .ai-row')[i].classList.add('drag-over');
-}
-function aiDrop(e,i){
-  e.preventDefault();
-  if(_aiDragIdx===null||_aiDragIdx===i){_aiDragIdx=null;return;}
-  aiReadInputs();
-  const moved=aiData.splice(_aiDragIdx,1)[0];
-  aiData.splice(i,0,moved);
-  _aiDragIdx=null;
-  aiRender();
-}
-function aiDragEnd(){
-  _aiDragIdx=null;
-  document.querySelectorAll('#ai-rows .ai-row').forEach(function(r){r.classList.remove('drag-over');});
-}
-
-function aiRenderRows(){
-  const wrap=document.getElementById('ai-rows'); if(!wrap) return;
-  wrap.innerHTML=aiData.map(function(item,i){
-    const principal=item.principal||0;
-    const profit=item.profit||0;
-    const hasInvest=principal>0||profit!==0;
-    const total=hasInvest?principal+profit:item.amount;
-    const amtDisp=total?total.toLocaleString('ko-KR'):'';
-    const profitPctVal=principal>0?parseFloat(((profit/principal)*100).toFixed(1)):null;
-    const profitPctStr=profitPctVal!=null?`<span style="color:${profitPctVal>=0?'#E03A3A':'#4F6EF7'}"> (${profitPctVal>=0?'+':''}${profitPctVal}%)</span>`:'';
-    const logCount=item.profitLog&&item.profitLog.length?item.profitLog.length:0;
-    const isLogOpen=aiLogOpen.has(i);
-    const logHtml=isLogOpen&&logCount
-      ? item.profitLog.slice(0,20).map(function(e,li){
-          const p=e.profit||0;
-          const pr=e.principal!=null?e.principal:(item.principal||0);
-          const tot=e.total!=null?e.total:(pr+p);
-          const pctStr=e.pct!=null?e.pct+'%':'';
-          return `<div class="ai-inv-log-entry">
-            <span class="ai-inv-log-date">${e.date}</span>
-            <span class="ai-inv-log-meta">원금 ${pr.toLocaleString('ko-KR')}</span>
-            <span class="ai-inv-log-meta">수익 <span class="${p<0?'neg':'pos'}">${p>=0?'+':''}${p.toLocaleString('ko-KR')}</span></span>
-            <span class="ai-inv-log-meta">합계 ${tot.toLocaleString('ko-KR')}</span>
-            ${pctStr?`<span style="font-size:.7rem;font-weight:700;color:${p>=0?'#E03A3A':'#4F6EF7'}">${p>=0?'+':''}${pctStr}</span>`:''}
-            <button class="ai-inv-log-del" onclick="aiLogDel(${i},${li})">✕</button>
-          </div>`;
-        }).join('')
-      : '';
-    const logSection=isLogOpen?`<div class="ai-inv-log">${logHtml||'<span style="font-size:.68rem;color:#AAB0C8">기록 없음</span>'}</div>`:'';
-    return `<div class="ai-row" draggable="true"
-      ondragstart="aiDragStart(${i})" ondragover="aiDragOver(event,${i})"
-      ondragleave="this.classList.remove('drag-over')"
-      ondrop="aiDrop(event,${i})" ondragend="aiDragEnd()">
-      <div class="ai-row-l1">
-        <span class="ai-row-drag">⠿</span>
-        <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
-        <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
-          oninput="aiData[${i}].name=this.value;aiRenderChart();aiSave()">
-        <input class="ai-row-group" value="${(item.group||'').replace(/"/g,'&quot;')}" placeholder="그룹"
-          oninput="aiData[${i}].group=this.value;aiRenderChart();aiSave()" title="같은 그룹명은 차트에서 합산">
-        <input class="ai-row-amt${hasInvest?' calc':''}" value="${amtDisp}" placeholder="금액"
-          ${hasInvest?'readonly':`oninput="aiAmtInput(${i},this)"`}>
-        <span class="ai-row-pct" id="ai-pct-${i}">-</span>
-        <button class="ai-row-del" onclick="aiDelRow(${i})">✕</button>
-      </div>
-      <div class="ai-row-l2">
-        <span class="ai-inv-label">원금</span>
-        <input class="ai-inv-input" value="${principal?principal.toLocaleString('ko-KR'):''}" placeholder="0"
-          oninput="aiSetPrincipal(${i},this)">
-        <span class="ai-inv-label">수익</span>
-        <input class="ai-inv-input ai-inv-profit${profit<0?' neg':''}" value="${profit?profit.toLocaleString('ko-KR'):''}" placeholder="±0"
-          oninput="aiSetProfit(${i},this)">
-        ${hasInvest?`<span class="ai-inv-total">= ${total.toLocaleString('ko-KR')}원${profitPctStr}</span>`:''}
-        <button class="ai-inv-save-btn" onclick="aiLogProfit(${i})">📊 기록저장</button>
-        <button class="ai-inv-view-btn${isLogOpen?' open':''}" onclick="aiToggleLog(${i})">📋 기록보기${logCount?' ('+logCount+')':''}</button>
-      </div>
-      ${logSection}
-    </div>`;
-  }).join('');
-}
-
-function aiRenderChart(){
-  const svg=document.getElementById('ai-donut-svg'); if(!svg) return;
-  const totalDisp=document.getElementById('ai-total-disp');
-  const legend=document.getElementById('ai-legend');
-  const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
-  if(totalDisp) totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'-';
-
-  // Build grouped items: same group name → merged into one chart slice
-  const groupOrder=[], groupMap={};
-  _aiChartItems=[];
-  aiData.forEach(function(item,i){
-    if(!item.amount) return;
-    const key=item.group?('g:'+item.group):('i:'+i);
-    const label=item.group||item.name||'기타';
-    if(!groupMap[key]){ groupMap[key]={name:label,amount:0,colorIdx:i}; groupOrder.push(key); }
-    groupMap[key].amount+=item.amount||0;
-  });
-  const chartItems=groupOrder.map(function(k,ci){ var item=groupMap[k]; item.ci=ci; return item; });
-  _aiChartItems=chartItems;
-
-  const cx=100,cy=100,r=92;
-  if(!chartItems.length){
-    svg.innerHTML=`<circle cx="100" cy="100" r="92" fill="#E2E8F5"/>`;
-    if(legend) legend.innerHTML='';
-    aiData.forEach(function(_,i){ const el=document.getElementById('ai-pct-'+i); if(el) el.textContent='-'; });
-    return;
+  function renderChart(){
+    var svg=getEl('donut-svg');if(!svg)return;
+    var totalDisp=getEl('total-disp'),legend=getEl('legend');
+    var total=data.reduce(function(s,r){return s+(+r.amount||0);},0);
+    if(totalDisp)totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'-';
+    chartItems_=[];var groupOrder=[],groupMap={};
+    data.forEach(function(item,i){if(!item.amount)return;var key=item.group?('g:'+item.group):('i:'+i),label=item.group||item.name||'기타';if(!groupMap[key]){groupMap[key]={name:label,amount:0,ci:groupOrder.length};groupOrder.push(key);}groupMap[key].amount+=item.amount||0;});
+    var chartItems=groupOrder.map(function(k){return groupMap[k];});chartItems_=chartItems;
+    var cx=100,cy=100,r=92;
+    if(!chartItems.length){svg.innerHTML='<circle cx="100" cy="100" r="92" fill="#E2E8F5"/>';if(legend)legend.innerHTML='';data.forEach(function(_,i){var e=document.getElementById(P+'-pct-'+i);if(e)e.textContent='-';});renderTargets_();return;}
+    var startAngle=-Math.PI/2,slices='',labels='';
+    chartItems.forEach(function(item){
+      var pct=item.amount/total,arcAngle=pct*2*Math.PI,endAngle=startAngle+arcAngle;
+      var x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle),x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);
+      var largeArc=arcAngle>Math.PI?1:0,color=AI_COLORS[item.ci%AI_COLORS.length];
+      slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(2)+','+y1.toFixed(2)+' A'+r+','+r+' 0 '+largeArc+',1 '+x2.toFixed(2)+','+y2.toFixed(2)+' Z" fill="'+color+'"/>';
+      if(pct>=0.07){var mid=startAngle+arcAngle/2,tr=r*0.62,tx=(cx+tr*Math.cos(mid)).toFixed(1),ty=(cy+tr*Math.sin(mid)).toFixed(1);
+        labels+='<text x="'+tx+'" y="'+(parseFloat(ty)-5)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="white" pointer-events="none">'+(item.name||'').substring(0,5)+'</text>';
+        labels+='<text x="'+tx+'" y="'+(parseFloat(ty)+6)+'" text-anchor="middle" dominant-baseline="middle" font-size="8.5" fill="rgba(255,255,255,0.88)" pointer-events="none">'+Math.round(pct*100)+'%</text>';}
+      startAngle=endAngle;
+    });
+    svg.innerHTML=slices+labels;
+    if(legend)legend.innerHTML=[].concat(chartItems).sort(function(a,b){return b.amount-a.amount;}).map(function(item){
+      var pct=total?Math.round(item.amount/total*1000)/10:0;
+      return '<div class="ai-legend-item"><div class="ai-legend-dot" style="background:'+AI_COLORS[item.ci%AI_COLORS.length]+'"></div><span class="ai-legend-name">'+(item.name||'').replace(/</g,'&lt;')+'</span><span class="ai-legend-pct">'+pct+'%</span><span class="ai-legend-amt">'+item.amount.toLocaleString('ko-KR')+'원</span></div>';
+    }).join('');
+    data.forEach(function(item,i){var pct=total&&item.amount?Math.round(item.amount/total*1000)/10:0;var e=document.getElementById(P+'-pct-'+i);if(e)e.textContent=item.amount?(pct+'%'):'-';});
+    renderTargets_();
   }
-
-  let startAngle=-Math.PI/2;
-  let slices='', labels='';
-  chartItems.forEach(function(item){
-    const pct=item.amount/total;
-    const arcAngle=pct*2*Math.PI;
-    const endAngle=startAngle+arcAngle;
-    const x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
-    const x2=cx+r*Math.cos(endAngle),   y2=cy+r*Math.sin(endAngle);
-    const largeArc=arcAngle>Math.PI?1:0;
-    const color=AI_COLORS[item.ci%AI_COLORS.length];
-    slices+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${color}"/>`;
-    if(pct>=0.07){
-      const mid=startAngle+arcAngle/2;
-      const tr=r*0.62;
-      const tx=(cx+tr*Math.cos(mid)).toFixed(1);
-      const ty=(cy+tr*Math.sin(mid)).toFixed(1);
-      labels+=`<text x="${tx}" y="${parseFloat(ty)-5}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="white" pointer-events="none">${(item.name||'').substring(0,5)}</text>`;
-      labels+=`<text x="${tx}" y="${parseFloat(ty)+6}" text-anchor="middle" dominant-baseline="middle" font-size="8.5" fill="rgba(255,255,255,0.88)" pointer-events="none">${Math.round(pct*100)}%</text>`;
-    }
-    startAngle=endAngle;
-  });
-  svg.innerHTML=slices+labels;
-
-  if(legend) legend.innerHTML=[].concat(chartItems).sort(function(a,b){return b.amount-a.amount;}).map(function(item){
-    const pct=total?Math.round(item.amount/total*1000)/10:0;
-    return `<div class="ai-legend-item">
-      <div class="ai-legend-dot" style="background:${AI_COLORS[item.ci%AI_COLORS.length]}"></div>
-      <span class="ai-legend-name">${(item.name||'').replace(/</g,'&lt;')}</span>
-      <span class="ai-legend-pct">${pct}%</span>
-      <span class="ai-legend-amt">${item.amount.toLocaleString('ko-KR')}원</span>
-    </div>`;
-  }).join('');
-
-  aiData.forEach(function(item,i){
-    const pct=total&&item.amount?Math.round(item.amount/total*1000)/10:0;
-    const el=document.getElementById('ai-pct-'+i);
-    if(el) el.textContent=item.amount?(pct+'%'):'-';
-  });
-  aiRenderTargets();
+  function renderTargets_(){
+    var wrap=getEl('targets');if(!wrap)return;
+    var total=data.reduce(function(s,r){return s+(+r.amount||0);},0);
+    if(!total||!chartItems_.length){wrap.innerHTML='';return;}
+    var rows=chartItems_.map(function(item,ci){
+      var curPct=(item.amount/total*100).toFixed(1),tgt=tgts[item.name]!=null?tgts[item.name]:'';
+      var tgtAmt=tgt!==''?Math.round(parseFloat(tgt)/100*total):null,diff=tgtAmt!=null?tgtAmt-item.amount:null;
+      var color=AI_COLORS[item.ci%AI_COLORS.length],diffHtml='<span class="ai-target-diff"></span>';
+      if(diff!=null){var col=diff>0?'#E03A3A':diff<0?'#4F6EF7':'#27AE60',lbl=diff>0?' 추가':diff<0?' 감소':' 동일';diffHtml='<span class="ai-target-diff" style="color:'+col+'">'+(diff>0?'+':'')+diff.toLocaleString('ko-KR')+'원'+lbl+'</span>';}
+      return '<div class="ai-target-row"><div class="ai-target-dot" style="background:'+color+'"></div><span class="ai-target-name">'+(item.name||'').replace(/</g,'&lt;')+'</span><span class="ai-target-cur">'+curPct+'%</span><span class="ai-target-sep">→</span><input class="ai-target-input" type="number" min="0" max="100" step="0.1" value="'+tgt+'" placeholder="%" oninput="'+P+'SetTarget('+ci+',this.value)"><span class="ai-target-pct">%</span>'+diffHtml+'</div>';
+    }).join('');
+    wrap.innerHTML='<div class="ai-target-wrap"><div class="ai-target-title">목표 비중 시뮬레이터</div>'+rows+'</div>';
+  }
+  function render(){renderRows();renderChart();}
+  function addRow(){readInputs();data.push({name:'',amount:0});render();setTimeout(function(){var ns=document.querySelectorAll('#'+P+'-rows .ai-row-name');if(ns.length)ns[ns.length-1].focus();},50);}
+  function delRow(i){readInputs();data.splice(i,1);render();save();}
+  function dragStart(i){dragIdx_=i;}
+  function dragOver(e,i){e.preventDefault();getRows().forEach(function(r){r.classList.remove('drag-over');});if(dragIdx_!==null&&dragIdx_!==i){var rows=getRows();if(rows[i])rows[i].classList.add('drag-over');}}
+  function drop_(e,i){e.preventDefault();if(dragIdx_===null||dragIdx_===i){dragIdx_=null;return;}readInputs();var moved=data.splice(dragIdx_,1)[0];data.splice(i,0,moved);render();save();}
+  function dragEnd(){dragIdx_=null;getRows().forEach(function(r){r.classList.remove('drag-over');});}
+  function amtInput(idx,el){var raw=el.value.replace(/[^0-9-]/g,''),n=parseInt(raw)||0;data[idx].amount=n;var fmt=n?n.toLocaleString('ko-KR'):'';if(el.value!==fmt)el.value=fmt;renderChart();save();}
+  function setPrincipal(i,el){var raw=(el.value||'').replace(/[^0-9]/g,''),n=parseInt(raw)||0;data[i].principal=n;data[i].amount=n+(data[i].profit||0);var fmt=n?n.toLocaleString('ko-KR'):'';if(el.value!==fmt)el.value=fmt;updateInvTotal(i);renderChart();save();}
+  function setProfit(i,el){var raw=(el.value||'').replace(/[^0-9-]/g,''),n=parseInt(raw)||0;data[i].profit=n;data[i].amount=(data[i].principal||0)+n;var fmt=n?n.toLocaleString('ko-KR'):'';if(el.value!==fmt)el.value=fmt;el.classList.toggle('neg',n<0);updateInvTotal(i);renderChart();save();}
+  function logProfit(i){var now=new Date(),date=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');if(!Array.isArray(data[i].profitLog))data[i].profitLog=[];var principal=data[i].principal||0,profit=data[i].profit||0,tot_=principal+profit,pct=principal>0?parseFloat(((profit/principal)*100).toFixed(1)):null;data[i].profitLog.unshift({date:date,principal:principal,profit:profit,total:tot_,pct:pct});logOpen.add(i);save();render();}
+  function logDel(i,li){if(data[i]&&Array.isArray(data[i].profitLog))data[i].profitLog.splice(li,1);save();render();}
+  function toggleLog(i){if(logOpen.has(i))logOpen.delete(i);else logOpen.add(i);renderRows();renderChart();}
+  function setTarget(ci,val){var item=chartItems_[ci];if(!item)return;tgts[item.name]=val!==''?parseFloat(val):null;renderTargets_();}
+  function setField(i,k,v){if(data[i])data[i][k]=v;}
+  window[P+'Field']=setField; window[P+'Fetch']=fetchData; window[P+'Save']=save; window[P+'Render']=render;
+  window[P+'RenderRows']=renderRows; window[P+'RenderChart']=renderChart; window[P+'AddRow']=addRow;
+  window[P+'DelRow']=delRow; window[P+'DragStart']=dragStart; window[P+'DragOver']=dragOver;
+  window[P+'Drop']=drop_; window[P+'DragEnd']=dragEnd; window[P+'AmtInput']=amtInput;
+  window[P+'SetPrincipal']=setPrincipal; window[P+'SetProfit']=setProfit;
+  window[P+'LogProfit']=logProfit; window[P+'LogDel']=logDel; window[P+'ToggleLog']=toggleLog;
+  window[P+'SetTarget']=setTarget;
 }
-
-function aiSetTarget(ci, val){
-  const item=_aiChartItems[ci]; if(!item) return;
-  aiTargets[item.name]=val!==''?parseFloat(val):null;
-  aiRenderTargets();
-}
-
-function aiRenderTargets(){
-  const wrap=document.getElementById('ai-targets'); if(!wrap) return;
-  const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
-  if(!total||!_aiChartItems.length){ wrap.innerHTML=''; return; }
-  const rows=_aiChartItems.map(function(item,ci){
-    const curPct=(item.amount/total*100).toFixed(1);
-    const tgt=aiTargets[item.name]!=null?aiTargets[item.name]:'';
-    const tgtAmt=tgt!==''?Math.round(parseFloat(tgt)/100*total):null;
-    const diff=tgtAmt!=null?tgtAmt-item.amount:null;
-    const color=AI_COLORS[item.ci%AI_COLORS.length];
-    let diffHtml='<span class="ai-target-diff"></span>';
-    if(diff!=null){
-      const col=diff>0?'#E03A3A':diff<0?'#4F6EF7':'#27AE60';
-      const label=diff>0?' 추가':diff<0?' 감소':' 동일';
-      diffHtml=`<span class="ai-target-diff" style="color:${col}">${diff>0?'+':''}${diff.toLocaleString('ko-KR')}원${label}</span>`;
-    }
-    return `<div class="ai-target-row">
-      <div class="ai-target-dot" style="background:${color}"></div>
-      <span class="ai-target-name">${(item.name||'').replace(/</g,'&lt;')}</span>
-      <span class="ai-target-cur">${curPct}%</span>
-      <span class="ai-target-sep">→</span>
-      <input class="ai-target-input" type="number" min="0" max="100" step="0.1" value="${tgt}" placeholder="%"
-        oninput="aiSetTarget(${ci},this.value)">
-      <span class="ai-target-pct">%</span>
-      ${diffHtml}
-    </div>`;
-  }).join('');
-  wrap.innerHTML=`<div class="ai-target-wrap"><div class="ai-target-title">목표 비중 시뮬레이터</div>${rows}</div>`;
-}
-
-function aiAddRow(){
-  aiReadInputs();
-  aiData.push({name:'',amount:0});
-  aiRender();
-  setTimeout(function(){
-    const names=document.querySelectorAll('#ai-rows .ai-row-name');
-    if(names.length) names[names.length-1].focus();
-  },50);
-}
-function aiDelRow(i){ aiReadInputs(); aiData.splice(i,1); aiRender(); }
-function aiSave(){
-  clearTimeout(_aiSaveTimer);
-  _aiSaveTimer=setTimeout(function(){
-    aiReadInputs(); _aiSaveNow();
-    const hint=document.getElementById('ai-autosave-hint');
-    if(hint){hint.style.opacity='1';setTimeout(function(){hint.style.opacity='0';},1500);}
-  },600);
-}
-
+createAssetSection('ai','https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_asset_info.json');
+createAssetSection('inv','https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_invest_info.json');
 // ── CS복사 ────────────────────────────────────────────────
 let _bcscData=[], _bcscTimer=null;
 async function bcscFetch(){
