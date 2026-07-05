@@ -403,6 +403,23 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="light"] .ai-add-btn{border-color:#C5CFF5;color:#4F6EF7}
 :root[data-theme="light"] .ai-add-btn:hover{background:#EEF1FF}
 .ai-autosave-hint{font-size:.68rem;color:#B0B8CC;margin-top:8px;text-align:center;opacity:0;transition:opacity .3s}
+.ai-target-wrap{width:100%;margin-top:16px;border-top:1px solid #EDF0F8;padding-top:12px}
+@media(prefers-color-scheme:dark){.ai-target-wrap{border-color:#252B40}}
+:root[data-theme="dark"] .ai-target-wrap{border-color:#252B40}
+.ai-target-title{font-size:.68rem;font-weight:700;color:#A0A8C0;letter-spacing:.03em;margin-bottom:8px}
+.ai-target-row{display:flex;align-items:center;gap:5px;padding:3px 0}
+.ai-target-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ai-target-name{font-size:.74rem;font-weight:600;color:#1B2035;min-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(prefers-color-scheme:dark){.ai-target-name{color:#E4E9F5}}
+:root[data-theme="dark"] .ai-target-name{color:#E4E9F5}
+.ai-target-cur{font-size:.7rem;color:#A0A8C0;min-width:40px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-target-sep{font-size:.68rem;color:#D0D5E8;flex-shrink:0}
+.ai-target-input{width:46px;padding:3px 6px;border-radius:7px;border:1.5px solid #E2E8F5;font-size:.74rem;font-family:inherit;text-align:right;outline:none;background:transparent;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-target-input:focus{border-color:#4F6EF7}
+@media(prefers-color-scheme:dark){.ai-target-input{border-color:#2E3650;color:#E4E9F5}}
+:root[data-theme="dark"] .ai-target-input{border-color:#2E3650;color:#E4E9F5}
+.ai-target-pct{font-size:.68rem;color:#A0A8C0;flex-shrink:0}
+.ai-target-diff{font-size:.75rem;font-weight:700;flex:1;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* ── 포스트잇 ── */
 .pn-section{margin-bottom:16px;max-width:960px}
@@ -1485,6 +1502,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
               <span class="ai-donut-total" id="ai-total-disp">-</span>
             </div>
             <div class="ai-legend" id="ai-legend"></div>
+            <div id="ai-targets"></div>
           </div>
         </div>
         <div class="ai-right">
@@ -6827,6 +6845,8 @@ const AI_COLORS = ['#4F6EF7','#38C9A0','#F7934F','#E85B8A','#9B6FF5','#4DC8E8','
 let aiData = [];
 let _aiSaveTimer = null;
 let aiLogOpen = new Set();
+let aiTargets = {};
+let _aiChartItems = [];
 
 async function aiFetch(){
   if(_aiSaveTimer!==null){ clearTimeout(_aiSaveTimer); _aiSaveTimer=null; aiReadInputs(); await _aiSaveNow(); }
@@ -7016,6 +7036,7 @@ function aiRenderChart(){
 
   // Build grouped items: same group name → merged into one chart slice
   const groupOrder=[], groupMap={};
+  _aiChartItems=[];
   aiData.forEach(function(item,i){
     if(!item.amount) return;
     const key=item.group?('g:'+item.group):('i:'+i);
@@ -7024,6 +7045,7 @@ function aiRenderChart(){
     groupMap[key].amount+=item.amount||0;
   });
   const chartItems=groupOrder.map(function(k){ return groupMap[k]; });
+  _aiChartItems=chartItems;
 
   const cx=100,cy=100,r=92;
   if(!chartItems.length){
@@ -7071,6 +7093,37 @@ function aiRenderChart(){
     const el=document.getElementById('ai-pct-'+i);
     if(el) el.textContent=item.amount?(pct+'%'):'-';
   });
+  aiRenderTargets();
+}
+
+function aiRenderTargets(){
+  const wrap=document.getElementById('ai-targets'); if(!wrap) return;
+  const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
+  if(!total||!_aiChartItems.length){ wrap.innerHTML=''; return; }
+  const rows=_aiChartItems.map(function(item){
+    const curPct=(item.amount/total*100).toFixed(1);
+    const tgt=aiTargets[item.name]!=null?aiTargets[item.name]:'';
+    const tgtAmt=tgt!==''?Math.round(parseFloat(tgt)/100*total):null;
+    const diff=tgtAmt!=null?tgtAmt-item.amount:null;
+    const color=AI_COLORS[item.colorIdx%AI_COLORS.length];
+    let diffHtml='<span class="ai-target-diff"></span>';
+    if(diff!=null){
+      const sign=diff>0?'+':'';
+      const col=diff>0?'#E03A3A':diff<0?'#4F6EF7':'#27AE60';
+      diffHtml=`<span class="ai-target-diff" style="color:${col}">${sign}${Math.abs(diff).toLocaleString('ko-KR')}원${diff>0?' 추가':diff<0?' 감소':' 동일'}</span>`;
+    }
+    return `<div class="ai-target-row">
+      <div class="ai-target-dot" style="background:${color}"></div>
+      <span class="ai-target-name">${(item.name||'').replace(/</g,'&lt;')}</span>
+      <span class="ai-target-cur">${curPct}%</span>
+      <span class="ai-target-sep">→</span>
+      <input class="ai-target-input" type="number" min="0" max="100" step="0.1" value="${tgt}" placeholder="%"
+        oninput="aiTargets[${JSON.stringify(item.name)}]=this.value!==''?parseFloat(this.value):null;aiRenderTargets()">
+      <span class="ai-target-pct">%</span>
+      ${diffHtml}
+    </div>`;
+  }).join('');
+  wrap.innerHTML=`<div class="ai-target-wrap"><div class="ai-target-title">목표 비중 시뮬레이터</div>${rows}</div>`;
 }
 
 function aiAddRow(){
