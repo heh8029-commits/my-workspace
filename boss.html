@@ -316,7 +316,7 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="light"] .ai-chart-title{color:#6B7799}
 .ai-donut-wrap{position:relative;width:200px;height:200px;flex-shrink:0}
 .ai-donut-wrap svg{width:200px;height:200px}
-.ai-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.ai-chart-total-row{display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:center}
 .ai-donut-total-label{font-size:.65rem;font-weight:700;color:#6B7799;letter-spacing:.05em;text-transform:uppercase}
 .ai-donut-total{font-size:1.05rem;font-weight:800;color:#1B2035;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 @media(prefers-color-scheme:dark){.ai-donut-total{color:#E4E9F5}}
@@ -355,8 +355,10 @@ a{text-decoration:none;color:inherit}
 :root[data-theme="dark"] .ai-row-amt{border-color:#2E3650;color:#E4E9F5}
 :root[data-theme="light"] .ai-row-amt{border-color:#E2E8F5;color:#1B2035}
 .ai-row-pct{width:40px;font-size:.74rem;font-weight:800;color:#4F6EF7;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ai-row-drag{cursor:grab;color:#CCC;font-size:.9rem;flex-shrink:0;padding:0 2px;user-select:none}
 .ai-row-del{width:24px;height:24px;border-radius:7px;border:none;background:transparent;font-size:.7rem;cursor:pointer;color:#CCC;flex-shrink:0;transition:all .12s;padding:0}
 .ai-row-del:hover{background:#FFE8E8;color:#E03A3A}
+.ai-row.drag-over{outline:2px dashed #4F6EF7;border-radius:9px}
 .ai-add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:11px;border:1.5px dashed #C5CFF5;background:transparent;color:#4F6EF7;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .13s;font-family:inherit;margin-top:4px}
 .ai-add-btn:hover{background:#EEF1FF;border-color:#4F6EF7}
 @media(prefers-color-scheme:dark){.ai-add-btn{border-color:#2E3650;color:#7B96F7}.ai-add-btn:hover{background:#2A3150}}
@@ -1408,10 +1410,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
             <div class="ai-chart-title">자산 배분</div>
             <div class="ai-donut-wrap">
               <svg viewBox="0 0 200 200" id="ai-donut-svg"></svg>
-              <div class="ai-donut-center">
-                <div class="ai-donut-total-label">총 자산</div>
-                <div class="ai-donut-total" id="ai-total-disp">-</div>
-              </div>
+            </div>
+            <div class="ai-chart-total-row">
+              <span class="ai-donut-total-label">총 자산</span>
+              <span class="ai-donut-total" id="ai-total-disp">-</span>
             </div>
             <div class="ai-legend" id="ai-legend"></div>
           </div>
@@ -6676,10 +6678,36 @@ function aiReadInputs(){
 
 function aiRender(){ aiRenderRows(); aiRenderChart(); }
 
+let _aiDragIdx=null;
+function aiDragStart(i){ _aiDragIdx=i; }
+function aiDragOver(e,i){
+  e.preventDefault();
+  if(_aiDragIdx===null||_aiDragIdx===i) return;
+  document.querySelectorAll('#ai-rows .ai-row').forEach(function(r){r.classList.remove('drag-over');});
+  document.querySelectorAll('#ai-rows .ai-row')[i].classList.add('drag-over');
+}
+function aiDrop(e,i){
+  e.preventDefault();
+  if(_aiDragIdx===null||_aiDragIdx===i){_aiDragIdx=null;return;}
+  aiReadInputs();
+  const moved=aiData.splice(_aiDragIdx,1)[0];
+  aiData.splice(i,0,moved);
+  _aiDragIdx=null;
+  aiRender();
+}
+function aiDragEnd(){
+  _aiDragIdx=null;
+  document.querySelectorAll('#ai-rows .ai-row').forEach(function(r){r.classList.remove('drag-over');});
+}
+
 function aiRenderRows(){
   const wrap=document.getElementById('ai-rows'); if(!wrap) return;
   wrap.innerHTML=aiData.map(function(item,i){
-    return `<div class="ai-row">
+    return `<div class="ai-row" draggable="true"
+      ondragstart="aiDragStart(${i})" ondragover="aiDragOver(event,${i})"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="aiDrop(event,${i})" ondragend="aiDragEnd()">
+      <span class="ai-row-drag">⠿</span>
       <div class="ai-row-color" style="background:${AI_COLORS[i%AI_COLORS.length]}"></div>
       <input class="ai-row-name" value="${(item.name||'').replace(/"/g,'&quot;')}" placeholder="항목명"
         oninput="aiData[${i}].name=this.value;aiRenderChart()">
@@ -6698,31 +6726,48 @@ function aiRenderChart(){
   const totalDisp=document.getElementById('ai-total-disp');
   const legend=document.getElementById('ai-legend');
   const total=aiData.reduce(function(s,r){return s+(+r.amount||0);},0);
-  if(totalDisp) totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'입력해주세요';
+  if(totalDisp) totalDisp.textContent=total?total.toLocaleString('ko-KR')+'원':'-';
 
-  const cx=100,cy=100,r=78,stroke=28;
-  const circ=2*Math.PI*r;
-  let offset=0;
-  let paths='';
+  const cx=100,cy=100,r=92;
   const items=aiData.filter(function(d){return d.amount>0;});
   if(!items.length){
-    svg.innerHTML=`<circle cx="100" cy="100" r="78" fill="none" stroke="#E2E8F5" stroke-width="28"/>`;
+    svg.innerHTML=`<circle cx="100" cy="100" r="92" fill="#E2E8F5"/>`;
     if(legend) legend.innerHTML='';
     aiData.forEach(function(_,i){ const el=document.getElementById('ai-pct-'+i); if(el) el.textContent='-'; });
     return;
   }
-  items.forEach(function(item,idx){
+
+  let startAngle=-Math.PI/2;
+  let slices='';
+  let labels='';
+
+  items.forEach(function(item){
     const origIdx=aiData.indexOf(item);
     const pct=item.amount/total;
-    const dash=pct*circ;
-    const gap=circ-dash;
+    const arcAngle=pct*2*Math.PI;
+    const endAngle=startAngle+arcAngle;
+    const x1=cx+r*Math.cos(startAngle);
+    const y1=cy+r*Math.sin(startAngle);
+    const x2=cx+r*Math.cos(endAngle);
+    const y2=cy+r*Math.sin(endAngle);
+    const largeArc=arcAngle>Math.PI?1:0;
     const color=AI_COLORS[origIdx%AI_COLORS.length];
-    paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}"
-      stroke-width="${stroke}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
-      stroke-dashoffset="${(-offset*circ/1+circ/4).toFixed(2)}" style="transform-origin:center;transform:rotate(-90deg)"/>`;
-    offset+=pct;
+    slices+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${color}"/>`;
+
+    if(pct>=0.07){
+      const mid=startAngle+arcAngle/2;
+      const tr=r*0.62;
+      const tx=(cx+tr*Math.cos(mid)).toFixed(1);
+      const ty=(cy+tr*Math.sin(mid)).toFixed(1);
+      const pctLabel=Math.round(pct*100)+'%';
+      const nameLabel=(item.name||'').substring(0,5);
+      labels+=`<text x="${tx}" y="${parseFloat(ty)-5}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" fill="white" pointer-events="none">${nameLabel}</text>`;
+      labels+=`<text x="${tx}" y="${parseFloat(ty)+6}" text-anchor="middle" dominant-baseline="middle" font-size="8.5" fill="rgba(255,255,255,0.88)" pointer-events="none">${pctLabel}</text>`;
+    }
+    startAngle=endAngle;
   });
-  svg.innerHTML=`<circle cx="100" cy="100" r="78" fill="none" stroke="#E2E8F5" stroke-width="28" opacity=".3"/>${paths}`;
+
+  svg.innerHTML=slices+labels;
 
   if(legend) legend.innerHTML=aiData.filter(function(d){return d.amount>0;}).map(function(item){
     const origIdx=aiData.indexOf(item);
