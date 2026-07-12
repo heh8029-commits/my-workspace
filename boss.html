@@ -1641,26 +1641,26 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px">
 
       <!-- 장봐야될거 -->
-      <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
-        <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:10px">🛒 장봐야될거</div>
+      <div style="background:linear-gradient(135deg,#FFF5E6,#FFEBD0);border:1.5px solid #FFCF9E;border-radius:16px;padding:14px">
+        <div style="font-size:.88rem;font-weight:800;color:#C4714A;margin-bottom:10px">🛒 장봐야될거</div>
         <div id="shopping-list"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <input id="shopping-input" type="text" placeholder="추가..." onkeydown="if(event.key==='Enter')shoppingAdd()"
-            style="flex:1;padding:6px 10px;border:1px solid #EDE8E1;border-radius:8px;font-size:.82rem;font-family:inherit;background:#fafafa">
-          <button onclick="shoppingAdd()" style="padding:6px 12px;border-radius:8px;background:#C4714A;color:#fff;border:none;font-size:.82rem;cursor:pointer">+</button>
+            style="flex:1;padding:6px 10px;border:1.5px solid #FFCF9E;border-radius:8px;font-size:.82rem;font-family:inherit;background:rgba(255,255,255,.7)">
+          <button onclick="shoppingAdd()" style="padding:6px 13px;border-radius:8px;background:#E8783A;color:#fff;border:none;font-size:.85rem;cursor:pointer;font-weight:700">+</button>
         </div>
       </div>
 
       <!-- 재료남은거 -->
-      <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
-        <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:10px">🥕 재료남은거</div>
+      <div style="background:linear-gradient(135deg,#F2FBF0,#E0F5DC);border:1.5px solid #A8D99C;border-radius:16px;padding:14px">
+        <div style="font-size:.88rem;font-weight:800;color:#3D8C30;margin-bottom:10px">🥕 재료남은거</div>
         <textarea id="ingredients-left" placeholder="남은 재료 메모..." oninput="recipeFieldSave('ingredients',this.value)"
           style="width:100%;min-height:120px;border:none;resize:vertical;font-size:.82rem;color:#444;line-height:1.6;font-family:inherit;outline:none;background:transparent;box-sizing:border-box"></textarea>
       </div>
 
       <!-- 냉장고에 남은거 -->
-      <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
-        <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:10px">❄️ 냉장고에 남은거</div>
+      <div style="background:linear-gradient(135deg,#EFF6FF,#DCE9FF);border:1.5px solid #96BCF0;border-radius:16px;padding:14px">
+        <div style="font-size:.88rem;font-weight:800;color:#2D6AC0;margin-bottom:10px">❄️ 냉장고에 남은거</div>
         <textarea id="fridge-left" placeholder="냉장고 내용물 메모..." oninput="recipeFieldSave('fridge',this.value)"
           style="width:100%;min-height:120px;border:none;resize:vertical;font-size:.82rem;color:#444;line-height:1.6;font-family:inherit;outline:none;background:transparent;box-sizing:border-box"></textarea>
       </div>
@@ -1668,13 +1668,13 @@ body.mode-mob .mobile-subnav{display:flex!important}
     </div>
 
     <!-- 요일별 메뉴 -->
-    <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px;margin-bottom:20px">
-      <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:12px">📅 이번주 메뉴</div>
+    <div style="background:linear-gradient(135deg,#FFFAF4,#FFF3E6);border:1.5px solid #FFD8A8;border-radius:16px;padding:14px;margin-bottom:20px">
+      <div style="font-size:.88rem;font-weight:800;color:#B8600A;margin-bottom:12px">🍱 이번주 메뉴</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px" id="weekly-grid"></div>
     </div>
 
     <!-- 레시피 섹션 -->
-    <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
+    <div style="background:#fff;border:1.5px solid #EDE8E1;border-radius:16px;padding:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="font-size:.85rem;font-weight:800;color:#555">🍽️ 레시피</div>
         <div style="display:flex;gap:8px">
@@ -8488,8 +8488,30 @@ async function searchPreFetch() {
 }
 
 // ── 요리 메뉴 ──────────────────────────────────────────────
-const RECIPE_DAYS = [{k:'mon',l:'월'},{k:'tue',l:'화'},{k:'wed',l:'수'},{k:'thu',l:'목'},{k:'fri',l:'금'},{k:'sat',l:'토'},{k:'sun',l:'일'}];
+const RECIPE_DAYS = [
+  {k:'mon',l:'월',bg:'#FFF0F0',border:'#FFB3B3',col:'#D04040'},
+  {k:'tue',l:'화',bg:'#FFF5E8',border:'#FFCA85',col:'#C06020'},
+  {k:'wed',l:'수',bg:'#FFFCE8',border:'#FFE880',col:'#A08020'},
+  {k:'thu',l:'목',bg:'#F0FBF0',border:'#9EE09E',col:'#2D7A2D'},
+  {k:'fri',l:'금',bg:'#EFF6FF',border:'#90BFFF',col:'#2050C0'},
+  {k:'sat',l:'토',bg:'#F5F0FF',border:'#C0A0F0',col:'#6030C0'},
+  {k:'sun',l:'일',bg:'#FFF0FA',border:'#F0A0D8',col:'#B02080'},
+];
 const RECIPE_DEFAULT_CATS = ['국','반찬','메인요리','기타'];
+const RECIPE_CAT_PALETTE = [
+  {bg:'#FFE8D0',border:'#FFAA6A',col:'#C05010'},
+  {bg:'#D4F5C8',border:'#7ED060',col:'#2A7A10'},
+  {bg:'#EAD8FF',border:'#C090F0',col:'#7020C0'},
+  {bg:'#FFF3C0',border:'#FFD840',col:'#907000'},
+  {bg:'#D0EEFF',border:'#70BFFF',col:'#0050B0'},
+  {bg:'#FFD8E8',border:'#FF90B8',col:'#C01060'},
+  {bg:'#C8F5EA',border:'#50D0A0',col:'#007050'},
+  {bg:'#FFE8C0',border:'#FFB850',col:'#905010'},
+];
+function getCatPalette(cat) {
+  const idx = _recipeData.categories.indexOf(cat);
+  return RECIPE_CAT_PALETTE[(idx >= 0 ? idx : 0) % RECIPE_CAT_PALETTE.length];
+}
 let _recipeData = {shopping:[], ingredients:'', fridge:'', weekly:{mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''}, recipes:[], categories:[...RECIPE_DEFAULT_CATS]};
 let _recipeSaveTimer = null;
 let _rfImg = null;
@@ -8533,18 +8555,23 @@ function recipeCatRender() {
   const cats = _recipeData.categories;
 
   if (list) {
-    list.innerHTML = cats.map((c, i) =>
-      '<span style="display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #EDE8E1;border-radius:6px;padding:3px 8px;font-size:.78rem;color:#555">'
-      + c.replace(/</g,'&lt;')
-      + '<button onclick="recipeCatDel(' + i + ')" style="border:none;background:none;cursor:pointer;color:#ddd;font-size:.7rem;padding:0;line-height:1">✕</button>'
-      + '</span>'
-    ).join('');
+    list.innerHTML = cats.map((c, i) => {
+      const p = getCatPalette(c);
+      return '<span style="display:inline-flex;align-items:center;gap:4px;background:' + p.bg + ';border:1px solid ' + p.border + ';border-radius:8px;padding:3px 8px;font-size:.78rem;color:' + p.col + ';font-weight:700">'
+        + c.replace(/</g,'&lt;')
+        + '<button onclick="recipeCatDel(' + i + ')" style="border:none;background:none;cursor:pointer;color:' + p.border + ';font-size:.7rem;padding:0;line-height:1">✕</button>'
+        + '</span>';
+    }).join('');
   }
   rfCatChipsRender();
   if (filter) {
-    const btnStyle = (active) => 'padding:5px 12px;border-radius:20px;border:1px solid ' + (active ? '#C4714A' : '#EDE8E1') + ';background:' + (active ? '#C4714A' : '#fff') + ';color:' + (active ? '#fff' : '#888') + ';font-size:.78rem;cursor:pointer;font-family:inherit';
-    filter.innerHTML = '<button onclick="recipeSetFilter(null)" style="' + btnStyle(_recipeCatFilter === null) + '">전체</button>'
-      + cats.map(c => '<button onclick="recipeSetFilter(\'' + c.replace(/'/g,"\\'") + '\')" style="' + btnStyle(_recipeCatFilter === c) + '">' + c.replace(/</g,'&lt;') + '</button>').join('');
+    const allActive = _recipeCatFilter === null;
+    filter.innerHTML = '<button onclick="recipeSetFilter(null)" style="padding:5px 14px;border-radius:20px;border:1.5px solid ' + (allActive ? '#C4714A' : '#EDE8E1') + ';background:' + (allActive ? '#C4714A' : '#fff') + ';color:' + (allActive ? '#fff' : '#999') + ';font-size:.78rem;cursor:pointer;font-family:inherit;font-weight:' + (allActive ? '700' : '400') + '">전체</button>'
+      + cats.map(c => {
+        const p = getCatPalette(c);
+        const active = _recipeCatFilter === c;
+        return '<button onclick="recipeSetFilter(\'' + c.replace(/'/g,"\\'") + '\')" style="padding:5px 14px;border-radius:20px;border:1.5px solid ' + (active ? p.col : p.border) + ';background:' + (active ? p.col : p.bg) + ';color:' + (active ? '#fff' : p.col) + ';font-size:.78rem;cursor:pointer;font-family:inherit;font-weight:700">' + c.replace(/</g,'&lt;') + '</button>';
+      }).join('');
   }
 }
 
@@ -8559,9 +8586,11 @@ function rfCatChipsRender() {
   if (!el) return;
   const cats = _recipeData.categories;
   if (!_rfCategory || !cats.includes(_rfCategory)) _rfCategory = cats[0] || null;
-  el.innerHTML = cats.map(c =>
-    '<button type="button" onclick="rfCatSelect(\'' + c.replace(/'/g,"\\'") + '\')" style="padding:4px 12px;border-radius:20px;border:1px solid ' + (_rfCategory === c ? '#C4714A' : '#EDE8E1') + ';background:' + (_rfCategory === c ? '#C4714A' : '#fff') + ';color:' + (_rfCategory === c ? '#fff' : '#888') + ';font-size:.78rem;cursor:pointer;font-family:inherit">' + c.replace(/</g,'&lt;') + '</button>'
-  ).join('');
+  el.innerHTML = cats.map(c => {
+    const p = getCatPalette(c);
+    const active = _rfCategory === c;
+    return '<button type="button" onclick="rfCatSelect(\'' + c.replace(/'/g,"\\'") + '\')" style="padding:5px 14px;border-radius:20px;border:1.5px solid ' + (active ? p.col : p.border) + ';background:' + (active ? p.col : p.bg) + ';color:' + (active ? '#fff' : p.col) + ';font-size:.8rem;cursor:pointer;font-family:inherit;font-weight:700">' + c.replace(/</g,'&lt;') + '</button>';
+  }).join('');
 }
 
 function rfCatSelect(cat) {
@@ -8639,7 +8668,7 @@ function shoppingRender() {
   }
   el.innerHTML = _recipeData.shopping.map(s =>
     '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F5F0EB">'
-    + '<input type="checkbox"' + (s.done ? ' checked' : '') + ' onchange="shoppingToggle(' + s.id + ')" style="cursor:pointer;width:15px;height:15px;accent-color:#C4714A;flex-shrink:0">'
+    + '<input type="checkbox"' + (s.done ? ' checked' : '') + ' onchange="shoppingToggle(' + s.id + ')" style="cursor:pointer;width:15px;height:15px;accent-color:#E8783A;flex-shrink:0">'
     + '<span style="flex:1;font-size:.82rem;' + (s.done ? 'color:#ccc;text-decoration:line-through' : 'color:#444') + '">' + s.text.replace(/</g,'&lt;') + '</span>'
     + '<button onclick="shoppingDel(' + s.id + ')" style="border:none;background:none;cursor:pointer;font-size:.75rem;color:#ddd;padding:0;flex-shrink:0">✕</button>'
     + '</div>'
@@ -8651,8 +8680,8 @@ function weeklyRender() {
   const el = document.getElementById('weekly-grid');
   if (!el) return;
   el.innerHTML = RECIPE_DAYS.map(d =>
-    '<div style="background:#FAF7F4;border-radius:10px;padding:10px">'
-    + '<div style="font-size:.78rem;font-weight:800;color:#C4714A;margin-bottom:6px;text-align:center">' + d.l + '</div>'
+    '<div style="background:' + d.bg + ';border:1.5px solid ' + d.border + ';border-radius:12px;padding:10px">'
+    + '<div style="font-size:.8rem;font-weight:800;color:' + d.col + ';margin-bottom:6px;text-align:center">' + d.l + '</div>'
     + '<textarea data-day="' + d.k + '" placeholder="메뉴..." oninput="weeklyEdit(\'' + d.k + '\',this.value)"'
     + ' style="width:100%;min-height:72px;border:none;resize:none;font-size:.78rem;color:#444;line-height:1.5;font-family:inherit;outline:none;background:transparent;box-sizing:border-box">'
     + (_recipeData.weekly[d.k] || '') + '</textarea>'
@@ -8786,22 +8815,23 @@ function recipeListRender() {
       + (_recipeCatFilter ? '해당 카테고리에 레시피가 없어요' : '레시피를 등록해보세요') + '</div>';
     return;
   }
-  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px">'
-    + list.map(r =>
-      '<div style="border:1px solid #EDE8E1;border-radius:12px;overflow:hidden;background:#fff">'
-      + (r.img ? '<img src="' + r.img + '" style="width:100%;height:130px;object-fit:cover">'
-               : '<div style="width:100%;background:#FAF7F4;padding:12px 14px;font-size:.88rem;font-weight:800;color:#C4714A">' + r.title.replace(/</g,'&lt;') + '</div>')
-      + '<div style="padding:10px">'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">'
-      + '<span style="font-size:.84rem;font-weight:800;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title.replace(/</g,'&lt;') + '</span>'
-      + '<span style="font-size:.68rem;background:#FAF7F4;color:#C4714A;border-radius:5px;padding:2px 6px;flex-shrink:0">' + (r.category || '기타') + '</span>'
-      + '</div>'
-      + (r.memo ? '<div style="font-size:.73rem;color:#777;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:4px">' + recipeMemoHtml(r.memo) + '</div>' : '')
-      + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
-      + '<button onclick="recipeFormToggle(' + r.id + ')" style="border:none;background:#F5F0EB;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#888">수정</button>'
-      + '<button onclick="recipeDel(' + r.id + ')" style="border:none;background:#FEE2E2;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#f87171">삭제</button>'
-      + '</div></div></div>'
-    ).join('')
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'
+    + list.map(r => {
+      const p = getCatPalette(r.category || '기타');
+      return '<div style="border:1.5px solid ' + p.border + ';border-radius:14px;overflow:hidden;background:#fff">'
+        + (r.img ? '<img src="' + r.img + '" style="width:100%;height:130px;object-fit:cover">'
+                 : '<div style="width:100%;background:' + p.bg + ';padding:14px 14px 10px;font-size:.9rem;font-weight:800;color:' + p.col + '">' + r.title.replace(/</g,'&lt;') + '</div>')
+        + '<div style="padding:10px">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">'
+        + '<span style="font-size:.84rem;font-weight:800;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title.replace(/</g,'&lt;') + '</span>'
+        + '<span style="font-size:.68rem;background:' + p.bg + ';color:' + p.col + ';border-radius:6px;padding:2px 7px;flex-shrink:0;font-weight:700">' + (r.category || '기타') + '</span>'
+        + '</div>'
+        + (r.memo ? '<div style="font-size:.73rem;color:#777;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:4px">' + recipeMemoHtml(r.memo) + '</div>' : '')
+        + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
+        + '<button onclick="recipeFormToggle(' + r.id + ')" style="border:none;background:' + p.bg + ';border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:' + p.col + ';font-weight:700">수정</button>'
+        + '<button onclick="recipeDel(' + r.id + ')" style="border:none;background:#FEE2E2;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#f87171">삭제</button>'
+        + '</div></div></div>';
+    }).join('')
     + '</div>';
 }
 </script>
