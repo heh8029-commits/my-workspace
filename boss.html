@@ -1744,6 +1744,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div class="cn-title">🧧 중국발주</div>
           <div class="cn-sub">사진·링크·옵션·금액만 넣으면 발주 엑셀이 자동으로 만들어져요 · 사진은 <b>Ctrl+V 붙여넣기</b>도 돼요</div>
         </div>
+        <div class="cn-memo-box">
+          <div class="cn-memo-title">📋 메모</div>
+          <textarea id="cn-memo" placeholder="메모..." oninput="cnMemoSave(this.value)"></textarea>
+        </div>
         <div class="cn-toolbar">
           <button class="cn-btn cn-btn-add" onclick="cnAddRow()">＋ 행 추가</button>
           <button class="cn-btn cn-btn-ghost" onclick="cnClearAll()">전체 지우기</button>
@@ -9149,6 +9153,9 @@ function recipeListRender() {
 .cn-title{font-size:1.2rem;font-weight:800;color:#2C2C2C}
 .cn-sub{font-size:.8rem;color:#8A90A6;margin-top:5px;line-height:1.5}
 .cn-sub b{color:#4F6EF7}
+.cn-memo-box{background:#fff;border:1.5px solid #A8D9BF;border-radius:14px;padding:14px;margin-bottom:14px}
+.cn-memo-title{font-size:.8rem;font-weight:800;color:#1A8C5A;margin-bottom:8px}
+#cn-memo{width:100%;min-height:80px;border:none;resize:vertical;font-size:.83rem;color:#444;line-height:1.7;font-family:inherit;outline:none;background:transparent;box-sizing:border-box}
 .cn-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .cn-btn{border:none;border-radius:11px;padding:9px 18px;font-size:.83rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .13s}
 .cn-btn-add{background:transparent;border:1.5px dashed #C5CFF5;color:#4F6EF7}
@@ -9239,6 +9246,7 @@ let cnData=[], cnSeq=1, cnActiveId=null;
 const CN_KEY='boss_china_order_v1';
 
 function cnBlank(){ return {id:cnSeq++, photo:'', link:'', item:'', opt:'', qty:'', price:'', note:''}; }
+function cnMemoSave(v){ try{ localStorage.setItem('boss_china_memo',v); }catch(e){} }
 function cnGet(id){ return cnData.find(r=>r.id===id); }
 function cnEsc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -9249,6 +9257,7 @@ function cnInit(){
   }
   const di=document.getElementById('cn-date'); if(di && !di.value) di.value=cnToday();
   const re=document.getElementById('cn-rate'); if(re && !re.value){ let sv=''; try{ sv=localStorage.getItem('boss_china_rate')||''; }catch(e){} re.value=sv||'250'; }
+  const me=document.getElementById('cn-memo'); if(me && !me.value){ try{ me.value=localStorage.getItem('boss_china_memo')||''; }catch(e){} }
   cnRender(); cnRenderHist(); cnRenderProducts();
 }
 function cnToday(){ const d=new Date(); return String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
