@@ -1749,6 +1749,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <button class="cn-btn cn-btn-ghost" onclick="cnClearAll()">전체 지우기</button>
           <div style="flex:1"></div>
           <span id="cn-count" class="cn-count"></span>
+          <label class="cn-ratewrap" title="환율: 위안(¥) 1개당 원화(₩)">×<input id="cn-rate" class="cn-rate" inputmode="decimal" placeholder="250" oninput="cnRateInput(this)">=<b id="cn-krw" class="cn-krw">₩0</b></label>
           <label class="cn-datewrap" title="파일명 날짜 (직접 수정 가능)">중국발주-<input id="cn-date" class="cn-date" maxlength="6" inputmode="numeric" placeholder="260712" oninput="cnDateInput(this)">.xlsx</label>
           <button class="cn-btn cn-btn-save" onclick="cnSaveNow(this)">💾 저장</button>
           <button class="cn-btn cn-btn-dl" onclick="cnExport(this)"><span id="cn-fname">📥 엑셀 다운로드</span></button>
@@ -9153,6 +9154,10 @@ function recipeListRender() {
 .cn-btn-save:hover{background:#E3E8FD}
 .cn-btn-save:disabled{opacity:.75;cursor:default}
 .cn-count{font-size:.78rem;color:#7A80A0;font-weight:700}
+.cn-ratewrap{display:inline-flex;align-items:center;gap:3px;font-size:.78rem;color:#A06A18;font-weight:700;background:#FFF4E6;border-radius:9px;padding:5px 11px;cursor:text}
+.cn-rate{width:46px;border:none;border-bottom:1.5px solid #F0C98A;background:transparent;font-family:inherit;font-size:.82rem;font-weight:800;color:#C47A10;text-align:center;outline:none;padding:1px 2px}
+.cn-rate:focus{border-bottom-color:#E8902A}
+.cn-krw{color:#B5680C;font-size:.9rem;font-weight:800}
 .cn-datewrap{display:inline-flex;align-items:center;gap:1px;font-size:.76rem;color:#7A80A0;font-weight:700;background:#F6F7FC;border-radius:9px;padding:5px 10px;cursor:text}
 .cn-date{width:56px;border:none;border-bottom:1.5px solid #C5CFF5;background:transparent;font-family:inherit;font-size:.8rem;font-weight:800;color:#3040C0;text-align:center;outline:none;padding:1px 2px}
 .cn-date:focus{border-bottom-color:#4F6EF7}
@@ -9170,6 +9175,8 @@ function recipeListRender() {
 .cn-photo input{display:none}
 .cn-photo-x{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;background:rgba(20,24,45,.55);color:#fff;font-size:.72rem;line-height:1;display:none;align-items:center;justify-content:center;border:none;cursor:pointer}
 .cn-photo.filled:hover .cn-photo-x{display:flex}
+.cn-photo-file{position:absolute;bottom:3px;right:3px;width:22px;height:22px;border-radius:7px;background:rgba(20,24,45,.55);color:#fff;font-size:.72rem;line-height:1;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:background .12s}
+.cn-photo-file:hover{background:#4F6EF7}
 .cn-inp,.cn-ta{width:100%;padding:7px 9px;border-radius:9px;border:1.5px solid #E6E9F4;font-size:.79rem;font-family:inherit;color:#2C2C2C;outline:none;background:#fff;box-sizing:border-box}
 .cn-inp:focus,.cn-ta:focus{border-color:#8CA0F0}
 .cn-ta{resize:vertical;min-height:40px;line-height:1.45}
@@ -9216,6 +9223,7 @@ function cnInit(){
     if(!cnData.length){ cnData=[cnBlank(),cnBlank(),cnBlank()]; }
   }
   const di=document.getElementById('cn-date'); if(di && !di.value) di.value=cnToday();
+  const re=document.getElementById('cn-rate'); if(re && !re.value){ try{ re.value=localStorage.getItem('boss_china_rate')||''; }catch(e){} }
   cnRender(); cnRenderHist();
 }
 function cnToday(){ const d=new Date(); return String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
@@ -9238,11 +9246,12 @@ function cnRender(){
 }
 function cnRowHtml(r){
   return '<div class="cn-grid cn-row" id="cn-row-'+r.id+'">'
-    +'<label class="cn-photo" id="cn-photo-'+r.id+'" onclick="cnPick('+r.id+')" ondragover="event.preventDefault();this.classList.add(\'active\')" ondragleave="this.classList.remove(\'active\')" ondrop="cnDrop(event,'+r.id+')">'
-      +'<span class="cn-photo-hint">사진<br>클릭·붙여넣기<br>·끌어놓기</span>'
-      +'<button class="cn-photo-x" onclick="event.preventDefault();event.stopPropagation();cnClearPhoto('+r.id+')">×</button>'
-      +'<input type="file" accept="image/*" onchange="cnFilePick('+r.id+',this)">'
-    +'</label>'
+    +'<div class="cn-photo" id="cn-photo-'+r.id+'" onclick="cnPick('+r.id+')" ondragover="event.preventDefault();this.classList.add(\'active\')" ondragleave="this.classList.remove(\'active\')" ondrop="cnDrop(event,'+r.id+')">'
+      +'<span class="cn-photo-hint">클릭 후<br>Ctrl+V<br>붙여넣기</span>'
+      +'<button class="cn-photo-x" title="사진 삭제" onclick="event.stopPropagation();cnClearPhoto('+r.id+')">×</button>'
+      +'<button class="cn-photo-file" title="파일 첨부" onclick="event.stopPropagation();cnFileBtn('+r.id+')">📎</button>'
+      +'<input type="file" accept="image/*" id="cn-file-'+r.id+'" onchange="cnFilePick('+r.id+',this)">'
+    +'</div>'
     +'<div class="cn-linkwrap"><input class="cn-inp" placeholder="상품 링크" value="'+cnEsc(r.link)+'" oninput="cnField('+r.id+',\'link\',this.value)"><button class="cn-linkbtn" title="링크 열기" onclick="cnOpenLink('+r.id+')">↗</button></div>'
     +'<input class="cn-inp" placeholder="품목명" value="'+cnEsc(r.item)+'" oninput="cnField('+r.id+',\'item\',this.value)">'
     +'<textarea class="cn-ta" placeholder="옵션" oninput="cnField('+r.id+',\'opt\',this.value)">'+cnEsc(r.opt)+'</textarea>'
@@ -9256,13 +9265,16 @@ function cnRowHtml(r){
 function cnField(id,f,v){ const r=cnGet(id); if(!r) return; r[f]=v; if(f==='qty'||f==='price'){ cnUpdAmt(id); } cnCount(); cnSave(); }
 function cnOpenLink(id){ const r=cnGet(id); let u=((r&&r.link)||'').trim(); if(!u){ alert('링크를 먼저 입력해 주세요.'); return; } if(!/^https?:\/\//i.test(u)) u='https://'+u; window.open(u,'_blank','noopener'); }
 function cnUpdAmt(id){ const r=cnGet(id), el=document.getElementById('cn-amt-'+id); if(!r||!el) return; const a=(parseFloat(r.qty)||0)*(parseFloat(r.price)||0); el.textContent=a?a.toLocaleString('ko-KR',{maximumFractionDigits:2}):''; }
-function cnCount(){ const el=document.getElementById('cn-count'); if(!el) return; const n=cnData.filter(r=>r.item||r.link||r.photo||r.opt).length; const t=cnData.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0); el.textContent='품목 '+n+'개 · 합계 ¥'+t.toLocaleString('ko-KR',{maximumFractionDigits:2}); }
+function cnRate(){ const el=document.getElementById('cn-rate'); return el?(parseFloat(el.value)||0):0; }
+function cnRateInput(inp){ inp.value=inp.value.replace(/[^\d.]/g,''); try{ localStorage.setItem('boss_china_rate',inp.value); }catch(e){} cnCount(); }
+function cnCount(){ const t=cnData.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0); const el=document.getElementById('cn-count'); if(el){ const n=cnData.filter(r=>r.item||r.link||r.photo||r.opt).length; el.textContent='품목 '+n+'개 · 합계 ¥'+t.toLocaleString('ko-KR',{maximumFractionDigits:2}); } const kel=document.getElementById('cn-krw'); if(kel) kel.textContent='₩'+Math.round(t*cnRate()).toLocaleString('ko-KR'); }
 function cnAddRow(){ cnData.push(cnBlank()); cnRender(); cnSave(); const rows=document.getElementById('cn-rows'); if(rows&&rows.lastElementChild) rows.lastElementChild.scrollIntoView({behavior:'smooth',block:'center'}); }
 function cnDelRow(id){ cnData=cnData.filter(r=>r.id!==id); if(!cnData.length) cnData=[cnBlank()]; cnRender(); cnSave(); }
 function cnClearAll(){ if(!confirm('입력한 내용을 모두 지울까요?')) return; cnData=[cnBlank(),cnBlank(),cnBlank()]; cnActiveId=null; cnRender(); cnSave(); }
 
 /* 사진 처리 */
-function cnPick(id){ cnActiveId=id; document.querySelectorAll('.cn-photo').forEach(e=>e.classList.remove('active')); const el=document.getElementById('cn-photo-'+id); if(el) el.classList.add('active'); const r=cnGet(id); if(r&&!r.photo){ const inp=el&&el.querySelector('input'); if(inp) inp.click(); } }
+function cnPick(id){ cnActiveId=id; document.querySelectorAll('.cn-photo').forEach(e=>e.classList.remove('active')); const el=document.getElementById('cn-photo-'+id); if(el) el.classList.add('active'); }
+function cnFileBtn(id){ cnActiveId=id; const inp=document.getElementById('cn-file-'+id); if(inp) inp.click(); }
 function cnFilePick(id,inp){ if(inp.files&&inp.files[0]) cnReadImg(inp.files[0],id); inp.value=''; }
 function cnDrop(ev,id){ ev.preventDefault(); const el=document.getElementById('cn-photo-'+id); if(el) el.classList.remove('active'); const f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) cnReadImg(f,id); }
 function cnClearPhoto(id){ cnField(id,'photo',''); cnApplyPhoto(id); }
@@ -9329,7 +9341,7 @@ async function cnSaveNow(btn){
     }
     if(btn) btn.textContent='⏳ 저장 중...';
     const total=rows.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0);
-    const rec={ id:String(dateStr), name:'중국발주-'+dateStr, savedAt:Date.now(), count:rows.length, total:total, rows:JSON.parse(JSON.stringify(rows)) };
+    const rec={ id:String(dateStr), name:'중국발주-'+dateStr, savedAt:Date.now(), count:rows.length, total:total, rate:((document.getElementById('cn-rate')||{}).value||''), rows:JSON.parse(JSON.stringify(rows)) };
     await cnFbPut(dateStr, rec);
     cnSave(); await cnRenderHist();
     if(btn) btn.textContent='✅ 저장됨';
@@ -9367,6 +9379,7 @@ function cnLoadHist(id){
     if(!cnData.length) cnData=[cnBlank()];
     cnSeq=cnData.reduce((m,r)=>Math.max(m,r.id||0),0)+1;
     const di=document.getElementById('cn-date'); if(di) di.value=String(rec.id);
+    const re=document.getElementById('cn-rate'); if(re && rec.rate!=null && rec.rate!=='') re.value=rec.rate;
     cnRender(); cnSave();
     const pg=document.getElementById('page-china'); if(pg) pg.scrollIntoView({behavior:'smooth',block:'start'});
   });
