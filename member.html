@@ -451,6 +451,11 @@ button{font-family:inherit;cursor:pointer}
 .log-day.in-period{background:white;border:1.5px solid #f0eaff;box-shadow:0 2px 8px rgba(200,180,240,.1)}
 .log-day.out-period{background:transparent;opacity:.4}
 .log-day.has-data.in-period{border-color:var(--pink-mid)}
+/* 주말 구분 */
+.log-day.sat.in-period{background:#eaf4ff;border-color:#cfe6ff}
+.log-day.sun.in-period{background:#f2eef8;border-color:#e4d8f2}
+.log-day.sat .log-day-date{color:#2a7ac0}
+.log-day.sun .log-day-date{color:#8b60d0}
 .log-day-date{font-size:.75rem;font-weight:700;color:#888}
 .log-day.in-period .log-day-date{color:var(--text)}
 .log-day-time{display:flex;align-items:center;gap:4px;font-size:.78rem;color:#bbb;font-weight:600;flex-wrap:wrap}
@@ -675,7 +680,7 @@ button{font-family:inherit;cursor:pointer}
     <div class="att-controls">
       <div class="att-ctrl-row">
         <div class="att-ctrl-item">
-          <div class="att-ctrl-hd"><span>📅</span><span>날짜</span></div>
+          <div class="att-ctrl-hd"><span>📅</span><span>날짜</span><span id="attDateLabel" style="font-weight:800;margin-left:3px"></span></div>
           <div style="display:flex;gap:6px;align-items:center">
             <input type="date" id="attDate" class="att-input-date">
             <button onclick="setYesterday()" class="att-yesterday-btn">어제</button>
@@ -855,11 +860,11 @@ button{font-family:inherit;cursor:pointer}
     <div id="logCalendar"></div>
     <div class="log-summary" id="logSummary"></div>
     <div id="logQrBox" style="text-align:center;margin-top:24px;padding-top:20px;border-top:1.5px dashed var(--pink-mid)">
-      <div style="font-size:.82rem;font-weight:700;color:var(--lav-dark);margin-bottom:10px">📱 내 근무일정표 바로가기 QR</div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--lav-dark);margin-bottom:10px">📱 내 출퇴근 바로가기 QR</div>
       <a id="logQrLink" href="#" target="_blank" rel="noopener">
-        <img id="logQrImg" src="" width="150" height="150" style="border-radius:12px;border:2px solid var(--pink-mid)" alt="내 근무일정표 QR">
+        <img id="logQrImg" src="" width="150" height="150" style="border-radius:12px;border:2px solid var(--pink-mid)" alt="내 출퇴근 QR">
       </a>
-      <div style="font-size:.68rem;color:var(--soft);margin-top:8px">이 QR을 찍으면 내 근무일정표로 바로 들어갈 수 있어요<br>(비밀번호를 설정했다면 입력이 필요해요)</div>
+      <div style="font-size:.68rem;color:var(--soft);margin-top:8px">이 QR을 휴대폰으로 찍으면 내 이름이 자동 선택된 출퇴근 화면으로 들어가요<br>바로 날짜·시간을 입력해 저장하면 돼요 💕</div>
     </div>
   </div>
 </div>
@@ -1168,7 +1173,19 @@ function setYesterday(){
   updateAttInfo();
 }
 
+const WK_KO=['일','월','화','수','목','금','토'];
+function fmtDateKo(ds){
+  if(!ds)return'';
+  const d=new Date(ds+'T00:00:00');
+  const p=n=>String(n).padStart(2,'0');
+  const w=d.getDay();
+  const color=w===0?'#e03c6e':w===6?'#2a7ac0':'var(--rose)';
+  return `<span style="color:${color}">${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())}. ${WK_KO[w]}</span>`;
+}
+
 function updateAttInfo(){
+  const lbl=document.getElementById('attDateLabel');
+  if(lbl)lbl.innerHTML=fmtDateKo(document.getElementById('attDate').value);
   const el=document.getElementById('attInfo');
   if(!attSelected){el.innerHTML='이름을 선택해줘 💕';return}
   const m=members.find(x=>x.id===attSelected);
@@ -1397,7 +1414,9 @@ async function renderLog(){
     if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;}}
     const h=Math.floor(mins/60),mn=mins%60;
     const lbl=isOff?'🌴 휴무':`⏰ ${h}시간 ${mn}분`;
-    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}">
+    const dow=cur.getDay();
+    const wkCls=dow===6?' sat':dow===0?' sun':'';
+    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}">
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
       <div class="log-day-time">${lbl}</div>
     </div>`;
@@ -2052,20 +2071,15 @@ const _now=new Date();
   });
   renderAttendance();
 
-  // QR 딥링크: ?emp=<id> 로 들어오면 해당 직원 근무일정표 바로 열기
+  // QR 딥링크: ?emp=<id> 로 들어오면 해당 직원을 자동 선택 (바로 출퇴근 입력 가능)
   const empParam=new URLSearchParams(location.search).get('emp');
   if(empParam){
     const m=members.find(x=>x.id===empParam);
     if(m){
       attSelected=m.id;
       renderAttendance();
-      if(m.logPw){
-        const pw=prompt('🔒 근무일정표 비밀번호를 입력해줘');
-        if(pw===m.logPw) openLogView(m.id);
-        else if(pw!==null) alert('비밀번호가 틀렸어 🙅');
-      } else {
-        openLogView(m.id);
-      }
+      const info=document.getElementById('attInfo');
+      if(info)info.scrollIntoView({behavior:'smooth',block:'center'});
     }
   }
 })();
