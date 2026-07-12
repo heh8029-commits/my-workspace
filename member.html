@@ -468,9 +468,9 @@ button{font-family:inherit;cursor:pointer}
 .log-day.sun.in-period{background:#f2eef8;border-color:#e4d8f2}
 .log-day.sat .log-day-date{color:#2a7ac0}
 .log-day.sun .log-day-date{color:#8b60d0}
-.log-day-date{font-size:.75rem;font-weight:700;color:#888}
+.log-day-date{font-size:.75rem;font-weight:700;color:#888;text-align:center}
 .log-day.in-period .log-day-date{color:var(--text)}
-.log-day-time{display:flex;align-items:center;gap:4px;font-size:.78rem;color:#bbb;font-weight:600;flex-wrap:wrap}
+.log-day-time{font-size:.74rem;color:#bbb;font-weight:700;text-align:center;line-height:1.25;word-break:keep-all}
 .log-day.in-period .log-day-time{color:var(--soft)}
 .log-day.has-data .log-day-time{color:var(--text)}
 .log-day-icon{font-size:.9rem;opacity:.35}
@@ -660,6 +660,13 @@ button{font-family:inherit;cursor:pointer}
   .att-flower{font-size:1.2rem}
   .att-emp-eng{font-size:.8rem;letter-spacing:0}
   .att-emp-nick{font-size:.72rem}
+  /* 근무일정표 달력 모바일 최적화 */
+  .log-card{padding:18px 14px}
+  .log-grid{gap:3px}
+  .log-day{padding:5px 3px 6px;min-height:52px;border-radius:9px;gap:2px}
+  .log-day-date{font-size:.68rem}
+  .log-day-time{font-size:.62rem}
+  .log-grid-hd{font-size:.68rem}
 }
 </style>
 </head>
@@ -1470,12 +1477,14 @@ async function renderLog(){
     const hasData=!!dd;
     if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;}}
     const h=Math.floor(mins/60),mn=mins%60;
-    const lbl=isOff?'🌴 휴무':`⏰ ${h}시간 ${mn}분`;
+    let lbl='';
+    if(isOff) lbl='🌴 휴무';
+    else if(mins>0) lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
     const dow=cur.getDay();
     const wkCls=dow===6?' sat':dow===0?' sun':'';
     html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}">
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
-      <div class="log-day-time">${lbl}</div>
+      ${lbl?`<div class="log-day-time">${lbl}</div>`:''}
     </div>`;
     cur.setDate(cur.getDate()+1);
   }
