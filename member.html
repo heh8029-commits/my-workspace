@@ -665,6 +665,13 @@ button{font-family:inherit;cursor:pointer}
 </head>
 <body>
 
+<!-- QR(?emp=) 진입 시 메인 화면 노출 방지용 로딩 스플래시 -->
+<div id="empLoading" style="display:none;position:fixed;inset:0;z-index:1000;background:linear-gradient(140deg,#fce8f0 0%,#f0e8fc 50%,#e8eeff 100%);align-items:center;justify-content:center;flex-direction:column">
+  <div style="font-size:2.6rem">💗</div>
+  <div style="margin-top:10px;color:#e03c6e;font-weight:800;font-size:1rem">불러오는 중...</div>
+</div>
+<script>if(new URLSearchParams(location.search).get('emp'))document.getElementById('empLoading').style.display='flex';</script>
+
 <!-- 탑바 -->
 <div class="topbar">
   <span class="topbar-title" onclick="tryAdminTab(this)" style="cursor:pointer;user-select:none">👥 멤버</span>
@@ -2128,6 +2135,7 @@ document.addEventListener('click',()=>closeCtx());
         openLogView(m.id);
       }
     }
+    const ld=document.getElementById('empLoading'); if(ld)ld.style.display='none';
   }
 })();
 </script>
