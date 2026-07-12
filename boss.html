@@ -5682,7 +5682,7 @@ let _btData = {
   beauty:{cats:[...BT_DEFAULT_CATS.beauty],links:[],notes:[]},
   shop:  {cats:[...BT_DEFAULT_CATS.shop],  links:[],notes:[]}
 };
-let _btSection='beauty', _btFilter='전체', _btCatEdit=false, _btSaveTimer=null, _btNoteDragIdx=null;
+let _btSection='beauty', _btFilter='전체', _btCatEdit=false, _btSaveTimer=null;
 
 async function fetchBtData(){
   try{
@@ -5885,102 +5885,89 @@ function saveBtLinkEdit(id){
   _btLinkEditId=null;_btDebounceSave();_btRenderLinks();
 }
 
-// ── 포스트잇 (오른쪽) ──
+// ── 메모 (포스트잇 스타일) ──
 function _btRenderNotes(){
   const el=document.getElementById('bt-notes-col');if(!el) return;
-  const notes=_btData[_btSection].notes||[];
-  const noteHtml=notes.map((n,i)=>{
-    const imgs=Array.isArray(n.images)?n.images.filter(Boolean):[];
-    const imgHtml=imgs.length?`<div class="bt-note-imgs">${imgs.map((u,j)=>
-      `<div class="bt-note-img-wrap"><img class="bt-note-img-thumb" src="${u.replace('/upload/','/upload/w_400,c_fill/')}" onclick="openImgModal('${u}')">
-      <button class="bt-note-img-del" onclick="event.stopPropagation();deleteBtNoteImg(${n.id},${j})">✕</button></div>`).join('')}</div>`:'';
-    const safeText=(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-    return `<div class="bt-note-card" draggable="true" style="background:${n.color||BT_NOTE_COLORS[0]}"
-        ondragstart="btNoteDragStart(event,${i})"
-        ondragover="btNoteDragOver(event,${i})"
-        ondrop="btNoteDrop(event,${i})"
-        ondragend="btNoteDragEnd()"
-        onpaste="handleBtNotePaste(event,${n.id})">
-      <button class="bt-note-del" onclick="deleteBtNote(${n.id})">✕</button>
-      ${imgHtml}
-      <div class="bt-note-body">
-        <div class="bt-note-ce" contenteditable="true" data-nid="${n.id}"
-             oninput="updateBtNote(${n.id},this.innerText)"
-             onblur="_saveBtData()">${safeText}</div>
-      </div>
-      <div style="text-align:right;width:100%;flex-shrink:0">
-        <input type="file" id="bt-note-file-${n.id}" accept="image/*" style="display:none" onchange="handleBtNoteFile(${n.id},this.files[0]);this.value=''">
-        <button class="bt-note-attach-btn" onclick="event.stopPropagation();document.getElementById('bt-note-file-${n.id}').click()" title="이미지 첨부">📎</button>
+  const sec=_btSection;
+  const notes=_btData[sec].notes||[];
+  const colors=PN_COLORS;
+  const cardsHtml=notes.map((n)=>{
+    const bg=n.color||colors[0];
+    const hasImg=Array.isArray(n.images)&&n.images.length>0;
+    const textVal=(n.text||'').replace(/</g,'&lt;');
+    const dotsHtml=colors.map(c=>
+      `<span class="pn-color-dot${c===bg?' pn-col-active':''}" style="background:${c}" onclick="event.stopPropagation();_btNoteSetColor('${sec}',${n.id},'${c}')"></span>`
+    ).join('');
+    const body=hasImg
+      ?`<div class="pn-card-imgs">${n.images.map((src,j)=>
+          `<div class="pn-img-wrap"><img class="pn-card-img" src="${src}" alt="" onclick="event.stopPropagation();pnShowImg(this.src)"><button class="pn-img-del" onclick="event.stopPropagation();_btNoteImgDel('${sec}',${n.id},${j})" title="삭제">✕</button></div>`
+        ).join('')}</div>
+        <textarea class="pn-card-text has-img" placeholder="메모..."
+          oninput="_btNoteUpdate('${sec}',${n.id},this.value)"
+          onblur="_btDebounceSave()"
+          onclick="event.stopPropagation()">${textVal}</textarea>`
+      :`<div class="pn-memo-wrap">
+           <textarea class="pn-card-text no-img" placeholder="메모..."
+             oninput="_btNoteUpdate('${sec}',${n.id},this.value)"
+             onblur="_btDebounceSave()"
+             onclick="event.stopPropagation()">${textVal}</textarea>
+         </div>`;
+    return `<div class="pn-card" style="background:${bg}" onpaste="handleBtNotePaste(event,'${sec}',${n.id})">
+      ${body}
+      <div class="pn-card-foot">
+        <div class="pn-colors">${dotsHtml}</div>
+        <input type="file" id="bt-nf-${n.id}" accept="image/*" style="display:none" onchange="handleBtNoteFile('${sec}',${n.id},this.files[0]);this.value=''">
+        <button class="pn-card-attach" onclick="event.stopPropagation();document.getElementById('bt-nf-${n.id}').click()" title="이미지 첨부">📎</button>
+        <button class="pn-card-del" onclick="event.stopPropagation();deleteBtNote(${n.id})">✕</button>
       </div>
     </div>`;
   }).join('');
   el.innerHTML=`<div class="bt-notes-hd">
-    <span>📌 포스트잇</span>
+    <span>📌 메모</span>
     <button onclick="addBtNote()" style="padding:4px 11px;border-radius:8px;background:#FFF3CC;border:1px solid #EED888;font-size:.72rem;font-weight:700;color:#AA8800;cursor:pointer">+ 추가</button>
   </div>
-  <div class="bt-notes-grid">
-    ${noteHtml}
-    <button class="bt-note-add" onclick="addBtNote()"><span style="font-size:1.4rem">+</span><span style="font-size:.75rem">메모 추가</span></button>
-  </div>`;
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px">${cardsHtml}</div>`;
+}
+function _btNoteUpdate(sec,id,text){
+  const n=(_btData[sec].notes||[]).find(n=>n.id===id);
+  if(n) n.text=text;
+}
+function _btNoteSetColor(sec,id,color){
+  const n=(_btData[sec].notes||[]).find(n=>n.id===id);
+  if(n){n.color=color;_saveBtData();_btRenderNotes();}
+}
+function _btNoteImgDel(sec,nid,idx){
+  const n=(_btData[sec].notes||[]).find(n=>n.id===nid);
+  if(n&&n.images){n.images.splice(idx,1);_saveBtData();_btRenderNotes();}
 }
 function addBtNote(){
   const notes=_btData[_btSection].notes;
-  const colorIdx=notes.length%BT_NOTE_COLORS.length;
   const newId=Math.max(0,...notes.map(n=>n.id||0))+1;
-  notes.push({id:newId,text:'',color:BT_NOTE_COLORS[colorIdx]});
+  notes.push({id:newId,text:'',color:PN_COLORS[notes.length%PN_COLORS.length],images:[]});
   _saveBtData();_btRenderNotes();
-}
-function updateBtNote(id,text){
-  const n=(_btData[_btSection].notes||[]).find(n=>n.id===id);
-  if(n) n.text=text;
 }
 function deleteBtNote(id){
   _btData[_btSection].notes=(_btData[_btSection].notes||[]).filter(n=>n.id!==id);
   _saveBtData();_btRenderNotes();
 }
-function deleteBtNoteImg(nid,idx){
-  const n=(_btData[_btSection].notes||[]).find(n=>n.id===nid);
-  if(n&&n.images){n.images.splice(idx,1);_saveBtData();_btRenderNotes();}
+function handleBtNoteFile(sec,nid,file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const n=(_btData[sec].notes||[]).find(n=>n.id===nid);
+    if(n){if(!n.images)n.images=[];n.images.push(ev.target.result);_saveBtData();_btRenderNotes();}
+  };
+  reader.readAsDataURL(file);
 }
-async function _uploadBtNoteImg(nid,file){
-  try{
-    const fd=new FormData();fd.append('file',file);fd.append('upload_preset','hwx2iwfz');
-    const r=await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
-    const d=await r.json();
-    if(d.secure_url){
-      const n=(_btData[_btSection].notes||[]).find(n=>n.id===nid);
-      if(n){if(!n.images)n.images=[];n.images.push(d.secure_url);_saveBtData();_btRenderNotes();}
-    }
-  }catch(e){}
-}
-function handleBtNoteFile(nid,file){if(file)_uploadBtNoteImg(nid,file);}
-function handleBtNotePaste(e,nid){
+function handleBtNotePaste(e,sec,nid){
   const items=e.clipboardData?.items||[];
   for(const it of items){
     if(it.type.startsWith('image/')){
       e.preventDefault();
-      _uploadBtNoteImg(nid,it.getAsFile());
+      handleBtNoteFile(sec,nid,it.getAsFile());
       break;
     }
   }
-}
-function btNoteDragStart(e,i){_btNoteDragIdx=i;e.dataTransfer.effectAllowed='move';}
-function btNoteDragOver(e,i){
-  e.preventDefault();
-  document.querySelectorAll('.bt-note-card').forEach((el,idx)=>el.classList.toggle('drag-over',idx===i&&i!==_btNoteDragIdx));
-}
-function btNoteDrop(e,i){
-  e.preventDefault();
-  if(_btNoteDragIdx===null||_btNoteDragIdx===i) return;
-  const notes=_btData[_btSection].notes;
-  const [moved]=notes.splice(_btNoteDragIdx,1);
-  notes.splice(i,0,moved);
-  _btNoteDragIdx=null;
-  _saveBtData();_btRenderNotes();
-}
-function btNoteDragEnd(){
-  _btNoteDragIdx=null;
-  document.querySelectorAll('.bt-note-card').forEach(el=>el.classList.remove('drag-over'));
 }
 
 function btSetSection(s){_btSection=s;_btFilter='전체';_btCatEdit=false;renderBt();}
