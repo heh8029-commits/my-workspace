@@ -8582,8 +8582,8 @@ const AP_DEFAULT = {
     {id:9, day:26, name:'??',                  from:'미래에셋', to:'SK기업요금', amount:5500,    memo:'이거 모아??? 알뜰폰같음...'},
   ],
   cards: [
-    {id:1, day:26, type:'현대카드', amount:5791744},
-    {id:2, day:26, type:'신한카드', amount:7773369},
+    {id:1, month:5, type:'현대카드', amount:5791744},
+    {id:2, month:5, type:'신한카드', amount:7773369},
   ]
 };
 let _apData = null;
@@ -8690,11 +8690,11 @@ function apCardRender() {
   apCardTotalUpdate();
   const inpS = 'padding:5px 8px;border:1.5px solid #F8D0E0;border-radius:7px;font-size:.8rem;font-family:inherit;background:#FDF5F8;box-sizing:border-box';
   el.innerHTML = list.map(c => {
-    const day = c.day || (c.date ? parseInt(c.date.split('-')[2]) : '');
-    return '<div style="display:grid;grid-template-columns:100px 130px 1fr 30px;gap:6px;padding:7px 0;border-bottom:1px solid #FDE8F0;align-items:center">'
+    const month = c.month || (c.date ? parseInt(c.date.split('-')[1]) : curMonth);
+    return '<div style="display:grid;grid-template-columns:90px 130px 1fr 30px;gap:6px;padding:7px 0;border-bottom:1px solid #FDE8F0;align-items:center">'
     + '<div style="display:flex;align-items:center;gap:4px">'
-    + '<input type="number" min="1" max="31" value="' + (day||'') + '" onchange="apCardEdit(' + c.id + ',\'day\',Number(this.value))" placeholder="일" style="' + inpS + ';width:52px;text-align:center">'
-    + '<span style="font-size:.78rem;color:#C0185A;white-space:nowrap;font-weight:700">' + curMonth + '월</span>'
+    + '<input type="number" min="1" max="12" value="' + (month||'') + '" onchange="apCardEdit(' + c.id + ',\'month\',Number(this.value))" placeholder="월" style="' + inpS + ';width:48px;text-align:center">'
+    + '<span style="font-size:.8rem;color:#C0185A;font-weight:700">월</span>'
     + '</div>'
     + '<select onchange="apCardEdit(' + c.id + ',\'type\',this.value)" style="' + inpS + ';width:100%;cursor:pointer">'
     + AP_CARD_TYPES.map(t => '<option' + (t===c.type?' selected':'') + '>' + t + '</option>').join('')
@@ -8719,7 +8719,7 @@ function apCardTotalUpdate() {
 }
 
 function apCardAdd() {
-  _apData.cards.push({id:Date.now(), day:new Date().getDate(), type:'현대카드', amount:null});
+  _apData.cards.push({id:Date.now(), month:new Date().getMonth()+1, type:'현대카드', amount:null});
   apCardRender();
   apSaveDebounce();
 }
