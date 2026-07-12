@@ -828,6 +828,13 @@ button{font-family:inherit;cursor:pointer}
       <div class="log-title" id="logTitle"></div>
     </div>
 
+    <div class="log-nav">
+      <button class="log-nav-btn" onclick="logMove(-1)">‹</button>
+      <div class="log-period-lbl" id="logPeriodLabel"></div>
+      <button class="log-nav-btn" onclick="logMove(1)">›</button>
+    </div>
+    <div class="log-period-hint">📅 기간은 항상 11일 ~ 다음달 10일 기준이에요</div>
+
     <!-- 근무일정표 상단 출퇴근 입력 -->
     <div class="log-att-box">
       <div class="log-att-title">💗 출퇴근 입력</div>
@@ -856,12 +863,6 @@ button{font-family:inherit;cursor:pointer}
       <div class="log-att-info" id="logAttInfo"></div>
     </div>
 
-    <div class="log-nav">
-      <button class="log-nav-btn" onclick="logMove(-1)">‹</button>
-      <div class="log-period-lbl" id="logPeriodLabel"></div>
-      <button class="log-nav-btn" onclick="logMove(1)">›</button>
-    </div>
-    <div class="log-period-hint">📅 기간은 항상 11일 ~ 다음달 10일 기준이에요</div>
     <div id="logSjSection" style="display:none;margin-bottom:18px;background:linear-gradient(135deg,#f0f8ff,#fff0fa);border-radius:14px;padding:14px 18px;border:1.5px solid var(--lav)">
       <div style="font-size:.85rem;font-weight:800;color:var(--lav-dark);margin-bottom:10px">📦 이번달 부업 수량</div>
       <div id="logSjInputs"></div>
