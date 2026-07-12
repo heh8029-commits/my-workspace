@@ -8635,6 +8635,9 @@ function apRender() {
   apCardRender();
 }
 
+function apParseNum(v){ return Number((v||'').toString().replace(/,/g,'')); }
+function apFmtNum(v){ var n=apParseNum(v); return n?n.toLocaleString():''; }
+
 // ── 자동이체 ──
 function apTransferRender() {
   const el = document.getElementById('ap-transfer-list');
@@ -8648,11 +8651,11 @@ function apTransferRender() {
   el.innerHTML = list.map(t =>
     '<div style="display:grid;grid-template-columns:60px 1.6fr 120px 120px 110px 1fr 30px;gap:6px;padding:7px 0;border-bottom:1px solid #EEF8F2;align-items:center">'
     + '<div style="text-align:center"><span style="background:#E8F5EE;color:#1A8C5A;border-radius:6px;padding:3px 6px;font-size:.75rem;font-weight:700">' + t.day + '일</span></div>'
-    + '<input value="' + (t.name||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'name\',this.value)" placeholder="항목명" style="' + inpS + '">'
-    + '<input value="' + (t.from||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'from\',this.value)" placeholder="출금" style="' + inpS + ';color:#C0185A">'
-    + '<input value="' + (t.to||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'to\',this.value)" placeholder="입금" style="' + inpS + ';color:#1A8C5A">'
-    + '<input type="number" value="' + (t.amount||'') + '" oninput="apTransferEdit(' + t.id + ',\'amount\',Number(this.value))" placeholder="금액" style="' + inpS + ';text-align:right;color:#1A8C5A;font-weight:700">'
-    + '<input value="' + (t.memo||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'memo\',this.value)" placeholder="메모" style="' + inpS + '">'
+    + '<input value="' + (t.name||'').replace(/"/g,'&quot;') + '" onchange="apTransferEdit(' + t.id + ',\'name\',this.value)" placeholder="항목명" style="' + inpS + '">'
+    + '<input value="' + (t.from||'').replace(/"/g,'&quot;') + '" onchange="apTransferEdit(' + t.id + ',\'from\',this.value)" placeholder="출금" style="' + inpS + ';color:#C0185A">'
+    + '<input value="' + (t.to||'').replace(/"/g,'&quot;') + '" onchange="apTransferEdit(' + t.id + ',\'to\',this.value)" placeholder="입금" style="' + inpS + ';color:#1A8C5A">'
+    + '<input type="text" inputmode="numeric" value="' + (t.amount ? t.amount.toLocaleString() : '') + '" onfocus="this.value=this.value.replace(/,/g,\'\')" onblur="apTransferEdit(' + t.id + ',\'amount\',apParseNum(this.value));this.value=apFmtNum(this.value)" placeholder="금액" style="' + inpS + ';text-align:right;color:#1A8C5A;font-weight:700">'
+    + '<input value="' + (t.memo||'').replace(/"/g,'&quot;') + '" onchange="apTransferEdit(' + t.id + ',\'memo\',this.value)" placeholder="메모" style="' + inpS + '">'
     + '<button onclick="apTransferDel(' + t.id + ')" style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#ccc;padding:0">✕</button>'
     + '</div>'
   ).join('');
@@ -8666,9 +8669,13 @@ function apTransferAdd() {
 }
 function apTransferEdit(id, field, val) {
   const t = _apData.transfers.find(x => x.id === id);
-  if (t) { t[field] = val; }
-  if (field === 'day' || field === 'amount') { apTransferRender(); } else { apSaveDebounce(); }
-  if (field === 'amount') apSaveDebounce();
+  if (t) t[field] = val;
+  if (field === 'amount') {
+    const total = (_apData.transfers||[]).reduce((s,x) => s+(Number(x.amount)||0), 0);
+    const tot = document.getElementById('ap-transfer-total');
+    if (tot) tot.textContent = total.toLocaleString() + '원';
+  }
+  apSaveDebounce();
 }
 function apTransferDel(id) {
   _apData.transfers = _apData.transfers.filter(t => t.id !== id);
@@ -8679,33 +8686,38 @@ function apTransferDel(id) {
 // ── 카드값 ──
 function apCardRender() {
   const el = document.getElementById('ap-card-list');
-  const tot = document.getElementById('ap-card-total');
-  const breakdown = document.getElementById('ap-card-breakdown');
   if (!el) return;
   const list = _apData.cards || [];
-  const total = list.reduce((s,c) => s + (Number(c.amount)||0), 0);
   const curMonth = new Date().getMonth() + 1;
-  if (tot) tot.textContent = total.toLocaleString() + '원';
-  if (breakdown) {
-    const byType = {};
-    list.forEach(c => { if (c.amount) byType[c.type] = (byType[c.type]||0) + (Number(c.amount)||0); });
-    breakdown.textContent = Object.entries(byType).map(([k,v]) => k + ': ' + v.toLocaleString() + '원').join('  /  ');
-  }
+  apCardTotalUpdate();
   const inpS = 'padding:5px 8px;border:1.5px solid #F8D0E0;border-radius:7px;font-size:.8rem;font-family:inherit;background:#FDF5F8;box-sizing:border-box';
   el.innerHTML = list.map(c => {
     const day = c.day || (c.date ? parseInt(c.date.split('-')[2]) : '');
     return '<div style="display:grid;grid-template-columns:100px 130px 1fr 30px;gap:6px;padding:7px 0;border-bottom:1px solid #FDE8F0;align-items:center">'
     + '<div style="display:flex;align-items:center;gap:4px">'
-    + '<input type="number" min="1" max="31" value="' + (day||'') + '" oninput="apCardEdit(' + c.id + ',\'day\',Number(this.value))" placeholder="일" style="' + inpS + ';width:52px;text-align:center">'
+    + '<input type="number" min="1" max="31" value="' + (day||'') + '" onchange="apCardEdit(' + c.id + ',\'day\',Number(this.value))" placeholder="일" style="' + inpS + ';width:52px;text-align:center">'
     + '<span style="font-size:.78rem;color:#C0185A;white-space:nowrap;font-weight:700">' + curMonth + '월</span>'
     + '</div>'
     + '<select onchange="apCardEdit(' + c.id + ',\'type\',this.value)" style="' + inpS + ';width:100%;cursor:pointer">'
     + AP_CARD_TYPES.map(t => '<option' + (t===c.type?' selected':'') + '>' + t + '</option>').join('')
     + '</select>'
-    + '<input type="number" value="' + (c.amount||'') + '" oninput="apCardEdit(' + c.id + ',\'amount\',Number(this.value))" placeholder="금액 입력" style="' + inpS + ';width:100%;text-align:right;color:#C0185A;font-weight:700">'
+    + '<input type="text" inputmode="numeric" value="' + (c.amount ? c.amount.toLocaleString() : '') + '" onfocus="this.value=this.value.replace(/,/g,\'\')" onblur="apCardEdit(' + c.id + ',\'amount\',apParseNum(this.value));this.value=apFmtNum(this.value)" placeholder="금액 입력" style="' + inpS + ';width:100%;text-align:right;color:#C0185A;font-weight:700">'
     + '<button onclick="apCardDel(' + c.id + ')" style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#ccc;padding:0">✕</button>'
     + '</div>';
   }).join('');
+}
+
+function apCardTotalUpdate() {
+  const list = _apData.cards || [];
+  const total = list.reduce((s,c) => s+(Number(c.amount)||0), 0);
+  const tot = document.getElementById('ap-card-total');
+  if (tot) tot.textContent = total.toLocaleString() + '원';
+  const breakdown = document.getElementById('ap-card-breakdown');
+  if (breakdown) {
+    const byType = {};
+    list.forEach(c => { if(c.amount) byType[c.type]=(byType[c.type]||0)+(Number(c.amount)||0); });
+    breakdown.textContent = Object.entries(byType).map(([k,v])=>k+': '+v.toLocaleString()+'원').join('  /  ');
+  }
 }
 
 function apCardAdd() {
@@ -8715,8 +8727,8 @@ function apCardAdd() {
 }
 function apCardEdit(id, field, val) {
   const c = _apData.cards.find(x => x.id === id);
-  if (c) { c[field] = val; }
-  apCardRender();
+  if (c) c[field] = val;
+  apCardTotalUpdate();
   apSaveDebounce();
 }
 function apCardDel(id) {
