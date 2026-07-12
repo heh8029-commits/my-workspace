@@ -1704,24 +1704,16 @@ body.mode-mob .mobile-subnav{display:flex!important}
             style="padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;cursor:pointer">
           </select>
         </div>
-        <div id="rf-img-area" onpaste="rfHandlePaste(event)"
-          style="border:2px dashed #DDD8D0;border-radius:10px;padding:12px;margin-bottom:10px;min-height:60px;position:relative;text-align:center">
-          <div id="rf-img-hint" style="color:#bbb;font-size:.78rem;padding:8px 0">
-            Ctrl+V 이미지 붙여넣기
-            <label style="display:inline-block;margin-left:8px;padding:3px 10px;background:#F5F0EB;border-radius:6px;cursor:pointer;font-size:.75rem;color:#888">
-              📎 파일<input type="file" accept="image/*" onchange="rfImgFile(this)" style="display:none">
-            </label>
-          </div>
-          <img id="rf-img-preview" src="" style="display:none;max-width:100%;max-height:160px;border-radius:8px;object-fit:contain">
-          <button id="rf-img-del" onclick="rfImgClear()" style="display:none;position:absolute;top:6px;right:6px;border:none;background:rgba(0,0,0,.45);color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem;line-height:20px;padding:0">✕</button>
+        <div id="rf-img-preview-wrap" style="display:none;position:relative;margin-bottom:8px">
+          <img id="rf-img-preview" src="" style="max-width:100%;max-height:160px;border-radius:8px;object-fit:contain;display:block">
+          <button id="rf-img-del" onclick="rfImgClear()" style="position:absolute;top:4px;right:4px;border:none;background:rgba(0,0,0,.45);color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem;line-height:20px;padding:0">✕</button>
         </div>
-        <textarea id="rf-ingredients" placeholder="재료 (줄바꿈으로 구분)"
-          style="width:100%;min-height:70px;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;resize:vertical;margin-bottom:8px;box-sizing:border-box"></textarea>
-        <textarea id="rf-method" placeholder="조리법"
-          style="width:100%;min-height:90px;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;resize:vertical;margin-bottom:8px;box-sizing:border-box"></textarea>
-        <input id="rf-url" type="text" placeholder="참고 URL (유튜브, 블로그 등)"
-          style="width:100%;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;margin-bottom:10px;box-sizing:border-box">
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <textarea id="rf-memo" placeholder="재료, 조리법, URL 등 자유롭게..." onpaste="rfHandlePaste(event)"
+          style="width:100%;min-height:100px;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;resize:vertical;margin-bottom:10px;box-sizing:border-box;line-height:1.6"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+          <label style="padding:6px 10px;border-radius:9px;border:1px solid #DDD;background:#fff;font-size:.8rem;cursor:pointer;color:#888">
+            📎<input type="file" accept="image/*" onchange="rfImgFile(this)" style="display:none">
+          </label>
           <button onclick="recipeFormToggle()" style="padding:6px 14px;border-radius:9px;border:1px solid #DDD;background:#fff;font-size:.8rem;cursor:pointer;color:#888">취소</button>
           <button onclick="recipeFormSave()" style="padding:6px 16px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer">저장</button>
         </div>
@@ -8665,9 +8657,7 @@ function recipeFormToggle(editId) {
     document.getElementById('rf-title').value = r.title || '';
     const sel = document.getElementById('rf-category');
     if (sel) sel.value = r.category || _recipeData.categories[0] || '';
-    document.getElementById('rf-ingredients').value = r.ingredients || '';
-    document.getElementById('rf-method').value = r.method || '';
-    document.getElementById('rf-url').value = r.url || '';
+    document.getElementById('rf-memo').value = r.memo || '';
     _rfImg = r.img || null;
     rfImgRefresh();
     form.style.display = 'block';
@@ -8679,10 +8669,7 @@ function recipeFormToggle(editId) {
   if (form.style.display === 'none' || !form.style.display) {
     _rfEditId = null;
     document.getElementById('rf-title').value = '';
-    document.getElementById('rf-category').value = '한식';
-    document.getElementById('rf-ingredients').value = '';
-    document.getElementById('rf-method').value = '';
-    document.getElementById('rf-url').value = '';
+    document.getElementById('rf-memo').value = '';
     _rfImg = null;
     rfImgRefresh();
     form.style.display = 'block';
@@ -8719,20 +8706,15 @@ function rfImgClear() {
 }
 
 function rfImgRefresh() {
-  const hint = document.getElementById('rf-img-hint');
+  const wrap = document.getElementById('rf-img-preview-wrap');
   const preview = document.getElementById('rf-img-preview');
-  const del = document.getElementById('rf-img-del');
-  if (!hint || !preview || !del) return;
+  if (!wrap || !preview) return;
   if (_rfImg) {
-    hint.style.display = 'none';
     preview.src = _rfImg;
-    preview.style.display = 'block';
-    del.style.display = 'block';
+    wrap.style.display = 'block';
   } else {
-    hint.style.display = 'block';
     preview.src = '';
-    preview.style.display = 'none';
-    del.style.display = 'none';
+    wrap.style.display = 'none';
   }
 }
 
@@ -8740,15 +8722,13 @@ function recipeFormSave() {
   const title = (document.getElementById('rf-title').value || '').trim();
   if (!title) { alert('요리 제목을 입력해주세요'); return; }
   const category = document.getElementById('rf-category').value || '기타';
-  const ingredients = document.getElementById('rf-ingredients').value || '';
-  const method = document.getElementById('rf-method').value || '';
-  const url = (document.getElementById('rf-url').value || '').trim();
+  const memo = document.getElementById('rf-memo').value || '';
 
   if (_rfEditId !== null) {
     const r = _recipeData.recipes.find(x => x.id === _rfEditId);
-    if (r) { r.title = title; r.category = category; r.img = _rfImg; r.ingredients = ingredients; r.method = method; r.url = url; }
+    if (r) { r.title = title; r.category = category; r.img = _rfImg; r.memo = memo; }
   } else {
-    _recipeData.recipes.unshift({id: Date.now(), title: title, category: category, img: _rfImg, ingredients: ingredients, method: method, url: url});
+    _recipeData.recipes.unshift({id: Date.now(), title: title, category: category, img: _rfImg, memo: memo});
   }
   recipeFormToggle();
   recipeListRender();
@@ -8763,6 +8743,13 @@ function recipeDel(id) {
 }
 
 // ── 레시피 목록 ──
+function recipeMemoHtml(memo) {
+  if (!memo) return '';
+  const urlRe = /https?:\/\/[^\s<>"]+/g;
+  const escaped = memo.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escaped.replace(urlRe, url => '<a href="' + url + '" target="_blank" style="color:#6366f1;text-decoration:none">' + url + '</a>');
+}
+
 function recipeListRender() {
   const el = document.getElementById('recipe-list');
   if (!el) return;
@@ -8774,15 +8761,13 @@ function recipeListRender() {
     + _recipeData.recipes.map(r =>
       '<div style="border:1px solid #EDE8E1;border-radius:12px;overflow:hidden;background:#fff">'
       + (r.img ? '<img src="' + r.img + '" style="width:100%;height:130px;object-fit:cover">'
-               : '<div style="width:100%;height:60px;background:#FAF7F4;display:flex;align-items:center;justify-content:center;font-size:1.8rem">🍽️</div>')
+               : '<div style="width:100%;background:#FAF7F4;padding:12px 14px;font-size:.88rem;font-weight:800;color:#C4714A">' + r.title.replace(/</g,'&lt;') + '</div>')
       + '<div style="padding:10px">'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">'
       + '<span style="font-size:.84rem;font-weight:800;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title.replace(/</g,'&lt;') + '</span>'
       + '<span style="font-size:.68rem;background:#FAF7F4;color:#C4714A;border-radius:5px;padding:2px 6px;flex-shrink:0">' + (r.category || '기타') + '</span>'
       + '</div>'
-      + (r.ingredients ? '<div style="font-size:.73rem;color:#aaa;margin-bottom:4px;max-height:36px;overflow:hidden;line-height:1.5;white-space:pre-wrap">' + r.ingredients.replace(/</g,'&lt;') + '</div>' : '')
-      + (r.method ? '<div style="font-size:.73rem;color:#888;margin-bottom:4px;max-height:36px;overflow:hidden;line-height:1.5;white-space:pre-wrap">' + r.method.replace(/</g,'&lt;') + '</div>' : '')
-      + (r.url ? '<a href="' + r.url.replace(/"/g,'&quot;') + '" target="_blank" style="font-size:.72rem;color:#6366f1;text-decoration:none;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔗 참고</a>' : '')
+      + (r.memo ? '<div style="font-size:.73rem;color:#777;line-height:1.6;white-space:pre-wrap;max-height:80px;overflow:hidden;margin-bottom:4px">' + recipeMemoHtml(r.memo) + '</div>' : '')
       + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
       + '<button onclick="recipeFormToggle(' + r.id + ')" style="border:none;background:#F5F0EB;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#888">수정</button>'
       + '<button onclick="recipeDel(' + r.id + ')" style="border:none;background:#FEE2E2;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#f87171">삭제</button>'
