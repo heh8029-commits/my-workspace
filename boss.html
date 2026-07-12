@@ -1586,6 +1586,17 @@ body.mode-mob .mobile-subnav{display:flex!important}
     </div>
 
     <!-- 서브메뉴 콘텐츠 (준비 중) -->
+<div class="page" id="page-search">
+  <div style="max-width:700px;margin:0 auto;padding:20px 16px">
+    <div style="position:relative;margin-bottom:20px">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem">🔍</span>
+      <input id="g-search-input" type="text" placeholder="전체 검색..." oninput="globalSearch(this.value)"
+        autofocus
+        style="width:100%;padding:12px 14px 12px 42px;border:1.5px solid #EDE8E1;border-radius:14px;font-size:1rem;font-family:inherit;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06);outline:none">
+    </div>
+    <div id="g-search-results"></div>
+  </div>
+</div>
 <div class="page" id="page-info">
   <div style="max-width:900px;margin:0 auto;padding:16px">
 
@@ -2475,7 +2486,7 @@ function setMenu(id){
   if(id==='home'){ showPage('home'); }
   else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); regFetch(); clipFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
-  else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
+  else if(id==='search'){ showPage('search'); setTimeout(()=>{ const el=document.getElementById('g-search-input'); if(el){el.value='';el.focus();} document.getElementById('g-search-results').innerHTML=''; },50); }
   else if(id==='asset'){ setSub('asset-info','현재자산정보'); return; }
   else if(id==='info'){ showPage('info'); infoNotesFetch(); pwFetch(); }
   else { showPage('sub'); }
@@ -8270,6 +8281,82 @@ function pwRender() {
     + '<td style="padding:6px 10px"><input value="' + (p.memo||'').replace(/"/g,'&quot;') + '" oninput="pwEdit(' + i + ',\'memo\',this.value)" placeholder="메모" style="' + inputStyle + '"></td>'
     + '<td style="padding:6px 8px;text-align:center;white-space:nowrap"><button onclick="pwCopy(\'' + (p.pw||'').replace(/'/g,"\\'") + '\')" style="border:none;background:none;cursor:pointer;font-size:.9rem;color:#aaa" title="비밀번호 복사">📋</button><button onclick="pwDel(' + i + ')" style="border:none;background:none;cursor:pointer;font-size:.9rem;color:#ddd" title="삭제">✕</button></td>'
     + '</tr>'
+  ).join('');
+}
+
+// ══════════════════════════════════════════════
+// 전체 검색
+// ══════════════════════════════════════════════
+function globalSearch(q) {
+  const el = document.getElementById('g-search-results');
+  if (!el) return;
+  q = (q || '').trim();
+  if (q.length < 1) { el.innerHTML = '<div style="color:#bbb;text-align:center;padding:40px;font-size:.85rem">검색어를 입력하세요</div>'; return; }
+  const lq = q.toLowerCase();
+
+  const sections = [];
+
+  // ── 바로가기 ──
+  const bmHits = (bms || []).filter(b =>
+    (b.name||'').toLowerCase().includes(lq) || (b.url||'').toLowerCase().includes(lq)
+  ).map(b => ({text: (b.emoji||'') + ' ' + b.name, sub: b.url, action: "setMenu('home')"}));
+  if (bmHits.length) sections.push({label:'🔗 바로가기', color:'#6366f1', items: bmHits});
+
+  // ── 포스트잇 (미리) ──
+  const pnHits = (pnItems || []).filter(p => (p.text||'').toLowerCase().includes(lq))
+    .map(p => ({text: (p.text||'').slice(0,60), action: "setMenu('home')"}));
+  if (pnHits.length) sections.push({label:'📌 포스트잇', color:'#f59e0b', items: pnHits});
+
+  // ── 체크리스트 ──
+  const clHits = ((_clData && _clData.items) || []).filter(i => (i.text||'').toLowerCase().includes(lq))
+    .map(i => ({text: (i.done?'✅ ':'☐ ') + i.text, action: "setSub('checklist','중요체크리스트')"}));
+  if (clHits.length) sections.push({label:'✅ 체크리스트', color:'#10b981', items: clHits});
+
+  // ── 고정지출 ──
+  const evHits = ((_evData && _evData.list) || []).filter(e =>
+    (e.name||'').toLowerCase().includes(lq) || (e.memo||'').toLowerCase().includes(lq)
+  ).map(e => ({text: e.name, sub: e.memo, action: "setSub('expense','고정지출')"}));
+  if (evHits.length) sections.push({label:'💳 고정지출', color:'#ef4444', items: evHits});
+
+  // ── 초당진우 일정 메모 ──
+  const childMemos = ((_childData && _childData.memos) || []).filter(m =>
+    (m.text||'').toLowerCase().includes(lq) || (m.title||'').toLowerCase().includes(lq)
+  ).map(m => ({text: m.title || (m.text||'').slice(0,50), action: "setSub('child','초당진우 일정')"}));
+  if (childMemos.length) sections.push({label:'🎒 초당진우 일정', color:'#8b5cf6', items: childMemos});
+
+  // ── 여행 ──
+  const tvHits = ((_tvData && _tvData.items) || []).filter(t =>
+    (t.name||'').toLowerCase().includes(lq) || (t.memo||'').toLowerCase().includes(lq)
+  ).map(t => ({text: t.name, sub: t.memo, action: "setSub('travel','여행갈때')"}));
+  if (tvHits.length) sections.push({label:'✈️ 여행', color:'#06b6d4', items: tvHits});
+
+  // ── 비밀번호 ──
+  const pwHits = (_pwItems || []).filter(p =>
+    (p.site||'').toLowerCase().includes(lq) || (p.id||'').toLowerCase().includes(lq) || (p.memo||'').toLowerCase().includes(lq)
+  ).map(p => ({text: p.site, sub: p.id, action: "setMenu('info')"}));
+  if (pwHits.length) sections.push({label:'🔑 비밀번호', color:'#f97316', items: pwHits});
+
+  // ── 정보 메모 ──
+  const infoHits = (_infoNotes || []).filter(n => (n.text||'').toLowerCase().includes(lq))
+    .map(n => ({text: (n.text||'').slice(0,60), action: "setMenu('info')"}));
+  if (infoHits.length) sections.push({label:'📌 정보 메모', color:'#C4714A', items: infoHits});
+
+  if (!sections.length) {
+    el.innerHTML = '<div style="color:#bbb;text-align:center;padding:40px;font-size:.85rem">검색 결과가 없어요</div>';
+    return;
+  }
+
+  el.innerHTML = sections.map(sec =>
+    '<div style="margin-bottom:18px">'
+    + '<div style="font-size:.75rem;font-weight:800;color:' + sec.color + ';margin-bottom:6px;letter-spacing:.03em">' + sec.label + ' <span style="font-weight:400;color:#bbb">(' + sec.items.length + ')</span></div>'
+    + '<div style="background:#fff;border:1px solid #EDE8E1;border-radius:12px;overflow:hidden">'
+    + sec.items.slice(0,10).map((item, i) =>
+        '<div onclick="' + item.action + '" style="padding:10px 14px;cursor:pointer;border-bottom:' + (i < Math.min(sec.items.length,10)-1 ? '1px solid #F5F0EB' : 'none') + ';transition:background .1s" onmouseover="this.style.background=\'#FBF8F5\'" onmouseout="this.style.background=\'\'">'
+        + '<div style="font-size:.84rem;color:#333;font-weight:600">' + (item.text||'').replace(/</g,'&lt;') + '</div>'
+        + (item.sub ? '<div style="font-size:.75rem;color:#aaa;margin-top:2px">' + (item.sub||'').replace(/</g,'&lt;') + '</div>' : '')
+        + '</div>'
+      ).join('')
+    + '</div></div>'
   ).join('');
 }
 </script>
