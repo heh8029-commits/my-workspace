@@ -844,7 +844,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="log-card">
     <div class="log-hd">
       <div class="log-title" id="logTitle"></div>
-      <button class="log-back-btn" onclick="closeLog()">← 출퇴근으로</button>
+      <button class="log-back-btn" onclick="closeLog()">✕ 닫기</button>
     </div>
     <div class="log-nav">
       <button class="log-nav-btn" onclick="logMove(-1)">‹</button>
@@ -860,11 +860,10 @@ button{font-family:inherit;cursor:pointer}
     <div id="logCalendar"></div>
     <div class="log-summary" id="logSummary"></div>
     <div id="logQrBox" style="text-align:center;margin-top:24px;padding-top:20px;border-top:1.5px dashed var(--pink-mid)">
-      <div style="font-size:.82rem;font-weight:700;color:var(--lav-dark);margin-bottom:10px">📱 내 출퇴근 바로가기 QR</div>
-      <a id="logQrLink" href="#" target="_blank" rel="noopener">
-        <img id="logQrImg" src="" width="150" height="150" style="border-radius:12px;border:2px solid var(--pink-mid)" alt="내 출퇴근 QR">
-      </a>
-      <div style="font-size:.68rem;color:var(--soft);margin-top:8px">이 QR을 휴대폰으로 찍으면 내 이름이 자동 선택된 출퇴근 화면으로 들어가요<br>바로 날짜·시간을 입력해 저장하면 돼요 💕</div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--lav-dark);margin-bottom:10px">📱 내 근무일정표(달력) 바로가기 QR</div>
+      <img id="logQrImg" src="" width="150" height="150" style="border-radius:12px;border:2px solid var(--pink-mid)" alt="내 근무일정표 QR">
+      <div id="logQrUrl" style="font-size:.62rem;color:var(--soft);margin-top:6px;word-break:break-all"></div>
+      <div style="font-size:.68rem;color:var(--soft);margin-top:8px">이 QR을 휴대폰으로 찍으면 내 근무일정표(달력)가 바로 열려요<br>(비밀번호를 설정했다면 입력해야 볼 수 있어요) 💕</div>
     </div>
   </div>
 </div>
@@ -1442,7 +1441,7 @@ async function renderLog(){
   const empUrl=base+'?emp='+encodeURIComponent(m.id);
   const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=6&bgcolor=ffffff&color=000000&data='+encodeURIComponent(empUrl);
   document.getElementById('logQrImg').src=qrSrc;
-  document.getElementById('logQrLink').href=empUrl;
+  document.getElementById('logQrUrl').textContent=empUrl;
 }
 
 function adminMove(d){adminOffset+=d;renderAdmin();}
@@ -2071,15 +2070,20 @@ const _now=new Date();
   });
   renderAttendance();
 
-  // QR 딥링크: ?emp=<id> 로 들어오면 해당 직원을 자동 선택 (바로 출퇴근 입력 가능)
+  // QR 딥링크: ?emp=<id> 로 들어오면 해당 직원의 달력(근무일정표) 바로 열기
   const empParam=new URLSearchParams(location.search).get('emp');
   if(empParam){
     const m=members.find(x=>x.id===empParam);
     if(m){
       attSelected=m.id;
       renderAttendance();
-      const info=document.getElementById('attInfo');
-      if(info)info.scrollIntoView({behavior:'smooth',block:'center'});
+      if(m.logPw){
+        const pw=prompt('🔒 근무일정표 비밀번호를 입력해줘');
+        if(pw===m.logPw) openLogView(m.id);
+        else if(pw!==null) alert('비밀번호가 틀렸어 🙅');
+      } else {
+        openLogView(m.id);
+      }
     }
   }
 })();
