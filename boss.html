@@ -1750,6 +1750,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
           <div style="flex:1"></div>
           <span id="cn-count" class="cn-count"></span>
           <label class="cn-datewrap" title="파일명 날짜 (직접 수정 가능)">중국발주-<input id="cn-date" class="cn-date" maxlength="6" inputmode="numeric" placeholder="260712" oninput="cnDateInput(this)">.xlsx</label>
+          <button class="cn-btn cn-btn-save" onclick="cnSaveNow(this)">💾 저장</button>
           <button class="cn-btn cn-btn-dl" onclick="cnExport(this)"><span id="cn-fname">📥 엑셀 다운로드</span></button>
         </div>
         <div class="cn-table-wrap">
@@ -1772,7 +1773,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <div class="cn-hist">
           <div class="cn-hist-head">
             <span class="cn-hist-title">📚 저장된 발주 내역</span>
-            <span class="cn-hist-desc">엑셀을 다운로드하면 자동 저장돼요 · <b>클릭하면 다시 불러와서 수정</b>할 수 있어요</span>
+            <span class="cn-hist-desc"><b>💾 저장</b> 버튼을 누르면 저장돼요 · 다른 PC에서도 보이고 · 카드를 <b>클릭하면 불러와 수정</b>돼요</span>
           </div>
           <div id="cn-hist-list" class="cn-hist-list"></div>
         </div>
@@ -9148,6 +9149,9 @@ function recipeListRender() {
 .cn-btn-dl{background:linear-gradient(135deg,#4F6EF7,#3040C0);color:#fff;box-shadow:0 3px 10px rgba(64,80,192,.25)}
 .cn-btn-dl:hover{filter:brightness(1.06)}
 .cn-btn-dl:disabled{opacity:.6;cursor:default}
+.cn-btn-save{background:#EEF1FE;color:#3040C0;border:1.5px solid #C9D2F6}
+.cn-btn-save:hover{background:#E3E8FD}
+.cn-btn-save:disabled{opacity:.75;cursor:default}
 .cn-count{font-size:.78rem;color:#7A80A0;font-weight:700}
 .cn-datewrap{display:inline-flex;align-items:center;gap:1px;font-size:.76rem;color:#7A80A0;font-weight:700;background:#F6F7FC;border-radius:9px;padding:5px 10px;cursor:text}
 .cn-date{width:56px;border:none;border-bottom:1.5px solid #C5CFF5;background:transparent;font-family:inherit;font-size:.8rem;font-weight:800;color:#3040C0;text-align:center;outline:none;padding:1px 2px}
@@ -9282,22 +9286,61 @@ function cnLoadExcelJS(){
 }
 function cnBorder(){ const s={style:'thin',color:{argb:'FFE2E5F0'}}; return {top:s,left:s,bottom:s,right:s}; }
 
-/* ── 저장 내역 (IndexedDB — 사진 포함 대용량 OK) ── */
-function cnDB(){ return new Promise((res,rej)=>{ let rq; try{ rq=indexedDB.open('bossChina',1); }catch(e){ return rej(e); } rq.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('orders')) db.createObjectStore('orders',{keyPath:'id'}); }; rq.onsuccess=e=>res(e.target.result); rq.onerror=()=>rej(rq.error); }); }
-function cnDbPut(rec){ return cnDB().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('orders','readwrite'); tx.objectStore('orders').put(rec); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
-function cnDbAll(){ return cnDB().then(db=>new Promise((res,rej)=>{ const rq=db.transaction('orders','readonly').objectStore('orders').getAll(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); })); }
-function cnDbDel(id){ return cnDB().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('orders','readwrite'); tx.objectStore('orders').delete(id); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
+/* ── 저장 내역 (Firebase 공유 · 사진은 Cloudinary → 모든 PC에서 보임) ── */
+const CN_FB='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_china_orders';
+const CN_CLOUD='https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload';
+const CN_PRESET='hwx2iwfz';
 
-function cnSaveHistory(dateStr,rows){
-  const total=rows.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0);
-  const rec={ id:String(dateStr), name:'중국발주-'+dateStr, savedAt:Date.now(), count:rows.length, total:total, rows:JSON.parse(JSON.stringify(rows)) };
-  return cnDbPut(rec).then(()=>cnRenderHist()).catch(e=>{ console.warn('발주 내역 저장 실패',e); });
+function cnFbPut(id,rec){ return fetch(CN_FB+'/'+encodeURIComponent(id)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)}).then(r=>{ if(!r.ok) throw new Error('서버 저장 실패('+r.status+')'); }); }
+function cnFbAll(){ return fetch(CN_FB+'.json?t='+Date.now()).then(r=>r.json()).then(o=>{ if(!o) return []; return Object.keys(o).map(k=>o[k]).filter(Boolean); }); }
+function cnFbDel(id){ return fetch(CN_FB+'/'+encodeURIComponent(id)+'.json',{method:'DELETE'}); }
+
+async function cnUploadCloud(dataUrl){
+  const blob=await (await fetch(dataUrl)).blob();
+  const fd=new FormData(); fd.append('file',blob); fd.append('upload_preset',CN_PRESET);
+  const r=await fetch(CN_CLOUD,{method:'POST',body:fd});
+  const d=await r.json();
+  if(!d.secure_url) throw new Error('사진 업로드 실패');
+  return d.secure_url;
+}
+async function cnPhotoToB64(src){
+  if(!src) return null;
+  if(src.indexOf('data:')===0) return src;
+  try{ const b=await (await fetch(src)).blob(); return await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b); }); }catch(e){ return null; }
+}
+
+async function cnSaveNow(btn){
+  const rows=cnData.filter(r=>r.item||r.link||r.opt||r.photo||r.qty||r.price);
+  if(!rows.length){ alert('저장할 품목이 없어요.'); return; }
+  const di=document.getElementById('cn-date'); const dateStr=(di&&di.value.replace(/\D/g,''))||cnToday();
+  const orig=btn?btn.textContent:''; if(btn) btn.disabled=true;
+  try{
+    const n=rows.filter(r=>r.photo&&r.photo.indexOf('data:')===0).length; let done=0;
+    for(const r of rows){
+      if(r.photo && r.photo.indexOf('data:')===0){
+        if(btn) btn.textContent='⏳ 사진 '+(++done)+'/'+n;
+        r.photo=await cnUploadCloud(r.photo); cnApplyPhoto(r.id);
+      }
+    }
+    if(btn) btn.textContent='⏳ 저장 중...';
+    const total=rows.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0);
+    const rec={ id:String(dateStr), name:'중국발주-'+dateStr, savedAt:Date.now(), count:rows.length, total:total, rows:JSON.parse(JSON.stringify(rows)) };
+    await cnFbPut(dateStr, rec);
+    cnSave(); await cnRenderHist();
+    if(btn) btn.textContent='✅ 저장됨';
+  }catch(e){
+    if(btn) btn.textContent=orig;
+    alert('저장에 실패했어요. 인터넷 연결을 확인해 주세요.\n('+(e&&e.message||e)+')');
+  }finally{
+    setTimeout(()=>{ if(btn){ btn.disabled=false; if(btn.textContent==='✅ 저장됨') btn.textContent='💾 저장'; } },1500);
+  }
 }
 function cnRenderHist(){
-  const wrap=document.getElementById('cn-hist-list'); if(!wrap) return;
-  cnDbAll().then(list=>{
+  const wrap=document.getElementById('cn-hist-list'); if(!wrap) return Promise.resolve();
+  if(!wrap.innerHTML) wrap.innerHTML='<div class="cn-hist-empty">불러오는 중...</div>';
+  return cnFbAll().then(list=>{
     list.sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
-    if(!list.length){ wrap.innerHTML='<div class="cn-hist-empty">아직 저장된 내역이 없어요. 엑셀을 다운로드하면 여기에 자동으로 쌓여요.</div>'; return; }
+    if(!list.length){ wrap.innerHTML='<div class="cn-hist-empty">아직 저장된 내역이 없어요. 💾 저장 버튼을 누르면 여기에 쌓여요.</div>'; return; }
     wrap.innerHTML=list.map(r=>{
       const d=new Date(r.savedAt||0);
       const when=String(d.getFullYear()).slice(2)+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
@@ -9308,10 +9351,10 @@ function cnRenderHist(){
         +'<div class="cn-hist-load">클릭해서 불러오기 ↗</div>'
       +'</div>';
     }).join('');
-  }).catch(()=>{ wrap.innerHTML='<div class="cn-hist-empty">내역을 불러오지 못했어요.</div>'; });
+  }).catch(()=>{ wrap.innerHTML='<div class="cn-hist-empty">내역을 불러오지 못했어요. (인터넷 확인)</div>'; });
 }
 function cnLoadHist(id){
-  cnDbAll().then(list=>{
+  cnFbAll().then(list=>{
     const rec=list.find(r=>String(r.id)===String(id)); if(!rec) return;
     const hasContent=cnData.some(r=>r.item||r.link||r.photo||r.opt||r.qty||r.price);
     if(hasContent && !confirm('지금 작성 중인 내용을 지우고 「'+rec.name+'」 내역을 불러올까요?')) return;
@@ -9323,7 +9366,7 @@ function cnLoadHist(id){
     const pg=document.getElementById('page-china'); if(pg) pg.scrollIntoView({behavior:'smooth',block:'start'});
   });
 }
-function cnDelHist(id){ if(!confirm('이 저장 내역을 삭제할까요?')) return; cnDbDel(id).then(()=>cnRenderHist()); }
+function cnDelHist(id){ if(!confirm('이 저장 내역을 삭제할까요? (다른 PC에서도 삭제돼요)')) return; cnFbDel(id).then(()=>cnRenderHist()); }
 
 async function cnExport(btn){
   const rows=cnData.filter(r=>r.item||r.link||r.opt||r.photo||r.qty||r.price);
@@ -9338,6 +9381,7 @@ async function cnExport(btn){
     const HDR={3:'쇼핑몰\n(타오바오,티몰,1688,징동)',4:'링크주소 또는 상품사진',5:'사진',6:'품목',7:'옵션',8:'수량',9:'단가',10:'금액(총합계)',12:'요청사항/메모'};
     const h=ws.getRow(1); h.height=44;
     Object.keys(HDR).forEach(c=>{ const cell=h.getCell(+c); cell.value=HDR[c]; cell.font={bold:true,size:10,color:{argb:'FF44485C'}}; cell.alignment={vertical:'middle',horizontal:'center',wrapText:true}; cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF2F4FB'}}; cell.border=cnBorder(); });
+    const photoData=await Promise.all(rows.map(r=>cnPhotoToB64(r.photo)));
     rows.forEach((r,i)=>{
       const R=i+2, row=ws.getRow(R);
       if(r.link){ row.getCell(4).value={text:r.link,hyperlink:r.link}; row.getCell(4).font={color:{argb:'FF3040C0'},underline:true}; } else { row.getCell(4).value=''; }
@@ -9350,7 +9394,7 @@ async function cnExport(btn){
       row.getCell(12).value=r.note||'';
       row.height=78;
       for(let c=3;c<=12;c++){ if(c===11) continue; const cell=row.getCell(c); const rightAlign=(c===8||c===9||c===10); cell.alignment={vertical:'middle',wrapText:true,horizontal:rightAlign?'right':'left'}; cell.border=cnBorder(); }
-      if(r.photo){ const m=/^data:image\/(\w+);base64,(.*)$/.exec(r.photo); if(m){ try{ const imgId=wb.addImage({base64:m[2],extension:(m[1]==='jpeg'?'jpeg':m[1])}); ws.addImage(imgId,{tl:{col:4.12,row:(R-1)+0.1},ext:{width:92,height:92},editAs:'oneCell'}); }catch(e){} } }
+      const pd=photoData[i]; if(pd){ const m=/^data:image\/(\w+);base64,(.*)$/.exec(pd); if(m){ try{ const imgId=wb.addImage({base64:m[2],extension:(m[1]==='jpeg'?'jpeg':m[1])}); ws.addImage(imgId,{tl:{col:4.12,row:(R-1)+0.1},ext:{width:92,height:92},editAs:'oneCell'}); }catch(e){} } }
     });
     const T=rows.length+2;
     ws.getCell('F'+T).value='합계'; ws.getCell('F'+T).font={bold:true}; ws.getCell('F'+T).alignment={horizontal:'right',vertical:'middle'};
@@ -9359,8 +9403,6 @@ async function cnExport(btn){
     const buf=await wb.xlsx.writeBuffer();
     const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=cnFname(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-    const di=document.getElementById('cn-date'); const dateStr=(di&&di.value.replace(/\D/g,''))||cnToday();
-    cnSaveHistory(dateStr, rows);
   }catch(err){
     alert('엑셀 생성에 실패했어요. 인터넷 연결을 확인해 주세요.\n('+(err&&err.message||err)+')');
   }finally{
