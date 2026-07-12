@@ -8483,6 +8483,10 @@ function globalSearch(q) {
     .map(n=>({text:(n.text||''), copy:n.text||'', img:n.img||null, action:"setMenu('info')"}));
   if (infoHits.length) sections.push({label:'📌 정보 메모', color:'#C4714A', items:infoHits});
 
+  const recipeHits = ((_recipeData&&_recipeData.recipes)||[]).filter(r=>(r.title||'').toLowerCase().includes(lq)||(r.memo||'').toLowerCase().includes(lq))
+    .map(r=>({text:(r.title||''), sub:(r.category||'기타') + (r.memo ? '  · ' + (r.memo||'').slice(0,60) : ''), copy:(r.title||'')+(r.memo?' - '+r.memo:''), action:"setMenu('recipe')"}));
+  if (recipeHits.length) sections.push({label:'🍳 레시피', color:'#e67e22', items:recipeHits});
+
   if (!sections.length) {
     el.innerHTML='<div style="color:#bbb;text-align:center;padding:40px;font-size:.85rem">검색 결과가 없어요</div>';
     return;
@@ -8548,6 +8552,12 @@ async function searchPreFetch() {
   if (!bms.length || bms===DEFAULT_BM) {
     fetches.push(fetch(FB_SHORTCUTS+'?t='+Date.now()).then(r=>r.json()).then(d=>{
       if(d&&Array.isArray(d)) bms=d;
+    }).catch(()=>{}));
+  }
+  // 레시피
+  if (!(_recipeData&&_recipeData.recipes&&_recipeData.recipes.length)) {
+    fetches.push(fetch(FB_RECIPE+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+      if(d&&Array.isArray(d.recipes)) _recipeData=Object.assign({shopping:[],ingredients:'',fridge:'',weekly:{mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''},recipes:[],categories:[...RECIPE_DEFAULT_CATS]},d);
     }).catch(()=>{}));
   }
   if (fetches.length) {
