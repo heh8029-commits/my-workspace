@@ -1591,12 +1591,10 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
     <!-- 포스트잇 섹션 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div style="font-size:.9rem;font-weight:800;color:#555">📌 초당진우 포스트잇</div>
-      <button onclick="infoFetchNotes()" style="padding:4px 12px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.78rem;cursor:pointer">🔄 새로고침</button>
+      <div style="font-size:.9rem;font-weight:800;color:#555">📌 메모</div>
+      <button onclick="infoNoteAdd()" style="padding:4px 12px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer">+ 추가</button>
     </div>
-    <div id="info-notes-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px">
-      <div style="color:#bbb;font-size:.8rem;padding:20px;text-align:center;grid-column:span 5">불러오는 중...</div>
-    </div>
+    <div id="info-notes-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px"></div>
 
     <!-- 비밀번호 관리 섹션 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -2479,7 +2477,7 @@ function setMenu(id){
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else if(id==='asset'){ setSub('asset-info','현재자산정보'); return; }
-  else if(id==='info'){ showPage('info'); infoFetchNotes(); pwFetch(); }
+  else if(id==='info'){ showPage('info'); infoNotesFetch(); pwFetch(); }
   else { showPage('sub'); }
 }
 
@@ -8082,34 +8080,89 @@ const FB_PASSWORDS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5
 let _pwItems = [];
 let _pwSaveTimer = null;
 
-// ── 포스트잇 (child notes 재사용) ──
-async function infoFetchNotes() {
-  const el = document.getElementById('info-notes-grid');
-  if (!el) return;
+// ── 정보탭 포스트잇 (독립 데이터) ──
+const FB_INFO_NOTES = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_info_notes.json';
+const INFO_NOTE_COLORS = ['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
+let _infoNotes = [];
+let _infoNoteTimer = null;
+
+async function infoNotesFetch() {
   try {
-    const r = await fetch(FB_CHILD + '?t=' + Date.now());
-    if (!r.ok) throw new Error();
-    const d = await r.json();
-    const notes = (d && d.notes) || [];
-    infoRenderNotes(notes.slice(0, 15));
-  } catch(e) {
-    el.innerHTML = '<div style="color:#bbb;font-size:.8rem;padding:20px;text-align:center;grid-column:span 5">불러오기 실패</div>';
-  }
+    const r = await fetch(FB_INFO_NOTES + '?t=' + Date.now());
+    const d = r.ok ? await r.json() : null;
+    _infoNotes = Array.isArray(d) ? d : [];
+  } catch(e) { _infoNotes = []; }
+  infoNotesRender();
 }
 
-function infoRenderNotes(notes) {
+function infoNotesSave() {
+  clearTimeout(_infoNoteTimer);
+  _infoNoteTimer = setTimeout(() => {
+    fetch(FB_INFO_NOTES, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(_infoNotes)});
+  }, 600);
+}
+
+function infoNoteAdd() {
+  const colors = INFO_NOTE_COLORS;
+  _infoNotes.push({text:'', clip:'', color: colors[_infoNotes.length % colors.length]});
+  infoNotesSave();
+  infoNotesRender();
+  setTimeout(() => {
+    const tas = document.querySelectorAll('.info-note-text');
+    if (tas.length) tas[tas.length-1].focus();
+  }, 50);
+}
+
+function infoNoteDel(i) {
+  _infoNotes.splice(i, 1);
+  infoNotesSave();
+  infoNotesRender();
+}
+
+function infoNoteEdit(i, field, val) {
+  if (!_infoNotes[i]) return;
+  _infoNotes[i][field] = val;
+  infoNotesSave();
+}
+
+function infoNoteColorPick(i) {
+  const colors = INFO_NOTE_COLORS;
+  const cur = _infoNotes[i].color || colors[0];
+  const idx = colors.indexOf(cur);
+  _infoNotes[i].color = colors[(idx + 1) % colors.length];
+  infoNotesSave();
+  infoNotesRender();
+}
+
+function infoNoteCopy(i) {
+  const clip = _infoNotes[i] && _infoNotes[i].clip;
+  if (!clip) return;
+  navigator.clipboard.writeText(clip).then(() => {
+    const btn = document.getElementById('info-note-copy-' + i);
+    if (btn) { btn.textContent = '✅'; setTimeout(() => btn.textContent = '📋', 1200); }
+  });
+}
+
+function infoNotesRender() {
   const el = document.getElementById('info-notes-grid');
   if (!el) return;
-  if (!notes.length) {
-    el.innerHTML = '<div style="color:#bbb;font-size:.8rem;padding:20px;text-align:center;grid-column:span 5">포스트잇이 없어요</div>';
+  if (!_infoNotes.length) {
+    el.innerHTML = '<div style="color:#bbb;font-size:.82rem;padding:30px;text-align:center;grid-column:span 5">+ 추가 버튼으로 메모를 만들어보세요</div>';
     return;
   }
-  const COLORS = ['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
-  el.innerHTML = notes.map((n, i) => {
-    const bg = n.color || COLORS[i % COLORS.length];
-    const text = (n.text || '').replace(/</g,'&lt;').replace(/\n/g,'<br>');
-    return '<div style="background:' + bg + ';border-radius:10px;padding:10px 12px;min-height:80px;font-size:.78rem;color:#444;line-height:1.5;box-shadow:0 2px 6px rgba(0,0,0,.07);word-break:break-all">'
-      + text + '</div>';
+  el.innerHTML = _infoNotes.map((n, i) => {
+    const bg = n.color || INFO_NOTE_COLORS[i % INFO_NOTE_COLORS.length];
+    const textEsc = (n.text||'').replace(/"/g,'&quot;');
+    const clipEsc = (n.clip||'').replace(/"/g,'&quot;');
+    const hasClip = !!(n.clip||'').trim();
+    return '<div style="background:' + bg + ';border-radius:10px;padding:10px;min-height:90px;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:5px">'
+      + '<textarea class="info-note-text" rows="3" placeholder="메모..." oninput="infoNoteEdit(' + i + ',\'text\',this.value)" style="background:transparent;border:none;resize:none;font-size:.78rem;color:#444;line-height:1.5;font-family:inherit;outline:none;width:100%;flex:1">' + textEsc + '</textarea>'
+      + '<input value="' + clipEsc + '" placeholder="📋 복사할 URL/텍스트" oninput="infoNoteEdit(' + i + ',\'clip\',this.value)" style="background:rgba(255,255,255,.5);border:1px solid rgba(0,0,0,.1);border-radius:5px;padding:3px 7px;font-size:.72rem;font-family:inherit;width:100%">'
+      + '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:2px">'
+      + '<button id="info-note-copy-' + i + '" onclick="infoNoteCopy(' + i + ')" title="복사" style="border:none;background:rgba(255,255,255,.5);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:.78rem;color:' + (hasClip?'#555':'#ccc') + '">📋</button>'
+      + '<button onclick="infoNoteColorPick(' + i + ')" title="색상변경" style="border:none;background:rgba(255,255,255,.5);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:.78rem">🎨</button>'
+      + '<button onclick="infoNoteDel(' + i + ')" title="삭제" style="border:none;background:rgba(255,255,255,.5);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:.78rem;color:#c00">✕</button>'
+      + '</div></div>';
   }).join('');
 }
 
