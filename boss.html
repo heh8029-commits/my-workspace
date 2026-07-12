@@ -2486,7 +2486,7 @@ function setMenu(id){
   if(id==='home'){ showPage('home'); }
   else if(id==='miri'){ showPage('miri'); dfFetch(); afFetch(); regFetch(); clipFetch(); }
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
-  else if(id==='search'){ showPage('search'); setTimeout(()=>{ const el=document.getElementById('g-search-input'); if(el){el.value='';el.focus();} document.getElementById('g-search-results').innerHTML=''; },50); }
+  else if(id==='search'){ showPage('search'); setTimeout(()=>{ const el=document.getElementById('g-search-input'); if(el){el.value='';el.focus();} document.getElementById('g-search-results').innerHTML=''; },50); searchPreFetch(); }
   else if(id==='asset'){ setSub('asset-info','현재자산정보'); return; }
   else if(id==='info'){ showPage('info'); infoNotesFetch(); pwFetch(); }
   else { showPage('sub'); }
@@ -8353,6 +8353,47 @@ function globalSearch(q) {
     }).join('')
     +'</div></div>'
   ).join('');
+}
+
+// 검색탭 데이터 프리페치 (아직 안 로드된 데이터만)
+async function searchPreFetch() {
+  const fetches = [];
+  // 포스트잇
+  if (!pnItems.length) {
+    fetches.push(fetch(FB_POSTIT+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+      if(d&&Array.isArray(d.pn_items)) pnItems=d.pn_items;
+    }).catch(()=>{}));
+  }
+  // 체크리스트
+  if (!_clData.items.length) {
+    fetches.push(fetch(FB_CHECKLIST+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+      if(d) _clData=Object.assign({cats:[],items:[]},d);
+    }).catch(()=>{}));
+  }
+  // 비밀번호
+  if (!_pwItems.length) {
+    fetches.push(fetch(FB_PASSWORDS+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+      _pwItems=Array.isArray(d)?d:(d?Object.values(d):[]);
+    }).catch(()=>{}));
+  }
+  // 정보메모
+  if (!_infoNotes.length) {
+    fetches.push(fetch(FB_INFO_NOTES+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+      _infoNotes=Array.isArray(d)?d:[];
+    }).catch(()=>{}));
+  }
+  // 바로가기
+  if (!bms.length || bms===DEFAULT_BM) {
+    fetches.push(fetch(FB_SHORTCUTS+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+      if(d&&Array.isArray(d)) bms=d;
+    }).catch(()=>{}));
+  }
+  if (fetches.length) {
+    await Promise.all(fetches);
+    // 검색창에 이미 뭔가 입력돼있으면 재검색
+    const inp = document.getElementById('g-search-input');
+    if (inp && inp.value.trim()) globalSearch(inp.value);
+  }
 }
 </script>
 <div id="pn-img-modal" onclick="this.style.display='none'">
