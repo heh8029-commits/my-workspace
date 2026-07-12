@@ -1273,18 +1273,10 @@ function getPeriodDates(offset){
 
 async function openMyLog(){
   if(!attSelected){alert('직원을 선택해주세요');return}
-  // 최신 비밀번호 확인 (다른 기기에서 설정했을 수도 있으니 새로고침)
-  await load();
-  const m=members.find(x=>x.id===attSelected);
-  if(m&&m.logPw){
-    const pw=prompt('🔒 근무일정표 비밀번호를 입력해줘');
-    if(pw===null)return;
-    if(pw!==m.logPw){alert('비밀번호가 틀렸어 🙅');return}
-  }
   openLogView(attSelected);
 }
 
-// 비밀번호 없이 바로 근무일정표 열기 (관리자용/인증 후 공용)
+// 근무일정표 열기
 function openLogView(id){
   attSelected=id;
   logPeriodOffset=0;
@@ -1345,27 +1337,6 @@ async function saveLogAttendance(){
   await renderLog();
 }
 
-// 근무일정표 비밀번호 설정/변경/해제
-async function openLogPwSetup(){
-  if(!attSelected){alert('직원을 먼저 선택해줘 💕');return}
-  await load();
-  let m=members.find(x=>x.id===attSelected);
-  if(!m)return;
-  if(m.logPw){
-    const cur=prompt('현재 비밀번호를 입력해줘 🔒 (변경하거나 해제하려면)');
-    if(cur===null)return;
-    if(cur!==m.logPw){alert('현재 비밀번호가 틀렸어 🙅');return}
-  }
-  const np=prompt(m.logPw
-    ? '새 비밀번호를 입력해줘.\n(빈칸으로 저장하면 비밀번호가 해제돼서 누구나 볼 수 있어)'
-    : '근무일정표 비밀번호를 설정해줘 🔒\n이 비밀번호를 입력해야 내 근무일정표를 볼 수 있어.');
-  if(np===null)return;
-  const val=np.trim();
-  const idx=members.findIndex(x=>x.id===attSelected);
-  if(idx<0)return;
-  if(!val){ delete members[idx].logPw; await save(); alert('비밀번호가 해제됐어. 이제 누구나 볼 수 있어 🌸'); }
-  else { members[idx].logPw=val; await save(); alert('비밀번호가 설정됐어 🔒'); }
-}
 function closeLog(){document.getElementById('logOverlay').classList.remove('open')}
 function logMove(d){logPeriodOffset+=d;renderLog();}
 
@@ -2159,7 +2130,7 @@ function renderCards(){
         📄 ${m.contractFile||m.contractUrl?'근로계약서 보기':'근로계약서 등록'}
         ${m.contractFile&&m.contractFile.startsWith('data:image')?`<img class="contract-thumb" src="${m.contractFile}" onclick="event.stopPropagation();openLightbox('${m.id}')" title="클릭해서 크게 보기">`:''}
       </button>
-      <div><button class="sched-btn" onclick="openLogView('${m.id}')">🗒 근무표 보기${m.logPw?' <span class="lock">🔒</span>':''}</button></div>
+      <div><button class="sched-btn" onclick="openLogView('${m.id}')">🗒 근무표 보기</button></div>
       <div class="card-qr">
         <img loading="lazy" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=4&bgcolor=ffffff&color=000000&data=${encodeURIComponent(qrBase+'?emp='+m.id)}" width="100" height="100" alt="${esc(m.name)} 개인 QR">
         <div class="card-qr-cap">📱 개인 QR (직원에게 전달)</div>
@@ -2315,13 +2286,7 @@ document.addEventListener('click',()=>closeCtx());
     if(m){
       attSelected=m.id;
       renderAttendance();
-      if(m.logPw){
-        const pw=prompt('🔒 근무일정표 비밀번호를 입력해줘');
-        if(pw===m.logPw) openLogView(m.id);
-        else if(pw!==null) alert('비밀번호가 틀렸어 🙅');
-      } else {
-        openLogView(m.id);
-      }
+      openLogView(m.id);
     }
     const ld=document.getElementById('empLoading'); if(ld)ld.style.display='none';
   }
