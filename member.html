@@ -983,6 +983,19 @@ button{font-family:inherit;cursor:pointer}
   <div class="ctx-item danger" onclick="ctxDelete()">🗑 삭제</div>
 </div>
 
+<!-- 월별 급여 정리 모달 -->
+<div class="modal-bg" id="payrollBg" onclick="if(event.target===this)closePayrollModal()">
+  <div class="modal" style="max-width:400px">
+    <h2>🧾 월별 급여 정리</h2>
+    <p style="font-size:.76rem;color:var(--soft);margin:-10px 0 12px">아래 내용을 자유롭게 수정한 뒤 복사해서 쓰세요 ✏️</p>
+    <textarea id="payrollTextArea" style="width:100%;min-height:320px;border:1.5px solid var(--pink-mid);border-radius:12px;padding:12px;font-family:inherit;font-size:.92rem;line-height:1.7;color:var(--text);outline:none;resize:vertical;background:var(--cream)"></textarea>
+    <div class="form-btns">
+      <button class="btn-cancel" onclick="closePayrollModal()">닫기</button>
+      <button class="btn-save" onclick="copyPayrollText(this)">📋 복사하기</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const COLORS=['#e8648a','#7040c0','#3dbb8f','#f0b429','#1a7bbf','#c47c00','#bf4a1a','#9c27b0'];
 let members=[];
@@ -1966,6 +1979,22 @@ function showRetireCalc(memberId,workDays){
   row.style.display='';
 }
 
+// 월별 급여 정리 모달
+let _payrollText='';
+function openPayrollModal(){
+  document.getElementById('payrollTextArea').value=_payrollText;
+  document.getElementById('payrollBg').classList.add('open');
+}
+function closePayrollModal(){document.getElementById('payrollBg').classList.remove('open')}
+function copyPayrollText(btn){
+  const ta=document.getElementById('payrollTextArea');
+  ta.focus();ta.select();
+  const done=()=>{if(btn){const t=btn.textContent;btn.textContent='✅ 복사됨!';setTimeout(()=>btn.textContent=t,1500);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done).catch(()=>{try{document.execCommand('copy');done();}catch(e){}});
+  } else { try{document.execCommand('copy');done();}catch(e){} }
+}
+
 async function renderAdmin(){
   const{start,end}=getPeriodDates(adminOffset);
   const fmt=d=>`${d.getMonth()+1}월${d.getDate()}일`;
@@ -2009,12 +2038,13 @@ async function renderAdmin(){
 
   // 직원별 누적 테이블
   let tbl=`<div class="admin-card-inner">
-    <div class="admin-card-title">🌟 직원별 누적 (${fmt(start)}~${fmt(end)})</div>
+    <div class="admin-card-title">🌟 직원별 누적 (${fmt(start)}~${fmt(end)}) <button onclick="openPayrollModal()" style="margin-left:8px;padding:5px 12px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--pink-dark),var(--rose));color:#fff;font-size:.74rem;font-weight:700;font-family:inherit;cursor:pointer;vertical-align:middle">🧾 월별 급여 정리</button></div>
     <div class="admin-card-subtitle">🌴 휴무는 "휴무(일)"만 증가 (근무시간/급여에는 영향 없음)</div>
     <table class="admin-tbl"><thead><tr>
       <th>직원</th><th>근무시간</th><th>휴무(일)</th><th>예상 급여(원)</th><th>부업 수입</th><th>최종합계</th>
     </tr></thead><tbody>`;
   let totalFinal=0,totalSj=0;
+  const payLines=[];
   for(let i=0;i<activeMembers.length;i++){
     const m=activeMembers[i];
     const st=memberStats[m.id]||{totalMin:0,offDays:0,sjTotal:0};
@@ -2023,6 +2053,7 @@ async function renderAdmin(){
     const wageFinal=wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0;
     const rowTotal=wageFinal+(st.sjTotal||0);
     totalFinal+=wageFinal; totalSj+=st.sjTotal||0;
+    payLines.push(`${m.name} ${rowTotal.toLocaleString()}원`);
     const color=COLORS[i%COLORS.length];
     tbl+=`<tr>
       <td><div class="emp-name" onclick="openLogView('${m.id}')" style="cursor:pointer" title="근무일정표 열기"><span style="color:${color}">✦</span><span style="text-decoration:underline;text-decoration-color:var(--pink-mid)">${esc(m.name)}</span>${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
@@ -2033,6 +2064,7 @@ async function renderAdmin(){
       <td><strong>${rowTotal.toLocaleString()}</strong></td>
     </tr>`;
   }
+  _payrollText=`💰 급여 정리 (${fmt(start)}~${fmt(end)})\n\n`+payLines.join('\n')+`\n\n합계 ${(totalFinal+totalSj).toLocaleString()}원`;
   tbl+=`<tr class="total-row">
     <td colspan="3">총합계</td>
     <td>${totalFinal.toLocaleString()}</td>
