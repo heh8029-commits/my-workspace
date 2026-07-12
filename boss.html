@@ -1737,6 +1737,48 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- 중국발주 페이지 -->
+    <div class="page" id="page-china">
+      <div style="max-width:1120px;margin:0 auto;padding:6px 2px 48px">
+        <div class="cn-head">
+          <div class="cn-title">🧧 중국발주</div>
+          <div class="cn-sub">사진·링크·옵션·금액만 넣으면 발주 엑셀이 자동으로 만들어져요 · 사진은 <b>Ctrl+V 붙여넣기</b>도 돼요</div>
+        </div>
+        <div class="cn-toolbar">
+          <button class="cn-btn cn-btn-add" onclick="cnAddRow()">＋ 행 추가</button>
+          <button class="cn-btn cn-btn-ghost" onclick="cnClearAll()">전체 지우기</button>
+          <div style="flex:1"></div>
+          <span id="cn-count" class="cn-count"></span>
+          <label class="cn-datewrap" title="파일명 날짜 (직접 수정 가능)">중국발주-<input id="cn-date" class="cn-date" maxlength="6" inputmode="numeric" placeholder="260712" oninput="cnDateInput(this)">.xlsx</label>
+          <button class="cn-btn cn-btn-dl" onclick="cnExport(this)"><span id="cn-fname">📥 엑셀 다운로드</span></button>
+        </div>
+        <div class="cn-table-wrap">
+          <div class="cn-grid cn-thead">
+            <div class="cn-th">사진</div>
+            <div class="cn-th cn-l">링크</div>
+            <div class="cn-th cn-l">품목</div>
+            <div class="cn-th cn-l">옵션</div>
+            <div class="cn-th">수량</div>
+            <div class="cn-th">단가(¥)</div>
+            <div class="cn-th">금액(¥)</div>
+            <div class="cn-th cn-l">메모</div>
+            <div class="cn-th"></div>
+          </div>
+          <div id="cn-rows"></div>
+        </div>
+        <button class="cn-btn cn-btn-add cn-add-bottom" onclick="cnAddRow()">＋ 행 추가</button>
+        <div class="cn-tip">💡 사진 칸을 클릭한 뒤 <b>Ctrl+V</b> 로 붙여넣거나, 이미지를 <b>끌어다 놓기</b> 하세요. 금액은 수량×단가로 자동 계산돼요.</div>
+
+        <div class="cn-hist">
+          <div class="cn-hist-head">
+            <span class="cn-hist-title">📚 저장된 발주 내역</span>
+            <span class="cn-hist-desc">엑셀을 다운로드하면 자동 저장돼요 · <b>클릭하면 다시 불러와서 수정</b>할 수 있어요</span>
+          </div>
+          <div id="cn-hist-list" class="cn-hist-list"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- iframe 임베드 페이지 -->
     <div class="page" id="page-iframe">
       <div class="page-iframe-wrap">
@@ -2494,7 +2536,7 @@ const MENUS = [
     {id:'copy',       label:'문구추천&CT이미지', emoji:'✍️'},
     {id:'product',    label:'상품관리',          emoji:'📦'},
     {id:'stock',      label:'재고관리(단가)',     emoji:'📋'},
-    {id:'cost',       label:'원가계산',          emoji:'🧮'},
+    {id:'china',      label:'중국발주',          emoji:'🧧'},
     {id:'staff',      label:'직원관리',          emoji:'👥', url:'https://heh8029-commits.github.io/my-workspace/member.html'},
     {id:'cs',         label:'CS실시간공유',      emoji:'💬', url:'https://heh8029-commits.github.io/my-workspace/work.html?tab=cs'},
   ]},
@@ -2718,6 +2760,8 @@ function setSub(id, label){
   } else if(id==='tax'){
     showPage('tax');
     fetchTaxData().then(()=>renderTax());
+  } else if(id==='china'){
+    showPage('china'); cnInit();
   } else {
     document.getElementById('ph-title').textContent = label;
     showPage('sub');
@@ -9088,5 +9132,241 @@ function recipeListRender() {
 <div id="pn-img-modal" onclick="this.style.display='none'">
   <img id="pn-img-modal-img" src="" alt="" onclick="event.stopPropagation()">
 </div>
+
+<!-- ── 중국발주 스타일 ── -->
+<style>
+.cn-head{margin:4px 2px 16px}
+.cn-title{font-size:1.2rem;font-weight:800;color:#2C2C2C}
+.cn-sub{font-size:.8rem;color:#8A90A6;margin-top:5px;line-height:1.5}
+.cn-sub b{color:#4F6EF7}
+.cn-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cn-btn{border:none;border-radius:11px;padding:9px 18px;font-size:.83rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .13s}
+.cn-btn-add{background:transparent;border:1.5px dashed #C5CFF5;color:#4F6EF7}
+.cn-btn-add:hover{background:#F0F3FF}
+.cn-btn-ghost{background:transparent;border:1.5px solid #EADADA;color:#B78A8A}
+.cn-btn-ghost:hover{background:#FBF3F3}
+.cn-btn-dl{background:linear-gradient(135deg,#4F6EF7,#3040C0);color:#fff;box-shadow:0 3px 10px rgba(64,80,192,.25)}
+.cn-btn-dl:hover{filter:brightness(1.06)}
+.cn-btn-dl:disabled{opacity:.6;cursor:default}
+.cn-count{font-size:.78rem;color:#7A80A0;font-weight:700}
+.cn-datewrap{display:inline-flex;align-items:center;gap:1px;font-size:.76rem;color:#7A80A0;font-weight:700;background:#F6F7FC;border-radius:9px;padding:5px 10px;cursor:text}
+.cn-date{width:56px;border:none;border-bottom:1.5px solid #C5CFF5;background:transparent;font-family:inherit;font-size:.8rem;font-weight:800;color:#3040C0;text-align:center;outline:none;padding:1px 2px}
+.cn-date:focus{border-bottom-color:#4F6EF7}
+.cn-table-wrap{background:#fff;border-radius:16px;box-shadow:0 3px 14px rgba(80,90,140,.07);border:1.5px solid #EEF0F7;overflow-x:auto}
+.cn-grid{display:grid;grid-template-columns:104px minmax(150px,1.4fr) minmax(96px,1fr) minmax(120px,1.25fr) 60px 74px 86px minmax(130px,1.25fr) 34px;gap:9px;align-items:center;padding:9px 14px;min-width:940px}
+.cn-thead{background:#F6F7FC;border-bottom:1.5px solid #EEF0F7;border-radius:16px 16px 0 0;font-size:.72rem;font-weight:800;color:#787FA0}
+.cn-th{text-align:center}
+.cn-th.cn-l{text-align:left;padding-left:4px}
+.cn-row{border-bottom:1px solid #F2F3F8}
+.cn-row:last-child{border-bottom:none}
+.cn-photo{width:96px;height:96px;border-radius:12px;border:1.5px dashed #CBD3EC;background:#F8FAFF center/cover no-repeat;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden}
+.cn-photo.filled{border-style:solid;border-color:#B9C4EC}
+.cn-photo.active{border-color:#4F6EF7;box-shadow:0 0 0 3px rgba(79,110,247,.15)}
+.cn-photo-hint{font-size:.62rem;color:#A9B2D0;text-align:center;line-height:1.45;pointer-events:none}
+.cn-photo input{display:none}
+.cn-photo-x{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;background:rgba(20,24,45,.55);color:#fff;font-size:.72rem;line-height:1;display:none;align-items:center;justify-content:center;border:none;cursor:pointer}
+.cn-photo.filled:hover .cn-photo-x{display:flex}
+.cn-inp,.cn-ta{width:100%;padding:7px 9px;border-radius:9px;border:1.5px solid #E6E9F4;font-size:.79rem;font-family:inherit;color:#2C2C2C;outline:none;background:#fff;box-sizing:border-box}
+.cn-inp:focus,.cn-ta:focus{border-color:#8CA0F0}
+.cn-ta{resize:vertical;min-height:40px;line-height:1.45}
+.cn-num{text-align:right;font-variant-numeric:tabular-nums}
+.cn-amt{text-align:right;font-weight:800;color:#3040C0;font-size:.82rem;font-variant-numeric:tabular-nums;padding-right:4px;min-height:20px}
+.cn-del{background:transparent;border:none;color:#D2A6A6;font-size:1.05rem;cursor:pointer;padding:2px;line-height:1}
+.cn-del:hover{color:#E05050}
+.cn-add-bottom{margin:16px auto 0;display:block}
+.cn-tip{margin:16px 4px 0;font-size:.74rem;color:#9096AE;line-height:1.6;background:#F6F7FC;border-radius:12px;padding:11px 15px}
+.cn-tip b{color:#4F6EF7}
+.cn-hist{margin:26px 2px 0}
+.cn-hist-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.cn-hist-title{font-size:.98rem;font-weight:800;color:#2C2C2C}
+.cn-hist-desc{font-size:.73rem;color:#9096AE}
+.cn-hist-desc b{color:#4F6EF7}
+.cn-hist-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:11px}
+.cn-hist-empty{grid-column:1/-1;font-size:.8rem;color:#AEB3C6;text-align:center;padding:22px;background:#F8FAFF;border-radius:14px;border:1.5px dashed #E0E5F2}
+.cn-hist-card{background:#fff;border:1.5px solid #EAEDF7;border-radius:14px;padding:13px 15px;cursor:pointer;transition:all .13s;position:relative}
+.cn-hist-card:hover{border-color:#8CA0F0;box-shadow:0 4px 14px rgba(79,110,247,.14);transform:translateY(-1px)}
+.cn-hist-name{font-size:.9rem;font-weight:800;color:#3040C0;margin-bottom:5px;padding-right:22px}
+.cn-hist-meta{font-size:.72rem;color:#8A90A6;line-height:1.6}
+.cn-hist-total{font-weight:700;color:#4F6EF7}
+.cn-hist-del{position:absolute;top:9px;right:9px;width:22px;height:22px;border-radius:50%;border:none;background:#F4F0F0;color:#C99;font-size:.85rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cn-hist-del:hover{background:#FDE8E8;color:#E05050}
+.cn-hist-load{margin-top:9px;font-size:.72rem;font-weight:700;color:#4F6EF7}
+</style>
+
+<!-- ── 중국발주 기능 ── -->
+<script>
+let cnData=[], cnSeq=1, cnActiveId=null;
+const CN_KEY='boss_china_order_v1';
+
+function cnBlank(){ return {id:cnSeq++, photo:'', link:'', item:'', opt:'', qty:'', price:'', note:''}; }
+function cnGet(id){ return cnData.find(r=>r.id===id); }
+function cnEsc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function cnInit(){
+  if(!cnData.length){
+    try{ const raw=localStorage.getItem(CN_KEY); if(raw){ const o=JSON.parse(raw); if(o&&Array.isArray(o.rows)&&o.rows.length){ cnData=o.rows; cnSeq=(o.seq)||(cnData.reduce((m,r)=>Math.max(m,r.id),0)+1); } } }catch(e){}
+    if(!cnData.length){ cnData=[cnBlank(),cnBlank(),cnBlank()]; }
+  }
+  const di=document.getElementById('cn-date'); if(di && !di.value) di.value=cnToday();
+  cnRender(); cnRenderHist();
+}
+function cnToday(){ const d=new Date(); return String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
+function cnDateInput(inp){ inp.value=inp.value.replace(/\D/g,'').slice(0,6); }
+function cnFname(){
+  const inp=document.getElementById('cn-date');
+  let v=inp?inp.value.replace(/\D/g,''):'';
+  if(!v) v=cnToday();
+  return '중국발주-'+v+'.xlsx';
+}
+function cnSave(){
+  try{ localStorage.setItem(CN_KEY, JSON.stringify({rows:cnData,seq:cnSeq})); }
+  catch(e){ try{ localStorage.setItem(CN_KEY, JSON.stringify({rows:cnData.map(r=>({...r,photo:''})),seq:cnSeq})); }catch(e2){} }
+}
+function cnRender(){
+  const wrap=document.getElementById('cn-rows'); if(!wrap) return;
+  wrap.innerHTML=cnData.map(cnRowHtml).join('');
+  cnData.forEach(r=>{ cnUpdAmt(r.id); cnApplyPhoto(r.id); });
+  cnCount();
+}
+function cnRowHtml(r){
+  return '<div class="cn-grid cn-row" id="cn-row-'+r.id+'">'
+    +'<label class="cn-photo" id="cn-photo-'+r.id+'" onclick="cnPick('+r.id+')" ondragover="event.preventDefault();this.classList.add(\'active\')" ondragleave="this.classList.remove(\'active\')" ondrop="cnDrop(event,'+r.id+')">'
+      +'<span class="cn-photo-hint">사진<br>클릭·붙여넣기<br>·끌어놓기</span>'
+      +'<button class="cn-photo-x" onclick="event.preventDefault();event.stopPropagation();cnClearPhoto('+r.id+')">×</button>'
+      +'<input type="file" accept="image/*" onchange="cnFilePick('+r.id+',this)">'
+    +'</label>'
+    +'<input class="cn-inp" placeholder="상품 링크" value="'+cnEsc(r.link)+'" oninput="cnField('+r.id+',\'link\',this.value)">'
+    +'<input class="cn-inp" placeholder="품목명" value="'+cnEsc(r.item)+'" oninput="cnField('+r.id+',\'item\',this.value)">'
+    +'<textarea class="cn-ta" placeholder="옵션" oninput="cnField('+r.id+',\'opt\',this.value)">'+cnEsc(r.opt)+'</textarea>'
+    +'<input class="cn-inp cn-num" placeholder="0" inputmode="decimal" value="'+cnEsc(r.qty)+'" oninput="cnField('+r.id+',\'qty\',this.value)">'
+    +'<input class="cn-inp cn-num" placeholder="0" inputmode="decimal" value="'+cnEsc(r.price)+'" oninput="cnField('+r.id+',\'price\',this.value)">'
+    +'<div class="cn-amt" id="cn-amt-'+r.id+'"></div>'
+    +'<textarea class="cn-ta" placeholder="메모 / 요청사항" oninput="cnField('+r.id+',\'note\',this.value)">'+cnEsc(r.note)+'</textarea>'
+    +'<button class="cn-del" title="삭제" onclick="cnDelRow('+r.id+')">🗑</button>'
+  +'</div>';
+}
+function cnField(id,f,v){ const r=cnGet(id); if(!r) return; r[f]=v; if(f==='qty'||f==='price'){ cnUpdAmt(id); } cnCount(); cnSave(); }
+function cnUpdAmt(id){ const r=cnGet(id), el=document.getElementById('cn-amt-'+id); if(!r||!el) return; const a=(parseFloat(r.qty)||0)*(parseFloat(r.price)||0); el.textContent=a?a.toLocaleString('ko-KR',{maximumFractionDigits:2}):''; }
+function cnCount(){ const el=document.getElementById('cn-count'); if(!el) return; const n=cnData.filter(r=>r.item||r.link||r.photo||r.opt).length; const t=cnData.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0); el.textContent='품목 '+n+'개 · 합계 ¥'+t.toLocaleString('ko-KR',{maximumFractionDigits:2}); }
+function cnAddRow(){ cnData.push(cnBlank()); cnRender(); cnSave(); const rows=document.getElementById('cn-rows'); if(rows&&rows.lastElementChild) rows.lastElementChild.scrollIntoView({behavior:'smooth',block:'center'}); }
+function cnDelRow(id){ cnData=cnData.filter(r=>r.id!==id); if(!cnData.length) cnData=[cnBlank()]; cnRender(); cnSave(); }
+function cnClearAll(){ if(!confirm('입력한 내용을 모두 지울까요?')) return; cnData=[cnBlank(),cnBlank(),cnBlank()]; cnActiveId=null; cnRender(); cnSave(); }
+
+/* 사진 처리 */
+function cnPick(id){ cnActiveId=id; document.querySelectorAll('.cn-photo').forEach(e=>e.classList.remove('active')); const el=document.getElementById('cn-photo-'+id); if(el) el.classList.add('active'); const r=cnGet(id); if(r&&!r.photo){ const inp=el&&el.querySelector('input'); if(inp) inp.click(); } }
+function cnFilePick(id,inp){ if(inp.files&&inp.files[0]) cnReadImg(inp.files[0],id); inp.value=''; }
+function cnDrop(ev,id){ ev.preventDefault(); const el=document.getElementById('cn-photo-'+id); if(el) el.classList.remove('active'); const f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) cnReadImg(f,id); }
+function cnClearPhoto(id){ cnField(id,'photo',''); cnApplyPhoto(id); }
+function cnApplyPhoto(id){ const r=cnGet(id), el=document.getElementById('cn-photo-'+id); if(!el) return; const hint=el.querySelector('.cn-photo-hint'); if(r&&r.photo){ el.style.backgroundImage='url("'+r.photo+'")'; el.classList.add('filled'); if(hint) hint.style.display='none'; } else { el.style.backgroundImage=''; el.classList.remove('filled'); if(hint) hint.style.display=''; } }
+function cnReadImg(file,id){
+  if(!file||!/^image\//.test(file.type)) return;
+  const rd=new FileReader();
+  rd.onload=e=>{ const img=new Image(); img.onload=()=>{ const max=620; let w=img.width,h=img.height; if(w>max||h>max){ const s=Math.min(max/w,max/h); w=Math.round(w*s); h=Math.round(h*s); } const cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); cnField(id,'photo',cv.toDataURL('image/png')); cnApplyPhoto(id); }; img.src=e.target.result; };
+  rd.readAsDataURL(file);
+}
+document.addEventListener('paste',e=>{
+  const pg=document.getElementById('page-china'); if(!pg||!pg.classList.contains('active')) return;
+  if(cnActiveId==null) return;
+  const items=e.clipboardData&&e.clipboardData.items; if(!items) return;
+  for(const it of items){ if(it.type&&it.type.indexOf('image')===0){ const f=it.getAsFile(); if(f){ cnReadImg(f,cnActiveId); e.preventDefault(); } break; } }
+});
+
+/* ExcelJS 지연 로딩 (온라인일 때만, 2개 CDN 폴백) */
+function cnLoadExcelJS(){
+  return new Promise((res,rej)=>{
+    if(window.ExcelJS) return res();
+    const cdns=['https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js','https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'];
+    let i=0; const tryLoad=()=>{ if(i>=cdns.length) return rej(new Error('load fail')); const s=document.createElement('script'); s.src=cdns[i]; s.onload=()=>res(); s.onerror=()=>{ i++; tryLoad(); }; document.head.appendChild(s); };
+    tryLoad();
+  });
+}
+function cnBorder(){ const s={style:'thin',color:{argb:'FFE2E5F0'}}; return {top:s,left:s,bottom:s,right:s}; }
+
+/* ── 저장 내역 (IndexedDB — 사진 포함 대용량 OK) ── */
+function cnDB(){ return new Promise((res,rej)=>{ let rq; try{ rq=indexedDB.open('bossChina',1); }catch(e){ return rej(e); } rq.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('orders')) db.createObjectStore('orders',{keyPath:'id'}); }; rq.onsuccess=e=>res(e.target.result); rq.onerror=()=>rej(rq.error); }); }
+function cnDbPut(rec){ return cnDB().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('orders','readwrite'); tx.objectStore('orders').put(rec); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
+function cnDbAll(){ return cnDB().then(db=>new Promise((res,rej)=>{ const rq=db.transaction('orders','readonly').objectStore('orders').getAll(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); })); }
+function cnDbDel(id){ return cnDB().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('orders','readwrite'); tx.objectStore('orders').delete(id); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
+
+function cnSaveHistory(dateStr,rows){
+  const total=rows.reduce((s,r)=>s+((parseFloat(r.qty)||0)*(parseFloat(r.price)||0)),0);
+  const rec={ id:String(dateStr), name:'중국발주-'+dateStr, savedAt:Date.now(), count:rows.length, total:total, rows:JSON.parse(JSON.stringify(rows)) };
+  return cnDbPut(rec).then(()=>cnRenderHist()).catch(e=>{ console.warn('발주 내역 저장 실패',e); });
+}
+function cnRenderHist(){
+  const wrap=document.getElementById('cn-hist-list'); if(!wrap) return;
+  cnDbAll().then(list=>{
+    list.sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
+    if(!list.length){ wrap.innerHTML='<div class="cn-hist-empty">아직 저장된 내역이 없어요. 엑셀을 다운로드하면 여기에 자동으로 쌓여요.</div>'; return; }
+    wrap.innerHTML=list.map(r=>{
+      const d=new Date(r.savedAt||0);
+      const when=String(d.getFullYear()).slice(2)+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+      return '<div class="cn-hist-card" onclick="cnLoadHist(\''+r.id+'\')">'
+        +'<button class="cn-hist-del" title="삭제" onclick="event.stopPropagation();cnDelHist(\''+r.id+'\')">×</button>'
+        +'<div class="cn-hist-name">📄 '+cnEsc(r.name)+'</div>'
+        +'<div class="cn-hist-meta">품목 '+(r.count||0)+'개 · <span class="cn-hist-total">¥'+(r.total||0).toLocaleString('ko-KR',{maximumFractionDigits:2})+'</span><br>저장 '+when+'</div>'
+        +'<div class="cn-hist-load">클릭해서 불러오기 ↗</div>'
+      +'</div>';
+    }).join('');
+  }).catch(()=>{ wrap.innerHTML='<div class="cn-hist-empty">내역을 불러오지 못했어요.</div>'; });
+}
+function cnLoadHist(id){
+  cnDbAll().then(list=>{
+    const rec=list.find(r=>String(r.id)===String(id)); if(!rec) return;
+    const hasContent=cnData.some(r=>r.item||r.link||r.photo||r.opt||r.qty||r.price);
+    if(hasContent && !confirm('지금 작성 중인 내용을 지우고 「'+rec.name+'」 내역을 불러올까요?')) return;
+    cnData=JSON.parse(JSON.stringify(rec.rows||[]));
+    if(!cnData.length) cnData=[cnBlank()];
+    cnSeq=cnData.reduce((m,r)=>Math.max(m,r.id||0),0)+1;
+    const di=document.getElementById('cn-date'); if(di) di.value=String(rec.id);
+    cnRender(); cnSave();
+    const pg=document.getElementById('page-china'); if(pg) pg.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+function cnDelHist(id){ if(!confirm('이 저장 내역을 삭제할까요?')) return; cnDbDel(id).then(()=>cnRenderHist()); }
+
+async function cnExport(btn){
+  const rows=cnData.filter(r=>r.item||r.link||r.opt||r.photo||r.qty||r.price);
+  if(!rows.length){ alert('입력된 품목이 없어요.'); return; }
+  const label=btn?btn.querySelector('#cn-fname')||btn:null, orig=label?label.textContent:'';
+  if(btn){ btn.disabled=true; if(label) label.textContent='⏳ 만드는 중...'; }
+  try{
+    await cnLoadExcelJS();
+    const wb=new ExcelJS.Workbook();
+    const ws=wb.addWorksheet('발주',{views:[{state:'frozen',ySplit:1}]});
+    ws.columns=[{width:2.5},{width:2.5},{width:16},{width:34},{width:15},{width:14},{width:24},{width:9},{width:9},{width:13},{width:2.5},{width:30}];
+    const HDR={3:'쇼핑몰\n(타오바오,티몰,1688,징동)',4:'링크주소 또는 상품사진',5:'사진',6:'품목',7:'옵션',8:'수량',9:'단가',10:'금액(총합계)',12:'요청사항/메모'};
+    const h=ws.getRow(1); h.height=44;
+    Object.keys(HDR).forEach(c=>{ const cell=h.getCell(+c); cell.value=HDR[c]; cell.font={bold:true,size:10,color:{argb:'FF44485C'}}; cell.alignment={vertical:'middle',horizontal:'center',wrapText:true}; cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF2F4FB'}}; cell.border=cnBorder(); });
+    rows.forEach((r,i)=>{
+      const R=i+2, row=ws.getRow(R);
+      if(r.link){ row.getCell(4).value={text:r.link,hyperlink:r.link}; row.getCell(4).font={color:{argb:'FF3040C0'},underline:true}; } else { row.getCell(4).value=''; }
+      row.getCell(6).value=r.item||'';
+      row.getCell(7).value=r.opt||'';
+      const q=parseFloat(r.qty), p=parseFloat(r.price);
+      if(!isNaN(q)) row.getCell(8).value=q;
+      if(!isNaN(p)){ row.getCell(9).value=p; row.getCell(9).numFmt='0.00'; }
+      row.getCell(10).value={formula:'H'+R+'*I'+R}; row.getCell(10).numFmt='#,##0.00';
+      row.getCell(12).value=r.note||'';
+      row.height=78;
+      for(let c=3;c<=12;c++){ if(c===11) continue; const cell=row.getCell(c); const rightAlign=(c===8||c===9||c===10); cell.alignment={vertical:'middle',wrapText:true,horizontal:rightAlign?'right':'left'}; cell.border=cnBorder(); }
+      if(r.photo){ const m=/^data:image\/(\w+);base64,(.*)$/.exec(r.photo); if(m){ try{ const imgId=wb.addImage({base64:m[2],extension:(m[1]==='jpeg'?'jpeg':m[1])}); ws.addImage(imgId,{tl:{col:4.12,row:(R-1)+0.1},ext:{width:92,height:92},editAs:'oneCell'}); }catch(e){} } }
+    });
+    const T=rows.length+2;
+    ws.getCell('F'+T).value='합계'; ws.getCell('F'+T).font={bold:true}; ws.getCell('F'+T).alignment={horizontal:'right',vertical:'middle'};
+    ws.getCell('J'+T).value={formula:'SUM(J2:J'+(T-1)+')'}; ws.getCell('J'+T).numFmt='#,##0.00'; ws.getCell('J'+T).font={bold:true,color:{argb:'FF3040C0'}}; ws.getCell('J'+T).alignment={horizontal:'right',vertical:'middle'};
+    ws.getCell('F'+T).border=cnBorder(); ws.getCell('J'+T).border=cnBorder();
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=cnFname(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    const di=document.getElementById('cn-date'); const dateStr=(di&&di.value.replace(/\D/g,''))||cnToday();
+    cnSaveHistory(dateStr, rows);
+  }catch(err){
+    alert('엑셀 생성에 실패했어요. 인터넷 연결을 확인해 주세요.\n('+(err&&err.message||err)+')');
+  }finally{
+    if(btn){ btn.disabled=false; if(label) label.textContent=orig; }
+  }
+}
+</script>
 </body>
 </html>
