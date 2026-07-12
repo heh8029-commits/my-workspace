@@ -2295,6 +2295,67 @@ body.mode-mob .mobile-subnav{display:flex!important}
       <div id="card-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:16px"></div>
     </div>
 
+    <!-- 자동이체 & 카드값 페이지 -->
+    <div class="page" id="page-auto-pay">
+      <div style="max-width:1000px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+
+        <!-- 메모 -->
+        <div style="background:#fff;border:1.5px solid #A8D9BF;border-radius:14px;padding:14px">
+          <div style="font-size:.8rem;font-weight:800;color:#1A8C5A;margin-bottom:8px">📋 메모</div>
+          <textarea id="ap-memo" placeholder="메모..." oninput="apFieldSave('memo',this.value)"
+            style="width:100%;min-height:80px;border:none;resize:vertical;font-size:.83rem;color:#444;line-height:1.7;font-family:inherit;outline:none;background:transparent;box-sizing:border-box"></textarea>
+        </div>
+
+        <!-- 월 자동이체 합계 배너 -->
+        <div style="background:linear-gradient(90deg,#1A8C5A,#27AE72);border-radius:12px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:.83rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px">
+            <span style="font-size:1rem">💳</span> 월 자동이체 합계
+          </div>
+          <div id="ap-transfer-total" style="font-size:1.15rem;font-weight:900;color:#fff"></div>
+        </div>
+
+        <!-- 자동이체 목록 -->
+        <div style="background:#fff;border:1.5px solid #A8D9BF;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1.5px solid #E8F5EE">
+            <div style="font-size:.85rem;font-weight:800;color:#1A8C5A">💳 자동이체 목록</div>
+            <button onclick="apTransferAdd()" style="padding:5px 14px;border-radius:9px;background:#1A8C5A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer">+ 추가</button>
+          </div>
+          <div style="padding:0 16px 6px">
+            <div style="display:grid;grid-template-columns:60px 1.6fr 120px 120px 110px 1fr 30px;gap:6px;padding:8px 0;font-size:.7rem;font-weight:700;color:#888;border-bottom:1px solid #E8F5EE;align-items:center">
+              <div style="text-align:center">매월</div><div>항목명</div><div>출금</div><div>입금</div><div style="text-align:right">금액</div><div>메모</div><div></div>
+            </div>
+            <div id="ap-transfer-list"></div>
+          </div>
+        </div>
+
+        <!-- 이달 카드값 합계 배너 -->
+        <div style="background:linear-gradient(90deg,#C0185A,#E8306A);border-radius:12px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:.83rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px">
+              <span style="font-size:1rem">💳</span> 이달 카드값 합계
+            </div>
+            <div id="ap-card-breakdown" style="font-size:.72rem;color:rgba(255,255,255,.75);margin-top:3px"></div>
+          </div>
+          <div id="ap-card-total" style="font-size:1.15rem;font-weight:900;color:#fff"></div>
+        </div>
+
+        <!-- 카드값 목록 -->
+        <div style="background:#fff;border:1.5px solid #F0A0C0;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1.5px solid #FDE8F0">
+            <div style="font-size:.85rem;font-weight:800;color:#C0185A">💳 카드값</div>
+            <button onclick="apCardAdd()" style="padding:5px 14px;border-radius:9px;background:#C0185A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer">+ 추가</button>
+          </div>
+          <div style="padding:0 16px 6px">
+            <div style="display:grid;grid-template-columns:130px 130px 1fr 30px;gap:6px;padding:8px 0;font-size:.7rem;font-weight:700;color:#888;border-bottom:1px solid #FDE8F0;align-items:center">
+              <div>날짜</div><div>분류</div><div style="text-align:right">금액</div><div></div>
+            </div>
+            <div id="ap-card-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- CS 실시간공유 페이지 -->
     <div class="page" id="page-cs">
       <div style="display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start">
@@ -2651,6 +2712,9 @@ function setSub(id, label){
   } else if(id==='card'){
     showPage('card');
     cardFetch();
+  } else if(id==='auto-pay'){
+    showPage('auto-pay');
+    apFetch();
   } else if(id==='tax'){
     showPage('tax');
     fetchTaxData().then(()=>renderTax());
@@ -8190,6 +8254,7 @@ let _pwSaveTimer = null;
 // ── 정보탭 포스트잇 (독립 데이터) ──
 const FB_INFO_NOTES = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_info_notes.json';
 const FB_RECIPE = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_recipe.json';
+const FB_AUTOPAY = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_autopay.json';
 const INFO_NOTE_COLORS = ['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
 let _infoNotes = [];
 let _infoNoteTimer = null;
@@ -8282,7 +8347,7 @@ function infoNotesRender() {
     const textEsc = (n.text||'').replace(/"/g,'&quot;');
     const imgHtml = n.img
       ? '<div style="position:relative;margin-bottom:4px">'
-        + '<img src="'+n.img+'" style="width:100%;max-height:120px;object-fit:contain;border-radius:6px;background:#fff">'
+        + '<img src="'+n.img+'" onclick="pnShowImg(this.src)" style="width:100%;max-height:120px;object-fit:contain;border-radius:6px;background:#fff;cursor:zoom-in">'
         + '<button onclick="infoNoteRemoveImg('+i+')" style="position:absolute;top:2px;right:2px;border:none;background:rgba(0,0,0,.45);color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:.65rem;line-height:18px;padding:0">✕</button>'
         + '</div>'
       : '';
@@ -8491,6 +8556,160 @@ async function searchPreFetch() {
     const inp = document.getElementById('g-search-input');
     if (inp && inp.value.trim()) globalSearch(inp.value);
   }
+}
+
+// ── 자동이체 & 카드값 ──────────────────────────────────────
+const AP_CARD_TYPES = ['현대카드','신한카드','국민카드','삼성카드','롯데카드','하나카드','우리카드','기타'];
+const AP_DEFAULT = {
+  memo: '301농협에 210만원\n\n토스 4월21일 3개월짜리 적금들.. 8600만원',
+  transfers: [
+    {id:1, day:1,  name:'미노평월급',          from:'미래에셋', to:'기업은행',   amount:2153000, memo:'27년6월30일까지'},
+    {id:2, day:1,  name:'퇴직금적립',           from:'미래에셋', to:'미래에셋248',amount:500000,  memo:''},
+    {id:3, day:18, name:'연금저축모우기',         from:'미래에셋', to:'미래에셋144',amount:800000,  memo:''},
+    {id:4, day:20, name:'현대테라관리비',         from:'미래에셋', to:'토스',       amount:500000,  memo:'27년7월31일까지'},
+    {id:5, day:20, name:'현대테라리세',          from:'미래에셋', to:'KB국민은행', amount:1210000, memo:'26년6월30일까지'},
+    {id:6, day:20, name:'건강보험,월세,노란우산등', from:'미래에셋', to:'농협301',   amount:2100000, memo:''},
+    {id:7, day:25, name:'어머님천만원적금',        from:'미래에셋', to:'토스',       amount:300000,  memo:'27년10월30일까지'},
+    {id:8, day:26, name:'주담대대출용',           from:'미래에셋', to:'농협312',   amount:1400000, memo:'29년2월28일까지'},
+    {id:9, day:26, name:'??',                  from:'미래에셋', to:'SK기업요금', amount:5500,    memo:'이거 모아??? 알뜰폰같음...'},
+  ],
+  cards: [
+    {id:1, date:'2026-05-26', type:'현대카드', amount:5791744},
+    {id:2, date:'2026-05-26', type:'신한카드', amount:7773369},
+  ]
+};
+let _apData = null;
+let _apSaveTimer = null;
+
+async function apFetch() {
+  try {
+    const r = await fetch(FB_AUTOPAY + '?t=' + Date.now());
+    if (r.ok) {
+      const d = await r.json();
+      if (d && (d.transfers || d.cards)) {
+        _apData = {
+          memo: d.memo || '',
+          transfers: Array.isArray(d.transfers) ? d.transfers : [],
+          cards: Array.isArray(d.cards) ? d.cards : []
+        };
+      } else {
+        _apData = JSON.parse(JSON.stringify(AP_DEFAULT));
+        apSaveNow();
+      }
+    } else {
+      _apData = JSON.parse(JSON.stringify(AP_DEFAULT));
+      apSaveNow();
+    }
+  } catch(e) {
+    _apData = JSON.parse(JSON.stringify(AP_DEFAULT));
+  }
+  apRender();
+}
+
+function apSaveNow() {
+  fetch(FB_AUTOPAY, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(_apData)}).catch(()=>{});
+}
+function apSaveDebounce() {
+  clearTimeout(_apSaveTimer);
+  _apSaveTimer = setTimeout(apSaveNow, 800);
+}
+function apFieldSave(field, val) {
+  _apData[field] = val;
+  apSaveDebounce();
+}
+
+function apRender() {
+  const memo = document.getElementById('ap-memo');
+  if (memo) memo.value = _apData.memo || '';
+  apTransferRender();
+  apCardRender();
+}
+
+// ── 자동이체 ──
+function apTransferRender() {
+  const el = document.getElementById('ap-transfer-list');
+  const tot = document.getElementById('ap-transfer-total');
+  if (!el) return;
+  const list = (_apData.transfers || []).slice().sort((a,b) => a.day - b.day);
+  const total = list.reduce((s,t) => s + (Number(t.amount)||0), 0);
+  if (tot) tot.textContent = total.toLocaleString() + '원';
+  if (!list.length) { el.innerHTML = '<div style="color:#bbb;font-size:.8rem;padding:16px;text-align:center">항목을 추가해보세요</div>'; return; }
+  const inpS = 'width:100%;padding:5px 8px;border:1.5px solid #E0F0E8;border-radius:7px;font-size:.8rem;font-family:inherit;background:#F8FEFA;box-sizing:border-box';
+  el.innerHTML = list.map(t =>
+    '<div style="display:grid;grid-template-columns:60px 1.6fr 120px 120px 110px 1fr 30px;gap:6px;padding:7px 0;border-bottom:1px solid #EEF8F2;align-items:center">'
+    + '<div style="text-align:center"><span style="background:#E8F5EE;color:#1A8C5A;border-radius:6px;padding:3px 6px;font-size:.75rem;font-weight:700">' + t.day + '일</span></div>'
+    + '<input value="' + (t.name||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'name\',this.value)" placeholder="항목명" style="' + inpS + '">'
+    + '<input value="' + (t.from||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'from\',this.value)" placeholder="출금" style="' + inpS + ';color:#C0185A">'
+    + '<input value="' + (t.to||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'to\',this.value)" placeholder="입금" style="' + inpS + ';color:#1A8C5A">'
+    + '<input type="number" value="' + (t.amount||'') + '" oninput="apTransferEdit(' + t.id + ',\'amount\',Number(this.value))" placeholder="금액" style="' + inpS + ';text-align:right;color:#1A8C5A;font-weight:700">'
+    + '<input value="' + (t.memo||'').replace(/"/g,'&quot;') + '" oninput="apTransferEdit(' + t.id + ',\'memo\',this.value)" placeholder="메모" style="' + inpS + '">'
+    + '<button onclick="apTransferDel(' + t.id + ')" style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#ccc;padding:0">✕</button>'
+    + '</div>'
+  ).join('');
+}
+
+function apTransferAdd() {
+  const newId = Date.now();
+  _apData.transfers.push({id:newId, day:1, name:'', from:'미래에셋', to:'', amount:0, memo:''});
+  apTransferRender();
+  apSaveDebounce();
+}
+function apTransferEdit(id, field, val) {
+  const t = _apData.transfers.find(x => x.id === id);
+  if (t) { t[field] = val; }
+  if (field === 'day' || field === 'amount') { apTransferRender(); } else { apSaveDebounce(); }
+  if (field === 'amount') apSaveDebounce();
+}
+function apTransferDel(id) {
+  _apData.transfers = _apData.transfers.filter(t => t.id !== id);
+  apTransferRender();
+  apSaveDebounce();
+}
+
+// ── 카드값 ──
+function apCardRender() {
+  const el = document.getElementById('ap-card-list');
+  const tot = document.getElementById('ap-card-total');
+  const breakdown = document.getElementById('ap-card-breakdown');
+  if (!el) return;
+  const list = _apData.cards || [];
+  const total = list.reduce((s,c) => s + (Number(c.amount)||0), 0);
+  if (tot) tot.textContent = total.toLocaleString() + '원';
+  if (breakdown) {
+    const byType = {};
+    list.forEach(c => { if (c.amount) byType[c.type] = (byType[c.type]||0) + (Number(c.amount)||0); });
+    breakdown.textContent = Object.entries(byType).map(([k,v]) => k + ': ' + v.toLocaleString() + '원').join('  /  ');
+  }
+  const inpS = 'width:100%;padding:5px 8px;border:1.5px solid #F8D0E0;border-radius:7px;font-size:.8rem;font-family:inherit;background:#FDF5F8;box-sizing:border-box';
+  const selOpts = AP_CARD_TYPES.map(t => '<option>' + t + '</option>').join('');
+  el.innerHTML = list.map(c =>
+    '<div style="display:grid;grid-template-columns:130px 130px 1fr 30px;gap:6px;padding:7px 0;border-bottom:1px solid #FDE8F0;align-items:center">'
+    + '<input type="date" value="' + (c.date||'') + '" onchange="apCardEdit(' + c.id + ',\'date\',this.value)" style="' + inpS + '">'
+    + '<select onchange="apCardEdit(' + c.id + ',\'type\',this.value)" style="' + inpS + ';cursor:pointer">'
+    + AP_CARD_TYPES.map(t => '<option' + (t===c.type?' selected':'') + '>' + t + '</option>').join('')
+    + '</select>'
+    + '<input type="number" value="' + (c.amount||'') + '" oninput="apCardEdit(' + c.id + ',\'amount\',Number(this.value))" placeholder="금액 입력" style="' + inpS + ';text-align:right;color:#C0185A;font-weight:700">'
+    + '<button onclick="apCardDel(' + c.id + ')" style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#ccc;padding:0">✕</button>'
+    + '</div>'
+  ).join('');
+}
+
+function apCardAdd() {
+  const today = new Date().toISOString().slice(0,10);
+  _apData.cards.push({id:Date.now(), date:today, type:'현대카드', amount:null});
+  apCardRender();
+  apSaveDebounce();
+}
+function apCardEdit(id, field, val) {
+  const c = _apData.cards.find(x => x.id === id);
+  if (c) { c[field] = val; }
+  apCardRender();
+  apSaveDebounce();
+}
+function apCardDel(id) {
+  _apData.cards = _apData.cards.filter(c => c.id !== id);
+  apCardRender();
+  apSaveDebounce();
 }
 
 // ── 요리 메뉴 ──────────────────────────────────────────────
