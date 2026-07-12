@@ -2025,7 +2025,7 @@ async function renderAdmin(){
     totalFinal+=wageFinal; totalSj+=st.sjTotal||0;
     const color=COLORS[i%COLORS.length];
     tbl+=`<tr>
-      <td><div class="emp-name"><span style="color:${color}">✦</span>${esc(m.name)}${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
+      <td><div class="emp-name" onclick="openLogView('${m.id}')" style="cursor:pointer" title="근무일정표 열기"><span style="color:${color}">✦</span><span style="text-decoration:underline;text-decoration-color:var(--pink-mid)">${esc(m.name)}</span>${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
       <td>${th}시간 ${tm}분</td>
       <td>${st.offDays}</td>
       <td>${wageFinal?wageFinal.toLocaleString():0}${m.tax?'<small style="color:var(--soft);font-size:.7rem"> (3.3%)</small>':''}</td>
@@ -2053,12 +2053,14 @@ async function renderAdmin(){
   for(const h of['월','화','수','목','금','토','일'])
     cal+=`<div class="admin-cal-hd">${h}</div>`;
 
+  const todayMid=new Date(); todayMid.setHours(0,0,0,0);
   const cur=new Date(calStart);
   while(cur<=calEnd){
     const ds=cur.toISOString().slice(0,10);
     const inP=cur>=start&&cur<=end;
     const dow=cur.getDay();
     const isSat=dow===6,isSun=dow===0;
+    const isPastWeekday=inP&&!isSat&&!isSun&&cur<todayMid;
     const dayMems=dayData[ds]||{};
     let dayTotal=0;
     for(const mid of Object.keys(dayMems)) if(!dayMems[mid].isOff) dayTotal+=dayMems[mid].totalMin;
@@ -2066,18 +2068,28 @@ async function renderAdmin(){
     const weBadge=(isSat||isSun)&&inP?`<span style="font-size:.55rem;background:var(--pink-dark);color:white;border-radius:5px;padding:0 4px">주말</span>`:'';
     cal+=`<div class="admin-cal-day${inP?'':' out-period'}${isSat?' saturday':''}${isSun?' sunday':''}">
       <div class="admin-cal-date">${cur.getMonth()+1}/${cur.getDate()} ${weBadge}</div>
-      <div class="admin-cal-total">🕐 ${dth}시간 ${dtm}분</div>`;
+      ${dayTotal>0?`<div class="admin-cal-total">🕐 ${dth}시간${dtm?' '+dtm+'분':''}</div>`:''}`;
     for(let i=0;i<activeMembers.length;i++){
       const m=activeMembers[i];
       const md=dayMems[m.id];
       const color=COLORS[i%COLORS.length];
-      const mth=md&&!md.isOff?Math.floor(md.totalMin/60):0;
-      const label=md?.isOff?'휴무':`${mth}시간`;
-      cal+=`<div class="admin-cal-emp">
-        <div class="admin-cal-emp-dot" style="background:${color}"></div>
-        <span style="color:var(--soft)">${esc(m.name)}</span>
-        <span style="color:${color};margin-left:2px">${label}</span>
-      </div>`;
+      const has=md&&(md.isOff||md.totalMin>0);
+      if(has){
+        const mth=Math.floor(md.totalMin/60),mtm=md.totalMin%60;
+        const label=md.isOff?'🌴 휴무':`${mth}시간${mtm?' '+mtm+'분':''}`;
+        cal+=`<div class="admin-cal-emp" onclick="openLogView('${m.id}')" style="cursor:pointer">
+          <div class="admin-cal-emp-dot" style="background:${color}"></div>
+          <span style="color:var(--soft)">${esc(m.name)}</span>
+          <span style="color:${color};margin-left:2px">${label}</span>
+        </div>`;
+      } else if(isPastWeekday){
+        // 지난 평일인데 출퇴근/휴무 둘 다 체크 안 함 → 깜빡했을 수도
+        cal+=`<div class="admin-cal-emp" onclick="openLogView('${m.id}')" style="cursor:pointer" title="근무일정표에서 입력하기">
+          <div class="admin-cal-emp-dot" style="background:#e0b0b0"></div>
+          <span style="color:#c0392b">${esc(m.name)}</span>
+          <span style="color:#c0392b;margin-left:2px">⚠️미체크</span>
+        </div>`;
+      }
     }
     cal+='</div>';
     cur.setDate(cur.getDate()+1);
