@@ -872,7 +872,6 @@ button{font-family:inherit;cursor:pointer}
     <div id="logQrBox" style="text-align:center;margin-top:24px;padding-top:20px;border-top:1.5px dashed var(--pink-mid)">
       <div style="font-size:.82rem;font-weight:700;color:var(--lav-dark);margin-bottom:10px">📱 내 근무일정표(달력) 바로가기 QR</div>
       <img id="logQrImg" src="" width="150" height="150" style="border-radius:12px;border:2px solid var(--pink-mid)" alt="내 근무일정표 QR">
-      <div id="logQrUrl" style="font-size:.62rem;color:var(--soft);margin-top:6px;word-break:break-all"></div>
       <div style="font-size:.68rem;color:var(--soft);margin-top:8px">이 QR을 휴대폰으로 찍으면 내 근무일정표(달력)가 바로 열려요<br>(비밀번호를 설정했다면 입력해야 볼 수 있어요) 💕</div>
     </div>
   </div>
@@ -1493,7 +1492,6 @@ async function renderLog(){
   const empUrl=base+'?emp='+encodeURIComponent(m.id);
   const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=6&bgcolor=ffffff&color=000000&data='+encodeURIComponent(empUrl);
   document.getElementById('logQrImg').src=qrSrc;
-  document.getElementById('logQrUrl').textContent=empUrl;
 }
 
 function adminMove(d){adminOffset+=d;renderAdmin();}
