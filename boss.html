@@ -1586,6 +1586,45 @@ body.mode-mob .mobile-subnav{display:flex!important}
     </div>
 
     <!-- 서브메뉴 콘텐츠 (준비 중) -->
+<div class="page" id="page-info">
+  <div style="max-width:900px;margin:0 auto;padding:16px">
+
+    <!-- 포스트잇 섹션 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:.9rem;font-weight:800;color:#555">📌 초당진우 포스트잇</div>
+      <button onclick="infoFetchNotes()" style="padding:4px 12px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.78rem;cursor:pointer">🔄 새로고침</button>
+    </div>
+    <div id="info-notes-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px">
+      <div style="color:#bbb;font-size:.8rem;padding:20px;text-align:center;grid-column:span 5">불러오는 중...</div>
+    </div>
+
+    <!-- 비밀번호 관리 섹션 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:.9rem;font-weight:800;color:#555">🔑 비밀번호 관리</div>
+      <button onclick="pwAdd()" style="padding:5px 14px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer">+ 추가</button>
+    </div>
+    <div style="margin-bottom:12px;position:relative">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#bbb">🔍</span>
+      <input id="pw-search" type="text" placeholder="사이트명, 아이디 검색..." oninput="pwRender()"
+        style="width:100%;padding:9px 12px 9px 34px;border:1px solid #E8E3DC;border-radius:10px;font-size:.85rem;font-family:inherit;background:#fafafa">
+    </div>
+    <div style="background:#fff;border:1px solid #EDE8E1;border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#F8F5F0;font-size:.78rem;color:#999;font-weight:700">
+            <th style="padding:9px 12px;text-align:left;border-bottom:1px solid #EDE8E1;width:22%">사이트</th>
+            <th style="padding:9px 12px;text-align:left;border-bottom:1px solid #EDE8E1;width:22%">아이디</th>
+            <th style="padding:9px 12px;text-align:left;border-bottom:1px solid #EDE8E1;width:26%">비밀번호</th>
+            <th style="padding:9px 12px;text-align:left;border-bottom:1px solid #EDE8E1">메모</th>
+            <th style="padding:9px 8px;border-bottom:1px solid #EDE8E1;width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="pw-tbody"></tbody>
+      </table>
+    </div>
+    <div id="pw-empty" style="display:none;color:#bbb;font-size:.82rem;text-align:center;padding:30px">비밀번호를 추가해보세요</div>
+  </div>
+</div>
     <div class="page" id="page-sub">
       <div class="placeholder">
         <div class="ph-icon">🚧</div>
@@ -2440,6 +2479,7 @@ function setMenu(id){
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('sub'); document.getElementById('ph-title').textContent='전체검색 — 준비 중'; }
   else if(id==='asset'){ setSub('asset-info','현재자산정보'); return; }
+  else if(id==='info'){ showPage('info'); infoFetchNotes(); pwFetch(); }
   else { showPage('sub'); }
 }
 
@@ -7087,6 +7127,7 @@ function createAssetSection(P, fbUrl){
     renderTargets_();
   }
   function renderTargets_(){
+    if(P==='ai'){var wrap=getEl('targets');if(wrap)wrap.innerHTML='';return;}
     var wrap=getEl('targets');if(!wrap)return;
     var total=data.reduce(function(s,r){return s+(+r.amount||0);},0);
     if(!total||!chartItems_.length){wrap.innerHTML='';return;}
@@ -8032,6 +8073,118 @@ async function taxDelGMemo(id){
   _taxData.memos=_taxData.memos.filter(m=>m.id!==id);
   await _saveTaxData();
   renderTaxGMemos();
+}
+
+// ══════════════════════════════════════════════
+// 정보 탭 - 포스트잇 + 비밀번호 관리
+// ══════════════════════════════════════════════
+const FB_PASSWORDS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_passwords.json';
+let _pwItems = [];
+let _pwSaveTimer = null;
+
+// ── 포스트잇 (child notes 재사용) ──
+async function infoFetchNotes() {
+  const el = document.getElementById('info-notes-grid');
+  if (!el) return;
+  try {
+    const r = await fetch(FB_CHILD + '?t=' + Date.now());
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    const notes = (d && d.notes) || [];
+    infoRenderNotes(notes.slice(0, 15));
+  } catch(e) {
+    el.innerHTML = '<div style="color:#bbb;font-size:.8rem;padding:20px;text-align:center;grid-column:span 5">불러오기 실패</div>';
+  }
+}
+
+function infoRenderNotes(notes) {
+  const el = document.getElementById('info-notes-grid');
+  if (!el) return;
+  if (!notes.length) {
+    el.innerHTML = '<div style="color:#bbb;font-size:.8rem;padding:20px;text-align:center;grid-column:span 5">포스트잇이 없어요</div>';
+    return;
+  }
+  const COLORS = ['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
+  el.innerHTML = notes.map((n, i) => {
+    const bg = n.color || COLORS[i % COLORS.length];
+    const text = (n.text || '').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+    return '<div style="background:' + bg + ';border-radius:10px;padding:10px 12px;min-height:80px;font-size:.78rem;color:#444;line-height:1.5;box-shadow:0 2px 6px rgba(0,0,0,.07);word-break:break-all">'
+      + text + '</div>';
+  }).join('');
+}
+
+// ── 비밀번호 관리 ──
+async function pwFetch() {
+  try {
+    const r = await fetch(FB_PASSWORDS + '?t=' + Date.now());
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    _pwItems = Array.isArray(d) ? d : (d ? Object.values(d) : []);
+  } catch(e) { _pwItems = []; }
+  pwRender();
+}
+
+function pwSave() {
+  clearTimeout(_pwSaveTimer);
+  _pwSaveTimer = setTimeout(() => {
+    fetch(FB_PASSWORDS, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(_pwItems)});
+  }, 600);
+}
+
+function pwAdd() {
+  _pwItems.push({site:'', id:'', pw:'', memo:''});
+  pwSave();
+  pwRender();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('#pw-tbody input[data-f="site"]');
+    if (inputs.length) inputs[inputs.length-1].focus();
+  }, 50);
+}
+
+function pwDel(i) {
+  if (!confirm('삭제할까요?')) return;
+  _pwItems.splice(i, 1);
+  pwSave();
+  pwRender();
+}
+
+function pwCopy(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const t = event.target.closest('button');
+    if (t) { t.textContent = '✅'; setTimeout(() => t.textContent = '📋', 1200); }
+  });
+}
+
+function pwEdit(i, field, val) {
+  if (!_pwItems[i]) return;
+  _pwItems[i][field] = val;
+  pwSave();
+}
+
+function pwRender() {
+  const tbody = document.getElementById('pw-tbody');
+  const empty = document.getElementById('pw-empty');
+  if (!tbody) return;
+  const q = (document.getElementById('pw-search') ? document.getElementById('pw-search').value : '').toLowerCase();
+  const rows = _pwItems.map((p,i) => ({p,i})).filter(({p}) =>
+    !q || (p.site||'').toLowerCase().includes(q) || (p.id||'').toLowerCase().includes(q)
+  );
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = _pwItems.length ? 'block' : 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  const inputStyle = 'width:100%;padding:6px 8px;border:1px solid #EDE8E1;border-radius:7px;font-size:.82rem;font-family:inherit;background:#fafafa';
+  tbody.innerHTML = rows.map(({p, i}) =>
+    '<tr style="border-bottom:1px solid #F5F0EB">'
+    + '<td style="padding:6px 10px"><input data-f="site" value="' + (p.site||'').replace(/"/g,'&quot;') + '" oninput="pwEdit(' + i + ',\'site\',this.value)" placeholder="사이트명" style="' + inputStyle + '"></td>'
+    + '<td style="padding:6px 10px"><input data-f="id" value="' + (p.id||'').replace(/"/g,'&quot;') + '" oninput="pwEdit(' + i + ',\'id\',this.value)" placeholder="아이디" style="' + inputStyle + '"></td>'
+    + '<td style="padding:6px 10px;position:relative"><input type="password" id="pw-field-' + i + '" value="' + (p.pw||'').replace(/"/g,'&quot;') + '" oninput="pwEdit(' + i + ',\'pw\',this.value)" placeholder="비밀번호" style="' + inputStyle + ';padding-right:30px"><button onclick="var f=document.getElementById(\'pw-field-' + i + '\');f.type=f.type===\'password\'?\'text\':\'password\'" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:.85rem;color:#aaa">👁</button></td>'
+    + '<td style="padding:6px 10px"><input value="' + (p.memo||'').replace(/"/g,'&quot;') + '" oninput="pwEdit(' + i + ',\'memo\',this.value)" placeholder="메모" style="' + inputStyle + '"></td>'
+    + '<td style="padding:6px 8px;text-align:center;white-space:nowrap"><button onclick="pwCopy(\'' + (p.pw||'').replace(/'/g,"\\'") + '\')" style="border:none;background:none;cursor:pointer;font-size:.9rem;color:#aaa" title="비밀번호 복사">📋</button><button onclick="pwDel(' + i + ')" style="border:none;background:none;cursor:pointer;font-size:.9rem;color:#ddd" title="삭제">✕</button></td>'
+    + '</tr>'
+  ).join('');
 }
 </script>
 <div id="pn-img-modal" onclick="this.style.display='none'">
