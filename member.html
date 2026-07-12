@@ -2064,7 +2064,7 @@ async function renderAdmin(){
       <td><strong>${rowTotal.toLocaleString()}</strong></td>
     </tr>`;
   }
-  _payrollText=`💰 급여 정리 (${fmt(start)}~${fmt(end)})\n\n`+payLines.join('\n')+`\n\n합계 ${(totalFinal+totalSj).toLocaleString()}원`;
+  _payrollText=`💰 급여 정리 (${fmt(start)}~${fmt(end)})\n\n`+payLines.join('\n');
   tbl+=`<tr class="total-row">
     <td colspan="3">총합계</td>
     <td>${totalFinal.toLocaleString()}</td>
