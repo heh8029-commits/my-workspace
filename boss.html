@@ -1675,10 +1675,24 @@ body.mode-mob .mobile-subnav{display:flex!important}
 
     <!-- 레시피 섹션 -->
     <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="font-size:.85rem;font-weight:800;color:#555">🍽️ 레시피</div>
-        <button onclick="recipeFormToggle()" id="recipe-form-btn"
-          style="padding:5px 14px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer">+ 새 레시피</button>
+        <div style="display:flex;gap:8px">
+          <button onclick="recipeCatToggle()" id="recipe-cat-btn"
+            style="padding:5px 12px;border-radius:9px;background:#F5F0EB;color:#888;border:none;font-size:.75rem;cursor:pointer">🏷️ 카테고리</button>
+          <button onclick="recipeFormToggle()" id="recipe-form-btn"
+            style="padding:5px 14px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer">+ 새 레시피</button>
+        </div>
+      </div>
+      <!-- 카테고리 관리 -->
+      <div id="recipe-cat-mgr" style="display:none;background:#FAF7F4;border-radius:10px;padding:10px 12px;margin-bottom:12px">
+        <div style="font-size:.75rem;color:#888;margin-bottom:8px">카테고리 관리</div>
+        <div id="recipe-cat-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <input id="recipe-cat-input" type="text" placeholder="새 카테고리..." onkeydown="if(event.key==='Enter')recipeCatAdd()"
+            style="flex:1;padding:5px 10px;border:1px solid #EDE8E1;border-radius:7px;font-size:.8rem;font-family:inherit;background:#fff">
+          <button onclick="recipeCatAdd()" style="padding:5px 12px;border-radius:7px;background:#C4714A;color:#fff;border:none;font-size:.8rem;cursor:pointer">추가</button>
+        </div>
       </div>
 
       <!-- 레시피 등록 폼 -->
@@ -1688,13 +1702,6 @@ body.mode-mob .mobile-subnav{display:flex!important}
             style="padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.85rem;font-family:inherit;background:#fff">
           <select id="rf-category"
             style="padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;cursor:pointer">
-            <option value="한식">한식</option>
-            <option value="양식">양식</option>
-            <option value="중식">중식</option>
-            <option value="일식">일식</option>
-            <option value="분식">분식</option>
-            <option value="간식">간식</option>
-            <option value="기타">기타</option>
           </select>
         </div>
         <div id="rf-img-area" onpaste="rfHandlePaste(event)"
@@ -8492,7 +8499,8 @@ async function searchPreFetch() {
 
 // ── 요리 메뉴 ──────────────────────────────────────────────
 const RECIPE_DAYS = [{k:'mon',l:'월'},{k:'tue',l:'화'},{k:'wed',l:'수'},{k:'thu',l:'목'},{k:'fri',l:'금'},{k:'sat',l:'토'},{k:'sun',l:'일'}];
-let _recipeData = {shopping:[], ingredients:'', fridge:'', weekly:{mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''}, recipes:[]};
+const RECIPE_DEFAULT_CATS = ['국','반찬','메인요리','기타'];
+let _recipeData = {shopping:[], ingredients:'', fridge:'', weekly:{mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''}, recipes:[], categories:[...RECIPE_DEFAULT_CATS]};
 let _recipeSaveTimer = null;
 let _rfImg = null;
 let _rfEditId = null;
@@ -8508,6 +8516,7 @@ async function recipeFetch() {
         _recipeData.fridge = d.fridge || '';
         _recipeData.weekly = Object.assign({mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''}, d.weekly || {});
         _recipeData.recipes = Array.isArray(d.recipes) ? d.recipes : [];
+        _recipeData.categories = Array.isArray(d.categories) && d.categories.length ? d.categories : [...RECIPE_DEFAULT_CATS];
       }
     }
   } catch(e) {}
@@ -8518,10 +8527,58 @@ function recipeRender() {
   shoppingRender();
   weeklyRender();
   recipeListRender();
+  recipeCatRender();
   const ing = document.getElementById('ingredients-left');
   const fr = document.getElementById('fridge-left');
   if (ing) ing.value = _recipeData.ingredients;
   if (fr) fr.value = _recipeData.fridge;
+}
+
+// ── 카테고리 관리 ──
+function recipeCatRender() {
+  const list = document.getElementById('recipe-cat-list');
+  const sel = document.getElementById('rf-category');
+  const cats = _recipeData.categories;
+  if (list) {
+    list.innerHTML = cats.map((c, i) =>
+      '<span style="display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #EDE8E1;border-radius:6px;padding:3px 8px;font-size:.78rem;color:#555">'
+      + c.replace(/</g,'&lt;')
+      + '<button onclick="recipeCatDel(' + i + ')" style="border:none;background:none;cursor:pointer;color:#ddd;font-size:.7rem;padding:0;line-height:1">✕</button>'
+      + '</span>'
+    ).join('');
+  }
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = cats.map(c => '<option value="' + c.replace(/"/g,'&quot;') + '">' + c.replace(/</g,'&lt;') + '</option>').join('');
+    if (cats.includes(cur)) sel.value = cur;
+  }
+}
+
+function recipeCatToggle() {
+  const mgr = document.getElementById('recipe-cat-mgr');
+  const btn = document.getElementById('recipe-cat-btn');
+  if (!mgr) return;
+  const open = mgr.style.display === 'none' || !mgr.style.display;
+  mgr.style.display = open ? 'block' : 'none';
+  if (btn) btn.style.background = open ? '#C4714A' : '#F5F0EB';
+  if (btn) btn.style.color = open ? '#fff' : '#888';
+}
+
+function recipeCatAdd() {
+  const inp = document.getElementById('recipe-cat-input');
+  const val = (inp ? inp.value : '').trim();
+  if (!val) return;
+  if (_recipeData.categories.includes(val)) { if (inp) inp.value = ''; return; }
+  _recipeData.categories.push(val);
+  if (inp) inp.value = '';
+  recipeCatRender();
+  recipeSaveDebounce();
+}
+
+function recipeCatDel(i) {
+  _recipeData.categories.splice(i, 1);
+  recipeCatRender();
+  recipeSaveDebounce();
 }
 
 function recipeFieldSave(field, val) {
@@ -8599,12 +8656,15 @@ function recipeFormToggle(editId) {
   const btn = document.getElementById('recipe-form-btn');
   if (!form) return;
 
+  recipeCatRender();
+
   if (editId !== undefined) {
     const r = _recipeData.recipes.find(x => x.id === editId);
     if (!r) return;
     _rfEditId = editId;
     document.getElementById('rf-title').value = r.title || '';
-    document.getElementById('rf-category').value = r.category || '한식';
+    const sel = document.getElementById('rf-category');
+    if (sel) sel.value = r.category || _recipeData.categories[0] || '';
     document.getElementById('rf-ingredients').value = r.ingredients || '';
     document.getElementById('rf-method').value = r.method || '';
     document.getElementById('rf-url').value = r.url || '';
