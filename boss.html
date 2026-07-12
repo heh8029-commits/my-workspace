@@ -2722,12 +2722,14 @@ function setSub(id, label){
   if(subItem && subItem.url){
     const fr = document.getElementById('embed-frame');
     const base = subItem.url.split('#')[0];
-    const hash = subItem.url.includes('#') ? '#' + subItem.url.split('#')[1] : '';
-    // 동일 페이지면 hash만 교체해서 hashchange 이벤트 발생 → 내부 탭 전환
-    if(fr.src && fr.src.split('#')[0] === base && fr.src.split('?')[0] === base){
-      fr.contentWindow && (fr.contentWindow.location.hash = hash.slice(1) || '');
+    const hash = subItem.url.includes('#') ? subItem.url.split('#')[1] : '';
+    // 같은 페이지면 hash만 교체(내부 탭 전환), 다른 페이지면 캐시 무시하고 새로 로드
+    if(fr.src && fr.getAttribute('data-base') === base){
+      fr.contentWindow && (fr.contentWindow.location.hash = hash || '');
     } else {
-      fr.src = subItem.url;
+      const sep = base.includes('?') ? '&' : '?';
+      fr.setAttribute('data-base', base);
+      fr.src = base + sep + '_ts=' + Date.now() + (hash ? ('#'+hash) : '');
     }
     showPage('iframe');
   } else if(id==='calendar'){
@@ -4408,7 +4410,7 @@ function hardRefresh(){
     fetchCalcData().then(()=>renderCalc());
   } else if(pid==='page-iframe'){
     const fr=document.getElementById('embed-frame');
-    if(fr){ const s=fr.src; fr.src=''; setTimeout(()=>fr.src=s,50); }
+    if(fr){ const base=fr.getAttribute('data-base')||fr.src.split('#')[0].split('?')[0]; const hashPart=fr.src.includes('#')?('#'+fr.src.split('#')[1]):''; const sep=base.includes('?')?'&':'?'; fr.src=''; setTimeout(()=>{ fr.src=base+sep+'_ts='+Date.now()+hashPart; },50); }
   } else {
     location.href = location.pathname + '?t=' + Date.now();
   }
