@@ -473,6 +473,8 @@ button{font-family:inherit;cursor:pointer}
 .log-day.in-period{background:white;border:1.5px solid #f0eaff;box-shadow:0 2px 8px rgba(200,180,240,.1)}
 .log-day.out-period{background:transparent;opacity:.4}
 .log-day.has-data.in-period{border-color:var(--pink-mid)}
+.log-day.in-period:hover{border-color:var(--rose)}
+.log-day.picked{outline:2.5px solid var(--rose);outline-offset:-2px;box-shadow:0 0 0 3px rgba(224,60,110,.15)}
 /* 주말 구분 */
 .log-day.sat.in-period{background:#eaf4ff;border-color:#cfe6ff}
 .log-day.sun.in-period{background:#f2eef8;border-color:#e4d8f2}
@@ -1312,6 +1314,15 @@ function updateLogAttLabel(){
   const inp=document.getElementById('logAttDate');
   if(lbl&&inp)lbl.innerHTML=fmtDateKo(inp.value);
 }
+// 달력 날짜 클릭 → 입력창 날짜 설정
+function pickLogDate(ds,el){
+  const inp=document.getElementById('logAttDate');
+  if(inp){inp.value=ds;updateLogAttLabel();}
+  document.querySelectorAll('.log-day.picked').forEach(e=>e.classList.remove('picked'));
+  if(el)el.classList.add('picked');
+  const box=document.querySelector('.log-att-box');
+  if(box)box.scrollIntoView({behavior:'smooth',block:'center'});
+}
 function logSetYesterday(){
   const d=new Date();d.setDate(d.getDate()-1);
   document.getElementById('logAttDate').value=d.toISOString().slice(0,10);
@@ -1417,7 +1428,7 @@ async function renderLog(){
   const{start,end}=getPeriodDates(logPeriodOffset);
   const fmt=d=>`${d.getMonth()+1}월${d.getDate()}일`;
   document.getElementById('logTitle').innerHTML=
-    `💗 <strong>${esc(m.eng||m.name)}</strong>${m.nick?`(${esc(m.nick)})`:''}  근무일정표 ✨`;
+    `💗 <strong>${esc(m.name)}</strong> 근무일정표 ✨`;
   document.getElementById('logPeriodLabel').textContent=`${fmt(start)}~${fmt(end)}`;
 
   const m2=members.find(x=>x.id===attSelected);
@@ -1480,7 +1491,9 @@ async function renderLog(){
     else if(mins>0) lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
     const dow=cur.getDay();
     const wkCls=dow===6?' sat':dow===0?' sun':'';
-    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}">
+    const localISO=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+    const clickAttr=inP?` onclick="pickLogDate('${localISO}',this)" style="cursor:pointer"`:'';
+    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}"${clickAttr}>
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
       ${lbl?`<div class="log-day-time">${lbl}</div>`:''}
     </div>`;
@@ -1525,7 +1538,15 @@ function openPayslip(){
   _payslipWin.document.close();
   renderPayslipWindow();
 }
-function payslipNav(d){_payslipOffset+=d;renderPayslipWindow();}
+// 급여명세서 적용 시작 기간(첫 기간 시작일): 2026-07-11
+const PAYSLIP_FLOOR=new Date(2026,6,11);
+function payslipNav(d){
+  if(d<0){
+    const test=getPeriodDates(_payslipOffset+d);
+    if(test.start.getTime()<PAYSLIP_FLOOR.getTime())return; // 7/11 이전 차단
+  }
+  _payslipOffset+=d;renderPayslipWindow();
+}
 
 async function renderPayslipWindow(){
   const w=_payslipWin;
@@ -1568,8 +1589,9 @@ function buildPayslipHtml(d){
   const tax=m.tax?Math.round(gross*0.033):0;
   const net=gross-tax;
   const rowsHtml=sjRows.map(i=>`<tr><td>${escHtml(i.sjName||i.sjId)}<small>${i.qty}개 × ${won(i.price||0)}</small></td><td class="amt">${won(i.total)}</td></tr>`).join('');
+  const allowPrev=start.getTime()>PAYSLIP_FLOOR.getTime();
   const nav=`<div class="nav">
-    <button onclick="window.opener&&window.opener.payslipNav(-1)">‹</button>
+    <button ${allowPrev?'':'disabled style="opacity:.3;cursor:default"'} onclick="window.opener&&window.opener.payslipNav(-1)">‹</button>
     <div class="nav-lbl">${period}</div>
     <button onclick="window.opener&&window.opener.payslipNav(1)">›</button>
   </div>`;
@@ -1656,7 +1678,7 @@ tr.tax td{color:#c0392b}
 <body><div class="slip">
   <div class="hd"><div class="brand">MIRITOPPER CASTLE</div><div class="t">급여명세서</div><div class="s">PAY STATEMENT</div></div>
   ${nav}
-  <div class="who"><div class="nm">${escHtml(m.name)}${m.nick?`<span class="nk">${escHtml(m.nick)}</span>`:''}</div>${m.account?`<div class="acc">🏦 ${escHtml(m.account)}</div>`:''}</div>
+  <div class="who"><div class="nm">${escHtml(m.name)}</div>${m.account?`<div class="acc">🏦 ${escHtml(m.account)}</div>`:''}</div>
   ${bodyInner}
   <div class="ft">발행일 ${fmtK(new Date())} · 미리토퍼캐슬<br>본 명세서는 근무 기록을 바탕으로 자동 산출되었습니다.</div>
 </div></body></html>`;
