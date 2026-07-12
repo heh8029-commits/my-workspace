@@ -9223,7 +9223,7 @@ function cnInit(){
     if(!cnData.length){ cnData=[cnBlank(),cnBlank(),cnBlank()]; }
   }
   const di=document.getElementById('cn-date'); if(di && !di.value) di.value=cnToday();
-  const re=document.getElementById('cn-rate'); if(re && !re.value){ try{ re.value=localStorage.getItem('boss_china_rate')||''; }catch(e){} }
+  const re=document.getElementById('cn-rate'); if(re && !re.value){ let sv=''; try{ sv=localStorage.getItem('boss_china_rate')||''; }catch(e){} re.value=sv||'250'; }
   cnRender(); cnRenderHist();
 }
 function cnToday(){ const d=new Date(); return String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
