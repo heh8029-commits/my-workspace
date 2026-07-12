@@ -397,6 +397,9 @@ button{font-family:inherit;cursor:pointer}
 }
 .sched-btn:hover{background:#fff8b0}
 .sched-btn .lock{font-size:.68rem;color:var(--soft)}
+.card-qr{margin-top:10px;padding-top:10px;border-top:1px dashed var(--pink-mid);text-align:center}
+.card-qr img{border-radius:8px;border:1.5px solid var(--pink-mid);background:#fff}
+.card-qr-cap{font-size:.66rem;color:var(--soft);margin-top:5px;font-weight:600}
 
 /* 인포 & 팁 */
 .att-info{
@@ -437,6 +440,13 @@ button{font-family:inherit;cursor:pointer}
 .log-nav-btn:hover{background:#f5f0fd}
 .log-period-lbl{font-size:1rem;font-weight:800;color:var(--text);min-width:160px;text-align:center}
 .log-period-hint{font-size:.73rem;color:var(--soft);margin-bottom:18px}
+.log-payslip-btn{
+  padding:7px 14px;border-radius:20px;border:none;
+  background:linear-gradient(135deg,#b8f0d8,#3dbb8f);
+  color:white;font-size:.8rem;font-weight:800;font-family:inherit;
+  box-shadow:0 3px 10px rgba(61,187,143,.3);cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.log-payslip-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(61,187,143,.42)}
 
 /* 근무일정표 상단 출퇴근 입력 */
 .log-att-box{
@@ -692,32 +702,13 @@ button{font-family:inherit;cursor:pointer}
 
 <!-- ══ 출퇴근 탭 ══ -->
 <div class="subpage active" id="page-attendance">
-  <div class="att-card">
-    <div class="att-card-hd">
-      <div>
-        <div class="att-card-title">💗 출퇴근 ✨</div>
-        <div class="att-card-sub">이름 선택 → 내 근무일정표 열기 → 달력에서 출퇴근 입력</div>
-      </div>
+  <div class="att-card" style="text-align:center;padding:52px 28px">
+    <div style="font-size:3rem;margin-bottom:14px">💗</div>
+    <div class="att-card-title" style="font-size:1.4rem">미리토퍼캐슬 출퇴근</div>
+    <div class="att-card-sub" style="margin-top:14px;font-size:.92rem;line-height:1.8">
+      각자 받은 <b style="color:var(--rose)">개인 QR코드</b>로 접속해서<br>내 근무일정표에서 출퇴근을 입력해줘요 🌸
     </div>
-
-    <div class="att-section-label">직원 선택 <span class="att-hint">하트 눌러서 체크</span></div>
-    <div class="att-emp-grid" id="attEmpGrid"></div>
-
-    <div class="att-controls">
-      <div class="att-btn-row" style="justify-content:center;flex-wrap:wrap;gap:10px">
-        <button class="att-btn-log" onclick="openMyLog()">🗒 내 근무일정표 열기 (달력에서 출퇴근 입력)</button>
-        <button type="button" class="att-pw-btn" onclick="openLogPwSetup()" style="padding:10px 16px;font-size:.82rem">🔒 비밀번호 설정</button>
-      </div>
-    </div>
-
-    <div class="att-info" id="attInfo">이름을 선택해줘 💕</div>
-    <div class="att-tip">🌙 이름을 고른 뒤 "내 근무일정표 열기"를 누르면, 달력 위에서 출퇴근을 입력할 수 있어.</div>
-  </div>
-  <div style="text-align:center;margin-top:24px">
-    <a href="https://heh8029-commits.github.io/my-workspace/member.html" target="_blank" rel="noopener">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://heh8029-commits.github.io/my-workspace/member.html&bgcolor=ffffff&color=000000&margin=6" width="130" height="130" style="border-radius:12px;border:2px solid var(--pink-mid);cursor:pointer" alt="QR">
-    </a>
-    <div style="font-size:.65rem;color:var(--soft);margin-top:6px">이 페이지 QR</div>
+    <div style="margin-top:22px;font-size:.72rem;color:var(--soft)">관리자는 위 <b>👥 멤버</b>를 눌러 들어올 수 있어요</div>
   </div>
 </div>
 
@@ -846,6 +837,7 @@ button{font-family:inherit;cursor:pointer}
       <button class="log-nav-btn" onclick="logMove(-1)">‹</button>
       <div class="log-period-lbl" id="logPeriodLabel"></div>
       <button class="log-nav-btn" onclick="logMove(1)">›</button>
+      <button id="logPayslipBtn" class="log-payslip-btn" style="display:none;margin-left:auto" onclick="openPayslip()">💰 급여명세서</button>
     </div>
     <div class="log-period-hint">📅 기간은 항상 11일 ~ 다음달 10일 기준이에요</div>
 
@@ -1168,6 +1160,7 @@ let attSelected=null;
 function renderAttendance(){
   const active=members.filter(m=>m.status==='active');
   const grid=document.getElementById('attEmpGrid');
+  if(!grid)return;  // 메인 그리드가 없는 경우(비운 상태) 안전 처리
   if(!active.length){
     grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--soft);padding:30px">등록된 직원이 없어요</div>`;
     return;
@@ -1206,9 +1199,8 @@ function fmtDateKo(ds){
 }
 
 function updateAttInfo(){
-  const lbl=document.getElementById('attDateLabel');
-  if(lbl)lbl.innerHTML=fmtDateKo(document.getElementById('attDate').value);
   const el=document.getElementById('attInfo');
+  if(!el)return;  // 메인 비운 상태 안전 처리
   if(!attSelected){el.innerHTML='이름을 선택해줘 💕';return}
   const m=members.find(x=>x.id===attSelected);
   if(!m){el.innerHTML='이름을 선택해줘 💕';return}
@@ -1242,6 +1234,10 @@ function checkAdminPw(){
 
 function goAdmin(){
   if(!checkAdminPw())return;
+  enterAdmin();
+}
+// 비밀번호 확인 없이 어드민 패널 표시 (URL ?admin=<pw> 진입용)
+function enterAdmin(){
   document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-admin').classList.add('active');
   document.querySelectorAll('.t-tab').forEach(t=>t.classList.remove('active'));
@@ -1290,6 +1286,8 @@ async function openMyLog(){
 function openLogView(id){
   attSelected=id;
   logPeriodOffset=0;
+  // 새로고침해도 이 직원 달력이 다시 열리도록 URL에 ?emp= 반영
+  try{history.replaceState(null,'',location.pathname+'?emp='+encodeURIComponent(id));}catch(e){}
   fillLogTimeSelects();
   const ld=document.getElementById('logAttDate');
   if(ld)ld.value=new Date().toISOString().slice(0,10);
@@ -1503,12 +1501,167 @@ async function renderLog(){
      ${sjSummary}
 `;
 
+  const psBtn=document.getElementById('logPayslipBtn');
+  if(psBtn) psBtn.style.display='';  // 급여명세서 버튼은 항상 표시
+
   // 이 직원 전용 근무일정표 바로가기 QR
   const base=location.origin+location.pathname;
   const empUrl=base+'?emp='+encodeURIComponent(m.id);
   const qrSrc='https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=6&bgcolor=ffffff&color=000000&data='+encodeURIComponent(empUrl);
   document.getElementById('logQrImg').src=qrSrc;
 }
+
+// 급여명세서 (새 창, 모바일) — 상단 화살표로 과거 명세서도 조회
+let _payslipWin=null,_payslipMemberId=null,_payslipOffset=0;
+
+function openPayslip(){
+  if(!attSelected){alert('직원을 먼저 선택해줘');return}
+  _payslipMemberId=attSelected;
+  _payslipOffset=logPeriodOffset;
+  _payslipWin=window.open('','_blank');
+  if(!_payslipWin){alert('팝업이 차단됐어요. 브라우저에서 팝업을 허용한 뒤 다시 눌러줘 🙏');return}
+  _payslipWin.document.open();
+  _payslipWin.document.write('<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;text-align:center;padding:60px;color:#e03c6e;font-weight:700">불러오는 중...</body>');
+  _payslipWin.document.close();
+  renderPayslipWindow();
+}
+function payslipNav(d){_payslipOffset+=d;renderPayslipWindow();}
+
+async function renderPayslipWindow(){
+  const w=_payslipWin;
+  if(!w||w.closed)return;
+  const m=members.find(x=>x.id===_payslipMemberId);
+  if(!m)return;
+  const {start,end}=getPeriodDates(_payslipOffset);
+  const periodKey=`${start.getFullYear()}_${start.getMonth()}`;
+  const toISO=dt=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  const [logs,sjMonth]=await Promise.all([loadAttLogs(),loadSjMonth(m.id,periodKey)]);
+  const sISO=toISO(start),eISO=toISO(end);
+  const dayMap={};
+  for(const l of logs.filter(l=>l.memberId===m.id&&l.date>=sISO&&l.date<=eISO)){
+    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false};
+    if(l.isOff)dayMap[l.date].isOff=true;
+    else dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);
+  }
+  let totalMin=0,workDays=0,offDays=0;
+  for(const k in dayMap){if(dayMap[k].isOff)offDays++;else{workDays++;totalMin+=dayMap[k].totalMin;}}
+  const sjItems=(sjMonth&&sjMonth.items)?sjMonth.items:[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const settled=today>=end;
+  const html=buildPayslipHtml({m,start,end,workDays,offDays,totalMin,sjItems,settled});
+  if(w.closed)return;
+  w.document.open();w.document.write(html);w.document.close();
+}
+
+function buildPayslipHtml(d){
+  const {m,start,end,workDays,offDays,totalMin,sjItems,settled}=d;
+  const fmtK=dt=>`${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+  const fmtShort=dt=>`${dt.getMonth()+1}월 ${dt.getDate()}일`;
+  const period=`${fmtShort(start)} ~ ${fmtShort(end)}`;
+  const won=n=>Number(n).toLocaleString()+'원';
+  const th=Math.floor(totalMin/60),tm=totalMin%60;
+  const wage=Number(m.wage)||0;
+  const base=Math.round((totalMin/60)*wage);
+  const sjRows=(sjItems||[]).filter(i=>i.total>0);
+  const sjTotal=sjRows.reduce((s,i)=>s+(i.total||0),0);
+  const gross=base+sjTotal;
+  const tax=m.tax?Math.round(gross*0.033):0;
+  const net=gross-tax;
+  const rowsHtml=sjRows.map(i=>`<tr><td>${escHtml(i.sjName||i.sjId)}<small>${i.qty}개 × ${won(i.price||0)}</small></td><td class="amt">${won(i.total)}</td></tr>`).join('');
+  const nav=`<div class="nav">
+    <button onclick="window.opener&&window.opener.payslipNav(-1)">‹</button>
+    <div class="nav-lbl">${period}</div>
+    <button onclick="window.opener&&window.opener.payslipNav(1)">›</button>
+  </div>`;
+  let bodyInner;
+  if(!settled){
+    bodyInner=`<div class="pending">
+      <div class="pend-ic">⏳</div>
+      <div class="pend-t">정산 준비 중</div>
+      <div class="pend-s">이 급여 기간은 <b>${fmtK(end)}</b>에 정산돼요.<br>정산일 이후 확정 급여명세서를 확인할 수 있어요.</div>
+      <div class="pend-box">
+        <div class="pend-row"><span>현재까지 근무</span><span>${workDays}일 · ${th}시간${tm?' '+tm+'분':''}</span></div>
+        <div class="pend-row"><span>예상 기본급</span><span>${won(base)} <em>잠정</em></span></div>
+      </div>
+      <div class="pend-note">※ 기간 종료 전까지 금액은 변동될 수 있어요.</div>
+    </div>`;
+  } else {
+    bodyInner=`<div class="summary">
+      <div class="sumbox"><div class="n">${workDays}</div><div class="l">근무일</div></div>
+      <div class="sumbox"><div class="n">${th}<small>시간</small>${tm?tm+'<small>분</small>':''}</div><div class="l">총 근무</div></div>
+      <div class="sumbox"><div class="n">${offDays}</div><div class="l">휴무</div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">지급 내역</div>
+      <table>
+        <tr><td>기본급<small>${th}시간${tm?' '+tm+'분':''} × ${won(wage)}</small></td><td class="amt">${won(base)}</td></tr>
+        ${rowsHtml}
+        <tr class="sub"><td>합계 (세전)</td><td class="amt">${won(gross)}</td></tr>
+        ${m.tax?`<tr class="tax"><td>원천징수 3.3%</td><td class="amt">-${won(tax)}</td></tr>`:''}
+      </table>
+    </div>
+    <div class="net"><span class="l">실지급액</span><span class="v">${won(net)}</span></div>
+    <button class="print-btn" onclick="window.print()">🖨 인쇄 / PDF 저장</button>`;
+  }
+  return `<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>급여명세서 - ${escHtml(m.name)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Malgun Gothic',-apple-system,sans-serif;background:#ece7ef;color:#2e1a26;padding:18px;display:flex;justify-content:center;-webkit-font-smoothing:antialiased}
+.slip{width:100%;max-width:400px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 12px 40px rgba(80,40,70,.28)}
+.hd{background:linear-gradient(135deg,#3a1a2e,#7a2f52);color:#fff;padding:26px 24px 20px;text-align:center;position:relative}
+.hd:after{content:"";position:absolute;left:24px;right:24px;bottom:14px;height:1px;background:linear-gradient(90deg,transparent,#e8c07a,transparent)}
+.brand{font-size:.62rem;letter-spacing:.34em;color:#e8c07a;font-weight:700;margin-bottom:10px}
+.hd .t{font-size:1.5rem;font-weight:800;letter-spacing:.24em;padding-left:.24em}
+.hd .s{font-size:.58rem;letter-spacing:.3em;opacity:.7;margin-top:6px}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#faf5f8;border-bottom:1px solid #efe2ea}
+.nav button{width:34px;height:34px;border-radius:50%;border:1.5px solid #e6cdd9;background:#fff;color:#7a2f52;font-size:1.2rem;font-weight:700;cursor:pointer;line-height:1;font-family:inherit}
+.nav button:active{background:#f3e6ee}
+.nav-lbl{font-size:.92rem;font-weight:800;color:#3a1a2e}
+.who{padding:16px 24px;border-bottom:1px dashed #ecd6e0}
+.who .nm{font-size:1.12rem;font-weight:800}
+.who .nk{font-size:.78rem;color:#a07a90;font-weight:600;margin-left:4px}
+.who .acc{font-size:.76rem;color:#8a6a7a;margin-top:5px}
+.summary{display:flex;gap:8px;padding:16px 20px 4px}
+.sumbox{flex:1;background:#faf3f7;border:1px solid #f0e2ea;border-radius:12px;padding:11px 6px;text-align:center}
+.sumbox .n{font-size:1.1rem;font-weight:800;color:#7a2f52}
+.sumbox .n small{font-size:.6rem;font-weight:700;color:#a07a90;margin:0 1px}
+.sumbox .l{font-size:.64rem;color:#a07a90;margin-top:3px;font-weight:600}
+.sec{padding:14px 24px 4px}
+.sec-t{font-size:.64rem;font-weight:800;color:#7a2f52;letter-spacing:.14em;margin-bottom:6px}
+table{width:100%;border-collapse:collapse}
+td{padding:9px 0;font-size:.9rem;border-bottom:1px solid #f3ebf0;vertical-align:top}
+td small{display:block;color:#b09aa6;font-size:.7rem;font-weight:500;margin-top:2px}
+td:first-child{color:#5a4652;font-weight:600}
+.amt{text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+tr.sub td{border-top:1.5px solid #e6d4de;border-bottom:none;font-weight:800;padding-top:11px}
+tr.tax td{color:#c0392b}
+.net{margin:12px 24px 0;background:linear-gradient(135deg,#3a1a2e,#7a2f52);border-radius:14px;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.net .l{font-size:.92rem;font-weight:700;letter-spacing:.04em}
+.net .v{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+.print-btn{display:block;width:calc(100% - 48px);margin:14px 24px 4px;padding:12px;border:none;border-radius:12px;background:#3dbb8f;color:#fff;font-size:.9rem;font-weight:800;font-family:inherit;cursor:pointer}
+.ft{padding:16px 24px 22px;text-align:center;font-size:.64rem;color:#b8a4b0;line-height:1.7}
+.pending{padding:30px 26px 24px;text-align:center}
+.pend-ic{font-size:2.6rem}
+.pend-t{font-size:1.15rem;font-weight:800;color:#7a2f52;margin-top:8px}
+.pend-s{font-size:.82rem;color:#8a6a7a;margin-top:10px;line-height:1.6}
+.pend-box{margin-top:18px;background:#faf3f7;border:1px solid #f0e2ea;border-radius:12px;padding:12px 16px;text-align:left}
+.pend-row{display:flex;justify-content:space-between;font-size:.86rem;padding:6px 0;color:#5a4652;font-weight:600}
+.pend-row span:last-child{font-weight:800;color:#3a1a2e}
+.pend-row em{font-style:normal;font-size:.68rem;color:#b09aa6;font-weight:600}
+.pend-note{font-size:.7rem;color:#b8a4b0;margin-top:12px}
+@media print{.print-btn,.nav{display:none}body{background:#fff;padding:0}}
+</style></head>
+<body><div class="slip">
+  <div class="hd"><div class="brand">MIRITOPPER CASTLE</div><div class="t">급여명세서</div><div class="s">PAY STATEMENT</div></div>
+  ${nav}
+  <div class="who"><div class="nm">${escHtml(m.name)}${m.nick?`<span class="nk">${escHtml(m.nick)}</span>`:''}</div>${m.account?`<div class="acc">🏦 ${escHtml(m.account)}</div>`:''}</div>
+  ${bodyInner}
+  <div class="ft">발행일 ${fmtK(new Date())} · 미리토퍼캐슬<br>본 명세서는 근무 기록을 바탕으로 자동 산출되었습니다.</div>
+</div></body></html>`;
+}
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 function adminMove(d){adminOffset+=d;renderAdmin();}
 
@@ -1953,6 +2106,7 @@ function renderCards(){
     return;
   }
 
+  const qrBase=location.origin+location.pathname;
   grid.innerHTML=list.map((m,i)=>`
     <div class="member-card${m.status==='inactive'?' inactive':''}">
       <button class="card-menu" onclick="openCtx(event,'${m.id}')">⋯</button>
@@ -1984,6 +2138,10 @@ function renderCards(){
         ${m.contractFile&&m.contractFile.startsWith('data:image')?`<img class="contract-thumb" src="${m.contractFile}" onclick="event.stopPropagation();openLightbox('${m.id}')" title="클릭해서 크게 보기">`:''}
       </button>
       <div><button class="sched-btn" onclick="openLogView('${m.id}')">🗒 근무표 보기${m.logPw?' <span class="lock">🔒</span>':''}</button></div>
+      <div class="card-qr">
+        <img loading="lazy" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=4&bgcolor=ffffff&color=000000&data=${encodeURIComponent(qrBase+'?emp='+m.id)}" width="100" height="100" alt="${esc(m.name)} 개인 QR">
+        <div class="card-qr-cap">📱 개인 QR (직원에게 전달)</div>
+      </div>
     </div>
   `).join('');
 }
@@ -2144,6 +2302,13 @@ document.addEventListener('click',()=>closeCtx());
       }
     }
     const ld=document.getElementById('empLoading'); if(ld)ld.style.display='none';
+  }
+
+  // 어드민 바로가기: ?admin=363636 으로 들어오면 어드민 패널 바로 열기
+  const adminParam=new URLSearchParams(location.search).get('admin');
+  if(adminParam){
+    if(adminParam==='363636') enterAdmin();
+    else goAdmin();
   }
 })();
 </script>
