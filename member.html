@@ -383,6 +383,20 @@ button{font-family:inherit;cursor:pointer}
   font-family:inherit;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;
 }
 .att-btn-log:hover{background:#fff8b0}
+.att-pw-btn{
+  padding:2px 9px;border-radius:8px;border:1px solid #ede8f8;
+  background:#fdfaff;font-size:.66rem;font-weight:700;color:var(--soft);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.att-pw-btn:hover{background:var(--pink-pale);color:var(--rose);border-color:var(--pink)}
+.sched-btn{
+  display:inline-flex;align-items:center;gap:4px;margin-top:8px;
+  padding:5px 12px;border-radius:20px;border:1.5px solid #ffe066;
+  background:#fffce0;font-size:.75rem;font-weight:700;color:#a08010;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.sched-btn:hover{background:#fff8b0}
+.sched-btn .lock{font-size:.68rem;color:var(--soft)}
 
 /* 인포 & 팁 */
 .att-info{
@@ -684,7 +698,9 @@ button{font-family:inherit;cursor:pointer}
           <label class="att-off-lbl"><input type="checkbox" id="attOff"> 휴무</label>
         </div>
         <div class="att-ctrl-item" style="flex:1;min-width:200px">
-          <div class="att-ctrl-hd" style="visibility:hidden">_</div>
+          <div class="att-ctrl-hd" style="justify-content:flex-end">
+            <button type="button" class="att-pw-btn" onclick="openLogPwSetup()">🔒 비밀번호 설정</button>
+          </div>
           <div class="att-btn-row">
             <button class="att-btn-save" onclick="saveAttendance()">💾 저장</button>
             <button class="att-btn-log" onclick="openMyLog()">🗒 내 근무일정표</button>
@@ -1213,9 +1229,45 @@ function getPeriodDates(offset){
 
 async function openMyLog(){
   if(!attSelected){alert('직원을 선택해주세요');return}
+  // 최신 비밀번호 확인 (다른 기기에서 설정했을 수도 있으니 새로고침)
+  await load();
+  const m=members.find(x=>x.id===attSelected);
+  if(m&&m.logPw){
+    const pw=prompt('🔒 근무일정표 비밀번호를 입력해줘');
+    if(pw===null)return;
+    if(pw!==m.logPw){alert('비밀번호가 틀렸어 🙅');return}
+  }
+  openLogView(attSelected);
+}
+
+// 비밀번호 없이 바로 근무일정표 열기 (관리자용/인증 후 공용)
+function openLogView(id){
+  attSelected=id;
   logPeriodOffset=0;
   document.getElementById('logOverlay').classList.add('open');
-  await renderLog();
+  renderLog();
+}
+
+// 근무일정표 비밀번호 설정/변경/해제
+async function openLogPwSetup(){
+  if(!attSelected){alert('직원을 먼저 선택해줘 💕');return}
+  await load();
+  let m=members.find(x=>x.id===attSelected);
+  if(!m)return;
+  if(m.logPw){
+    const cur=prompt('현재 비밀번호를 입력해줘 🔒 (변경하거나 해제하려면)');
+    if(cur===null)return;
+    if(cur!==m.logPw){alert('현재 비밀번호가 틀렸어 🙅');return}
+  }
+  const np=prompt(m.logPw
+    ? '새 비밀번호를 입력해줘.\n(빈칸으로 저장하면 비밀번호가 해제돼서 누구나 볼 수 있어)'
+    : '근무일정표 비밀번호를 설정해줘 🔒\n이 비밀번호를 입력해야 내 근무일정표를 볼 수 있어.');
+  if(np===null)return;
+  const val=np.trim();
+  const idx=members.findIndex(x=>x.id===attSelected);
+  if(idx<0)return;
+  if(!val){ delete members[idx].logPw; await save(); alert('비밀번호가 해제됐어. 이제 누구나 볼 수 있어 🌸'); }
+  else { members[idx].logPw=val; await save(); alert('비밀번호가 설정됐어 🔒'); }
 }
 function closeLog(){document.getElementById('logOverlay').classList.remove('open')}
 function logMove(d){logPeriodOffset+=d;renderLog();}
@@ -1833,6 +1885,7 @@ function renderCards(){
         📄 ${m.contractFile||m.contractUrl?'근로계약서 보기':'근로계약서 등록'}
         ${m.contractFile&&m.contractFile.startsWith('data:image')?`<img class="contract-thumb" src="${m.contractFile}" onclick="event.stopPropagation();openLightbox('${m.id}')" title="클릭해서 크게 보기">`:''}
       </button>
+      <div><button class="sched-btn" onclick="openLogView('${m.id}')">🗒 근무표 보기${m.logPw?' <span class="lock">🔒</span>':''}</button></div>
     </div>
   `).join('');
 }
