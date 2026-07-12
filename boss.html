@@ -1715,6 +1715,12 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
       </div>
 
+      <!-- 레시피 검색 -->
+      <div style="position:relative;margin-bottom:10px">
+        <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#bbb;font-size:.9rem">🔍</span>
+        <input id="recipe-search" type="text" placeholder="레시피 검색..." oninput="recipeListRender()"
+          style="width:100%;padding:8px 12px 8px 32px;border:1.5px solid #EDE8E1;border-radius:10px;font-size:.83rem;font-family:inherit;background:#FAFAFA;box-sizing:border-box">
+      </div>
       <!-- 카테고리 필터 -->
       <div id="recipe-cat-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
       <!-- 레시피 목록 -->
@@ -8807,12 +8813,14 @@ function recipeMemoHtml(memo) {
 function recipeListRender() {
   const el = document.getElementById('recipe-list');
   if (!el) return;
-  const list = _recipeCatFilter
+  const q = ((document.getElementById('recipe-search') || {}).value || '').trim().toLowerCase();
+  let list = _recipeCatFilter
     ? _recipeData.recipes.filter(r => (r.category || '기타') === _recipeCatFilter)
     : _recipeData.recipes;
+  if (q) list = list.filter(r => (r.title || '').toLowerCase().includes(q) || (r.memo || '').toLowerCase().includes(q));
   if (!list.length) {
     el.innerHTML = '<div style="color:#ccc;font-size:.82rem;text-align:center;padding:30px">'
-      + (_recipeCatFilter ? '해당 카테고리에 레시피가 없어요' : '레시피를 등록해보세요') + '</div>';
+      + (q ? '"' + q + '" 검색 결과가 없어요' : _recipeCatFilter ? '해당 카테고리에 레시피가 없어요' : '레시피를 등록해보세요') + '</div>';
     return;
   }
   el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'
