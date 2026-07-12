@@ -176,6 +176,14 @@ button{font-family:inherit;cursor:pointer}
   display:flex;align-items:center;justify-content:space-between;
 }
 .card-since{font-size:.7rem;color:var(--soft)}
+.reorder-btns{display:flex;gap:4px}
+.reorder-btn{
+  width:26px;height:26px;border-radius:8px;border:1.5px solid var(--pink-mid);
+  background:white;color:var(--rose);font-size:.7rem;font-weight:700;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.reorder-btn:hover{background:var(--pink-pale);border-color:var(--pink)}
+.reorder-btn:disabled{opacity:.3;cursor:default}
 .status-dot{
   width:8px;height:8px;border-radius:50%;flex-shrink:0;
   display:inline-block;margin-right:4px;
@@ -1795,7 +1803,7 @@ function renderCards(){
     return;
   }
 
-  grid.innerHTML=list.map(m=>`
+  grid.innerHTML=list.map((m,i)=>`
     <div class="member-card${m.status==='inactive'?' inactive':''}">
       <button class="card-menu" onclick="openCtx(event,'${m.id}')">⋯</button>
       <div class="card-top">
@@ -1816,6 +1824,10 @@ function renderCards(){
       </div>
       <div class="card-footer">
         <span class="card-since">${m.join?'입사 '+m.join:''}</span>
+        <span class="reorder-btns">
+          <button class="reorder-btn" onclick="moveMember('${m.id}',-1)" title="위로" ${i===0?'disabled':''}>▲</button>
+          <button class="reorder-btn" onclick="moveMember('${m.id}',1)" title="아래로" ${i===list.length-1?'disabled':''}>▼</button>
+        </span>
       </div>
       <button class="contract-btn${m.contractFile||m.contractUrl?' has':''}" onclick="openContractModal('${m.id}')">
         📄 ${m.contractFile||m.contractUrl?'근로계약서 보기':'근로계약서 등록'}
@@ -1823,6 +1835,17 @@ function renderCards(){
       </button>
     </div>
   `).join('');
+}
+
+async function moveMember(id,dir){
+  const i=members.findIndex(x=>x.id===id);
+  if(i<0)return;
+  const j=i+dir;
+  if(j<0||j>=members.length)return;
+  [members[i],members[j]]=[members[j],members[i]];
+  await save();
+  renderCards();
+  if(currentTab==='attendance')renderAttendance();
 }
 
 /* ── 근로계약서 ── */
