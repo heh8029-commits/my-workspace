@@ -1719,6 +1719,8 @@ body.mode-mob .mobile-subnav{display:flex!important}
         </div>
       </div>
 
+      <!-- 카테고리 필터 -->
+      <div id="recipe-cat-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
       <!-- 레시피 목록 -->
       <div id="recipe-list"></div>
     </div>
@@ -8496,6 +8498,7 @@ let _recipeData = {shopping:[], ingredients:'', fridge:'', weekly:{mon:'',tue:''
 let _recipeSaveTimer = null;
 let _rfImg = null;
 let _rfEditId = null;
+let _recipeCatFilter = null;
 
 async function recipeFetch() {
   try {
@@ -8530,7 +8533,9 @@ function recipeRender() {
 function recipeCatRender() {
   const list = document.getElementById('recipe-cat-list');
   const sel = document.getElementById('rf-category');
+  const filter = document.getElementById('recipe-cat-filter');
   const cats = _recipeData.categories;
+
   if (list) {
     list.innerHTML = cats.map((c, i) =>
       '<span style="display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #EDE8E1;border-radius:6px;padding:3px 8px;font-size:.78rem;color:#555">'
@@ -8544,6 +8549,17 @@ function recipeCatRender() {
     sel.innerHTML = cats.map(c => '<option value="' + c.replace(/"/g,'&quot;') + '">' + c.replace(/</g,'&lt;') + '</option>').join('');
     if (cats.includes(cur)) sel.value = cur;
   }
+  if (filter) {
+    const btnStyle = (active) => 'padding:5px 12px;border-radius:20px;border:1px solid ' + (active ? '#C4714A' : '#EDE8E1') + ';background:' + (active ? '#C4714A' : '#fff') + ';color:' + (active ? '#fff' : '#888') + ';font-size:.78rem;cursor:pointer;font-family:inherit';
+    filter.innerHTML = '<button onclick="recipeSetFilter(null)" style="' + btnStyle(_recipeCatFilter === null) + '">전체</button>'
+      + cats.map(c => '<button onclick="recipeSetFilter(\'' + c.replace(/'/g,"\\'") + '\')" style="' + btnStyle(_recipeCatFilter === c) + '">' + c.replace(/</g,'&lt;') + '</button>').join('');
+  }
+}
+
+function recipeSetFilter(cat) {
+  _recipeCatFilter = cat;
+  recipeCatRender();
+  recipeListRender();
 }
 
 function recipeCatToggle() {
@@ -8753,12 +8769,16 @@ function recipeMemoHtml(memo) {
 function recipeListRender() {
   const el = document.getElementById('recipe-list');
   if (!el) return;
-  if (!_recipeData.recipes.length) {
-    el.innerHTML = '<div style="color:#ccc;font-size:.82rem;text-align:center;padding:30px">레시피를 등록해보세요</div>';
+  const list = _recipeCatFilter
+    ? _recipeData.recipes.filter(r => (r.category || '기타') === _recipeCatFilter)
+    : _recipeData.recipes;
+  if (!list.length) {
+    el.innerHTML = '<div style="color:#ccc;font-size:.82rem;text-align:center;padding:30px">'
+      + (_recipeCatFilter ? '해당 카테고리에 레시피가 없어요' : '레시피를 등록해보세요') + '</div>';
     return;
   }
   el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px">'
-    + _recipeData.recipes.map(r =>
+    + list.map(r =>
       '<div style="border:1px solid #EDE8E1;border-radius:12px;overflow:hidden;background:#fff">'
       + (r.img ? '<img src="' + r.img + '" style="width:100%;height:130px;object-fit:cover">'
                : '<div style="width:100%;background:#FAF7F4;padding:12px 14px;font-size:.88rem;font-weight:800;color:#C4714A">' + r.title.replace(/</g,'&lt;') + '</div>')
@@ -8767,7 +8787,7 @@ function recipeListRender() {
       + '<span style="font-size:.84rem;font-weight:800;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title.replace(/</g,'&lt;') + '</span>'
       + '<span style="font-size:.68rem;background:#FAF7F4;color:#C4714A;border-radius:5px;padding:2px 6px;flex-shrink:0">' + (r.category || '기타') + '</span>'
       + '</div>'
-      + (r.memo ? '<div style="font-size:.73rem;color:#777;line-height:1.6;white-space:pre-wrap;max-height:80px;overflow:hidden;margin-bottom:4px">' + recipeMemoHtml(r.memo) + '</div>' : '')
+      + (r.memo ? '<div style="font-size:.73rem;color:#777;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:4px">' + recipeMemoHtml(r.memo) + '</div>' : '')
       + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
       + '<button onclick="recipeFormToggle(' + r.id + ')" style="border:none;background:#F5F0EB;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#888">수정</button>'
       + '<button onclick="recipeDel(' + r.id + ')" style="border:none;background:#FEE2E2;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#f87171">삭제</button>'
