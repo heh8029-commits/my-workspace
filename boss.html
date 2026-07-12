@@ -8199,7 +8199,7 @@ function infoNotesRender() {
       + '</div></div>';
   }).join('');
 }
-function pwFetch() {
+async function pwFetch() {
   try {
     const r = await fetch(FB_PASSWORDS + '?t=' + Date.now());
     if (!r.ok) throw new Error();
@@ -8259,7 +8259,7 @@ function pwRender() {
   const inp = 'width:100%;padding:5px 8px;border:1px solid #EDE8E1;border-radius:7px;font-size:.82rem;font-family:inherit;background:#fafafa';
   const copyBtn = (text, label) => {
     const id = 'pwcb-'+Math.random().toString(36).slice(2);
-    return '<button id="'+id+'" onclick="navigator.clipboard.writeText('+JSON.stringify(text)+').then(()=>{const b=document.getElementById(\''+id+'\');if(b){const o=b.textContent;b.textContent=\'✅\';setTimeout(()=>b.textContent=o,1200)}})" style="border:none;background:#F5F0EB;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:.75rem;color:#888;white-space:nowrap;flex-shrink:0">'+label+'</button>';
+    return '<button id="'+id+'" data-copy="'+text.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" onclick="gsCopy(this.dataset.copy,this.id)" style="border:none;background:#F5F0EB;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:.75rem;color:#888;white-space:nowrap;flex-shrink:0">'+label+'</button>';
   };
   tbody.innerHTML = rows.map(({p,i})=>
     '<tr style="border-bottom:1px solid #F5F0EB">'
@@ -8336,10 +8336,10 @@ function globalSearch(q) {
       const bid1='gs-'+uid++, bid2='gs-'+uid++;
       let btns='';
       if (sec.isPw) {
-        btns='<button id="'+bid1+'" onclick="gsCopy('+JSON.stringify(item.copyId)+',' + "'"+bid1+"'" + ')" style="flex-shrink:0;border:none;background:#F5F0EB;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.72rem;color:#888">아이디 📋</button>'
-            +'<button id="'+bid2+'" onclick="gsCopy('+JSON.stringify(item.copyPw)+',' + "'"+bid2+"'" + ')" style="flex-shrink:0;border:none;background:#FEF3C7;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.72rem;color:#888">비번 📋</button>';
+        btns='<button id="'+bid1+'" data-copy="'+(item.copyId||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" onclick="gsCopy(this.dataset.copy,this.id)" style="flex-shrink:0;border:none;background:#F5F0EB;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.72rem;color:#888">아이디 📋</button>'
+            +'<button id="'+bid2+'" data-copy="'+(item.copyPw||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" onclick="gsCopy(this.dataset.copy,this.id)" style="flex-shrink:0;border:none;background:#FEF3C7;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.72rem;color:#888">비번 📋</button>';
       } else if (item.copy!==undefined) {
-        btns='<button id="'+bid1+'" onclick="gsCopy('+JSON.stringify(item.copy)+',' + "'"+bid1+"'" + ')" style="flex-shrink:0;border:none;background:#F5F0EB;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.75rem;color:#888">📋</button>';
+        btns='<button id="'+bid1+'" data-copy="'+(item.copy||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" onclick="gsCopy(this.dataset.copy,this.id)" style="flex-shrink:0;border:none;background:#F5F0EB;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.75rem;color:#888">📋</button>';
       }
       const imgHtml = item.img ? '<img src="'+item.img+'" onclick="this.style.maxHeight=this.style.maxHeight===\'none\'?\'80px\':\'none\'" style="max-height:80px;max-width:100%;border-radius:6px;cursor:zoom-in;margin-top:4px;display:block">' : '';
       return '<div style="padding:9px 12px;display:flex;align-items:center;gap:8px;border-bottom:'+(isLast?'none':'1px solid #F5F0EB')+'">'
