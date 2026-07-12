@@ -5735,19 +5735,23 @@ function _btRenderCatTabs(){
 }
 
 // ── 링크 (왼쪽) ──
-let _btPendingLinkImg=null, _btLinkEditId=null;
+let _btPendingLinkImg=null, _btLinkEditId=null, _btAddLinkCat=null;
 function _btRenderLinks(){
   const el=document.getElementById('bt-links-col');if(!el) return;
   const sec=_btData[_btSection];
   const cats=sec.cats;
-  const catOpts=cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
-  // 추가 폼 이미지 미리보기
+  if(!_btAddLinkCat||!cats.find(c=>c.id===_btAddLinkCat)) _btAddLinkCat=cats[0]?.id||null;
+  // 추가 폼 카테고리 칩
+  const catChipsHtml=cats.map(c=>
+    `<button onclick="_btAddLinkCat='${c.id}';_btRenderLinks()" style="padding:4px 10px;border-radius:20px;border:1.5px solid ${_btAddLinkCat===c.id?'#C4714A':'#EDE8E1'};background:${_btAddLinkCat===c.id?'#C4714A':'#fff'};color:${_btAddLinkCat===c.id?'#fff':'#888'};font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">${c.emoji} ${c.name}</button>`
+  ).join('');
+  // 추가 폼 이미지
   const addImgHtml=_btPendingLinkImg
-    ?`<div class="bt-link-thumb-wrap" style="flex-shrink:0">
-        <img class="bt-link-thumb" src="${_btPendingLinkImg}">
+    ?`<div class="bt-link-thumb-wrap" style="flex-shrink:0;width:60px;height:60px">
+        <img class="bt-link-thumb" src="${_btPendingLinkImg}" onclick="pnShowImg(this.src)" style="cursor:zoom-in">
         <button class="bt-link-img-del" style="opacity:1" onclick="_btPendingLinkImg=null;_btRenderLinks()">✕</button>
       </div>`
-    :`<button class="bt-link-add-img" onclick="document.getElementById('bt-link-add-file').click()" title="이미지 첨부 또는 붙여넣기">
+    :`<button class="bt-link-add-img" onclick="document.getElementById('bt-link-add-file').click()" title="사진 첨부 또는 Ctrl+V">
         <span>📷</span><span style="font-size:.55rem">사진</span>
       </button>
       <input type="file" id="bt-link-add-file" accept="image/*" style="display:none" onchange="handleBtLinkAddFile(this.files[0]);this.value=''">`;
@@ -5765,6 +5769,7 @@ function _btRenderLinks(){
           <select id="btle-cat-${l.id}" class="bt-inp" style="width:100%">${editCatOpts}</select>
           <input id="btle-title-${l.id}" class="bt-inp" value="${(l.title||'').replace(/"/g,'&quot;')}" placeholder="제목..." style="width:100%;box-sizing:border-box">
           <input id="btle-url-${l.id}" class="bt-inp" value="${(l.url||'').replace(/"/g,'&quot;')}" placeholder="URL..." style="width:100%;box-sizing:border-box">
+          <textarea id="btle-memo-${l.id}" class="bt-inp" placeholder="메모..." style="width:100%;box-sizing:border-box;resize:vertical;min-height:50px">${(l.memo||'').replace(/</g,'&lt;')}</textarea>
           <div style="display:flex;gap:5px">
             <button onclick="saveBtLinkEdit('${l.id}')" class="bt-add-btn" style="flex:1;padding:5px;font-size:.75rem">저장</button>
             <button onclick="cancelBtLinkEdit('${l.id}')" style="flex:1;padding:5px;border-radius:9px;border:none;background:#EEE;font-size:.75rem;cursor:pointer;font-weight:700">취소</button>
@@ -5772,44 +5777,47 @@ function _btRenderLinks(){
         </div>`;
         return;
       }
-      const shortUrl=l.url?l.url.replace(/^https?:\/\/(www\.)?/,'').slice(0,28):'';
+      const shortUrl=l.url?l.url.replace(/^https?:\/\/(www\.)?/,'').slice(0,32):'';
       const titleDisp=(l.title||shortUrl||l.url||'링크').replace(/</g,'&lt;');
       const thumbHtml=l.image
         ?`<div class="bt-link-thumb-wrap">
-            <img class="bt-link-thumb" src="${l.image.replace('/upload/','/upload/w_104,h_104,c_fill/')}" onclick="openImgModal('${l.image}')">
+            <img class="bt-link-thumb" src="${l.image.replace('/upload/','/upload/w_104,h_104,c_fill/')}" onclick="pnShowImg('${l.image.replace(/'/g,'%27')}')">
             <button class="bt-link-img-del" onclick="event.stopPropagation();deleteBtLinkImg('${l.id}')">✕</button>
           </div>`
-        :`<button class="bt-link-cam" onclick="document.getElementById('bt-lf-${l.id}').click()" title="이미지 추가">📷</button>
+        :`<button class="bt-link-cam" onclick="document.getElementById('bt-lf-${l.id}').click()" title="사진 추가">📷</button>
           <input type="file" id="bt-lf-${l.id}" accept="image/*" style="display:none" onchange="handleBtLinkFile('${l.id}',this.files[0]);this.value=''">`;
+      const memoHtml=l.memo?`<div style="font-size:.72rem;color:#777;margin-top:3px;white-space:pre-wrap;word-break:break-word">${l.memo.replace(/</g,'&lt;')}</div>`:'';
       listHtml+=`<div class="bt-link-item" onpaste="handleBtLinkPaste(event,'${l.id}')">
         ${thumbHtml}
-        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
           <div class="bt-link-title">${l.url?`<a href="${l.url.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">${titleDisp}</a>`:titleDisp}</div>
           ${l.title&&shortUrl?`<div class="bt-link-url">${shortUrl}</div>`:''}
+          ${memoHtml}
         </div>
         <button class="bt-link-del" onclick="startBtLinkEdit('${l.id}')" style="color:#CCC;font-size:.7rem" title="수정">✏️</button>
         <button class="bt-link-del" onclick="deleteBtLink('${l.id}')" title="삭제">✕</button>
       </div>`;
     });
     if(!items.length&&_btFilter==='전체')
-      listHtml+=`<div style="font-size:.72rem;color:#CCC;padding:4px 0 6px;text-align:center">링크 없음</div>`;
+      listHtml+=`<div style="font-size:.72rem;color:#CCC;padding:4px 0 6px;text-align:center">없음</div>`;
   });
   el.innerHTML=`<div class="bt-links-col">
-    <div class="bt-links-hd">🔗 링크</div>
-    <div class="bt-link-add-row" onpaste="handleBtLinkAddPaste(event)">
-      ${addImgHtml}
-      <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0">
-        <div style="display:flex;gap:5px">
-          <select id="bt-link-cat" class="bt-inp" style="flex-shrink:0">${catOpts}</select>
-          <input id="bt-link-title" class="bt-inp" placeholder="제목 (선택)..." maxlength="60" style="flex:1;min-width:50px">
-        </div>
-        <div style="display:flex;gap:5px">
-          <input id="bt-link-url" class="bt-inp" placeholder="URL..." maxlength="500" style="flex:1" onkeydown="if(event.key==='Enter')addBtLink()">
-          <button class="bt-add-btn" style="padding:6px 12px;font-size:.76rem" onclick="addBtLink()">➕</button>
+    <div class="bt-links-hd">🔗 링크 / 사진</div>
+    <div onpaste="handleBtLinkAddPaste(event)" style="display:flex;flex-direction:column;gap:7px;margin-bottom:12px">
+      <div style="display:flex;gap:4px;flex-wrap:wrap">${catChipsHtml}</div>
+      <div style="display:flex;gap:6px;align-items:flex-start">
+        ${addImgHtml}
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0">
+          <input id="bt-link-title" class="bt-inp" placeholder="제목 (선택)..." maxlength="60" style="width:100%;box-sizing:border-box">
+          <div style="display:flex;gap:5px">
+            <input id="bt-link-url" class="bt-inp" placeholder="URL..." maxlength="500" style="flex:1" onkeydown="if(event.key==='Enter')addBtLink()">
+            <button class="bt-add-btn" style="padding:6px 12px;font-size:.76rem;flex-shrink:0" onclick="addBtLink()">➕</button>
+          </div>
+          <textarea id="bt-link-memo" class="bt-inp" placeholder="메모 (선택)..." style="width:100%;box-sizing:border-box;resize:vertical;min-height:44px"></textarea>
         </div>
       </div>
     </div>
-    <div style="margin-top:10px">${listHtml||'<div style="text-align:center;color:#CCC;padding:20px;font-size:.78rem">링크를 추가해보세요</div>'}</div>
+    <div>${listHtml||'<div style="text-align:center;color:#CCC;padding:20px;font-size:.78rem">항목을 추가해보세요</div>'}</div>
   </div>`;
 }
 async function _uploadBtLinkImg(id, file, isNew){
@@ -5844,16 +5852,18 @@ function deleteBtLinkImg(id){
   if(link){delete link.image;_saveBtData();_btRenderLinks();}
 }
 function addBtLink(){
-  const catId=document.getElementById('bt-link-cat')?.value||'';
+  const catId=_btAddLinkCat||_btData[_btSection].cats[0]?.id||'';
   const title=(document.getElementById('bt-link-title')?.value||'').trim();
   const url=(document.getElementById('bt-link-url')?.value||'').trim();
-  if(!url){alert('URL을 입력해주세요');return;}
-  const fixedUrl=url.match(/^https?:\/\//)?url:'https://'+url;
-  const link={id:'bl_'+Date.now(),catId,title,url:fixedUrl};
+  const memo=(document.getElementById('bt-link-memo')?.value||'').trim();
+  const fixedUrl=url?(url.match(/^https?:\/\//)?url:'https://'+url):'';
+  if(!fixedUrl&&!title&&!_btPendingLinkImg){alert('제목이나 URL을 입력해주세요');return;}
+  const link={id:'bl_'+Date.now(),catId,title,url:fixedUrl,memo};
   if(_btPendingLinkImg) link.image=_btPendingLinkImg;
   _btData[_btSection].links.unshift(link);
   document.getElementById('bt-link-title').value='';
   document.getElementById('bt-link-url').value='';
+  const memoEl=document.getElementById('bt-link-memo');if(memoEl) memoEl.value='';
   _btPendingLinkImg=null;
   _btDebounceSave();_btRenderLinks();
 }
@@ -5880,6 +5890,7 @@ function saveBtLinkEdit(id){
     link.title=(document.getElementById('btle-title-'+id)?.value||'').trim();
     const u=(document.getElementById('btle-url-'+id)?.value||'').trim();
     link.url=u.match(/^https?:\/\//)?u:(u?'https://'+u:link.url);
+    link.memo=(document.getElementById('btle-memo-'+id)?.value||'').trim();
     delete link._editing;
   }
   _btLinkEditId=null;_btDebounceSave();_btRenderLinks();
