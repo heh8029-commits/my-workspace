@@ -1634,6 +1634,98 @@ body.mode-mob .mobile-subnav{display:flex!important}
     <div id="pw-empty" style="display:none;color:#bbb;font-size:.82rem;text-align:center;padding:30px">비밀번호를 추가해보세요</div>
   </div>
 </div>
+<div class="page" id="page-recipe">
+  <div style="max-width:1100px;margin:0 auto;padding:16px">
+
+    <!-- 상단 3칸 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px">
+
+      <!-- 장봐야될거 -->
+      <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
+        <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:10px">🛒 장봐야될거</div>
+        <div id="shopping-list"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="shopping-input" type="text" placeholder="추가..." onkeydown="if(event.key==='Enter')shoppingAdd()"
+            style="flex:1;padding:6px 10px;border:1px solid #EDE8E1;border-radius:8px;font-size:.82rem;font-family:inherit;background:#fafafa">
+          <button onclick="shoppingAdd()" style="padding:6px 12px;border-radius:8px;background:#C4714A;color:#fff;border:none;font-size:.82rem;cursor:pointer">+</button>
+        </div>
+      </div>
+
+      <!-- 재료남은거 -->
+      <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
+        <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:10px">🥕 재료남은거</div>
+        <textarea id="ingredients-left" placeholder="남은 재료 메모..." oninput="recipeFieldSave('ingredients',this.value)"
+          style="width:100%;min-height:120px;border:none;resize:vertical;font-size:.82rem;color:#444;line-height:1.6;font-family:inherit;outline:none;background:transparent;box-sizing:border-box"></textarea>
+      </div>
+
+      <!-- 냉장고에 남은거 -->
+      <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
+        <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:10px">❄️ 냉장고에 남은거</div>
+        <textarea id="fridge-left" placeholder="냉장고 내용물 메모..." oninput="recipeFieldSave('fridge',this.value)"
+          style="width:100%;min-height:120px;border:none;resize:vertical;font-size:.82rem;color:#444;line-height:1.6;font-family:inherit;outline:none;background:transparent;box-sizing:border-box"></textarea>
+      </div>
+
+    </div>
+
+    <!-- 요일별 메뉴 -->
+    <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px;margin-bottom:20px">
+      <div style="font-size:.85rem;font-weight:800;color:#555;margin-bottom:12px">📅 이번주 메뉴</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px" id="weekly-grid"></div>
+    </div>
+
+    <!-- 레시피 섹션 -->
+    <div style="background:#fff;border:1px solid #EDE8E1;border-radius:14px;padding:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:.85rem;font-weight:800;color:#555">🍽️ 레시피</div>
+        <button onclick="recipeFormToggle()" id="recipe-form-btn"
+          style="padding:5px 14px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer">+ 새 레시피</button>
+      </div>
+
+      <!-- 레시피 등록 폼 -->
+      <div id="recipe-form" style="display:none;background:#FAF7F4;border-radius:12px;padding:14px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:10px">
+          <input id="rf-title" type="text" placeholder="요리 제목"
+            style="padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.85rem;font-family:inherit;background:#fff">
+          <select id="rf-category"
+            style="padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;cursor:pointer">
+            <option value="한식">한식</option>
+            <option value="양식">양식</option>
+            <option value="중식">중식</option>
+            <option value="일식">일식</option>
+            <option value="분식">분식</option>
+            <option value="간식">간식</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div id="rf-img-area" onpaste="rfHandlePaste(event)"
+          style="border:2px dashed #DDD8D0;border-radius:10px;padding:12px;margin-bottom:10px;min-height:60px;position:relative;text-align:center">
+          <div id="rf-img-hint" style="color:#bbb;font-size:.78rem;padding:8px 0">
+            Ctrl+V 이미지 붙여넣기
+            <label style="display:inline-block;margin-left:8px;padding:3px 10px;background:#F5F0EB;border-radius:6px;cursor:pointer;font-size:.75rem;color:#888">
+              📎 파일<input type="file" accept="image/*" onchange="rfImgFile(this)" style="display:none">
+            </label>
+          </div>
+          <img id="rf-img-preview" src="" style="display:none;max-width:100%;max-height:160px;border-radius:8px;object-fit:contain">
+          <button id="rf-img-del" onclick="rfImgClear()" style="display:none;position:absolute;top:6px;right:6px;border:none;background:rgba(0,0,0,.45);color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem;line-height:20px;padding:0">✕</button>
+        </div>
+        <textarea id="rf-ingredients" placeholder="재료 (줄바꿈으로 구분)"
+          style="width:100%;min-height:70px;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;resize:vertical;margin-bottom:8px;box-sizing:border-box"></textarea>
+        <textarea id="rf-method" placeholder="조리법"
+          style="width:100%;min-height:90px;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;resize:vertical;margin-bottom:8px;box-sizing:border-box"></textarea>
+        <input id="rf-url" type="text" placeholder="참고 URL (유튜브, 블로그 등)"
+          style="width:100%;padding:8px 12px;border:1px solid #EDE8E1;border-radius:9px;font-size:.82rem;font-family:inherit;background:#fff;margin-bottom:10px;box-sizing:border-box">
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button onclick="recipeFormToggle()" style="padding:6px 14px;border-radius:9px;border:1px solid #DDD;background:#fff;font-size:.8rem;cursor:pointer;color:#888">취소</button>
+          <button onclick="recipeFormSave()" style="padding:6px 16px;border-radius:9px;background:#C4714A;color:#fff;border:none;font-size:.8rem;font-weight:700;cursor:pointer">저장</button>
+        </div>
+      </div>
+
+      <!-- 레시피 목록 -->
+      <div id="recipe-list"></div>
+    </div>
+
+  </div>
+</div>
     <div class="page" id="page-sub">
       <div class="placeholder">
         <div class="ph-icon">🚧</div>
@@ -2488,6 +2580,7 @@ function setMenu(id){
   else if(id==='alarm'){ showPage('alarm'); renderAllAlarmLists(); }
   else if(id==='search'){ showPage('search'); setTimeout(()=>{ const el=document.getElementById('g-search-input'); if(el){el.value='';el.focus();} document.getElementById('g-search-results').innerHTML=''; },50); searchPreFetch(); }
   else if(id==='asset'){ setSub('asset-info','현재자산정보'); return; }
+  else if(id==='recipe'){ showPage('recipe'); recipeFetch(); }
   else if(id==='info'){ showPage('info'); infoNotesFetch(); pwFetch(); }
   else { showPage('sub'); }
 }
@@ -8093,6 +8186,7 @@ let _pwSaveTimer = null;
 
 // ── 정보탭 포스트잇 (독립 데이터) ──
 const FB_INFO_NOTES = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_info_notes.json';
+const FB_RECIPE = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_recipe.json';
 const INFO_NOTE_COLORS = ['#FFF9C4','#FFDCE0','#D4EDFF','#DCF8D8','#FFE4D0','#EDE0FF','#D8F5F0','#FFE8B4'];
 let _infoNotes = [];
 let _infoNoteTimer = null;
@@ -8394,6 +8488,247 @@ async function searchPreFetch() {
     const inp = document.getElementById('g-search-input');
     if (inp && inp.value.trim()) globalSearch(inp.value);
   }
+}
+
+// ── 요리 메뉴 ──────────────────────────────────────────────
+const RECIPE_DAYS = [{k:'mon',l:'월'},{k:'tue',l:'화'},{k:'wed',l:'수'},{k:'thu',l:'목'},{k:'fri',l:'금'},{k:'sat',l:'토'},{k:'sun',l:'일'}];
+let _recipeData = {shopping:[], ingredients:'', fridge:'', weekly:{mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''}, recipes:[]};
+let _recipeSaveTimer = null;
+let _rfImg = null;
+let _rfEditId = null;
+
+async function recipeFetch() {
+  try {
+    const r = await fetch(FB_RECIPE + '?t=' + Date.now());
+    if (r.ok) {
+      const d = await r.json();
+      if (d) {
+        _recipeData.shopping = Array.isArray(d.shopping) ? d.shopping : [];
+        _recipeData.ingredients = d.ingredients || '';
+        _recipeData.fridge = d.fridge || '';
+        _recipeData.weekly = Object.assign({mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:''}, d.weekly || {});
+        _recipeData.recipes = Array.isArray(d.recipes) ? d.recipes : [];
+      }
+    }
+  } catch(e) {}
+  recipeRender();
+}
+
+function recipeRender() {
+  shoppingRender();
+  weeklyRender();
+  recipeListRender();
+  const ing = document.getElementById('ingredients-left');
+  const fr = document.getElementById('fridge-left');
+  if (ing) ing.value = _recipeData.ingredients;
+  if (fr) fr.value = _recipeData.fridge;
+}
+
+function recipeFieldSave(field, val) {
+  _recipeData[field] = val;
+  recipeSaveDebounce();
+}
+
+function recipeSaveDebounce() {
+  clearTimeout(_recipeSaveTimer);
+  _recipeSaveTimer = setTimeout(() => {
+    fetch(FB_RECIPE, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(_recipeData)}).catch(()=>{});
+  }, 800);
+}
+
+// ── 장봐야될거 ──
+function shoppingAdd() {
+  const inp = document.getElementById('shopping-input');
+  const text = (inp ? inp.value : '').trim();
+  if (!text) return;
+  _recipeData.shopping.push({id: Date.now(), text: text, done: false});
+  if (inp) inp.value = '';
+  shoppingRender();
+  recipeSaveDebounce();
+}
+
+function shoppingToggle(id) {
+  const item = _recipeData.shopping.find(s => s.id === id);
+  if (item) { item.done = !item.done; shoppingRender(); recipeSaveDebounce(); }
+}
+
+function shoppingDel(id) {
+  _recipeData.shopping = _recipeData.shopping.filter(s => s.id !== id);
+  shoppingRender();
+  recipeSaveDebounce();
+}
+
+function shoppingRender() {
+  const el = document.getElementById('shopping-list');
+  if (!el) return;
+  if (!_recipeData.shopping.length) {
+    el.innerHTML = '<div style="color:#ccc;font-size:.78rem;padding:4px 0">아직 없어요</div>';
+    return;
+  }
+  el.innerHTML = _recipeData.shopping.map(s =>
+    '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F5F0EB">'
+    + '<input type="checkbox"' + (s.done ? ' checked' : '') + ' onchange="shoppingToggle(' + s.id + ')" style="cursor:pointer;width:15px;height:15px;accent-color:#C4714A;flex-shrink:0">'
+    + '<span style="flex:1;font-size:.82rem;' + (s.done ? 'color:#ccc;text-decoration:line-through' : 'color:#444') + '">' + s.text.replace(/</g,'&lt;') + '</span>'
+    + '<button onclick="shoppingDel(' + s.id + ')" style="border:none;background:none;cursor:pointer;font-size:.75rem;color:#ddd;padding:0;flex-shrink:0">✕</button>'
+    + '</div>'
+  ).join('');
+}
+
+// ── 요일별 메뉴 ──
+function weeklyRender() {
+  const el = document.getElementById('weekly-grid');
+  if (!el) return;
+  el.innerHTML = RECIPE_DAYS.map(d =>
+    '<div style="background:#FAF7F4;border-radius:10px;padding:10px">'
+    + '<div style="font-size:.78rem;font-weight:800;color:#C4714A;margin-bottom:6px;text-align:center">' + d.l + '</div>'
+    + '<textarea data-day="' + d.k + '" placeholder="메뉴..." oninput="weeklyEdit(\'' + d.k + '\',this.value)"'
+    + ' style="width:100%;min-height:72px;border:none;resize:none;font-size:.78rem;color:#444;line-height:1.5;font-family:inherit;outline:none;background:transparent;box-sizing:border-box">'
+    + (_recipeData.weekly[d.k] || '') + '</textarea>'
+    + '</div>'
+  ).join('');
+}
+
+function weeklyEdit(day, val) {
+  _recipeData.weekly[day] = val;
+  recipeSaveDebounce();
+}
+
+// ── 레시피 폼 ──
+function recipeFormToggle(editId) {
+  const form = document.getElementById('recipe-form');
+  const btn = document.getElementById('recipe-form-btn');
+  if (!form) return;
+
+  if (editId !== undefined) {
+    const r = _recipeData.recipes.find(x => x.id === editId);
+    if (!r) return;
+    _rfEditId = editId;
+    document.getElementById('rf-title').value = r.title || '';
+    document.getElementById('rf-category').value = r.category || '한식';
+    document.getElementById('rf-ingredients').value = r.ingredients || '';
+    document.getElementById('rf-method').value = r.method || '';
+    document.getElementById('rf-url').value = r.url || '';
+    _rfImg = r.img || null;
+    rfImgRefresh();
+    form.style.display = 'block';
+    form.scrollIntoView({behavior:'smooth', block:'start'});
+    if (btn) btn.textContent = '▲ 닫기';
+    return;
+  }
+
+  if (form.style.display === 'none' || !form.style.display) {
+    _rfEditId = null;
+    document.getElementById('rf-title').value = '';
+    document.getElementById('rf-category').value = '한식';
+    document.getElementById('rf-ingredients').value = '';
+    document.getElementById('rf-method').value = '';
+    document.getElementById('rf-url').value = '';
+    _rfImg = null;
+    rfImgRefresh();
+    form.style.display = 'block';
+    if (btn) btn.textContent = '▲ 닫기';
+  } else {
+    form.style.display = 'none';
+    if (btn) btn.textContent = '+ 새 레시피';
+  }
+}
+
+function rfHandlePaste(e) {
+  const items = Array.from((e.clipboardData || {}).items || []);
+  const imgItem = items.find(it => it.type.startsWith('image/'));
+  if (imgItem) {
+    e.preventDefault();
+    const blob = imgItem.getAsFile();
+    const reader = new FileReader();
+    reader.onload = ev => { _rfImg = ev.target.result; rfImgRefresh(); };
+    reader.readAsDataURL(blob);
+  }
+}
+
+function rfImgFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { _rfImg = ev.target.result; rfImgRefresh(); };
+  reader.readAsDataURL(file);
+}
+
+function rfImgClear() {
+  _rfImg = null;
+  rfImgRefresh();
+}
+
+function rfImgRefresh() {
+  const hint = document.getElementById('rf-img-hint');
+  const preview = document.getElementById('rf-img-preview');
+  const del = document.getElementById('rf-img-del');
+  if (!hint || !preview || !del) return;
+  if (_rfImg) {
+    hint.style.display = 'none';
+    preview.src = _rfImg;
+    preview.style.display = 'block';
+    del.style.display = 'block';
+  } else {
+    hint.style.display = 'block';
+    preview.src = '';
+    preview.style.display = 'none';
+    del.style.display = 'none';
+  }
+}
+
+function recipeFormSave() {
+  const title = (document.getElementById('rf-title').value || '').trim();
+  if (!title) { alert('요리 제목을 입력해주세요'); return; }
+  const category = document.getElementById('rf-category').value || '기타';
+  const ingredients = document.getElementById('rf-ingredients').value || '';
+  const method = document.getElementById('rf-method').value || '';
+  const url = (document.getElementById('rf-url').value || '').trim();
+
+  if (_rfEditId !== null) {
+    const r = _recipeData.recipes.find(x => x.id === _rfEditId);
+    if (r) { r.title = title; r.category = category; r.img = _rfImg; r.ingredients = ingredients; r.method = method; r.url = url; }
+  } else {
+    _recipeData.recipes.unshift({id: Date.now(), title: title, category: category, img: _rfImg, ingredients: ingredients, method: method, url: url});
+  }
+  recipeFormToggle();
+  recipeListRender();
+  recipeSaveDebounce();
+}
+
+function recipeDel(id) {
+  if (!confirm('레시피를 삭제할까요?')) return;
+  _recipeData.recipes = _recipeData.recipes.filter(r => r.id !== id);
+  recipeListRender();
+  recipeSaveDebounce();
+}
+
+// ── 레시피 목록 ──
+function recipeListRender() {
+  const el = document.getElementById('recipe-list');
+  if (!el) return;
+  if (!_recipeData.recipes.length) {
+    el.innerHTML = '<div style="color:#ccc;font-size:.82rem;text-align:center;padding:30px">레시피를 등록해보세요</div>';
+    return;
+  }
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px">'
+    + _recipeData.recipes.map(r =>
+      '<div style="border:1px solid #EDE8E1;border-radius:12px;overflow:hidden;background:#fff">'
+      + (r.img ? '<img src="' + r.img + '" style="width:100%;height:130px;object-fit:cover">'
+               : '<div style="width:100%;height:60px;background:#FAF7F4;display:flex;align-items:center;justify-content:center;font-size:1.8rem">🍽️</div>')
+      + '<div style="padding:10px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px">'
+      + '<span style="font-size:.84rem;font-weight:800;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title.replace(/</g,'&lt;') + '</span>'
+      + '<span style="font-size:.68rem;background:#FAF7F4;color:#C4714A;border-radius:5px;padding:2px 6px;flex-shrink:0">' + (r.category || '기타') + '</span>'
+      + '</div>'
+      + (r.ingredients ? '<div style="font-size:.73rem;color:#aaa;margin-bottom:4px;max-height:36px;overflow:hidden;line-height:1.5;white-space:pre-wrap">' + r.ingredients.replace(/</g,'&lt;') + '</div>' : '')
+      + (r.method ? '<div style="font-size:.73rem;color:#888;margin-bottom:4px;max-height:36px;overflow:hidden;line-height:1.5;white-space:pre-wrap">' + r.method.replace(/</g,'&lt;') + '</div>' : '')
+      + (r.url ? '<a href="' + r.url.replace(/"/g,'&quot;') + '" target="_blank" style="font-size:.72rem;color:#6366f1;text-decoration:none;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔗 참고</a>' : '')
+      + '<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">'
+      + '<button onclick="recipeFormToggle(' + r.id + ')" style="border:none;background:#F5F0EB;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#888">수정</button>'
+      + '<button onclick="recipeDel(' + r.id + ')" style="border:none;background:#FEE2E2;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:.72rem;color:#f87171">삭제</button>'
+      + '</div></div></div>'
+    ).join('')
+    + '</div>';
 }
 </script>
 <div id="pn-img-modal" onclick="this.style.display='none'">
