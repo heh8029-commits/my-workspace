@@ -796,6 +796,13 @@ button{font-family:inherit;cursor:pointer}
       </select>
     </div>
     <div class="form-row">
+      <label>근무형태</label>
+      <select id="fEmpType">
+        <option value="alba">알바</option>
+        <option value="staff">직원</option>
+      </select>
+    </div>
+    <div class="form-row">
       <label>시급 (원)</label>
       <input type="number" id="fWage" placeholder="10030" min="0" step="10">
     </div>
@@ -853,13 +860,21 @@ button{font-family:inherit;cursor:pointer}
             <input type="date" id="logAttDate" class="att-input-date" onchange="updateLogAttLabel()">
           </div>
         </div>
-        <div class="log-att-item">
+        <div class="log-att-item log-att-old">
           <label>⏰ 시간</label>
           <select id="logAttHour" class="att-sel"></select>
         </div>
-        <div class="log-att-item">
+        <div class="log-att-item log-att-old">
           <label>⌛ 분</label>
           <select id="logAttMin" class="att-sel"></select>
+        </div>
+        <div class="log-att-item log-att-staff" style="display:none">
+          <label>🕐 출근</label>
+          <input type="time" id="logCheckIn" class="att-input-date" value="09:30" oninput="logCalcWorked()">
+        </div>
+        <div class="log-att-item log-att-staff" style="display:none">
+          <label>🕐 퇴근</label>
+          <input type="time" id="logCheckOut" class="att-input-date" value="15:30" oninput="logCalcWorked()">
         </div>
         <div class="log-att-item">
           <label>🐻 휴무</label>
@@ -867,6 +882,25 @@ button{font-family:inherit;cursor:pointer}
         </div>
         <button class="att-btn-save" onclick="saveLogAttendance()" style="flex:1;min-width:120px">💾 저장</button>
       </div>
+      <div class="log-att-row log-att-staff" id="logStaffExtraRow" style="display:none;margin-top:8px">
+        <div class="log-att-item">
+          <label>&nbsp;</label>
+          <label class="att-off-lbl"><input type="checkbox" id="logMealChk" checked> 🍚 식사포함 (10,000원)</label>
+        </div>
+        <div class="log-att-item">
+          <label>&nbsp;</label>
+          <label class="att-off-lbl"><input type="checkbox" id="logOtChk" onchange="logToggleOt()"> ⏰ 연장근무</label>
+        </div>
+        <div class="log-att-item log-ot-time" id="logOtStartWrap" style="display:none">
+          <label>연장 시작</label>
+          <input type="time" id="logOtStart" class="att-input-date" value="18:00" oninput="logCalcWorked()">
+        </div>
+        <div class="log-att-item log-ot-time" id="logOtEndWrap" style="display:none">
+          <label>연장 종료</label>
+          <input type="time" id="logOtEnd" class="att-input-date" value="20:00" oninput="logCalcWorked()">
+        </div>
+      </div>
+      <div class="log-att-info log-att-staff" id="logWorkedLabel" style="display:none"></div>
       <div class="log-att-info" id="logAttInfo"></div>
     </div>
 
@@ -1146,6 +1180,7 @@ function openModal(id){
     document.getElementById('fPhone').value=m.phone||'';
     document.getElementById('fJoin').value=m.join||'';
     document.getElementById('fStatus').value=m.status||'active';
+    document.getElementById('fEmpType').value=m.empType||'alba';
     document.getElementById('fWage').value=m.wage||'';
     document.getElementById('fTax').checked=!!m.tax;
     document.getElementById('fAccount').value=m.account||'';
@@ -1160,6 +1195,7 @@ function openModal(id){
     document.getElementById('fPhone').value='';
     document.getElementById('fJoin').value=new Date().toISOString().slice(0,10);
     document.getElementById('fStatus').value='active';
+    document.getElementById('fEmpType').value='alba';
     document.getElementById('fWage').value='';
     document.getElementById('fTax').checked=false;
     document.getElementById('fAccount').value='';
@@ -1205,6 +1241,7 @@ async function saveMember(){
     phone:document.getElementById('fPhone').value.trim(),
     join:document.getElementById('fJoin').value,
     status:document.getElementById('fStatus').value,
+    empType:document.getElementById('fEmpType').value,
     wage:document.getElementById('fWage').value,
     tax:document.getElementById('fTax').checked,
     account:document.getElementById('fAccount').value.trim(),
@@ -1368,8 +1405,63 @@ function openLogView(id){
   const lo=document.getElementById('logAttOff');  if(lo)lo.checked=false;
   updateLogAttLabel();
   const li=document.getElementById('logAttInfo'); if(li)li.textContent='';
+
+  // 알바/직원 타입에 따라 출퇴근 입력 UI 전환
+  const m=members.find(x=>x.id===id);
+  const isStaff=!!(m&&m.empType==='staff');
+  document.querySelectorAll('.log-att-old').forEach(el=>el.style.display=isStaff?'none':'');
+  document.querySelectorAll('.log-att-staff').forEach(el=>el.style.display=isStaff?'':'none');
+  if(isStaff) logResetStaffFields();
+
   document.getElementById('logOverlay').classList.add('open');
   renderLog();
+}
+
+// 직원용 출퇴근 입력값을 기본값으로 리셋 (출근9:30~퇴근15:30, 식사포함 체크, 연장근무 미체크)
+function logResetStaffFields(){
+  const ci=document.getElementById('logCheckIn');   if(ci)ci.value='09:30';
+  const co=document.getElementById('logCheckOut');  if(co)co.value='15:30';
+  const meal=document.getElementById('logMealChk'); if(meal)meal.checked=true;
+  const ot=document.getElementById('logOtChk');     if(ot)ot.checked=false;
+  const os=document.getElementById('logOtStart');   if(os)os.value='18:00';
+  const oe=document.getElementById('logOtEnd');     if(oe)oe.value='20:00';
+  logToggleOt();
+  logCalcWorked();
+}
+
+// 연장근무 체크 시 시간대 입력 노출/숨김
+function logToggleOt(){
+  const on=document.getElementById('logOtChk').checked;
+  const w1=document.getElementById('logOtStartWrap'); if(w1)w1.style.display=on?'':'none';
+  const w2=document.getElementById('logOtEndWrap');   if(w2)w2.style.display=on?'':'none';
+  logCalcWorked();
+}
+
+// 출근~퇴근(+연장근무) 시각으로부터 총 근무시간 계산해서 화면에 표시
+function logTimeDiffMin(start,end){
+  if(!start||!end)return 0;
+  const[sh,sm]=start.split(':').map(Number);
+  const[eh,em]=end.split(':').map(Number);
+  let diff=(eh*60+em)-(sh*60+sm);
+  if(diff<0)diff+=24*60; // 자정 넘어가는 경우 대비
+  return diff;
+}
+function logCalcWorked(){
+  const lbl=document.getElementById('logWorkedLabel');
+  if(!lbl)return;
+  const ci=document.getElementById('logCheckIn'), co=document.getElementById('logCheckOut');
+  if(!ci||!co)return;
+  const baseMin=logTimeDiffMin(ci.value,co.value);
+  const otOn=document.getElementById('logOtChk')&&document.getElementById('logOtChk').checked;
+  const otMin=otOn?logTimeDiffMin(document.getElementById('logOtStart').value,document.getElementById('logOtEnd').value):0;
+  const totalMin=baseMin+otMin;
+  const th=Math.floor(totalMin/60),tm=totalMin%60;
+  let text=`⏰ 근무시간 ${th}시간 ${tm}분`;
+  if(otOn&&otMin>0){
+    const oh=Math.floor(otMin/60),om=otMin%60;
+    text+=` (연장 ${oh}시간 ${om}분 포함)`;
+  }
+  lbl.textContent=text;
 }
 
 // 달력 상단 출퇴근 입력 관련
@@ -1403,15 +1495,37 @@ async function saveLogAttendance(){
   const m=members.find(x=>x.id===attSelected);
   if(!m)return;
   const date=document.getElementById('logAttDate').value;
-  const hour=document.getElementById('logAttHour').value;
-  const min=document.getElementById('logAttMin').value;
   const isOff=document.getElementById('logAttOff').checked;
   if(!date){alert('날짜를 골라줘');return}
   const el=document.getElementById('logAttInfo');
   el.textContent='저장 중...';el.style.color='var(--soft)';
-  await saveAttLog({memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()});
+
+  const isStaff=m.empType==='staff';
+  let hour,min,entry;
+  if(isStaff){
+    const checkIn=document.getElementById('logCheckIn').value;
+    const checkOut=document.getElementById('logCheckOut').value;
+    const meal=document.getElementById('logMealChk').checked;
+    const otOn=document.getElementById('logOtChk').checked;
+    const otStart=otOn?document.getElementById('logOtStart').value:'';
+    const otEnd=otOn?document.getElementById('logOtEnd').value:'';
+    const baseMin=logTimeDiffMin(checkIn,checkOut);
+    const otMin=otOn?logTimeDiffMin(otStart,otEnd):0;
+    const totalMin=baseMin+otMin;
+    hour=String(Math.floor(totalMin/60));
+    min=String(totalMin%60);
+    entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,
+      checkIn,checkOut,meal,mealCost:meal?10000:0,otOn,otStart,otEnd,otMin,at:Date.now()};
+  } else {
+    hour=document.getElementById('logAttHour').value;
+    min=document.getElementById('logAttMin').value;
+    entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()};
+  }
+
+  await saveAttLog(entry);
   el.innerHTML=`✅ 저장됐어! ${fmtDateKo(date)} ${isOff?'· 🌴 휴무':'· ⏰ '+hour+'시간 '+min+'분'}`;
   el.style.color='var(--rose)';
+  if(isStaff) logResetStaffFields();
   await renderLog();
 }
 
@@ -1487,9 +1601,13 @@ async function renderLog(){
   const [logs,sjMonthData]=await Promise.all([loadAttLogs(),hasSj?loadSjMonth(attSelected,periodKey):Promise.resolve(null)]);
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===attSelected)){
-    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0};
+    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0,meal:false,otMin:0};
     if(l.isOff){dayMap[l.date].isOff=true;}
-    else{dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);dayMap[l.date].count++;}
+    else{
+      dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);dayMap[l.date].count++;
+      if(l.meal)dayMap[l.date].meal=true;
+      if(l.otOn)dayMap[l.date].otMin+=parseInt(l.otMin)||0;
+    }
   }
 
   // 부업 월별 입력 섹션
@@ -1537,7 +1655,14 @@ async function renderLog(){
     const h=Math.floor(mins/60),mn=mins%60;
     let lbl='';
     if(isOff) lbl='🌴 휴무';
-    else if(mins>0) lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
+    else if(mins>0){
+      lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
+      if(dd&&dd.meal) lbl+=' 🍚';
+      if(dd&&dd.otMin>0){
+        const oh=Math.floor(dd.otMin/60),om=dd.otMin%60;
+        lbl+=`<span style="color:#e08000"> (연장 ${oh}시간${om?' '+om+'분':''})</span>`;
+      }
+    }
     const dow=cur.getDay();
     const wkCls=dow===6?' sat':dow===0?' sun':'';
     const localISO=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
@@ -2115,7 +2240,7 @@ async function renderAdmin(){
     const ms=memberStats[l.memberId];
     if(!ms)continue;
     if(!dayData[l.date])dayData[l.date]={};
-    if(!dayData[l.date][l.memberId])dayData[l.date][l.memberId]={totalMin:0,isOff:false};
+    if(!dayData[l.date][l.memberId])dayData[l.date][l.memberId]={totalMin:0,isOff:false,meal:false,otMin:0};
     if(l.isOff){
       ms.offDays++;
       dayData[l.date][l.memberId].isOff=true;
@@ -2123,6 +2248,8 @@ async function renderAdmin(){
       const mins=parseInt(l.hour)*60+parseInt(l.min);
       ms.totalMin+=mins; ms.workDays++;
       dayData[l.date][l.memberId].totalMin+=mins;
+      if(l.meal)dayData[l.date][l.memberId].meal=true;
+      if(l.otOn)dayData[l.date][l.memberId].otMin+=parseInt(l.otMin)||0;
     }
   }
 
@@ -2198,7 +2325,12 @@ async function renderAdmin(){
       const has=md&&(md.isOff||md.totalMin>0);
       if(has){
         const mth=Math.floor(md.totalMin/60),mtm=md.totalMin%60;
-        const label=md.isOff?'🌴 휴무':`${mth}시간${mtm?' '+mtm+'분':''}`;
+        let label=md.isOff?'🌴 휴무':`${mth}시간${mtm?' '+mtm+'분':''}`;
+        if(!md.isOff&&md.meal) label+=' 🍚';
+        if(!md.isOff&&md.otMin>0){
+          const oh=Math.floor(md.otMin/60),om=md.otMin%60;
+          label+=`<span style="color:#e08000"> (연장${oh}h${om?om+'m':''})</span>`;
+        }
         cal+=`<div class="admin-cal-emp" onclick="openLogWindow('${m.id}')" style="cursor:pointer">
           <div class="admin-cal-emp-dot" style="background:${color}"></div>
           <span style="color:var(--soft)">${esc(m.name)}</span>
