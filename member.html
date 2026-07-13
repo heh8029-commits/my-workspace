@@ -886,7 +886,7 @@ button{font-family:inherit;cursor:pointer}
       <div class="log-att-row log-att-staff" id="logStaffExtraRow" style="display:none;margin-top:8px">
         <div class="log-att-item">
           <label>&nbsp;</label>
-          <label class="att-off-lbl"><input type="checkbox" id="logMealChk" checked> 🍚 식사포함</label>
+          <label class="att-off-lbl"><input type="checkbox" id="logMealChk" checked> 식사포함</label>
         </div>
         <div class="log-att-item">
           <label>&nbsp;</label>
@@ -1640,12 +1640,13 @@ async function renderLog(){
   const [logs,sjMonthData]=await Promise.all([loadAttLogs(),hasSj?loadSjMonth(attSelected,periodKey):Promise.resolve(null)]);
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===attSelected)){
-    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0,meal:false,otMin:0};
+    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0,meal:false,otMin:0,mealCost:0};
     if(l.isOff){dayMap[l.date].isOff=true;}
     else{
       dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);dayMap[l.date].count++;
       if(l.meal)dayMap[l.date].meal=true;
       if(l.otOn)dayMap[l.date].otMin+=parseInt(l.otMin)||0;
+      dayMap[l.date].mealCost+=parseInt(l.mealCost)||0;
     }
   }
 
@@ -1684,7 +1685,7 @@ async function renderLog(){
   const selDateEl=document.getElementById('logAttDate');
   const selectedDate=selDateEl?selDateEl.value:'';
 
-  let totalMin=0,offDays=0,workDays=0;
+  let totalMin=0,offDays=0,workDays=0,mealTotal=0;
   const cur=new Date(calStart);
   while(cur<=calEnd){
     const ds=localISO(cur);
@@ -1693,13 +1694,13 @@ async function renderLog(){
     const mins=dd?dd.totalMin:0;
     const isOff=dd?dd.isOff:false;
     const hasData=!!dd;
-    if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;}}
+    if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;mealTotal+=(dd.mealCost||0);}}
     const h=Math.floor(mins/60),mn=mins%60;
     let lbl='';
     if(isOff) lbl='🌴 휴무';
     else if(mins>0){
       lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
-      if(dd&&dd.meal) lbl+=' 🍚';
+      if(dd&&dd.meal) lbl+=' 식대';
       if(dd&&dd.otMin>0){
         const oh=Math.floor(dd.otMin/60),om=dd.otMin%60;
         lbl+=`<span style="color:#e08000"> (연장 ${oh}시간${om?' '+om+'분':''})</span>`;
@@ -1720,7 +1721,7 @@ async function renderLog(){
 
   const th=Math.floor(totalMin/60),tm=totalMin%60;
   const wage=Number(m.wage)||0;
-  const wageFinal=wage?Math.round(totalMin/60*wage*(m.tax?0.967:1)):0;
+  const wageFinal=(wage?Math.round(totalMin/60*wage*(m.tax?0.967:1)):0)+mealTotal;
   const sjItems=sjMonthData&&sjMonthData.items?sjMonthData.items:[];
   const sjSummary=sjItems.filter(it=>it.qty>0).map(it=>
     `<div class="log-sum-item">${esc(it.sjName||it.sjId)} <span>${it.qty}개</span></div>`
@@ -1730,6 +1731,7 @@ async function renderLog(){
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
      <div class="log-sum-item">휴무 <span>${offDays}일</span></div>
      <div class="log-sum-item">급여 <span>${wageFinal.toLocaleString()}원</span></div>
+     ${mealTotal?`<div class="log-sum-item">식대 <span>${mealTotal.toLocaleString()}원</span></div>`:''}
      ${sjSummary}
 `;
 
@@ -1779,22 +1781,25 @@ async function renderPayslipWindow(){
   const sISO=toISO(start),eISO=toISO(end);
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===m.id&&l.date>=sISO&&l.date<=eISO)){
-    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false};
+    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,mealCost:0};
     if(l.isOff)dayMap[l.date].isOff=true;
-    else dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);
+    else{
+      dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);
+      dayMap[l.date].mealCost+=parseInt(l.mealCost)||0;
+    }
   }
-  let totalMin=0,workDays=0,offDays=0;
-  for(const k in dayMap){if(dayMap[k].isOff)offDays++;else{workDays++;totalMin+=dayMap[k].totalMin;}}
+  let totalMin=0,workDays=0,offDays=0,mealTotal=0;
+  for(const k in dayMap){if(dayMap[k].isOff)offDays++;else{workDays++;totalMin+=dayMap[k].totalMin;mealTotal+=(dayMap[k].mealCost||0);}}
   const sjItems=(sjMonth&&sjMonth.items)?sjMonth.items:[];
   const today=new Date();today.setHours(0,0,0,0);
   const settled=today>=end;
-  const html=buildPayslipHtml({m,start,end,workDays,offDays,totalMin,sjItems,settled});
+  const html=buildPayslipHtml({m,start,end,workDays,offDays,totalMin,mealTotal,sjItems,settled});
   if(w.closed)return;
   w.document.open();w.document.write(html);w.document.close();
 }
 
 function buildPayslipHtml(d){
-  const {m,start,end,workDays,offDays,totalMin,sjItems,settled}=d;
+  const {m,start,end,workDays,offDays,totalMin,mealTotal,sjItems,settled}=d;
   const fmtK=dt=>`${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
   const fmtShort=dt=>`${dt.getMonth()+1}월 ${dt.getDate()}일`;
   const period=`${fmtShort(start)} ~ ${fmtShort(end)}`;
@@ -1806,7 +1811,7 @@ function buildPayslipHtml(d){
   const sjTotal=sjRows.reduce((s,i)=>s+(i.total||0),0);
   const gross=base+sjTotal;
   const tax=m.tax?Math.round(gross*0.033):0;
-  const net=gross-tax;
+  const net=gross-tax+(mealTotal||0);
   const rowsHtml=sjRows.map(i=>`<tr><td>${escHtml(i.sjName||i.sjId)}<small>${i.qty}개 × ${won(i.price||0)}</small></td><td class="amt">${won(i.total)}</td></tr>`).join('');
   const allowPrev=start.getTime()>PAYSLIP_FLOOR.getTime();
   const nav=`<div class="nav">
@@ -1839,6 +1844,7 @@ function buildPayslipHtml(d){
         ${rowsHtml}
         <tr class="sub"><td>합계 (세전)</td><td class="amt">${won(gross)}</td></tr>
         ${m.tax?`<tr class="tax"><td>원천징수 3.3%</td><td class="amt">-${won(tax)}</td></tr>`:''}
+        ${mealTotal?`<tr><td>식대</td><td class="amt">${won(mealTotal)}</td></tr>`:''}
       </table>
     </div>
     <div class="net"><span class="l">실지급액</span><span class="v">${won(net)}</span></div>
@@ -2271,7 +2277,7 @@ async function renderAdmin(){
   const [logs,...sjMonthResults]=await Promise.all([loadAttLogs(),...sjMemberLoads]);
 
   const memberStats={};
-  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0,sjTotal:0};
+  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0,sjTotal:0,mealTotal:0};
 
   // 부업 집계
   for(const r of sjMonthResults){
@@ -2292,6 +2298,7 @@ async function renderAdmin(){
     }else{
       const mins=parseInt(l.hour)*60+parseInt(l.min);
       ms.totalMin+=mins; ms.workDays++;
+      ms.mealTotal+=parseInt(l.mealCost)||0;
       dayData[l.date][l.memberId].totalMin+=mins;
       if(l.meal)dayData[l.date][l.memberId].meal=true;
       if(l.otOn)dayData[l.date][l.memberId].otMin+=parseInt(l.otMin)||0;
@@ -2309,10 +2316,10 @@ async function renderAdmin(){
   const payLines=[];
   for(let i=0;i<activeMembers.length;i++){
     const m=activeMembers[i];
-    const st=memberStats[m.id]||{totalMin:0,offDays:0,sjTotal:0};
+    const st=memberStats[m.id]||{totalMin:0,offDays:0,sjTotal:0,mealTotal:0};
     const th=Math.floor(st.totalMin/60),tm=st.totalMin%60;
     const wage=Number(m.wage)||0;
-    const wageFinal=wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0;
+    const wageFinal=(wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0)+(st.mealTotal||0);
     const rowTotal=wageFinal+(st.sjTotal||0);
     totalFinal+=wageFinal; totalSj+=st.sjTotal||0;
     payLines.push(`${m.name} ${rowTotal.toLocaleString()}원`);
@@ -2371,7 +2378,7 @@ async function renderAdmin(){
       if(has){
         const mth=Math.floor(md.totalMin/60),mtm=md.totalMin%60;
         let label=md.isOff?'🌴 휴무':`${mth}시간${mtm?' '+mtm+'분':''}`;
-        if(!md.isOff&&md.meal) label+=' 🍚';
+        if(!md.isOff&&md.meal) label+=' 식대';
         if(!md.isOff&&md.otMin>0){
           const oh=Math.floor(md.otMin/60),om=md.otMin%60;
           label+=`<span style="color:#e08000"> (연장${oh}h${om?om+'m':''})</span>`;
