@@ -2719,6 +2719,12 @@ function setSub(id, label){
 
   renderTopMenu(); renderSidebar(); renderMobileSub();
 
+  if(subItem && subItem.url && subItem.id==='staff'){
+    // 직원관리는 iframe 캐시 문제로 안정성이 떨어져서 새 창으로 바로 띄움
+    window.open(subItem.url, '_blank');
+    return;
+  }
+
   if(subItem && subItem.url){
     const fr = document.getElementById('embed-frame');
     const base = subItem.url.split('#')[0];

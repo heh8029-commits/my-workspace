@@ -1114,7 +1114,12 @@ async function fbGet(url){
   return null;
 }
 async function fbPut(url,data){
-  await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  try{
+    const r=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    return r.ok;
+  }catch(e){
+    return false;
+  }
 }
 
 async function load(){
@@ -1540,8 +1545,19 @@ async function resetLogAttendance(){
   const el=document.getElementById('logAttInfo');
   el.textContent='초기화 중...';el.style.color='var(--soft)';
   const logs=await loadAttLogs();
+  const before=logs.length;
   const remaining=logs.filter(l=>!(l.memberId===attSelected&&l.date===date));
-  await fbPut(FB_ATT_BASE+'.json',remaining);
+  if(remaining.length===before){
+    el.textContent='⚠️ '+dateTxt+' 기록이 없어요 (지울 게 없어요)';
+    el.style.color='#c0392b';
+    return;
+  }
+  const ok=await fbPut(FB_ATT_BASE+'.json',remaining);
+  if(!ok){
+    el.textContent='❌ 초기화 실패! 인터넷 연결 확인하고 다시 시도해줘';
+    el.style.color='#c0392b';
+    return;
+  }
   el.textContent='🗑️ 초기화됐어요! '+dateTxt;
   el.style.color='var(--rose)';
   await renderLog();
