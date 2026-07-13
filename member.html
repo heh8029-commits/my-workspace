@@ -1681,6 +1681,9 @@ async function renderLog(){
   for(const h of['월','화','수','목','금','토','일'])
     html+=`<div class="log-grid-hd">${h}</div>`;
 
+  const selDateEl=document.getElementById('logAttDate');
+  const selectedDate=selDateEl?selDateEl.value:'';
+
   let totalMin=0,offDays=0,workDays=0;
   const cur=new Date(calStart);
   while(cur<=calEnd){
@@ -1705,7 +1708,8 @@ async function renderLog(){
     const dow=cur.getDay();
     const wkCls=dow===6?' sat':dow===0?' sun':'';
     const clickAttr=inP?` onclick="pickLogDate('${ds}',this)" style="cursor:pointer"`:'';
-    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}"${clickAttr}>
+    const pickedCls=ds===selectedDate?' picked':'';
+    html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}${pickedCls}"${clickAttr}>
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
       ${lbl?`<div class="log-day-time">${lbl}</div>`:''}
     </div>`;
