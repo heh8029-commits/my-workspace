@@ -1199,7 +1199,7 @@ function openModal(id){
     document.getElementById('fEng').value='';
     document.getElementById('fNick').value='';
     document.getElementById('fPhone').value='';
-    document.getElementById('fJoin').value=new Date().toISOString().slice(0,10);
+    document.getElementById('fJoin').value=localISO();
     document.getElementById('fStatus').value='active';
     document.getElementById('fEmpType').value='alba';
     document.getElementById('fWage').value='';
@@ -1307,10 +1307,15 @@ function selectEmp(id){
 
 function setYesterday(){
   const d=new Date();d.setDate(d.getDate()-1);
-  document.getElementById('attDate').value=d.toISOString().slice(0,10);
+  document.getElementById('attDate').value=localISO(d);
   updateAttInfo();
 }
 
+// 로컬 기준 YYYY-MM-DD (Date.toISOString()은 UTC로 변환돼서 한국시간(UTC+9) 자정~오전9시 사이엔 하루 밀리는 버그가 있었음 - 반드시 이 함수 사용)
+function localISO(d){
+  d=d||new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 const WK_KO=['일','월','화','수','목','금','토'];
 function fmtDateKo(ds){
   if(!ds)return'';
@@ -1405,7 +1410,7 @@ function openLogView(id){
   try{history.replaceState(null,'',location.pathname+'?emp='+encodeURIComponent(id));}catch(e){}
   fillLogTimeSelects();
   const ld=document.getElementById('logAttDate');
-  if(ld)ld.value=new Date().toISOString().slice(0,10);
+  if(ld)ld.value=localISO();
   const lh=document.getElementById('logAttHour'); if(lh)lh.value=4;
   const lm=document.getElementById('logAttMin');  if(lm)lm.value=0;
   const lo=document.getElementById('logAttOff');  if(lo)lo.checked=false;
@@ -1493,7 +1498,7 @@ function pickLogDate(ds,el){
 }
 function logSetYesterday(){
   const d=new Date();d.setDate(d.getDate()-1);
-  document.getElementById('logAttDate').value=d.toISOString().slice(0,10);
+  document.getElementById('logAttDate').value=localISO(d);
   updateLogAttLabel();
 }
 async function saveLogAttendance(){
@@ -1679,7 +1684,7 @@ async function renderLog(){
   let totalMin=0,offDays=0,workDays=0;
   const cur=new Date(calStart);
   while(cur<=calEnd){
-    const ds=cur.toISOString().slice(0,10);
+    const ds=localISO(cur);
     const inP=cur>=start&&cur<=end;
     const dd=dayMap[ds];
     const mins=dd?dd.totalMin:0;
@@ -1699,8 +1704,7 @@ async function renderLog(){
     }
     const dow=cur.getDay();
     const wkCls=dow===6?' sat':dow===0?' sun':'';
-    const localISO=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
-    const clickAttr=inP?` onclick="pickLogDate('${localISO}',this)" style="cursor:pointer"`:'';
+    const clickAttr=inP?` onclick="pickLogDate('${ds}',this)" style="cursor:pointer"`:'';
     html+=`<div class="log-day${inP?' in-period':' out-period'}${hasData?' has-data':''}${isOff?' off-day':''}${wkCls}"${clickAttr}>
       <div class="log-day-date">${cur.getMonth()+1}/${cur.getDate()}</div>
       ${lbl?`<div class="log-day-time">${lbl}</div>`:''}
@@ -2342,7 +2346,7 @@ async function renderAdmin(){
   const todayMid=new Date(); todayMid.setHours(0,0,0,0);
   const cur=new Date(calStart);
   while(cur<=calEnd){
-    const ds=cur.toISOString().slice(0,10);
+    const ds=localISO(cur);
     const inP=cur>=start&&cur<=end;
     const dow=cur.getDay();
     const isSat=dow===6,isSun=dow===0;
