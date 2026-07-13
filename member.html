@@ -1700,7 +1700,7 @@ async function renderLog(){
     if(isOff) lbl='🌴 휴무';
     else if(mins>0){
       lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
-      if(dd&&dd.meal) lbl+=' 식대';
+      if(dd&&dd.meal) lbl+=' (+식대)';
       if(dd&&dd.otMin>0){
         const oh=Math.floor(dd.otMin/60),om=dd.otMin%60;
         lbl+=`<span style="color:#e08000"> (연장 ${oh}시간${om?' '+om+'분':''})</span>`;
@@ -2378,7 +2378,7 @@ async function renderAdmin(){
       if(has){
         const mth=Math.floor(md.totalMin/60),mtm=md.totalMin%60;
         let label=md.isOff?'🌴 휴무':`${mth}시간${mtm?' '+mtm+'분':''}`;
-        if(!md.isOff&&md.meal) label+=' 식대';
+        if(!md.isOff&&md.meal) label+=' (+식대)';
         if(!md.isOff&&md.otMin>0){
           const oh=Math.floor(md.otMin/60),om=md.otMin%60;
           label+=`<span style="color:#e08000"> (연장${oh}h${om?om+'m':''})</span>`;
