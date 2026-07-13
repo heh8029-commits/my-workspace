@@ -881,6 +881,7 @@ button{font-family:inherit;cursor:pointer}
           <label class="att-off-lbl"><input type="checkbox" id="logAttOff"> 휴무</label>
         </div>
         <button class="att-btn-save" onclick="saveLogAttendance()" style="flex:1;min-width:120px">💾 저장</button>
+        <button class="att-btn-save" onclick="resetLogAttendance()" style="flex:0;min-width:90px;background:#eee;color:#888">🗑️ 초기화</button>
       </div>
       <div class="log-att-row log-att-staff" id="logStaffExtraRow" style="display:none;margin-top:8px">
         <div class="log-att-item">
@@ -1529,6 +1530,23 @@ async function saveLogAttendance(){
   await renderLog();
 }
 
+// 잘못 체크한 날짜의 출퇴근 기록을 전부 지움 (알바/직원 공통)
+async function resetLogAttendance(){
+  if(!attSelected){alert('직원 정보가 없어요');return}
+  const date=document.getElementById('logAttDate').value;
+  if(!date){alert('날짜를 골라줘');return}
+  const dateTxt=date.replace(/-/g,'.');
+  if(!confirm(dateTxt+' 기록을 초기화할까요?'))return;
+  const el=document.getElementById('logAttInfo');
+  el.textContent='초기화 중...';el.style.color='var(--soft)';
+  const logs=await loadAttLogs();
+  const remaining=logs.filter(l=>!(l.memberId===attSelected&&l.date===date));
+  await fbPut(FB_ATT_BASE+'.json',remaining);
+  el.textContent='🗑️ 초기화됐어요! '+dateTxt;
+  el.style.color='var(--rose)';
+  await renderLog();
+}
+
 function closeLog(){document.getElementById('logOverlay').classList.remove('open')}
 function logMove(d){logPeriodOffset+=d;renderLog();}
 
@@ -1677,6 +1695,8 @@ async function renderLog(){
   document.getElementById('logCalendar').innerHTML=html;
 
   const th=Math.floor(totalMin/60),tm=totalMin%60;
+  const wage=Number(m.wage)||0;
+  const wageFinal=wage?Math.round(totalMin/60*wage*(m.tax?0.967:1)):0;
   const sjItems=sjMonthData&&sjMonthData.items?sjMonthData.items:[];
   const sjSummary=sjItems.filter(it=>it.qty>0).map(it=>
     `<div class="log-sum-item">${esc(it.sjName||it.sjId)} <span>${it.qty}개</span></div>`
@@ -1685,6 +1705,7 @@ async function renderLog(){
     `<div class="log-sum-item">근무일 <span>${workDays}일</span></div>
      <div class="log-sum-item">총 근무시간 <span>${th}시간 ${tm}분</span></div>
      <div class="log-sum-item">휴무 <span>${offDays}일</span></div>
+     <div class="log-sum-item">급여 <span>${wageFinal.toLocaleString()}원</span></div>
      ${sjSummary}
 `;
 
