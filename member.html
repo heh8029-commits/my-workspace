@@ -1485,6 +1485,10 @@ function logCalcWorked(){
     text+=` (연장 ${oh}시간 ${om}분 포함)`;
   }
   lbl.textContent=text;
+
+  // 4시간 미만이면 식사포함 자동 해제
+  const mealChk=document.getElementById('logMealChk');
+  if(mealChk&&totalMin<240) mealChk.checked=false;
 }
 
 // 달력 상단 출퇴근 입력 관련
@@ -1528,13 +1532,13 @@ async function saveLogAttendance(){
   if(isStaff){
     const checkIn=document.getElementById('logCheckIn').value;
     const checkOut=document.getElementById('logCheckOut').value;
-    const meal=document.getElementById('logMealChk').checked;
     const otOn=document.getElementById('logOtChk').checked;
     const otStart=otOn?document.getElementById('logOtStart').value:'';
     const otEnd=otOn?document.getElementById('logOtEnd').value:'';
     const baseMin=logTimeDiffMin(checkIn,checkOut);
     const otMin=otOn?logTimeDiffMin(otStart,otEnd):0;
     const totalMin=baseMin+otMin;
+    const meal=document.getElementById('logMealChk').checked&&totalMin>=240;
     hour=String(Math.floor(totalMin/60));
     min=String(totalMin%60);
     entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,
