@@ -2337,7 +2337,7 @@ async function renderAdmin(){
     const wageFinal=(wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0)+(st.mealTotal||0);
     const rowTotal=wageFinal+(st.sjTotal||0);
     totalFinal+=wageFinal; totalSj+=st.sjTotal||0;
-    payLines.push(`${m.name} ${rowTotal.toLocaleString()}원`);
+    if(m.name!=='유민호') payLines.push(`${m.name} ${rowTotal.toLocaleString()}원`);
     const color=COLORS[i%COLORS.length];
     tbl+=`<tr>
       <td><div class="emp-name" onclick="openLogWindow('${m.id}')" style="cursor:pointer" title="근무일정표 새 창으로 열기"><span style="color:${color}">✦</span><span style="text-decoration:underline;text-decoration-color:var(--pink-mid)">${esc(m.name)}</span>${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
