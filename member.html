@@ -100,8 +100,9 @@ button{font-family:inherit;cursor:pointer}
 .admin-cal-day.sunday{background:#e8e8ec;}
 .admin-cal-date{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:3px;}
 .admin-cal-total{font-size:.82rem;font-weight:800;color:var(--rose);margin-bottom:5px;}
-.admin-cal-emp{font-size:.75rem;color:var(--text);display:flex;align-items:center;gap:4px;margin:2px 0;line-height:1.4;}
+.admin-cal-emp{font-size:.75rem;color:var(--text);display:flex;align-items:center;gap:4px;margin:2px 0;line-height:1.4;min-width:0;}
 .admin-cal-emp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.admin-cal-emp-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .member-overlay{
   display:none;position:fixed;inset:0;z-index:400;
   background:rgba(100,50,80,.4);backdrop-filter:blur(4px);
@@ -679,6 +680,18 @@ button{font-family:inherit;cursor:pointer}
   .log-day-date{font-size:.68rem}
   .log-day-time{font-size:.62rem}
   .log-grid-hd{font-size:.68rem}
+  /* 관리자 달력(일별 직원 근무시간) 모바일 최적화 - 이름 잘림/글자단위 줄바꿈 방지 */
+  .admin-cal{gap:2px;padding:6px}
+  .admin-cal-day{padding:5px 3px;min-height:auto;border-radius:8px}
+  .admin-cal-hd{font-size:.6rem;padding:3px 0}
+  .admin-cal-date{font-size:.6rem;margin-bottom:2px;gap:2px}
+  .admin-cal-total{font-size:.58rem;margin-bottom:3px}
+  .admin-cal-emp{font-size:.58rem;gap:2px;margin:1px 0}
+  .admin-cal-emp-dot{width:5px;height:5px}
+  .admin-cal-emp-name{max-width:26px}
+  .admin-period-lbl{min-width:auto;font-size:.82rem}
+  .admin-action-row{gap:5px}
+  .admin-action-btn{padding:6px 8px;font-size:.72rem}
 }
 </style>
 </head>
@@ -722,7 +735,6 @@ button{font-family:inherit;cursor:pointer}
 <!-- ══ 어드민 탭 ══ -->
 <div class="subpage" id="page-admin">
   <div class="admin-topnav">
-    <div style="flex:1"></div>
     <div class="admin-period-row" id="adminPeriodRow">
       <button class="admin-nav-btn" onclick="adminMove(-1)">‹</button>
       <span class="admin-period-lbl" id="adminPeriodLabel"></span>
@@ -2383,14 +2395,14 @@ async function renderAdmin(){
         }
         cal+=`<div class="admin-cal-emp" onclick="openLogWindow('${m.id}')" style="cursor:pointer">
           <div class="admin-cal-emp-dot" style="background:${color}"></div>
-          <span style="color:var(--soft)">${esc(m.name)}</span>
+          <span class="admin-cal-emp-name" style="color:var(--soft)">${esc(m.name)}</span>
           <span style="color:${color};margin-left:2px">${label}</span>
         </div>`;
       } else if(isPastWeekday){
         // 지난 평일인데 출퇴근/휴무 둘 다 체크 안 함 → 깜빡했을 수도
         cal+=`<div class="admin-cal-emp" onclick="openLogWindow('${m.id}')" style="cursor:pointer" title="근무일정표 새 창으로 열기">
           <div class="admin-cal-emp-dot" style="background:#e0b0b0"></div>
-          <span style="color:#c0392b">${esc(m.name)}</span>
+          <span class="admin-cal-emp-name" style="color:#c0392b">${esc(m.name)}</span>
           <span style="color:#c0392b;margin-left:2px">⚠️미체크</span>
         </div>`;
       }
