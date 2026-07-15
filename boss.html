@@ -741,6 +741,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bm-move{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
 .bm-move-btn{width:16px;height:13px;border-radius:3px;border:none;background:transparent;font-size:.55rem;cursor:pointer;color:#D0D0D0;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s;line-height:1}
 .bm-move-btn:hover{background:#EDE5DA;color:#C4714A}
+.bm-drag-handle{cursor:grab;color:#CCC;font-size:.9rem;padding:0 3px;flex-shrink:0;user-select:none}
+.bm-drag-handle:active{cursor:grabbing}
+.bm-row.drag-over{outline:2px dashed #C4714A;outline-offset:2px;border-radius:10px}
+.bm-done-divider{font-size:.72rem;color:#bbb;font-weight:700;padding:6px 4px 2px;display:flex;align-items:center;gap:6px}
+.bm-done-divider::before,.bm-done-divider::after{content:'';flex:1;height:1px;background:#E8E0D8}
 .bm-edit-wrap{flex:1;display:flex;gap:6px;align-items:center;min-width:0}
 .bm-edit-input{flex:1;padding:5px 9px;border-radius:8px;border:1.5px solid #C4714A;font-size:.83rem;font-family:inherit;color:#333;outline:none;min-width:0}
 /* 이미지 첨부 */
@@ -6759,6 +6764,22 @@ function memoMove(k,i,dir){
   [_MW[k].data[i],_MW[k].data[j]]=[_MW[k].data[j],_MW[k].data[i]];
   _memoDbSave(k);memoRender(k);
 }
+let _memoDragKey=null,_memoDragId=null;
+function _memoDragStart(e,k,id){_memoDragKey=k;_memoDragId=id;e.dataTransfer.effectAllowed='move';}
+function _memoDragOver(e,k,id){
+  if(_memoDragKey!==k||_memoDragId===id)return;
+  e.preventDefault();e.currentTarget.classList.add('drag-over');
+}
+function _memoDrop(e,k,id){
+  e.preventDefault();
+  document.querySelectorAll('.bm-row.drag-over').forEach(r=>r.classList.remove('drag-over'));
+  if(_memoDragKey!==k||_memoDragId===id)return;
+  const data=_MW[k].data;
+  const fi=data.findIndex(x=>x.id===_memoDragId),ti=data.findIndex(x=>x.id===id);
+  if(fi<0||ti<0)return;
+  const[m]=data.splice(fi,1);data.splice(ti,0,m);
+  _memoDbSave(k);memoRender(k);
+}
 function memoRender(k){
   const cfgs={
     todo:{listId:'btodo-list',badgeId:'btodo-badge',emptyText:'할 일을 추가해요'},
@@ -6772,9 +6793,13 @@ function memoRender(k){
   let renderData=_MW[k].data;
   if(k==='youtube'&&_ytCatFilter!=='전체')renderData=renderData.filter(m=>(m.cat||'기타')===_ytCatFilter);
   if(!renderData.length){el.innerHTML=`<div class="bmg-empty">${_MW[k].data.length?'해당 카테고리 없음':c.emptyText}</div>`;return;}
-  el.innerHTML=renderData.map((m)=>{
+  const undone=renderData.filter(m=>!m.done);
+  const done=renderData.filter(m=>m.done);
+  renderData=[...undone,...done];
+  el.innerHTML=renderData.map((m,ri)=>{
     const i=_MW[k].data.indexOf(m);
     const src=m.source==='bot'?'🤖':'💻';
+    const divider=(ri===undone.length&&done.length>0)?`<div class="bm-done-divider">완료</div>`:'';
     if(_MW[k].editId===m.id)return `
     <div class="bm-row">
       <input type="checkbox" class="bm-check" disabled>
@@ -6794,12 +6819,13 @@ function memoRender(k){
         <img class="bm-thumb-img" src="${url.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
         <div class="bm-thumb-hover"><img src="${url.replace('/upload/','/upload/w_400/')}" alt=""></div>
       </div>`).join(''):'';
-    return `
-    <div class="bm-row${m.done?' done':''}">
-      <div class="bm-move">
-        <button class="bm-move-btn" onclick="memoMove('${k}',${i},-1)">▲</button>
-        <button class="bm-move-btn" onclick="memoMove('${k}',${i},1)">▼</button>
-      </div>
+    return divider+`
+    <div class="bm-row${m.done?' done':''}" draggable="true"
+      ondragstart="_memoDragStart(event,'${k}',${m.id})"
+      ondragover="_memoDragOver(event,'${k}',${m.id})"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="_memoDrop(event,'${k}',${m.id})">
+      <span class="bm-drag-handle">⠿</span>
       <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="memoToggle('${k}',${m.id},this.checked)">
       <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
       ${thumbHtml}
