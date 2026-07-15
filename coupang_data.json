@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-15 12:20",
+  "last_updated": "2026-07-15 12:45",
   "accounts": {
     "미리토퍼": {
       "current_amount": 343790,
@@ -6084,6 +6084,12 @@
     },
     {
       "time": "2026-07-14 23:45",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "로그인 실패 (Akamai/인증 차단 추정)"
+    },
+    {
+      "time": "2026-07-15 12:45",
       "account": "몽몽토퍼",
       "status": "fail",
       "reason": "로그인 실패 (Akamai/인증 차단 추정)"
