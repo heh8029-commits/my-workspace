@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-16 19:20",
+  "last_updated": "2026-07-16 19:45",
   "accounts": {
     "미리토퍼": {
       "current_amount": 1290840,
@@ -6362,6 +6362,12 @@
     },
     {
       "time": "2026-07-16 18:45",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "로그인 폼 없음"
+    },
+    {
+      "time": "2026-07-16 19:45",
       "account": "몽몽토퍼",
       "status": "fail",
       "reason": "로그인 폼 없음"
