@@ -9927,15 +9927,8 @@ function addCsReply(id) {
   });
 }
 
-// 복사할 때 업체정보 첫 줄(업체명+업체메모)은 제외
 function csGetCopyText(it) {
-  var txt = it.text || '';
-  if (it.vendorOrder) {
-    var lines = txt.split('\n');
-    lines.shift();
-    return lines.join('\n');
-  }
-  return txt;
+  return it.text || '';
 }
 
 function renderCsShare() {
