@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bossbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2B3048"/>
+      <stop offset="1" stop-color="#12151F"/>
+    </linearGradient>
+    <linearGradient id="bossgold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE79A"/>
+      <stop offset="0.5" stop-color="#F5C451"/>
+      <stop offset="1" stop-color="#D89726"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bossbg)"/>
+  <path d="M128 200 L193 260 L256 178 L319 260 L384 200 L366 332 L146 332 Z"
+        fill="url(#bossgold)" stroke="#B9822A" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="140" y="324" width="232" height="42" rx="15" fill="url(#bossgold)" stroke="#B9822A" stroke-width="5"/>
+  <circle cx="128" cy="200" r="16" fill="#FFF3D2" stroke="#B9822A" stroke-width="4"/>
+  <circle cx="256" cy="178" r="18" fill="#FFF3D2" stroke="#B9822A" stroke-width="4"/>
+  <circle cx="384" cy="200" r="16" fill="#FFF3D2" stroke="#B9822A" stroke-width="4"/>
+  <circle cx="256" cy="346" r="13" fill="#E8556B" stroke="#9E2C3E" stroke-width="3"/>
+</svg>
