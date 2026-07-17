@@ -247,6 +247,11 @@ a{text-decoration:none;color:inherit}
 .design-flow-item .dfi-edit{display:none;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(74,95,207,.15);border:none;cursor:pointer;font-size:.65rem;color:#4A5FCF;padding:0;flex-shrink:0;margin-left:2px}
 .design-flow-item:hover .dfi-edit{display:flex}
 .design-flow-item .dfi-drag{cursor:grab;color:#B0BAE8;font-size:.8rem;padding:0 2px;flex-shrink:0;user-select:none}
+.design-flow-item .dfi-check{width:16px;height:16px;accent-color:#4A5FCF;cursor:pointer;flex-shrink:0}
+.design-flow-item.df-checked{background:#EEF0FB;opacity:.6}
+.design-flow-item.df-checked span[contenteditable]{text-decoration:line-through;color:#8890C0}
+.design-flow-reset-btn{background:none;border:1.5px solid #C5CCEE;border-radius:10px;padding:4px 10px;font-size:.75rem;color:#4A5FCF;cursor:pointer;font-family:inherit}
+.design-flow-reset-btn:hover{background:#EEF0FF}
 /* ── 광고 업무 순서 (미리제작소) ── */
 .ad-flow-section{margin-top:20px}
 .ad-flow-card{background:linear-gradient(135deg,#EAFAF1 0%,#E6FFF5 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(39,174,96,.1);border:1.5px solid #C3E6CB}
@@ -291,8 +296,11 @@ a{text-decoration:none;color:inherit}
 .clip-item:hover{border-color:#7080D0;box-shadow:0 3px 10px rgba(74,95,207,.13)}
 .clip-imgs{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
 .clip-img-wrap{width:100%;aspect-ratio:5/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1.5px dashed #C5CFF5}
-.clip-img-wrap img{width:100%;height:100%;object-fit:contain}
+.clip-img-wrap>img.clip-thumb{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
 .clip-img-empty{font-size:.72rem;color:#B0B8E0;text-align:center;line-height:1.5;pointer-events:none}
+/* 마우스 올리면 원본 전체 이미지 크게 미리보기 */
+.clip-zoom{position:fixed;top:50%;right:18px;transform:translateY(-50%);max-width:55vw;max-height:92vh;width:auto;height:auto;border-radius:12px;border:3px solid #fff;box-shadow:0 10px 50px rgba(20,30,80,.45);background:#fff;z-index:99999;display:none;pointer-events:none}
+.clip-img-wrap:hover .clip-zoom{display:block}
 .clip-memo{width:100%;border:none;border-top:1.5px solid #E8ECFA;outline:none;background:transparent;font-family:Pretendard,sans-serif;font-size:.78rem;color:#3040A0;resize:none;padding-top:6px;line-height:1.5;cursor:text}
 .clip-date{font-size:.68rem;color:#A0AACC;font-weight:600;text-align:right;margin-top:2px}
 .clip-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#7080D0;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
@@ -741,6 +749,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .bm-move{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
 .bm-move-btn{width:16px;height:13px;border-radius:3px;border:none;background:transparent;font-size:.55rem;cursor:pointer;color:#D0D0D0;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s;line-height:1}
 .bm-move-btn:hover{background:#EDE5DA;color:#C4714A}
+.bm-drag-handle{cursor:grab;color:#CCC;font-size:.9rem;padding:0 3px;flex-shrink:0;user-select:none}
+.bm-drag-handle:active{cursor:grabbing}
+.bm-row.drag-over{outline:2px dashed #C4714A;outline-offset:2px;border-radius:10px}
+.bm-done-divider{font-size:.72rem;color:#bbb;font-weight:700;padding:6px 4px 2px;display:flex;align-items:center;gap:6px}
+.bm-done-divider::before,.bm-done-divider::after{content:'';flex:1;height:1px;background:#E8E0D8}
 .bm-edit-wrap{flex:1;display:flex;gap:6px;align-items:center;min-width:0}
 .bm-edit-input{flex:1;padding:5px 9px;border-radius:8px;border:1.5px solid #C4714A;font-size:.83rem;font-family:inherit;color:#333;outline:none;min-width:0}
 /* 이미지 첨부 */
@@ -1472,6 +1485,7 @@ body.mode-mob .mobile-subnav{display:flex!important}
         <div class="design-flow-section">
           <div class="design-flow-header">
             <span class="design-flow-title">🎨 디자인 업무 순서</span>
+            <button class="design-flow-reset-btn" onclick="dfResetChecks()">🔄 체크 초기화</button>
           </div>
           <div class="design-flow-card">
             <div class="design-flow-wrap" id="design-flow"></div>
@@ -2718,6 +2732,12 @@ function setSub(id, label){
   }
 
   renderTopMenu(); renderSidebar(); renderMobileSub();
+
+  if(subItem && subItem.url && subItem.id==='staff'){
+    // 직원관리는 iframe 캐시 문제로 안정성이 떨어져서 새 창으로 바로 띄움
+    window.open(subItem.url, '_blank');
+    return;
+  }
 
   if(subItem && subItem.url){
     const fr = document.getElementById('embed-frame');
@@ -6272,6 +6292,15 @@ async function _dfSaveNow(){
   try{await fetch(FB_DESIGN_FLOW,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(dfData)});}catch(e){}
 }
 function dfSave(){clearTimeout(_dfSaveTimer);_dfSaveTimer=setTimeout(_dfSaveNow,600);}
+function dfToggleCheck(id){
+  const it=dfData.find(x=>x.id===id);if(!it)return;
+  it.checked=!it.checked;
+  dfSave();dfRender();
+}
+function dfResetChecks(){
+  dfData.forEach(it=>it.checked=false);
+  dfSave();dfRender();
+}
 function dfRender(){
   const wrap=document.getElementById('design-flow');if(!wrap)return;
   let h='';
@@ -6279,12 +6308,14 @@ function dfRender(){
     if(i>0)h+=`<span class="design-flow-arrow">→</span>`;
     const now=bfIsNow(item.time);
     const nowBadge=now?`<span class="flow-time-now" style="background:rgba(255,255,255,.35)">⏰ 지금</span>`:'';
-    h+=`<div class="design-flow-item${now?' now-active':''}" draggable="true"
+    h+=`<div class="design-flow-item${now?' now-active':''}${item.checked?' df-checked':''}" draggable="true"
       ondragstart="dfDragStart(event,${item.id})"
       ondragover="event.preventDefault();this.style.outline='2px dashed #4A5FCF'"
       ondragleave="this.style.outline=''"
       ondrop="dfDrop(event,${item.id});this.style.outline=''">
       <span class="dfi-drag">⠿</span>
+      <input type="checkbox" class="dfi-check" ${item.checked?'checked':''}
+        onclick="event.stopPropagation();dfToggleCheck(${item.id})" ondragstart="event.preventDefault();event.stopPropagation()">
       <span class="design-flow-num">${i+1}</span>
       <span contenteditable="true"
         onblur="dfEdit(${item.id},this.textContent)"
@@ -6455,7 +6486,7 @@ function clipRender() {
     const imgs = Array.isArray(item.imgs) ? item.imgs : (item.img ? [item.img] : []);
     const imgsHtml = imgs.length
       ? imgs.map(function(src, j) {
-          return `<div class="clip-img-wrap"><img src="${src}" alt=""></div>`;
+          return `<div class="clip-img-wrap"><img class="clip-thumb" src="${src}" alt=""><img class="clip-zoom" src="${src}" alt=""></div>`;
         }).join('')
       : `<div class="clip-img-wrap"><span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span></div>`;
     div.innerHTML = `
@@ -6491,33 +6522,42 @@ document.addEventListener('paste', function(e) {
         const dataUrl = ev.target.result;
         const now = new Date();
         const date = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
-        // 투자탭 포스트잇 우선
+        // 현재 활성화된 페이지 기준으로만 라우팅 (다른 메뉴 붙여넣기가 섞이지 않도록)
+        const miriPg = document.getElementById('page-miri');
+        const miriActive = miriPg && miriPg.classList.contains('active');
+        const assetPg = document.getElementById('page-asset-info');
+        const assetActive = assetPg && assetPg.classList.contains('active');
         const investTabActive = document.getElementById('ai-tab-invest') && document.getElementById('ai-tab-invest').style.display !== 'none';
-        if (investTabActive) {
-          if (pniFocusIdx >= 0 && pniFocusIdx < pniItems.length) {
-            if (!Array.isArray(pniItems[pniFocusIdx].imgs)) pniItems[pniFocusIdx].imgs = [];
-            pniItems[pniFocusIdx].imgs.push(dataUrl);
-            pniRender(); pniSave();
+        if (miriActive) {
+          // 미리제작소 클립보드 보드: 포커스된 칸에 추가, 없으면 새 칸으로 등록
+          if (clipFocusIdx >= 0 && clipFocusIdx < clipItems.length) {
+            if (!Array.isArray(clipItems[clipFocusIdx].imgs)) clipItems[clipFocusIdx].imgs = [];
+            clipItems[clipFocusIdx].imgs.push(dataUrl);
+            clipRender(); clipSave();
           } else {
-            pniItems.push({color:PN_COLORS[pniItems.length%PN_COLORS.length],text:'',imgs:[dataUrl],date});
-            pniFocusIdx=pniItems.length-1;
-            pniRender(); pniSave();
+            clipItems.push({imgs:[dataUrl], memo:'', date});
+            clipRender(); clipSave();
           }
-        } else if (pnFocusIdx >= 0 && pnFocusIdx < pnItems.length) {
-          if (!Array.isArray(pnItems[pnFocusIdx].imgs)) pnItems[pnFocusIdx].imgs = [];
-          pnItems[pnFocusIdx].imgs.push(dataUrl);
-          pnRender(); pnSave();
-        } else if (document.getElementById('page-asset-info') && document.getElementById('page-asset-info').classList.contains('active')) {
-          pnItems.push({color:PN_COLORS[pnItems.length%PN_COLORS.length],text:'',imgs:[dataUrl],date});
-          pnFocusIdx=pnItems.length-1;
-          pnRender(); pnSave();
-        } else if (clipFocusIdx >= 0 && clipFocusIdx < clipItems.length) {
-          if (!Array.isArray(clipItems[clipFocusIdx].imgs)) clipItems[clipFocusIdx].imgs = [];
-          clipItems[clipFocusIdx].imgs.push(dataUrl);
-          clipRender(); clipSave();
-        } else {
-          clipItems.push({imgs:[dataUrl], memo:'', date});
-          clipRender(); clipSave();
+        } else if (assetActive) {
+          if (investTabActive) {
+            if (pniFocusIdx >= 0 && pniFocusIdx < pniItems.length) {
+              if (!Array.isArray(pniItems[pniFocusIdx].imgs)) pniItems[pniFocusIdx].imgs = [];
+              pniItems[pniFocusIdx].imgs.push(dataUrl);
+              pniRender(); pniSave();
+            } else {
+              pniItems.push({color:PN_COLORS[pniItems.length%PN_COLORS.length],text:'',imgs:[dataUrl],date});
+              pniFocusIdx=pniItems.length-1;
+              pniRender(); pniSave();
+            }
+          } else if (pnFocusIdx >= 0 && pnFocusIdx < pnItems.length) {
+            if (!Array.isArray(pnItems[pnFocusIdx].imgs)) pnItems[pnFocusIdx].imgs = [];
+            pnItems[pnFocusIdx].imgs.push(dataUrl);
+            pnRender(); pnSave();
+          } else {
+            pnItems.push({color:PN_COLORS[pnItems.length%PN_COLORS.length],text:'',imgs:[dataUrl],date});
+            pnFocusIdx=pnItems.length-1;
+            pnRender(); pnSave();
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -6753,6 +6793,22 @@ function memoMove(k,i,dir){
   [_MW[k].data[i],_MW[k].data[j]]=[_MW[k].data[j],_MW[k].data[i]];
   _memoDbSave(k);memoRender(k);
 }
+let _memoDragKey=null,_memoDragId=null;
+function _memoDragStart(e,k,id){_memoDragKey=k;_memoDragId=id;e.dataTransfer.effectAllowed='move';}
+function _memoDragOver(e,k,id){
+  if(_memoDragKey!==k||_memoDragId===id)return;
+  e.preventDefault();e.currentTarget.classList.add('drag-over');
+}
+function _memoDrop(e,k,id){
+  e.preventDefault();
+  document.querySelectorAll('.bm-row.drag-over').forEach(r=>r.classList.remove('drag-over'));
+  if(_memoDragKey!==k||_memoDragId===id)return;
+  const data=_MW[k].data;
+  const fi=data.findIndex(x=>x.id===_memoDragId),ti=data.findIndex(x=>x.id===id);
+  if(fi<0||ti<0)return;
+  const[m]=data.splice(fi,1);data.splice(ti,0,m);
+  _memoDbSave(k);memoRender(k);
+}
 function memoRender(k){
   const cfgs={
     todo:{listId:'btodo-list',badgeId:'btodo-badge',emptyText:'할 일을 추가해요'},
@@ -6766,9 +6822,13 @@ function memoRender(k){
   let renderData=_MW[k].data;
   if(k==='youtube'&&_ytCatFilter!=='전체')renderData=renderData.filter(m=>(m.cat||'기타')===_ytCatFilter);
   if(!renderData.length){el.innerHTML=`<div class="bmg-empty">${_MW[k].data.length?'해당 카테고리 없음':c.emptyText}</div>`;return;}
-  el.innerHTML=renderData.map((m)=>{
+  const undone=renderData.filter(m=>!m.done);
+  const done=renderData.filter(m=>m.done);
+  renderData=[...undone,...done];
+  el.innerHTML=renderData.map((m,ri)=>{
     const i=_MW[k].data.indexOf(m);
     const src=m.source==='bot'?'🤖':'💻';
+    const divider=(ri===undone.length&&done.length>0)?`<div class="bm-done-divider">완료</div>`:'';
     if(_MW[k].editId===m.id)return `
     <div class="bm-row">
       <input type="checkbox" class="bm-check" disabled>
@@ -6788,12 +6848,13 @@ function memoRender(k){
         <img class="bm-thumb-img" src="${url.replace('/upload/','/upload/w_84,h_84,c_fill/')}" alt="">
         <div class="bm-thumb-hover"><img src="${url.replace('/upload/','/upload/w_400/')}" alt=""></div>
       </div>`).join(''):'';
-    return `
-    <div class="bm-row${m.done?' done':''}">
-      <div class="bm-move">
-        <button class="bm-move-btn" onclick="memoMove('${k}',${i},-1)">▲</button>
-        <button class="bm-move-btn" onclick="memoMove('${k}',${i},1)">▼</button>
-      </div>
+    return divider+`
+    <div class="bm-row${m.done?' done':''}" draggable="true"
+      ondragstart="_memoDragStart(event,'${k}',${m.id})"
+      ondragover="_memoDragOver(event,'${k}',${m.id})"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="_memoDrop(event,'${k}',${m.id})">
+      <span class="bm-drag-handle">⠿</span>
       <input type="checkbox" class="bm-check" ${m.done?'checked':''} onchange="memoToggle('${k}',${m.id},this.checked)">
       <span style="font-size:.78rem;flex-shrink:0" title="${m.source==='bot'?'봇으로 작성':'PC에서 작성'}">${src}</span>
       ${thumbHtml}
