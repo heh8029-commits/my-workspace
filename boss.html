@@ -286,27 +286,32 @@ a{text-decoration:none;color:inherit}
 .reg-item:hover .reg-del{display:flex}
 .reg-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#E87820,#C45A10);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
 
-/* ── 클립보드 이미지 보드 ── */
-.clipboard-section{margin-top:20px}
-.clipboard-card{background:linear-gradient(135deg,#F0F4FF 0%,#EAF0FF 100%);border-radius:20px;padding:20px 22px;box-shadow:0 3px 14px rgba(74,95,207,.1);border:1.5px solid #C5CFF5}
-.clipboard-title{font-size:1rem;font-weight:800;color:#3040A0;letter-spacing:-.3px}
-.clipboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+/* ── 클립보드 이미지 보드 (다크 갤러리 스타일) ── */
+.clipboard-section{margin-top:26px}
+.clipboard-card{background:#1D2030;border-radius:24px;padding:24px 26px;box-shadow:0 10px 34px rgba(15,18,35,.28);border:1px solid #2C3048}
+.clipboard-title{font-size:1.08rem;font-weight:800;color:#FF8360;letter-spacing:-.3px}
+.clipboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:16px}
 @media(max-width:900px){.clipboard-grid{grid-template-columns:repeat(2,1fr)}}
-.clip-item{position:relative;background:#fff;border:2px solid #C5CFF5;border-radius:14px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:0;transition:all .15s}
-.clip-item:hover{border-color:#7080D0;box-shadow:0 3px 10px rgba(74,95,207,.13)}
-.clip-imgs{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
-.clip-img-wrap{width:100%;aspect-ratio:5/1;background:#F0F4FF;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1.5px dashed #C5CFF5}
-.clip-img-wrap>img.clip-thumb{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
-.clip-img-empty{font-size:.72rem;color:#B0B8E0;text-align:center;line-height:1.5;pointer-events:none}
-/* 마우스 올리면 원본 전체 이미지 크게 미리보기 */
-.clip-zoom{position:fixed;top:50%;right:18px;transform:translateY(-50%);max-width:55vw;max-height:92vh;width:auto;height:auto;border-radius:12px;border:3px solid #fff;box-shadow:0 10px 50px rgba(20,30,80,.45);background:#fff;z-index:99999;display:none;pointer-events:none}
-.clip-img-wrap:hover .clip-zoom{display:block}
-.clip-memo{width:100%;border:none;border-top:1.5px solid #E8ECFA;outline:none;background:transparent;font-family:Pretendard,sans-serif;font-size:.78rem;color:#3040A0;resize:none;padding-top:6px;line-height:1.5;cursor:text}
-.clip-date{font-size:.68rem;color:#A0AACC;font-weight:600;text-align:right;margin-top:2px}
-.clip-del{display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#7080D0;color:#fff;font-size:.72rem;align-items:center;justify-content:center;cursor:pointer;border:none}
+@media(max-width:560px){.clipboard-grid{grid-template-columns:1fr}}
+.clip-item{position:relative;background:#262A3D;border:1px solid #343A56;border-radius:18px;padding:11px;display:flex;flex-direction:column;transition:transform .16s,box-shadow .16s,border-color .16s}
+.clip-item:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.4);border-color:#FF8360}
+.clip-imgs{display:flex;flex-direction:column;gap:9px;margin-bottom:11px}
+.clip-img-wrap{width:100%;aspect-ratio:1/1;background:#12141C;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #343A56}
+.clip-img-wrap>img.clip-thumb{width:100%;height:100%;object-fit:cover;cursor:zoom-in;transition:transform .22s}
+.clip-img-wrap:hover>img.clip-thumb{transform:scale(1.06)}
+.clip-img-empty{font-size:.74rem;color:#5B627F;text-align:center;line-height:1.6;pointer-events:none;font-weight:600}
+.clip-memo{width:100%;border:none;outline:none;background:transparent;font-family:Pretendard,sans-serif;font-size:.83rem;color:#DCE0F2;resize:none;line-height:1.55;cursor:text}
+.clip-memo::placeholder{color:#5B627F}
+.clip-date{font-size:.68rem;color:#767DA6;font-weight:600;text-align:right;margin-top:6px}
+.clip-del{display:none;position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#FF8360;color:#fff;font-size:.78rem;align-items:center;justify-content:center;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(255,131,96,.5)}
 .clip-item:hover .clip-del{display:flex}
-.clip-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#5060C0,#3040A0);border:none;border-radius:10px;padding:7px 24px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;font-family:Pretendard,sans-serif}
-.clip-paste-hint{text-align:center;font-size:.75rem;color:#A0AACC;margin-bottom:8px}
+.clip-add-btn{display:block;margin:0 auto;background:linear-gradient(135deg,#FF8360,#E85D3A);border:none;border-radius:12px;padding:9px 28px;color:#fff;font-weight:700;font-size:.88rem;cursor:pointer;font-family:Pretendard,sans-serif;box-shadow:0 4px 14px rgba(232,93,58,.35)}
+.clip-add-btn:hover{filter:brightness(1.08)}
+.clip-paste-hint{text-align:center;font-size:.78rem;color:#767DA6;margin-bottom:12px;font-weight:600}
+/* 클릭 시 원본 전체화면 라이트박스 */
+.clip-lightbox{position:fixed;inset:0;background:rgba(8,10,18,.92);z-index:100000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:30px;animation:clipFadeIn .15s ease}
+.clip-lightbox img{max-width:94vw;max-height:94vh;object-fit:contain;border-radius:12px;box-shadow:0 16px 70px rgba(0,0,0,.6)}
+@keyframes clipFadeIn{from{opacity:0}to{opacity:1}}
 
 /* ── 현재자산정보 ── */
 .ai-page-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #EDF0F8;padding-bottom:0}
@@ -6486,7 +6491,7 @@ function clipRender() {
     const imgs = Array.isArray(item.imgs) ? item.imgs : (item.img ? [item.img] : []);
     const imgsHtml = imgs.length
       ? imgs.map(function(src, j) {
-          return `<div class="clip-img-wrap"><img class="clip-thumb" src="${src}" alt=""><img class="clip-zoom" src="${src}" alt=""></div>`;
+          return `<div class="clip-img-wrap"><img class="clip-thumb" src="${src}" alt="" onclick="clipOpen(this.src)"></div>`;
         }).join('')
       : `<div class="clip-img-wrap"><span class="clip-img-empty">Ctrl+V 로<br>이미지 붙여넣기</span></div>`;
     div.innerHTML = `
@@ -6496,6 +6501,20 @@ function clipRender() {
       <button class="clip-del" onclick="clipDel(${i})">✕</button>`;
     wrap.appendChild(div);
   });
+}
+
+function clipOpen(src) {
+  if (!src) return;
+  const ov = document.createElement('div');
+  ov.className = 'clip-lightbox';
+  const img = document.createElement('img');
+  img.src = src;
+  ov.appendChild(img);
+  const close = function(){ ov.remove(); document.removeEventListener('keydown', onKey); };
+  ov.onclick = close;
+  const onKey = function(e){ if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(ov);
 }
 
 function clipAdd() {
