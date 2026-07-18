@@ -1135,6 +1135,34 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .tax-split{display:flex;gap:14px;align-items:flex-start}
 .tax-split-right{width:300px;flex-shrink:0}
 @media(max-width:620px){.tax-split{flex-direction:column}.tax-split-right{width:100%}}
+/* ── AI프롬프트문구 ── */
+.prompt-wrap{max-width:1400px}
+.prompt-tabs{display:flex;gap:8px;margin-bottom:16px}
+.prompt-tab{padding:7px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
+.prompt-tab.active{background:#C4714A;color:#fff;border-color:#C4714A}
+.prompt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:1100px){.prompt-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.prompt-grid{grid-template-columns:1fr}}
+.prompt-card{background:#fff;border-radius:13px;border:1.5px solid #EDE8E1;padding:13px;display:flex;flex-direction:column;gap:7px}
+.prompt-card-title{font-size:.8rem;font-weight:800;color:#444;border:none;outline:none;width:100%;background:transparent;font-family:inherit;padding:2px 0;border-bottom:1.5px solid #EDE8E1}
+.prompt-card-title:focus{border-bottom-color:#C4714A}
+.prompt-card-ta{width:100%;min-height:90px;max-height:270px;overflow-y:auto;border:1.5px solid #EDE8E1;border-radius:8px;padding:8px 10px;font-size:.77rem;font-family:inherit;resize:none;outline:none;line-height:1.65;color:#333;box-sizing:border-box}
+.prompt-card-ta:focus{border-color:#C4714A}
+.prompt-card-actions{display:flex;gap:5px}
+.prompt-copy-btn{flex:1;padding:6px;border-radius:8px;border:none;background:#C4714A;color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;transition:background .12s}
+.prompt-copy-btn:hover{background:#B46040}
+.prompt-del-btn{width:30px;border-radius:8px;border:none;background:#FFF0F0;color:#D03030;font-size:.75rem;cursor:pointer}
+.tmpl-list{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.tmpl-tab-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #EDE8E1;background:#fff;font-size:.77rem;font-weight:600;color:#999;cursor:pointer;transition:all .12s}
+.tmpl-tab-btn.active{background:#C4714A;color:#fff;border-color:#C4714A}
+.tmpl-body-wrap{background:#fff;border-radius:14px;border:1.5px solid #EDE8E1;padding:16px}
+.tmpl-var-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tmpl-var-label{font-size:.76rem;font-weight:700;color:#C4714A;min-width:90px;flex-shrink:0}
+.tmpl-var-inp{flex:1;padding:7px 10px;border-radius:8px;border:1.5px solid #EDE8E1;font-size:.82rem;font-family:inherit;outline:none;box-sizing:border-box}
+.tmpl-var-inp:focus{border-color:#C4714A}
+.tmpl-ta{width:100%;border:1.5px solid #EDE8E1;border-radius:8px;padding:10px;font-size:.78rem;font-family:inherit;resize:none;outline:none;line-height:1.7;color:#333;box-sizing:border-box}
+.tmpl-ta:focus{border-color:#C4714A}
+.tmpl-ta-ro{background:#F9F7F5;color:#555}
 /* ── 손익 탭 ── */
 .profit-tabs{display:flex;gap:8px;margin-bottom:16px}
 .profit-tab{padding:8px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
@@ -2150,6 +2178,32 @@ body.mode-mob .mobile-subnav{display:flex!important}
       </div>
     </div>
 
+    <!-- AI프롬프트문구 페이지 -->
+    <div class="page" id="page-copy">
+      <div class="prompt-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:.9rem;font-weight:800;color:#555">✍️ AI프롬프트문구</div>
+          <button onclick="fetchPromptData().then(()=>renderPrompts())" style="padding:5px 11px;border-radius:9px;background:#F5F0EB;border:1px solid #EDE8E1;font-size:.72rem;font-weight:700;color:#C4714A;cursor:pointer">🔄 새로고침</button>
+        </div>
+        <div class="prompt-tabs">
+          <button class="prompt-tab active" id="ptab-list" onclick="promptSetTab('list')">📋 프롬프트 목록</button>
+          <button class="prompt-tab" id="ptab-tmpl" onclick="promptSetTab('tmpl')">🧩 템플릿 프롬프트</button>
+        </div>
+        <!-- 프롬프트 목록 -->
+        <div id="ppane-list">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+            <button onclick="promptAdd()" style="padding:6px 15px;border-radius:10px;border:1.5px dashed #C4714A;background:none;color:#C4714A;font-size:.78rem;font-weight:700;cursor:pointer">＋ 프롬프트 추가</button>
+          </div>
+          <div class="prompt-grid" id="prompt-grid"></div>
+        </div>
+        <!-- 템플릿 -->
+        <div id="ppane-tmpl" style="display:none">
+          <div class="tmpl-list" id="tmpl-tab-list"></div>
+          <div id="tmpl-body-area"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- 재고관리 페이지 -->
     <div class="page" id="page-stock">
       <div style="max-width:1200px">
@@ -2808,6 +2862,9 @@ function setSub(id, label){
   } else if(id==='tax'){
     showPage('tax');
     fetchTaxData().then(()=>renderTax());
+  } else if(id==='copy'){
+    showPage('copy');
+    fetchPromptData().then(()=>renderPrompts());
   } else if(id==='china'){
     showPage('china'); cnInit();
   } else {
@@ -3733,6 +3790,215 @@ function updateDatebar(){
   } else {
     expEl.textContent = '';
   }
+}
+
+// ── AI프롬프트문구 ────────────────────────────────────────────
+const FB_PROMPTS = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_prompts.json';
+let _pData = {prompts:[], templates:[]};
+let _pTab = 'list';
+let _pSaveTimer = null;
+let _tmplSelId = null;
+
+async function fetchPromptData(){
+  try{
+    const r = await fetch(FB_PROMPTS+'?t='+Date.now());
+    if(r.ok){
+      const d = await r.json();
+      if(d && typeof d==='object'){
+        _pData = {
+          prompts: Array.isArray(d.prompts) ? d.prompts : [],
+          templates: Array.isArray(d.templates) ? d.templates : []
+        };
+        if(!_tmplSelId && _pData.templates.length) _tmplSelId = _pData.templates[0].id;
+      }
+    }
+  }catch(e){}
+}
+function _pSave(){
+  clearTimeout(_pSaveTimer);
+  _pSaveTimer = setTimeout(async()=>{
+    try{ await fetch(FB_PROMPTS,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(_pData)}); }catch(e){}
+  }, 700);
+}
+
+function renderPrompts(){ promptSetTab(_pTab, true); }
+
+function promptSetTab(tab, skipAnim){
+  _pTab = tab;
+  document.getElementById('ptab-list').classList.toggle('active', tab==='list');
+  document.getElementById('ptab-tmpl').classList.toggle('active', tab==='tmpl');
+  document.getElementById('ppane-list').style.display = tab==='list' ? '' : 'none';
+  document.getElementById('ppane-tmpl').style.display = tab==='tmpl' ? '' : 'none';
+  if(tab==='list') _renderPromptGrid();
+  else _renderTmplPane();
+}
+
+// ── 프롬프트 목록 ──
+function promptAdd(){
+  const id = Date.now();
+  _pData.prompts.push({id, title:'새 프롬프트', content:''});
+  _pSave();
+  _renderPromptGrid();
+  setTimeout(()=>{
+    const el = document.getElementById('ptitle-'+id);
+    if(el){ el.select(); }
+  }, 50);
+}
+function promptDel(id){
+  if(!confirm('삭제할까요?')) return;
+  _pData.prompts = _pData.prompts.filter(p=>p.id!==id);
+  _pSave();
+  _renderPromptGrid();
+}
+function promptChange(id, field, val){
+  const p = _pData.prompts.find(x=>x.id===id);
+  if(p){ p[field]=val; _pSave(); }
+}
+function promptCopy(id){
+  const p = _pData.prompts.find(x=>x.id===id);
+  if(!p) return;
+  navigator.clipboard.writeText(p.content||'').then(()=>{
+    const btn = document.getElementById('pcopy-'+id);
+    if(btn){ const o=btn.textContent; btn.textContent='✅ 복사됨'; setTimeout(()=>btn.textContent=o,1500); }
+  }).catch(()=>{
+    const ta = document.getElementById('pta-'+id);
+    if(ta){ ta.select(); document.execCommand('copy'); }
+  });
+}
+function _taAutoH(ta, max){
+  ta.style.height='auto';
+  ta.style.height=Math.min(ta.scrollHeight, max||270)+'px';
+}
+function _renderPromptGrid(){
+  const el = document.getElementById('prompt-grid');
+  if(!el) return;
+  if(!_pData.prompts.length){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:50px;color:#CCC;font-size:.85rem">＋ 프롬프트 추가 버튼으로 시작하세요</div>';
+    return;
+  }
+  el.innerHTML = _pData.prompts.map(p=>`
+    <div class="prompt-card">
+      <input class="prompt-card-title" id="ptitle-${p.id}" value="${(p.title||'').replace(/"/g,'&quot;')}" placeholder="제목..."
+        oninput="promptChange(${p.id},'title',this.value)">
+      <textarea class="prompt-card-ta" id="pta-${p.id}"
+        placeholder="프롬프트 내용을 입력하세요..."
+        oninput="promptChange(${p.id},'content',this.value);_taAutoH(this)">${p.content||''}</textarea>
+      <div class="prompt-card-actions">
+        <button class="prompt-copy-btn" id="pcopy-${p.id}" onclick="promptCopy(${p.id})">📋 복사</button>
+        <button class="prompt-del-btn" onclick="promptDel(${p.id})">🗑</button>
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('.prompt-card-ta').forEach(ta=>_taAutoH(ta));
+}
+
+// ── 템플릿 프롬프트 ──
+function tmplAdd(){
+  const title = prompt('템플릿 이름을 입력하세요 (예: 상품설명, 리뷰요청...)');
+  if(!title) return;
+  const id = Date.now();
+  _pData.templates.push({id, title, body:''});
+  _tmplSelId = id;
+  _pSave();
+  _renderTmplPane();
+}
+function tmplDel(id){
+  if(!confirm('템플릿을 삭제할까요?')) return;
+  _pData.templates = _pData.templates.filter(t=>t.id!==id);
+  if(_tmplSelId===id) _tmplSelId = _pData.templates[0]?.id||null;
+  _pSave();
+  _renderTmplPane();
+}
+function tmplSelect(id){
+  _tmplSelId = id;
+  _renderTmplPane();
+}
+function tmplBodyChange(id, val){
+  const t = _pData.templates.find(x=>x.id===id);
+  if(!t) return;
+  t.body = val;
+  _pSave();
+  _renderTmplVarSection(id);
+}
+function _tmplExtractVars(body){
+  const m = [...(body||'').matchAll(/\{\{([^}]+)\}\}/g)];
+  const seen = new Set();
+  return m.map(x=>x[1].trim()).filter(v=>{ if(seen.has(v))return false; seen.add(v); return true; });
+}
+function _tmplAssemble(body, vals){
+  return (body||'').replace(/\{\{([^}]+)\}\}/g, (_,v)=>vals[v.trim()]||`{{${v.trim()}}}`);
+}
+function tmplUpdatePreview(id){
+  const t = _pData.templates.find(x=>x.id===id);
+  if(!t) return;
+  const vars = _tmplExtractVars(t.body);
+  const vals = {};
+  vars.forEach(v=>{
+    const inp = document.getElementById('tvar-'+id+'-'+v.replace(/[^a-zA-Z0-9가-힣]/g,'_'));
+    if(inp) vals[v] = inp.value;
+  });
+  const res = document.getElementById('tmpl-result-'+id);
+  if(res){ res.value = _tmplAssemble(t.body, vals); _taAutoH(res, 320); }
+}
+function tmplCopy(id){
+  const res = document.getElementById('tmpl-result-'+id);
+  if(!res) return;
+  navigator.clipboard.writeText(res.value).then(()=>{
+    const btn = document.getElementById('tmpl-copybtn-'+id);
+    if(btn){ const o=btn.textContent; btn.textContent='✅ 복사됨!'; setTimeout(()=>btn.textContent=o,1500); }
+  }).catch(()=>{ res.select(); document.execCommand('copy'); });
+}
+function _renderTmplVarSection(id){
+  const t = _pData.templates.find(x=>x.id===id);
+  if(!t) return;
+  const vars = _tmplExtractVars(t.body);
+  const sec = document.getElementById('tmpl-var-sec-'+id);
+  if(!sec) return;
+  if(!vars.length){
+    sec.innerHTML='<div style="font-size:.75rem;color:#BBB;padding:8px 0">템플릿 본문에 <b style="color:#C4714A">{{변수명}}</b> 형식으로 변경할 부분을 표시하면 여기서 입력할 수 있어요</div>';
+    return;
+  }
+  sec.innerHTML=`
+    <div style="border-top:1.5px solid #EDE8E1;margin-top:14px;padding-top:12px">
+      <div style="font-size:.76rem;font-weight:800;color:#C4714A;margin-bottom:10px">✏️ 변경할 내용 입력</div>
+      ${vars.map(v=>`
+        <div class="tmpl-var-row">
+          <span class="tmpl-var-label">{{${v}}}</span>
+          <input class="tmpl-var-inp" id="tvar-${id}-${v.replace(/[^a-zA-Z0-9가-힣]/g,'_')}" placeholder="${v}..." oninput="tmplUpdatePreview(${id})">
+        </div>`).join('')}
+      <div style="font-size:.73rem;font-weight:700;color:#999;margin:12px 0 5px">👀 완성된 프롬프트 미리보기</div>
+      <textarea class="tmpl-ta tmpl-ta-ro" id="tmpl-result-${id}" readonly style="min-height:80px;max-height:320px;overflow-y:auto"></textarea>
+      <button id="tmpl-copybtn-${id}" onclick="tmplCopy(${id})" style="width:100%;padding:11px;border-radius:11px;background:#C4714A;color:#fff;border:none;font-size:.87rem;font-weight:700;cursor:pointer;margin-top:10px">📋 완성 프롬프트 복사</button>
+    </div>`;
+  tmplUpdatePreview(id);
+}
+function _renderTmplPane(){
+  const tabList = document.getElementById('tmpl-tab-list');
+  const bodyArea = document.getElementById('tmpl-body-area');
+  if(!tabList||!bodyArea) return;
+  tabList.innerHTML = _pData.templates.map(t=>`
+    <button class="tmpl-tab-btn${_tmplSelId===t.id?' active':''}" onclick="tmplSelect(${t.id})">${t.title}</button>`).join('')
+    + `<button onclick="tmplAdd()" style="padding:6px 13px;border-radius:20px;border:1.5px dashed #C4714A;background:none;color:#C4714A;font-size:.75rem;font-weight:700;cursor:pointer">＋ 추가</button>`;
+  if(!_tmplSelId||!_pData.templates.length){
+    bodyArea.innerHTML='<div style="text-align:center;padding:50px;color:#CCC;font-size:.85rem">템플릿을 추가하거나 선택하세요</div>';
+    return;
+  }
+  const t = _pData.templates.find(x=>x.id===_tmplSelId);
+  if(!t){ _tmplSelId=_pData.templates[0]?.id||null; _renderTmplPane(); return; }
+  bodyArea.innerHTML=`
+    <div class="tmpl-body-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:.86rem;font-weight:800;color:#333">🧩 ${t.title}</div>
+        <button onclick="tmplDel(${t.id})" style="padding:4px 10px;border-radius:7px;border:none;background:#FFF0F0;color:#D03030;font-size:.73rem;font-weight:700;cursor:pointer">삭제</button>
+      </div>
+      <div style="font-size:.73rem;font-weight:700;color:#999;margin-bottom:5px">📝 템플릿 전문 <span style="font-weight:400;color:#BBB">— 바뀌는 줄은 {{변수명}} 으로 표시</span></div>
+      <textarea class="tmpl-ta" id="tmpl-edit-${t.id}" placeholder="전체 프롬프트를 입력하세요&#10;예) 안녕하세요! {{고객명}}님&#10;저희 {{상품명}}을 구매해 주셔서 감사합니다."
+        style="min-height:120px;max-height:320px;overflow-y:auto"
+        oninput="tmplBodyChange(${t.id},this.value);_taAutoH(this,320)">${t.body||''}</textarea>
+      <div id="tmpl-var-sec-${t.id}"></div>
+    </div>`;
+  const ta = document.getElementById('tmpl-edit-'+t.id);
+  if(ta) _taAutoH(ta, 320);
+  _renderTmplVarSection(t.id);
 }
 
 // ── 손익 계산기 ─────────────────────────────────────────────
