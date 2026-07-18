@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-18 11:45",
+  "last_updated": "2026-07-18 12:20",
   "accounts": {
     "미리토퍼": {
       "current_amount": 984510,
@@ -6069,12 +6069,6 @@
   },
   "run_log": [
     {
-      "time": "2026-07-04 06:45",
-      "account": "몽몽토퍼",
-      "status": "fail",
-      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
-    },
-    {
       "time": "2026-07-04 07:20",
       "account": "몽몽토퍼",
       "status": "fail",
@@ -6664,6 +6658,12 @@
     },
     {
       "time": "2026-07-18 11:20",
+      "account": "미리토퍼",
+      "status": "fail",
+      "reason": "로그인 실패 (Akamai/인증 차단 추정)"
+    },
+    {
+      "time": "2026-07-18 12:20",
       "account": "미리토퍼",
       "status": "fail",
       "reason": "로그인 실패 (Akamai/인증 차단 추정)"
