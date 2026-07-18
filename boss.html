@@ -1140,13 +1140,14 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .prompt-tabs{display:flex;gap:8px;margin-bottom:16px}
 .prompt-tab{padding:7px 18px;border-radius:10px;border:1.5px solid #EDE8E1;background:#fff;font-size:.82rem;font-weight:700;color:#AAA;cursor:pointer;transition:all .13s}
 .prompt-tab.active{background:#C4714A;color:#fff;border-color:#C4714A}
-.prompt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:1100px){.prompt-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:540px){.prompt-grid{grid-template-columns:1fr}}
+.prompt-grid{display:flex;gap:10px;align-items:flex-start}
+.prompt-col{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0}
+@media(max-width:900px){.prompt-grid{flex-wrap:wrap}.prompt-col{flex:0 0 calc(50% - 5px)}}
+@media(max-width:500px){.prompt-col{flex:0 0 100%}}
 .prompt-card{background:#fff;border-radius:13px;border:1.5px solid #EDE8E1;padding:13px;display:flex;flex-direction:column;gap:7px}
 .prompt-card-title{font-size:.8rem;font-weight:800;color:#444;border:none;outline:none;width:100%;background:transparent;font-family:inherit;padding:2px 0;border-bottom:1.5px solid #EDE8E1}
 .prompt-card-title:focus{border-bottom-color:#C4714A}
-.prompt-card-ta{width:100%;min-height:90px;max-height:270px;overflow-y:auto;border:1.5px solid #EDE8E1;border-radius:8px;padding:8px 10px;font-size:.77rem;font-family:inherit;resize:none;outline:none;line-height:1.65;color:#333;box-sizing:border-box}
+.prompt-card-ta{width:100%;min-height:90px;overflow-y:auto;border:1.5px solid #EDE8E1;border-radius:8px;padding:8px 10px;font-size:.77rem;font-family:inherit;resize:vertical;outline:none;line-height:1.65;color:#333;box-sizing:border-box}
 .prompt-card-ta:focus{border-color:#C4714A}
 .prompt-card-actions{display:flex;gap:5px}
 .prompt-copy-btn{flex:1;padding:6px;border-radius:8px;border:none;background:#C4714A;color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;transition:background .12s}
@@ -3869,26 +3870,37 @@ function _taAutoH(ta, max){
   ta.style.height='auto';
   ta.style.height=Math.min(ta.scrollHeight, max||270)+'px';
 }
+function _promptCardHtml(p){
+  return `<div class="prompt-card">
+    <input class="prompt-card-title" id="ptitle-${p.id}" value="${(p.title||'').replace(/"/g,'&quot;')}" placeholder="제목..."
+      oninput="promptChange(${p.id},'title',this.value)">
+    <textarea class="prompt-card-ta" id="pta-${p.id}"
+      placeholder="프롬프트 내용을 입력하세요..."
+      oninput="promptChange(${p.id},'content',this.value)">${p.content||''}</textarea>
+    <div class="prompt-card-actions">
+      <button class="prompt-copy-btn" id="pcopy-${p.id}" onclick="promptCopy(${p.id})">📋 복사</button>
+      <button class="prompt-del-btn" onclick="promptDel(${p.id})">🗑</button>
+    </div>
+  </div>`;
+}
 function _renderPromptGrid(){
   const el = document.getElementById('prompt-grid');
   if(!el) return;
   if(!_pData.prompts.length){
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:50px;color:#CCC;font-size:.85rem">＋ 프롬프트 추가 버튼으로 시작하세요</div>';
+    el.innerHTML='<div style="width:100%;text-align:center;padding:50px;color:#CCC;font-size:.85rem">＋ 프롬프트 추가 버튼으로 시작하세요</div>';
     return;
   }
-  el.innerHTML = _pData.prompts.map(p=>`
-    <div class="prompt-card">
-      <input class="prompt-card-title" id="ptitle-${p.id}" value="${(p.title||'').replace(/"/g,'&quot;')}" placeholder="제목..."
-        oninput="promptChange(${p.id},'title',this.value)">
-      <textarea class="prompt-card-ta" id="pta-${p.id}"
-        placeholder="프롬프트 내용을 입력하세요..."
-        oninput="promptChange(${p.id},'content',this.value);_taAutoH(this)">${p.content||''}</textarea>
-      <div class="prompt-card-actions">
-        <button class="prompt-copy-btn" id="pcopy-${p.id}" onclick="promptCopy(${p.id})">📋 복사</button>
-        <button class="prompt-del-btn" onclick="promptDel(${p.id})">🗑</button>
-      </div>
+  // 컬럼-퍼스트 분배: 3개씩 한 컬럼, 그다음 옆 컬럼 (3×4 = 12개 단위)
+  const ROWS = 3, COLS = 4;
+  const cols = [[], [], [], []];
+  _pData.prompts.forEach((p, i) => {
+    const col = Math.floor(i / ROWS) % COLS;
+    cols[col].push(p);
+  });
+  el.innerHTML = cols.map(col=>`
+    <div class="prompt-col">
+      ${col.map(p=>_promptCardHtml(p)).join('')}
     </div>`).join('');
-  el.querySelectorAll('.prompt-card-ta').forEach(ta=>_taAutoH(ta));
 }
 
 // ── 템플릿 프롬프트 ──
