@@ -3870,13 +3870,19 @@ function _taAutoH(ta, max){
   ta.style.height='auto';
   ta.style.height=Math.min(ta.scrollHeight, max||270)+'px';
 }
+function promptSaveH(id, el){
+  const p = _pData.prompts.find(x=>x.id===id);
+  if(p && el.style.height){ p.height=el.style.height; _pSave(); }
+}
 function _promptCardHtml(p){
   return `<div class="prompt-card">
     <input class="prompt-card-title" id="ptitle-${p.id}" value="${(p.title||'').replace(/"/g,'&quot;')}" placeholder="제목..."
       oninput="promptChange(${p.id},'title',this.value)">
     <textarea class="prompt-card-ta" id="pta-${p.id}"
+      style="${p.height?'height:'+p.height:''}"
       placeholder="프롬프트 내용을 입력하세요..."
-      oninput="promptChange(${p.id},'content',this.value)">${p.content||''}</textarea>
+      oninput="promptChange(${p.id},'content',this.value)"
+      onmouseup="promptSaveH(${p.id},this)">${p.content||''}</textarea>
     <div class="prompt-card-actions">
       <button class="prompt-copy-btn" id="pcopy-${p.id}" onclick="promptCopy(${p.id})">📋 복사</button>
       <button class="prompt-del-btn" onclick="promptDel(${p.id})">🗑</button>
