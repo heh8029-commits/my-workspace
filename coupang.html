@@ -108,6 +108,7 @@ tr.today-row{background:#fffbe6}
 .sales-summary-val.grand{color:#6c4fd1}
 .sales-summary-pct{font-size:.66rem;font-weight:700;color:#0f9960;margin-left:4px}
 .sales-summary-pct .pct-label{display:none}
+.sales-summary-avg{font-size:.62rem;color:#bbb;margin-top:3px;white-space:nowrap}
 @media (max-width:900px){.sales-summary{grid-template-columns:repeat(3,1fr)}}
 
 .sync-area{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:4px}
@@ -631,11 +632,13 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
   const totalAdCost = cpAdCost + naverSearchAd + naverAiAd;
 
   const pctOf = v => totalSales ? `<span class="sales-summary-pct">${fmtPct(v / totalSales * 100)}</span>` : '';
+  const avgHtml = v => dayCount ? `<div class="sales-summary-avg">일평균 ${fmtNum(Math.round(v / dayCount))}</div>` : '';
 
   const card = (label, val, cls, pctHtml) => `
     <div class="sales-summary-card ${cls}">
       <div class="sales-summary-label">${label}</div>
       <div class="sales-summary-val ${cls}">${fmtNum(val)}${pctHtml || ''}</div>
+      ${avgHtml(val)}
     </div>`;
 
   box.innerHTML = [
@@ -648,7 +651,7 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
     card('네이버 검색광고', naverSearchAd, 'cost', ''),
     card('네이버 AI광고', naverAiAd, 'cost', ''),
     card('전체 총광고비', totalAdCost, 'cost', ''),
-    card('전체 총매출', totalSales, 'grand', dayCount ? `<span class="sales-summary-pct" style="color:#999">일평균 ${fmtNum(Math.round(totalSales / dayCount))}</span>` : ''),
+    card('전체 총매출', totalSales, 'grand', ''),
   ].join('');
 }
 
