@@ -105,20 +105,6 @@ Deno.serve(async (req) => {
   let body: any; try { body = await req.json(); } catch { return json({ error: "bad_json" }, 400, origin); }
   const route = String(body.route ?? "");
 
-  // ============ _DEBUG (진단용, 나중에 제거) ============
-  if (route === "_debug") {
-    let role: string | null = null;
-    try { const seg = SERVICE_KEY.split(".")[1]; role = JSON.parse(atob(seg.replace(/-/g, "+").replace(/_/g, "/"))).role; } catch { role = null; }
-    const probe = await sb.from("photo_receipts").select("id").limit(1);
-    return json({
-      keyPrefix: SERVICE_KEY.slice(0, 10),
-      keyLen: SERVICE_KEY.length,
-      decodedRole: role,
-      probeError: probe.error?.message ?? null,
-      probeOk: !probe.error,
-    }, 200, origin);
-  }
-
   // ============ SUBMIT ============
   if (route === "submit") {
     if (body.action === "finalize") {

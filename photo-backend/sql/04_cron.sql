@@ -21,12 +21,14 @@ select cron.schedule(
   '0 * * * *',                              -- 매시 정각 (원하면 '*/30 * * * *' 등으로 변경)
   $$
   select net.http_post(
-    url     := 'https://PROJECT_REF.supabase.co/functions/v1/cleanup',
+    url     := 'https://zuoztgnzrfhukdibrlxz.supabase.co/functions/v1/api',
     headers := jsonb_build_object(
                  'Content-Type', 'application/json',
+                 'Authorization', 'Bearer ANON_KEY',       -- 함수 JWT 검증 통과용(anon 키)
+                 'apikey', 'ANON_KEY',
                  'x-cleanup-secret', 'CLEANUP_SECRET'
                ),
-    body    := '{}'::jsonb
+    body    := '{"route":"cleanup"}'::jsonb
   );
   $$
 );
