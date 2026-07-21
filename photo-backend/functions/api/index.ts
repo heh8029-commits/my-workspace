@@ -342,7 +342,7 @@ Deno.serve(async (req) => {
 
     if (action === "list") {
       const f = body.filters ?? {};
-      let q = sb.from("photo_receipts").select("id, receipt_no, mall, orderer_name, address_dong, phone_last4, edit_request, status, photo_count, created_at, delete_at, photos_deleted, finalized").eq("finalized", true).order("created_at", { ascending: false }).limit(500);
+      let q = sb.from("photo_receipts").select("id, receipt_no, mall, orderer_name, address_dong, phone_last4, edit_request, status, photo_count, created_at, delete_at, photos_deleted, finalized, edited, edited_at, last_edit_summary").eq("finalized", true).order("created_at", { ascending: false }).limit(500);
       if (f.name) q = q.ilike("orderer_name", `%${String(f.name).trim()}%`);
       if (f.phone) q = q.eq("phone_last4", String(f.phone).trim());
       if (f.dong) q = q.ilike("address_dong", `%${String(f.dong).trim()}%`);
