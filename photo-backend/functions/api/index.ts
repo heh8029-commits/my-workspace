@@ -7,9 +7,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const BUCKET = "photo-receipts";
+// 관리자(service_role) 키: 새 API키 방식에서는 SUPABASE_SERVICE_ROLE_KEY 가 비어 있을 수 있어
+// 별도 시크릿 SB_SERVICE_KEY 를 우선 사용한다(없으면 자동주입값 사용).
+const SERVICE_KEY = Deno.env.get("SB_SERVICE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const sb = createClient(
   Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  SERVICE_KEY,
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
