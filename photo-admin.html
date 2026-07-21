@@ -180,9 +180,9 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
 function badge(s){const[t,c]=STATUS[s]||['접수 완료','b-new'];return `<span class="badge ${c}">${t}</span>`;}
 
 function api(action, body){
-  return fetch(CFG.FUNCTIONS_URL+'/admin',{method:'POST',
+  return fetch(CFG.FUNCTIONS_URL+'/api',{method:'POST',
     headers:{'Content-Type':'application/json','apikey':CFG.SUPABASE_ANON_KEY,'Authorization':'Bearer '+CFG.SUPABASE_ANON_KEY,'x-admin-token':TOKEN||''},
-    body:JSON.stringify(Object.assign({action},body||{}))})
+    body:JSON.stringify(Object.assign({route:'admin',action},body||{}))})
    .then(async r=>{const j=await r.json().catch(()=>({error:'bad'}));
      if(r.status===401 && action!=='login'){ logout(); }
      return {status:r.status, body:j};});

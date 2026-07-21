@@ -286,14 +286,14 @@ const STATUS = {
 
 /* ---------- 공용 유틸 ---------- */
 function api(fn, body, extraHeaders){
-  return fetch(CFG.FUNCTIONS_URL + '/' + fn, {
+  return fetch(CFG.FUNCTIONS_URL + '/api', {
     method:'POST',
     headers: Object.assign({
       'Content-Type':'application/json',
       'apikey': CFG.SUPABASE_ANON_KEY,
       'Authorization': 'Bearer ' + CFG.SUPABASE_ANON_KEY
     }, extraHeaders||{}),
-    body: JSON.stringify(body||{})
+    body: JSON.stringify(Object.assign({route:fn}, body||{}))
   }).then(async r=>{ const j = await r.json().catch(()=>({error:'bad_response'})); return {status:r.status, body:j}; });
 }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
