@@ -112,6 +112,12 @@
     <!-- 접수 목록 -->
     <section id="tab-list">
       <div class="head"><h2>접수 목록</h2><div class="total">총 <b id="totalCount">0</b>건</div></div>
+      <div class="filters" style="grid-template-columns:auto auto 1fr;align-items:end">
+        <div><label>신규접수 기본 보관기간 (연휴엔 길게)</label>
+          <select id="defHold"><option value="3">3일</option><option value="5">5일</option><option value="7">7일</option><option value="10">10일</option><option value="14">14일</option><option value="21">21일</option><option value="30">30일</option></select></div>
+        <div><button class="go" onclick="saveDefHold()">기본값 저장</button></div>
+        <div style="color:var(--gray);font-size:12px;padding-bottom:8px">지금부터 <b>새로 접수되는 건</b>이 이 기간만큼 보관됩니다. (이미 접수된 건은 상세에서 개별 조정)</div>
+      </div>
       <div class="filters">
         <div><label>주문자 이름</label><input id="f-name" placeholder="이름"></div>
         <div><label>전화 뒷자리</label><input id="f-phone" placeholder="1234" maxlength="4"></div>
@@ -130,9 +136,9 @@
           <thead><tr>
             <th style="width:34px"><input type="checkbox" id="checkAll"></th>
             <th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)</th>
-            <th>사진</th><th>상태</th><th>삭제예정</th><th>관리</th>
+            <th>사진</th><th>상태</th><th>수정</th><th>삭제예정</th><th>관리</th>
           </tr></thead>
-          <tbody id="listBody"><tr><td colspan="10" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
+          <tbody id="listBody"><tr><td colspan="11" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
         </table>
         <div class="toolbar">
           <button class="danger" onclick="bulkDelete()">선택 사진 일괄 삭제</button>
@@ -201,7 +207,7 @@ async function doLogin(){
   if(r.status!==200){ document.getElementById('loginErr').textContent='아이디 또는 비밀번호가 올바르지 않습니다.'; return; }
   TOKEN=r.body.token; sessionStorage.setItem('mt_admin_token',TOKEN); enterApp();
 }
-function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').style.display='grid'; loadList(); }
+function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').style.display='grid'; loadList(); loadDefHold(); }
 function logout(){ TOKEN=null; sessionStorage.removeItem('mt_admin_token'); location.reload(); }
 
 function switchTab(t){
@@ -215,17 +221,17 @@ function switchTab(t){
 let rows=[];
 async function loadList(){
   const body=document.getElementById('listBody');
-  body.innerHTML='<tr><td colspan="10" class="empty"><span class="spin" style="border-color:#ccc;border-top-color:transparent"></span> 불러오는 중...</td></tr>';
+  body.innerHTML='<tr><td colspan="11" class="empty"><span class="spin" style="border-color:#ccc;border-top-color:transparent"></span> 불러오는 중...</td></tr>';
   const filters={ name:document.getElementById('f-name').value.trim(), phone:document.getElementById('f-phone').value.trim(),
     dong:document.getElementById('f-dong').value.trim(), mall:document.getElementById('f-mall').value, status:document.getElementById('f-status').value };
   const from=document.getElementById('f-from').value, to=document.getElementById('f-to').value;
   if(from) filters.dateFrom=from+'T00:00:00+09:00';
   if(to) filters.dateTo=to+'T23:59:59+09:00';
   const r=await api('list',{filters});
-  if(r.status!==200){ body.innerHTML='<tr><td colspan="10" class="empty">불러오기 실패</td></tr>'; return; }
+  if(r.status!==200){ body.innerHTML='<tr><td colspan="11" class="empty">불러오기 실패</td></tr>'; return; }
   rows=r.body.rows||[];
   document.getElementById('totalCount').textContent=rows.length;
-  if(!rows.length){ body.innerHTML='<tr><td colspan="10" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
+  if(!rows.length){ body.innerHTML='<tr><td colspan="11" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
   body.innerHTML=rows.map(r=>`
     <tr>
       <td><input type="checkbox" class="rowck" value="${r.id}" onchange="updateSel()"></td>
@@ -236,6 +242,7 @@ async function loadList(){
       <td>${esc(r.addressDong)}</td>
       <td>${r.photosDeleted?'<span style="color:#c23;font-size:12px">삭제됨</span>':`<div class="tt">${r.thumb?`<img src="${r.thumb}">`:''}<span class="more">${r.photoCount}장</span></div>`}</td>
       <td>${badge(r.status)}</td>
+      <td>${r.edited?`<span class="badge" style="background:#fff0f4;color:#e5487d" title="${esc(r.lastEditSummary||'')}\n${r.editedAt?fmtDT(r.editedAt):''}">✏️ ${esc(r.lastEditSummary||'수정됨')}</span>`:'<span style="color:#ccc">-</span>'}</td>
       <td style="font-size:12px;color:#c23">${fmtDT(r.deleteAt)}</td>
       <td><button class="mini p" onclick='openDetail("${r.id}")'>보기 · 수정</button></td>
     </tr>`).join('');
@@ -257,8 +264,14 @@ async function bulkDelete(){
 async function openDetail(id){
   const r=await api('detail',{receiptId:id});
   if(r.status!==200) return toast('상세 조회 실패');
-  const d=r.body.detail, photos=r.body.photos||[];
+  const d=r.body.detail, photos=r.body.photos||[], logs=r.body.editLogs||[];
   const opts=STATUS_OPTS.map(([v,l])=>`<option value="${v}" ${v===d.status?'selected':''}>${l}</option>`).join('');
+  const dayOpts=[3,5,7,10,14,21,30].map(n=>`<option value="${n}">${n}일</option>`).join('');
+  const logHtml = logs.length ? `<h4 style="margin:16px 0 6px;font-size:14px">📝 수정 이력</h4>`+logs.map(l=>`
+    <div style="border-left:3px solid #ffc4d0;padding:4px 0 4px 10px;margin-bottom:6px;font-size:12.5px">
+      <div><b>${l.actor==='admin'?'관리자':'고객'}</b> · ${esc(l.summary||'')}</div>
+      <div style="color:var(--gray);font-size:11px">${fmtDT(l.created_at)}</div>
+    </div>`).join('') : '';
   document.getElementById('drawerBody').innerHTML=`
     <div class="kv"><b>접수번호</b><span>${esc(d.receiptNo)}</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
@@ -270,17 +283,35 @@ async function openDetail(id){
     <div class="kv"><b>사진 개수</b><span>${d.photoCount}장</span></div>
     <div class="kv"><b>현재 상태</b><span>${badge(d.status)}</span></div>
     <div class="kv"><b>삭제 예정일</b><span style="color:#c23">${fmtDT(d.deleteAt)}</span></div>
+    ${d.edited?`<div class="kv"><b>고객 수정</b><span style="color:#e5487d;text-align:right;max-width:60%">✏️ ${esc(d.lastEditSummary||'수정됨')}<br><span style="color:var(--gray);font-size:11px">${d.editedAt?fmtDT(d.editedAt):''}</span></span></div>`:''}
     ${d.photosDeleted?'<div style="margin-top:12px;color:#c23;text-align:center">🗑️ 사진이 삭제되었습니다.</div>':
       `<div class="dgal">${photos.map(p=>`<div class="c"><span class="ord">${p.order+1}</span><img src="${p.url}" onclick="openLB('${p.url}')"><a class="dl" href="${p.downloadUrl}">저장</a></div>`).join('')}</div>`}
     <div class="actions">
       <div class="row"><select id="dStatus">${opts}</select><button class="btn nv" onclick="setStatus('${d.id}')">상태 변경</button></div>
+      <div class="row"><select id="dDays">${dayOpts}</select><button class="warnbtn" style="flex:1" onclick="setDays('${d.id}')">📅 보관기간 설정(접수일+N)</button></div>
       <div class="row">
         <button class="btn pk" style="flex:1" onclick="resetPw('${d.id}')">🔑 비밀번호 재설정</button>
-        <button class="warnbtn" style="flex:1" onclick="extend('${d.id}')">📅 3일 연장</button>
+        <button class="warnbtn" style="flex:1" onclick="extend('${d.id}')">＋3일 연장</button>
       </div>
       <button class="danger" onclick="delPhotos('${d.id}')">🗑️ 사진 즉시 삭제 (Storage+DB)</button>
-    </div>`;
+    </div>
+    ${logHtml}`;
   document.getElementById('drawer').classList.add('show');
+}
+async function setDays(id){
+  const days=document.getElementById('dDays').value;
+  const r=await api('setDeleteDays',{receiptId:id,days:Number(days)});
+  if(r.status===200){ toast(`보관기간을 접수일+${days}일로 설정했습니다.`); loadList(); openDetail(id); }
+  else toast(r.body.error==='already_deleted'?'이미 삭제된 접수입니다.':'설정 실패');
+}
+async function loadDefHold(){
+  const r=await api('getSettings',{});
+  if(r.status===200){ const sel=document.getElementById('defHold'); if(sel) sel.value=String(r.body.defaultHoldDays); }
+}
+async function saveDefHold(){
+  const days=document.getElementById('defHold').value;
+  const r=await api('setDefaultHoldDays',{days:Number(days)});
+  if(r.status===200) toast(`신규접수 기본 보관기간을 ${days}일로 저장했습니다.`); else toast('저장 실패');
 }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
 

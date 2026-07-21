@@ -97,6 +97,26 @@ async function purge(receiptId: string) {
   await sb.from("photo_receipts").update({ photos_deleted: true, photo_count: 0 }).eq("id", receiptId);
 }
 
+// 신규접수 기본 보관일수(관리자 설정, 없으면 HOLD_DAYS)
+async function getHoldDays(): Promise<number> {
+  const { data } = await sb.from("app_settings").select("value").eq("key", "default_hold_days").maybeSingle();
+  const d = Number(data?.value ?? HOLD_DAYS);
+  return Number.isFinite(d) && d >= 1 && d <= 60 ? d : HOLD_DAYS;
+}
+
+// 수정 요약 문자열
+const EDIT_LABEL: Record<string, string> = {
+  edit_request: "편집요청 변경", mall: "쇼핑몰 변경",
+  photos_delete: "사진 삭제", photos_add: "사진 추가", photos_order: "사진 순서변경",
+};
+function summarize(changed: string[], detail: any): string {
+  return changed.map((c) => {
+    if (c === "photos_delete" && detail.deleted) return `사진 삭제 ${detail.deleted}장`;
+    if (c === "photos_add" && detail.added) return `사진 추가 ${detail.added}장`;
+    return EDIT_LABEL[c] ?? c;
+  }).join(" · ");
+}
+
 /* ==================================================================== */
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -138,7 +158,8 @@ Deno.serve(async (req) => {
       if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
     }
     const passwordHash = await hashPassword(pw);
-    const now = new Date(), deleteAt = new Date(now.getTime() + HOLD_DAYS * 86400000);
+    const holdDays = await getHoldDays();
+    const now = new Date(), deleteAt = new Date(now.getTime() + holdDays * 86400000);
     let r: any = null;
     for (let a = 0; a < 5; a++) {
       const { data, error } = await sb.from("photo_receipts").insert({
@@ -188,12 +209,103 @@ Deno.serve(async (req) => {
       return json({ error: "wrong_password", remaining: Math.max(0, 5 - fc) }, 401, origin);
     }
     await sb.from("photo_receipts").update({ fail_count: 0, locked_until: null }).eq("id", receiptId);
-    const detail = { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted };
+    const detail = { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null };
     if (r.photos_deleted) return json({ ok: true, detail, photos: [], photosDeleted: true }, 200, origin);
     const { data: files } = await sb.from("photo_files").select("id, storage_path, original_name, sort_order").eq("receipt_id", receiptId).eq("uploaded", true).order("sort_order", { ascending: true });
     const photos: any[] = [];
     for (const f of files ?? []) { const { data: s } = await sb.storage.from(BUCKET).createSignedUrl(f.storage_path, 90); photos.push({ id: f.id, order: f.sort_order, originalName: f.original_name, url: s?.signedUrl ?? null }); }
     return json({ ok: true, detail, photos, photosDeleted: false }, 200, origin);
+  }
+
+  // ============ LOOKUP-UPDATE (고객 수정) ============
+  if (route === "lookup-update") {
+    const receiptId = String(body.receiptId ?? ""), pw = String(body.password ?? "");
+    if (!receiptId || !pw) return json({ error: "invalid_request" }, 400, origin);
+    const { data: r } = await sb.from("photo_receipts").select("*").eq("id", receiptId).eq("finalized", true).maybeSingle();
+    if (!r) return json({ error: "not_found" }, 404, origin);
+    if (r.photos_deleted) return json({ error: "photos_deleted" }, 400, origin);
+    if (r.locked_until && new Date(r.locked_until) > new Date())
+      return json({ error: "locked", retryAfterSec: Math.ceil((new Date(r.locked_until).getTime() - Date.now()) / 1000) }, 429, origin);
+    if (!(await verifyPassword(pw, r.password_hash))) {
+      const fc = (r.fail_count ?? 0) + 1; const u: any = { fail_count: fc };
+      if (fc >= 5) { u.locked_until = new Date(Date.now() + 10 * 60000).toISOString(); u.fail_count = 0; }
+      await sb.from("photo_receipts").update(u).eq("id", receiptId);
+      return json({ error: "wrong_password", remaining: Math.max(0, 5 - fc) }, 401, origin);
+    }
+    await sb.from("photo_receipts").update({ fail_count: 0, locked_until: null }).eq("id", receiptId);
+
+    const action = String(body.action ?? "apply");
+
+    // 새로 올린 사진 업로드 확정
+    if (action === "finalize") {
+      const { data: objects } = await sb.storage.from(BUCKET).list(receiptId, { limit: 100 });
+      const present = new Set((objects ?? []).map((o) => `${receiptId}/${o.name}`));
+      const { data: files } = await sb.from("photo_files").select("id, storage_path, uploaded").eq("receipt_id", receiptId);
+      for (const f of files ?? []) if (!f.uploaded && present.has(f.storage_path)) await sb.from("photo_files").update({ uploaded: true }).eq("id", f.id);
+      await sb.from("photo_files").delete().eq("receipt_id", receiptId).eq("uploaded", false);
+      const { count } = await sb.from("photo_files").select("*", { count: "exact", head: true }).eq("receipt_id", receiptId).eq("uploaded", true);
+      await sb.from("photo_receipts").update({ photo_count: count ?? 0 }).eq("id", receiptId);
+      return json({ ok: true, photoCount: count ?? 0 }, 200, origin);
+    }
+
+    // 변경 적용
+    const newEdit = body.editRequest === undefined ? undefined : String(body.editRequest).trim().slice(0, 1000);
+    const newMall = body.mall === undefined ? undefined : String(body.mall);
+    const deleteIds: string[] = Array.isArray(body.deletePhotoIds) ? body.deletePhotoIds.map(String) : [];
+    const orderIds: string[] = Array.isArray(body.order) ? body.order.map(String) : [];
+    const addFiles: any[] = Array.isArray(body.addFiles) ? body.addFiles : [];
+
+    if (newMall !== undefined && !ALLOWED_MALLS.includes(newMall)) return json({ error: "invalid_mall" }, 400, origin);
+    for (const f of addFiles) {
+      if (typeof f.size !== "number" || f.size <= 0 || f.size > MAX_SIZE) return json({ error: "file_too_large" }, 400, origin);
+      if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
+    }
+    const { data: curPhotos } = await sb.from("photo_files").select("id, storage_path, sort_order").eq("receipt_id", receiptId).eq("uploaded", true).order("sort_order", { ascending: true });
+    const kept = (curPhotos ?? []).filter((p) => !deleteIds.includes(p.id));
+    if (kept.length + addFiles.length < 1) return json({ error: "need_at_least_one_photo" }, 400, origin);
+    if (kept.length + addFiles.length > MAX_FILES) return json({ error: "too_many_photos" }, 400, origin);
+
+    const changed: string[] = []; const detail: any = {};
+
+    if (newEdit !== undefined && newEdit !== (r.edit_request ?? "")) {
+      changed.push("edit_request"); detail.editRequest = { from: r.edit_request, to: newEdit };
+      await sb.from("photo_receipts").update({ edit_request: newEdit || null }).eq("id", receiptId);
+    }
+    if (newMall !== undefined && newMall !== r.mall) {
+      changed.push("mall"); detail.mall = { from: r.mall, to: newMall };
+      await sb.from("photo_receipts").update({ mall: newMall }).eq("id", receiptId);
+    }
+    if (deleteIds.length) {
+      const delPaths = (curPhotos ?? []).filter((p) => deleteIds.includes(p.id)).map((p) => p.storage_path);
+      if (delPaths.length) await sb.storage.from(BUCKET).remove(delPaths);
+      await sb.from("photo_files").delete().in("id", deleteIds).eq("receipt_id", receiptId);
+      changed.push("photos_delete"); detail.deleted = delPaths.length;
+    }
+    // 순서 재정렬(남은 사진)
+    const keptIds = kept.map((p) => p.id);
+    const orderedKept = orderIds.length ? orderIds.filter((id) => keptIds.includes(id)) : keptIds;
+    if (orderIds.length && orderedKept.length === keptIds.length && orderedKept.join(",") !== keptIds.join(",")) changed.push("photos_order");
+    for (let i = 0; i < orderedKept.length; i++) await sb.from("photo_files").update({ sort_order: i }).eq("id", orderedKept[i]);
+
+    // 사진 추가 → 서명 업로드 URL
+    const uploads: any[] = [];
+    for (let i = 0; i < addFiles.length; i++) {
+      const f = addFiles[i];
+      const so = orderedKept.length + i;
+      const path = `${receiptId}/${so}_${crypto.randomUUID().slice(0, 8)}.${extOf(String(f.contentType))}`;
+      const { data: signed, error: e } = await sb.storage.from(BUCKET).createSignedUploadUrl(path);
+      if (e || !signed) return json({ error: "signed_url_failed" }, 500, origin);
+      await sb.from("photo_files").insert({ receipt_id: receiptId, storage_path: path, original_name: (f.name ?? "").slice(0, 200), size_bytes: f.size, content_type: f.contentType, sort_order: so, uploaded: false });
+      uploads.push({ sortOrder: so, path, token: signed.token, uploadUrl: signed.signedUrl });
+    }
+    if (addFiles.length) { changed.push("photos_add"); detail.added = addFiles.length; }
+
+    if (changed.length === 0) return json({ ok: true, uploads: [], nochange: true }, 200, origin);
+
+    const summary = summarize(changed, detail);
+    await sb.from("photo_receipts").update({ edited: true, edited_at: new Date().toISOString(), last_edit_summary: summary, photo_count: kept.length }).eq("id", receiptId);
+    await sb.from("photo_edit_logs").insert({ receipt_id: receiptId, actor: "customer", changed, summary, detail });
+    return json({ ok: true, uploads, summary }, 200, origin);
   }
 
   // ============ ADMIN ============
@@ -247,7 +359,7 @@ Deno.serve(async (req) => {
           const { data: first } = await sb.from("photo_files").select("storage_path").eq("receipt_id", r.id).eq("uploaded", true).order("sort_order", { ascending: true }).limit(1).maybeSingle();
           if (first) { const { data: s } = await sb.storage.from(BUCKET).createSignedUrl(first.storage_path, 120); thumb = s?.signedUrl ?? null; }
         }
-        rows.push({ id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, thumb });
+        rows.push({ id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, thumb });
       }
       return json({ ok: true, rows }, 200, origin);
     }
@@ -262,7 +374,8 @@ Deno.serve(async (req) => {
         const { data: dl } = await sb.storage.from(BUCKET).createSignedUrl(fl.storage_path, 120, { download: fl.original_name || true });
         photos.push({ id: fl.id, order: fl.sort_order, originalName: fl.original_name, sizeBytes: fl.size_bytes, url: v?.signedUrl ?? null, downloadUrl: dl?.signedUrl ?? null });
       }
-      return json({ ok: true, detail: { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted }, photos }, 200, origin);
+      const { data: logs } = await sb.from("photo_edit_logs").select("actor, changed, summary, detail, created_at").eq("receipt_id", id).order("created_at", { ascending: false }).limit(50);
+      return json({ ok: true, detail: { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null }, photos, editLogs: logs ?? [] }, 200, origin);
     }
     if (action === "setStatus") {
       const status = String(body.status ?? ""); if (!STATUSES.includes(status)) return json({ error: "invalid_status" }, 400, origin);
@@ -289,6 +402,27 @@ Deno.serve(async (req) => {
       const until = new Date(Date.now() + Number(body.withinHours ?? 24) * 3600000).toISOString();
       const { data } = await sb.from("photo_receipts").select("id, receipt_no, orderer_name, phone_last4, delete_at, status").eq("finalized", true).eq("photos_deleted", false).lte("delete_at", until).order("delete_at", { ascending: true });
       return json({ ok: true, rows: data ?? [] }, 200, origin);
+    }
+    // 건별 보관일수 설정: 삭제일 = 접수일 + N일
+    if (action === "setDeleteDays") {
+      const days = Math.max(1, Math.min(60, Number(body.days ?? 3)));
+      const { data: rr } = await sb.from("photo_receipts").select("created_at, photos_deleted").eq("id", String(body.receiptId ?? "")).maybeSingle();
+      if (!rr) return json({ error: "not_found" }, 404, origin);
+      if (rr.photos_deleted) return json({ error: "already_deleted" }, 400, origin);
+      const nd = new Date(new Date(rr.created_at).getTime() + days * 86400000);
+      await sb.from("photo_receipts").update({ delete_at: nd.toISOString() }).eq("id", String(body.receiptId ?? ""));
+      await sb.from("photo_edit_logs").insert({ receipt_id: String(body.receiptId ?? ""), actor: "admin", changed: ["retention"], summary: `보관기간 ${days}일로 변경`, detail: { days } });
+      return json({ ok: true, deleteAt: nd.toISOString() }, 200, origin);
+    }
+    // 신규접수 기본 보관일수 조회/설정
+    if (action === "getSettings") {
+      const { data } = await sb.from("app_settings").select("value").eq("key", "default_hold_days").maybeSingle();
+      return json({ ok: true, defaultHoldDays: Number(data?.value ?? 3) }, 200, origin);
+    }
+    if (action === "setDefaultHoldDays") {
+      const days = Math.max(1, Math.min(60, Number(body.days ?? 3)));
+      await sb.from("app_settings").upsert({ key: "default_hold_days", value: days });
+      return json({ ok: true, defaultHoldDays: days }, 200, origin);
     }
     return json({ error: "unknown_action" }, 400, origin);
   }
