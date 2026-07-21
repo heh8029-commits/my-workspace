@@ -1,0 +1,20 @@
+# 이 파일은 `supabase` CLI 프로젝트의 config.toml 에 해당 섹션을 병합하세요.
+# 각 Edge Function 은 자체적으로 인증/시크릿을 검증하므로 기본 JWT 게이트를 끕니다.
+# (Supabase Dashboard 에서 함수 배포 시 "Verify JWT" 를 끄는 것과 동일)
+
+project_id = "PROJECT_REF"   # 본인 프로젝트 ref 로 교체
+
+[functions.submit]
+verify_jwt = false
+
+[functions.lookup-search]
+verify_jwt = false
+
+[functions.lookup-verify]
+verify_jwt = false
+
+[functions.admin]
+verify_jwt = false
+
+[functions.cleanup]
+verify_jwt = false

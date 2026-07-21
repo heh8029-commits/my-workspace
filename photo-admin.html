@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>미리토퍼 관리자 · 사진 접수</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>" />
+<style>
+  :root{--pink:#ff5a7a;--pink-d:#f43f66;--navy:#232734;--sidebar:#20242f;--gray:#8a8f99;
+    --line:#e8eaef;--bg:#f4f5f8;--ok:#20b26c;--err:#e5484d;--warn:#f6a609}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--navy);font-size:14px}
+  /* 로그인 */
+  #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+  #login .box{background:#fff;padding:34px 30px;border-radius:16px;width:340px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+  #login h1{font-size:19px;margin:0 0 4px;color:var(--pink)}
+  #login p{color:var(--gray);font-size:13px;margin:0 0 20px}
+  #login input{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:10px;font-size:15px}
+  #login button{width:100%;padding:13px;border:none;border-radius:10px;background:var(--pink);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+  #login .err{color:var(--err);font-size:13px;margin-top:8px;min-height:18px}
+  /* 레이아웃 */
+  .app{display:none;grid-template-columns:210px 1fr;min-height:100vh}
+  aside{background:var(--sidebar);color:#cfd3dc;padding:20px 0}
+  aside .brand{font-weight:800;color:#fff;font-size:16px;padding:0 22px 18px;border-bottom:1px solid #333846;margin-bottom:10px}
+  aside .brand small{display:block;color:var(--gray);font-weight:500;font-size:11px;margin-top:2px}
+  aside nav button{display:flex;gap:10px;align-items:center;width:100%;background:none;border:none;color:#cfd3dc;
+    padding:11px 22px;font-size:14px;cursor:pointer;text-align:left}
+  aside nav button:hover{background:#2a2f3d}
+  aside nav button.on{background:var(--pink);color:#fff;font-weight:700}
+  main{padding:22px 26px;overflow:auto}
+  .head{display:flex;align-items:center;margin-bottom:16px}
+  .head h2{font-size:20px;margin:0}
+  .head .total{margin-left:auto;color:var(--gray)}
+  .head .total b{color:var(--pink-d);font-size:18px}
+  /* 필터 */
+  .filters{background:#fff;border-radius:12px;padding:14px;display:grid;
+    grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px;align-items:end}
+  .filters label{font-size:11px;color:var(--gray);display:block;margin-bottom:4px;font-weight:700}
+  .filters input,.filters select{width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;font-size:13px}
+  .filters .go{background:var(--navy);color:#fff;border:none;padding:9px;border-radius:8px;font-weight:700;cursor:pointer}
+  /* 테이블 */
+  .tablewrap{background:#fff;border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{background:#fafbfc;color:var(--gray);font-size:12px;font-weight:700}
+  tr:hover td{background:#fcfcfd}
+  .tt{display:flex;gap:3px}.tt img{width:34px;height:34px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+  .tt .more{width:34px;height:34px;border-radius:6px;background:#f0f0f3;color:var(--gray);display:flex;align-items:center;justify-content:center;font-size:11px}
+  .badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .b-new{background:#eef2ff;color:#4f6bed}.b-chk{background:#e7f7ef;color:#17a866}
+  .b-prod{background:#fff3e0;color:#e08a00}.b-done{background:#f0eaff;color:#7c4dff}.b-ship{background:#e8f0fe;color:#3b7de0}
+  .mini{padding:5px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer;font-size:12px;font-weight:700}
+  .mini.p{border-color:var(--pink);color:var(--pink-d)}
+  .toolbar{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:center;flex-wrap:wrap}
+  .toolbar .sel{color:var(--gray);margin-left:auto;font-size:13px}
+  .danger{background:var(--err);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer}
+  .warnbtn{background:var(--warn);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer}
+  /* 상세 드로어 */
+  .drawer{position:fixed;top:0;right:0;width:440px;max-width:94vw;height:100vh;background:#fff;
+    box-shadow:-6px 0 30px rgba(0,0,0,.12);transform:translateX(100%);transition:.25s;overflow:auto;z-index:50;padding:22px}
+  .drawer.show{transform:none}
+  .drawer .close{float:right;font-size:24px;background:none;border:none;cursor:pointer;color:#999}
+  .drawer h3{margin:0 0 14px;font-size:18px}
+  .drawer .kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .drawer .kv b{color:var(--gray);font-weight:600}
+  .dgal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+  .dgal .c{position:relative}
+  .dgal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer}
+  .dgal .dl{position:absolute;right:4px;bottom:4px;background:rgba(0,0,0,.6);color:#fff;border-radius:6px;padding:2px 6px;font-size:11px;text-decoration:none}
+  .dgal .ord{position:absolute;left:4px;top:4px;background:var(--pink);color:#fff;font-size:10px;border-radius:5px;padding:1px 5px}
+  .drawer .actions{display:grid;gap:8px;margin-top:16px}
+  .drawer .actions .row{display:flex;gap:8px;align-items:center}
+  .drawer select{padding:9px;border:1.5px solid var(--line);border-radius:8px;flex:1}
+  .btn{padding:10px;border:none;border-radius:9px;font-weight:800;cursor:pointer}
+  .btn.pk{background:var(--pink);color:#fff}.btn.nv{background:var(--navy);color:#fff}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:24px;z-index:99;opacity:0;transition:.25s}
+  .toast.show{opacity:.96}
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;display:none;align-items:center;justify-content:center}
+  .lightbox.show{display:flex}.lightbox img{max-width:94%;max-height:92%}.lightbox .x{position:absolute;top:16px;right:20px;color:#fff;font-size:30px;background:none;border:none}
+  .empty{padding:50px;text-align:center;color:var(--gray)}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  code{background:#f0f0f3;padding:1px 5px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div id="login">
+  <div class="box">
+    <h1>♥ 미리토퍼 관리자</h1>
+    <p>사진 접수 관리 시스템</p>
+    <input type="text" id="adminUser" placeholder="아이디" autocomplete="username" />
+    <input type="password" id="adminPass" placeholder="비밀번호" autocomplete="current-password" />
+    <button id="loginBtn">로그인</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 앱 -->
+<div class="app" id="app">
+  <aside>
+    <div class="brand">미리토퍼 관리자<small>사진 접수 시스템</small></div>
+    <nav>
+      <button data-tab="list" class="on" onclick="switchTab('list')">📋 접수 목록</button>
+      <button data-tab="expiring" onclick="switchTab('expiring')">⏰ 삭제 예정</button>
+      <button onclick="logout()">🚪 로그아웃</button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- 접수 목록 -->
+    <section id="tab-list">
+      <div class="head"><h2>접수 목록</h2><div class="total">총 <b id="totalCount">0</b>건</div></div>
+      <div class="filters">
+        <div><label>주문자 이름</label><input id="f-name" placeholder="이름"></div>
+        <div><label>전화 뒷자리</label><input id="f-phone" placeholder="1234" maxlength="4"></div>
+        <div><label>주소(동)</label><input id="f-dong" placeholder="하안동"></div>
+        <div><label>쇼핑몰</label><select id="f-mall"><option value="">전체</option><option value="coupang">쿠팡</option><option value="naver">네이버</option><option value="etc">기타</option></select></div>
+        <div><label>상태</label><select id="f-status"><option value="">전체</option><option value="new">접수 완료</option><option value="photo_checked">사진 확인 완료</option><option value="producing">제작 중</option><option value="produced">제작 완료</option><option value="shipped">출고 완료</option></select></div>
+        <div style="display:flex;gap:8px"><button class="go" style="flex:1" onclick="loadList()">검색</button></div>
+      </div>
+      <div class="filters" style="grid-template-columns:1fr 1fr 4fr">
+        <div><label>접수 시작일</label><input type="date" id="f-from"></div>
+        <div><label>접수 종료일</label><input type="date" id="f-to"></div>
+        <div></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th style="width:34px"><input type="checkbox" id="checkAll"></th>
+            <th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)</th>
+            <th>사진</th><th>상태</th><th>삭제예정</th><th>관리</th>
+          </tr></thead>
+          <tbody id="listBody"><tr><td colspan="10" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
+        </table>
+        <div class="toolbar">
+          <button class="danger" onclick="bulkDelete()">선택 사진 일괄 삭제</button>
+          <span class="sel">선택 <b id="selCount">0</b>건</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 삭제 예정 -->
+    <section id="tab-expiring" style="display:none">
+      <div class="head"><h2>24시간 내 삭제 예정</h2></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>접수번호</th><th>주문자</th><th>전화뒷4</th><th>상태</th><th>삭제 예정일시</th><th>관리</th></tr></thead>
+        <tbody id="expBody"><tr><td colspan="6" class="empty">불러오는 중...</td></tr></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<!-- 상세 드로어 -->
+<div class="drawer" id="drawer">
+  <button class="close" onclick="closeDrawer()">×</button>
+  <h3>접수 상세 정보</h3>
+  <div id="drawerBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox"><button class="x" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
+
+<script src="./photo-config.js"></script>
+<script>
+const CFG=window.MIRITOPPER_CONFIG;
+const MALL={coupang:'쿠팡',naver:'네이버',etc:'기타'};
+const STATUS={new:['접수 완료','b-new'],photo_checked:['사진 확인 완료','b-chk'],producing:['제작 중','b-prod'],produced:['제작 완료','b-done'],shipped:['출고 완료','b-ship']};
+const STATUS_OPTS=[['new','신규 접수'],['photo_checked','사진 확인 완료'],['producing','제작 중'],['produced','제작 완료'],['shipped','출고 완료']];
+let TOKEN=sessionStorage.getItem('mt_admin_token')||null;
+
+function kstParts(iso){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(iso));
+  const g=t=>(p.find(x=>x.type===t)||{}).value; return {y:g('year'),mo:g('month'),d:g('day'),h:g('hour')==='24'?'00':g('hour'),mi:g('minute')};
+}
+function fmtDT(iso){ if(!iso) return '-'; const k=kstParts(iso); return `${k.y}-${k.mo}-${k.d} ${k.h}:${k.mi}`; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+function badge(s){const[t,c]=STATUS[s]||['접수 완료','b-new'];return `<span class="badge ${c}">${t}</span>`;}
+
+function api(action, body){
+  return fetch(CFG.FUNCTIONS_URL+'/admin',{method:'POST',
+    headers:{'Content-Type':'application/json','apikey':CFG.SUPABASE_ANON_KEY,'Authorization':'Bearer '+CFG.SUPABASE_ANON_KEY,'x-admin-token':TOKEN||''},
+    body:JSON.stringify(Object.assign({action},body||{}))})
+   .then(async r=>{const j=await r.json().catch(()=>({error:'bad'}));
+     if(r.status===401 && action!=='login'){ logout(); }
+     return {status:r.status, body:j};});
+}
+
+/* 로그인 */
+document.getElementById('loginBtn').onclick=doLogin;
+document.getElementById('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+async function doLogin(){
+  const username=document.getElementById('adminUser').value.trim();
+  const password=document.getElementById('adminPass').value;
+  const btn=document.getElementById('loginBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  const r=await api('login',{username,password});
+  btn.disabled=false; btn.textContent='로그인';
+  if(r.status===429){ document.getElementById('loginErr').textContent=`시도 초과. ${Math.ceil((r.body.retryAfterSec||900)/60)}분 후 다시 시도하세요.`; return; }
+  if(r.status!==200){ document.getElementById('loginErr').textContent='아이디 또는 비밀번호가 올바르지 않습니다.'; return; }
+  TOKEN=r.body.token; sessionStorage.setItem('mt_admin_token',TOKEN); enterApp();
+}
+function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').style.display='grid'; loadList(); }
+function logout(){ TOKEN=null; sessionStorage.removeItem('mt_admin_token'); location.reload(); }
+
+function switchTab(t){
+  document.querySelectorAll('aside nav button[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  document.getElementById('tab-list').style.display=t==='list'?'block':'none';
+  document.getElementById('tab-expiring').style.display=t==='expiring'?'block':'none';
+  if(t==='expiring') loadExpiring();
+}
+
+/* 목록 */
+let rows=[];
+async function loadList(){
+  const body=document.getElementById('listBody');
+  body.innerHTML='<tr><td colspan="10" class="empty"><span class="spin" style="border-color:#ccc;border-top-color:transparent"></span> 불러오는 중...</td></tr>';
+  const filters={ name:document.getElementById('f-name').value.trim(), phone:document.getElementById('f-phone').value.trim(),
+    dong:document.getElementById('f-dong').value.trim(), mall:document.getElementById('f-mall').value, status:document.getElementById('f-status').value };
+  const from=document.getElementById('f-from').value, to=document.getElementById('f-to').value;
+  if(from) filters.dateFrom=from+'T00:00:00+09:00';
+  if(to) filters.dateTo=to+'T23:59:59+09:00';
+  const r=await api('list',{filters});
+  if(r.status!==200){ body.innerHTML='<tr><td colspan="10" class="empty">불러오기 실패</td></tr>'; return; }
+  rows=r.body.rows||[];
+  document.getElementById('totalCount').textContent=rows.length;
+  if(!rows.length){ body.innerHTML='<tr><td colspan="10" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
+  body.innerHTML=rows.map(r=>`
+    <tr>
+      <td><input type="checkbox" class="rowck" value="${r.id}" onchange="updateSel()"></td>
+      <td>${fmtDT(r.createdAt)}</td>
+      <td>${MALL[r.mall]||r.mall}</td>
+      <td><b>${esc(r.ordererName)}</b></td>
+      <td>${esc(r.phoneLast4)}</td>
+      <td>${esc(r.addressDong)}</td>
+      <td>${r.photosDeleted?'<span style="color:#c23;font-size:12px">삭제됨</span>':`<div class="tt">${r.thumb?`<img src="${r.thumb}">`:''}<span class="more">${r.photoCount}장</span></div>`}</td>
+      <td>${badge(r.status)}</td>
+      <td style="font-size:12px;color:#c23">${fmtDT(r.deleteAt)}</td>
+      <td><button class="mini p" onclick='openDetail("${r.id}")'>보기 · 수정</button></td>
+    </tr>`).join('');
+  updateSel();
+}
+document.getElementById('checkAll').onchange=e=>{ document.querySelectorAll('.rowck').forEach(c=>c.checked=e.target.checked); updateSel(); };
+function updateSel(){ document.getElementById('selCount').textContent=document.querySelectorAll('.rowck:checked').length; }
+function selectedIds(){ return [...document.querySelectorAll('.rowck:checked')].map(c=>c.value); }
+
+async function bulkDelete(){
+  const ids=selectedIds();
+  if(!ids.length) return toast('선택된 접수건이 없습니다.');
+  if(!confirm(`선택한 ${ids.length}건의 사진을 Storage/DB 에서 영구 삭제합니다. 계속할까요?`)) return;
+  const r=await api('bulkDelete',{receiptIds:ids});
+  if(r.status===200){ toast(`${r.body.deleted}건 삭제 완료`); loadList(); } else toast('삭제 실패');
+}
+
+/* 상세 드로어 */
+async function openDetail(id){
+  const r=await api('detail',{receiptId:id});
+  if(r.status!==200) return toast('상세 조회 실패');
+  const d=r.body.detail, photos=r.body.photos||[];
+  const opts=STATUS_OPTS.map(([v,l])=>`<option value="${v}" ${v===d.status?'selected':''}>${l}</option>`).join('');
+  document.getElementById('drawerBody').innerHTML=`
+    <div class="kv"><b>접수번호</b><span>${esc(d.receiptNo)}</span></div>
+    <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
+    <div class="kv"><b>쇼핑몰</b><span>${MALL[d.mall]||d.mall}</span></div>
+    <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
+    <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
+    <div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>
+    <div class="kv"><b>편집 요청사항</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)||'-'}</span></div>
+    <div class="kv"><b>사진 개수</b><span>${d.photoCount}장</span></div>
+    <div class="kv"><b>현재 상태</b><span>${badge(d.status)}</span></div>
+    <div class="kv"><b>삭제 예정일</b><span style="color:#c23">${fmtDT(d.deleteAt)}</span></div>
+    ${d.photosDeleted?'<div style="margin-top:12px;color:#c23;text-align:center">🗑️ 사진이 삭제되었습니다.</div>':
+      `<div class="dgal">${photos.map(p=>`<div class="c"><span class="ord">${p.order+1}</span><img src="${p.url}" onclick="openLB('${p.url}')"><a class="dl" href="${p.downloadUrl}">저장</a></div>`).join('')}</div>`}
+    <div class="actions">
+      <div class="row"><select id="dStatus">${opts}</select><button class="btn nv" onclick="setStatus('${d.id}')">상태 변경</button></div>
+      <div class="row">
+        <button class="btn pk" style="flex:1" onclick="resetPw('${d.id}')">🔑 비밀번호 재설정</button>
+        <button class="warnbtn" style="flex:1" onclick="extend('${d.id}')">📅 3일 연장</button>
+      </div>
+      <button class="danger" onclick="delPhotos('${d.id}')">🗑️ 사진 즉시 삭제 (Storage+DB)</button>
+    </div>`;
+  document.getElementById('drawer').classList.add('show');
+}
+function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
+
+async function setStatus(id){
+  const status=document.getElementById('dStatus').value;
+  const r=await api('setStatus',{receiptId:id,status});
+  if(r.status===200){ toast('상태를 변경했습니다.'); loadList(); } else toast('변경 실패');
+}
+async function resetPw(id){
+  if(!confirm('임시 비밀번호를 발급합니다. 기존 비밀번호는 무효화됩니다.')) return;
+  const r=await api('resetPassword',{receiptId:id});
+  if(r.status===200) alert('발급된 임시 비밀번호: '+r.body.tempPassword+'\n\n고객에게 안전하게 전달하세요.');
+  else toast('재설정 실패');
+}
+async function extend(id){
+  const r=await api('extend',{receiptId:id,days:3});
+  if(r.status===200){ toast('삭제 예정일을 3일 연장했습니다.'); loadList(); openDetail(id); }
+  else toast(r.body.error==='already_deleted'?'이미 사진이 삭제된 접수입니다.':'연장 실패');
+}
+async function delPhotos(id){
+  if(!confirm('이 접수의 사진을 Storage/DB 에서 영구 삭제합니다. 복구할 수 없습니다. 계속할까요?')) return;
+  const r=await api('deletePhotos',{receiptId:id});
+  if(r.status===200){ toast('사진을 삭제했습니다.'); closeDrawer(); loadList(); } else toast('삭제 실패');
+}
+
+/* 삭제 예정 */
+async function loadExpiring(){
+  const b=document.getElementById('expBody'); b.innerHTML='<tr><td colspan="6" class="empty">불러오는 중...</td></tr>';
+  const r=await api('listExpiring',{withinHours:24});
+  const list=(r.body.rows||[]);
+  if(!list.length){ b.innerHTML='<tr><td colspan="6" class="empty">24시간 내 삭제 예정 접수가 없습니다.</td></tr>'; return; }
+  b.innerHTML=list.map(x=>`<tr>
+    <td>${esc(x.receipt_no)}</td><td>${esc(x.orderer_name)}</td><td>${esc(x.phone_last4)}</td>
+    <td>${badge(x.status)}</td><td style="color:#c23">${fmtDT(x.delete_at)}</td>
+    <td><button class="mini" onclick="extendExp('${x.id}')">3일 연장</button></td></tr>`).join('');
+}
+async function extendExp(id){ const r=await api('extend',{receiptId:id,days:3}); if(r.status===200){toast('연장 완료');loadExpiring();} else toast('실패'); }
+
+/* 라이트박스 */
+function openLB(u){ document.getElementById('lbImg').src=u; document.getElementById('lightbox').classList.add('show'); }
+function closeLB(){ document.getElementById('lightbox').classList.remove('show'); }
+document.getElementById('lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLB();});
+
+/* 시작 */
+if(!CFG||CFG.SUPABASE_URL.includes('PROJECT_REF')) document.getElementById('loginErr').textContent='⚠️ photo-config.js 설정이 필요합니다.';
+if(TOKEN) enterApp();
+</script>
+</body>
+</html>
