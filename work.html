@@ -10098,19 +10098,23 @@ function renderCsShare() {
     if (it.author === '📷') {
       var codeMemoWrap = document.createElement('div');
       codeMemoWrap.style.cssText = 'padding:2px 0 12px';
-      var codeMemoInp = document.createElement('input');
-      codeMemoInp.type = 'text';
+      var codeMemoInp = document.createElement('textarea');
+      codeMemoInp.rows = 1;
       codeMemoInp.value = it.codeMemo || '';
       codeMemoInp.placeholder = '코드 / 메모 입력';
-      codeMemoInp.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid #d0dff8;border-radius:10px;padding:9px 12px;font-size:.92rem;font-family:Pretendard,sans-serif;outline:none;background:#f8fbff';
+      // 굵고 조금 크게, 길면 아랫줄로 줄바꿈(자동 높이)
+      codeMemoInp.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid #d0dff8;border-radius:10px;padding:10px 12px;font-size:1rem;font-weight:800;line-height:1.5;color:#1a2e50;font-family:Pretendard,sans-serif;outline:none;background:#f8fbff;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-all';
+      var codeAutoGrow = function(el){ el.style.height='auto'; el.style.height=Math.max(el.scrollHeight, 42)+'px'; };
       codeMemoInp.onclick = function(e){ e.stopPropagation(); };
-      codeMemoInp.onkeydown = function(e){ e.stopPropagation(); if (e.key==='Enter'){ e.preventDefault(); this.blur(); } };
+      codeMemoInp.onkeydown = function(e){ e.stopPropagation(); };
+      codeMemoInp.oninput = function(){ codeAutoGrow(this); };
       codeMemoInp.onchange = (function(id){ return function(){
         var v = this.value.trim();
         csUpdateItem(id, function(item){ item.codeMemo = v; });
       }; })(it.id);
       codeMemoWrap.appendChild(codeMemoInp);
       body.appendChild(codeMemoWrap);
+      setTimeout((function(el){ return function(){ codeAutoGrow(el); }; })(codeMemoInp), 0);
     }
 
     // 2. 메모 먼저 (이미지 위에)
