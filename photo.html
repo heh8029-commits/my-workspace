@@ -334,32 +334,45 @@ function csCloudinaryUpload(file){
 }
 
 async function postToCsBoard(ctx){
+  const now=Date.now();
+  const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
+  const lines=[
+    `📷 사진접수 · ${mallLabel}`,
+    `${ctx.name} / 뒷번호 ${ctx.phone}`,
+    `${ctx.addr}`,
+    `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
+  ];
+  if(ctx.editRequest) lines.push(`요청: ${ctx.editRequest}`);
+  const item={
+    id: now, type:'', category:'CS', author:'📷',
+    text: lines.join('\n'),
+    imgs: [], img: '',
+    vendorOrder:null, done:false, createdAt: now, replies:[], confirmed:[]
+  };
+
+  // 1) 텍스트 글을 먼저 즉시 등록 — 사진 업로드가 느리거나 실패해도 글은 무조건 남는다.
   try{
-    // 첨부 순서 그대로 썸네일 업로드
-    const urls=[];
-    for(const f of ctx.files){ const u=await csCloudinaryUpload(f); if(u) urls.push(u); }
-    const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
-    const lines=[
-      `📷 사진접수 · ${mallLabel}`,
-      `${ctx.name} / 뒷번호 ${ctx.phone}`,
-      `${ctx.addr}`,
-      `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
-    ];
-    if(ctx.editRequest) lines.push(`요청: ${ctx.editRequest}`);
-    const now=Date.now();
-    const item={
-      id: now, type:'', category:'CS', author:'📷',
-      text: lines.join('\n'),
-      imgs: urls, img: urls[0]||'',
-      vendorOrder:null, done:false, createdAt: now, replies:[], confirmed:[]
-    };
-    // 최신 목록 fetch 후 맨 앞에 추가해서 저장(work.html 과 동일 방식)
     const r=await fetch(CS_FB_URL+'?t='+now,{cache:'no-store'});
     const data=await r.json().catch(()=>null);
     const list=(data&&data.list)?data.list:[];
     list.unshift(item);
     await fetch(CS_FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list})});
-  }catch(e){ /* 자동 등록 실패는 접수에 영향 없음 */ }
+  }catch(e){ return; /* 글 등록 자체 실패 시 이미지 시도 안 함 */ }
+
+  // 2) 썸네일 업로드 후 해당 글에 이미지 추가(첨부 순서 유지)
+  try{
+    const urls=[];
+    for(const f of ctx.files){ const u=await csCloudinaryUpload(f); if(u) urls.push(u); }
+    if(!urls.length) return;
+    const r2=await fetch(CS_FB_URL+'?t='+Date.now(),{cache:'no-store'});
+    const data2=await r2.json().catch(()=>null);
+    const list2=(data2&&data2.list)?data2.list:[];
+    const it=list2.find(x=>x.id===now);
+    if(it){
+      it.imgs=urls; it.img=urls[0]||'';
+      await fetch(CS_FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list2})});
+    }
+  }catch(e){ /* 이미지 반영 실패해도 텍스트 글은 이미 등록됨 */ }
 }
 
 /* ---------- 공용 유틸 ---------- */
