@@ -10164,11 +10164,11 @@ function renderCsShare() {
       if (it.author==='📷') {
         // 사진접수 자동글: 확인용이라 한 줄에 4개씩 작은 썸네일 그리드로 표시
         var grid = document.createElement('div');
-        grid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px';
+        grid.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:8px';
         imgs.forEach(function(src,i){
           var gi = document.createElement('img');
           gi.src = src; gi.loading = 'lazy';
-          gi.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;border-radius:9px;border:1.5px solid #e8eef8;background:#f8f9ff';
+          gi.style.cssText = 'width:calc(25% - 5px);aspect-ratio:1;object-fit:cover;cursor:zoom-in;border-radius:9px;border:1.5px solid #e8eef8;background:#f8f9ff';
           gi.onclick = (function(a,idx){ return function(){ _csGallery=a; _csGalleryIdx=idx; csShowGallery(); }; })(imgs,i);
           grid.appendChild(gi);
         });
