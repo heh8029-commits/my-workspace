@@ -476,6 +476,22 @@ drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
 drop.addEventListener('drop',e=>{e.preventDefault(); drop.classList.remove('drag'); addFiles(e.dataTransfer.files);});
 fileInput.addEventListener('change',e=>{ addFiles(e.target.files); fileInput.value=''; });
 
+// 클립보드 이미지 붙여넣기(Ctrl+V) — 접수/수정 화면에서 붙여넣으면 첨부에 추가
+function filesFromPaste(e){
+  const out=[]; const items=(e.clipboardData||window.clipboardData||{}).items||[];
+  for(const it of items){
+    if(it.kind==='file' && (it.type||'').indexOf('image')===0){
+      const f=it.getAsFile(); if(f) out.push(f);
+    }
+  }
+  return out;
+}
+document.addEventListener('paste', e=>{
+  const imgs=filesFromPaste(e); if(!imgs.length) return;
+  if(document.getElementById('v-submit').classList.contains('active')){ e.preventDefault(); addFiles(imgs); }
+  else if(document.getElementById('v-edit').classList.contains('active')){ e.preventDefault(); addEditFiles(imgs); }
+});
+
 function addFiles(list){
   for(const f of list){
     if(files.length>=MAX_FILES){ toast('사진은 최대 5장까지 첨부할 수 있어요.'); break; }
