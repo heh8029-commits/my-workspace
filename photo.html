@@ -327,10 +327,34 @@ const STATUS = {
 const CS_FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json';
 const CS_CLOUD_NAME = 'dfc05tbbk', CS_UPLOAD_PRESET = 'hwx2iwfz';
 
-function csCloudinaryUpload(file){
-  const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CS_UPLOAD_PRESET);
+function csCloudinaryUpload(fileOrBlob){
+  const fd=new FormData(); fd.append('file',fileOrBlob,'thumb.jpg'); fd.append('upload_preset',CS_UPLOAD_PRESET);
   return fetch('https://api.cloudinary.com/v1_1/'+CS_CLOUD_NAME+'/image/upload',{method:'POST',body:fd})
     .then(r=>r.json()).then(d=>d.secure_url||null).catch(()=>null);
+}
+
+// 원본이 아닌 작은 미리보기용 썸네일(JPEG)만 생성해서 올린다(빠르고 용량 작음).
+// HEIC 등 브라우저가 디코드 못 하면 null 반환 → 해당 사진만 건너뜀(텍스트 글은 이미 등록됨).
+function csMakeThumb(file){
+  return new Promise((resolve)=>{
+    try{
+      const url=URL.createObjectURL(file);
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          const max=640; // 확인용 미리보기 — 가볍게
+          const scale=Math.min(1, max/Math.max(img.width,img.height));
+          const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+          const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+          cv.getContext('2d').drawImage(img,0,0,w,h);
+          URL.revokeObjectURL(url);
+          cv.toBlob(b=>resolve(b),'image/jpeg',0.6);
+        }catch(e){ URL.revokeObjectURL(url); resolve(null); }
+      };
+      img.onerror=()=>{ URL.revokeObjectURL(url); resolve(null); };
+      img.src=url;
+    }catch(e){ resolve(null); }
+  });
 }
 
 async function postToCsBoard(ctx){
@@ -362,7 +386,11 @@ async function postToCsBoard(ctx){
   // 2) 썸네일 업로드 후 해당 글에 이미지 추가(첨부 순서 유지)
   try{
     const urls=[];
-    for(const f of ctx.files){ const u=await csCloudinaryUpload(f); if(u) urls.push(u); }
+    for(const f of ctx.files){
+      const thumb = await csMakeThumb(f);      // 원본 대신 가벼운 미리보기 썸네일
+      const u = thumb ? await csCloudinaryUpload(thumb) : null;
+      if(u) urls.push(u);
+    }
     if(!urls.length) return;
     const r2=await fetch(CS_FB_URL+'?t='+Date.now(),{cache:'no-store'});
     const data2=await r2.json().catch(()=>null);
