@@ -318,6 +318,50 @@ const STATUS = {
   producing:['제작 중','b-prod'], produced:['제작 완료','b-done'], shipped:['출고 완료','b-ship']
 };
 
+/* ==================================================================
+   work.html CS실시간공유 게시판 자동 등록
+   - 접수 완료 시 Cloudinary 썸네일 업로드 후 Firebase RTDB(cs_share)에 새 글 추가
+   - work.html 과 동일한 무인증 방식(Cloudinary preset / RTDB REST) 사용
+   - 자동 등록 실패는 접수 자체에 영향 주지 않음(조용히 무시)
+================================================================== */
+const CS_FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json';
+const CS_CLOUD_NAME = 'dfc05tbbk', CS_UPLOAD_PRESET = 'hwx2iwfz';
+
+function csCloudinaryUpload(file){
+  const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CS_UPLOAD_PRESET);
+  return fetch('https://api.cloudinary.com/v1_1/'+CS_CLOUD_NAME+'/image/upload',{method:'POST',body:fd})
+    .then(r=>r.json()).then(d=>d.secure_url||null).catch(()=>null);
+}
+
+async function postToCsBoard(ctx){
+  try{
+    // 첨부 순서 그대로 썸네일 업로드
+    const urls=[];
+    for(const f of ctx.files){ const u=await csCloudinaryUpload(f); if(u) urls.push(u); }
+    const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
+    const lines=[
+      `📷 사진접수 · ${mallLabel}`,
+      `${ctx.name} / 뒷번호 ${ctx.phone}`,
+      `${ctx.addr}`,
+      `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
+    ];
+    if(ctx.editRequest) lines.push(`요청: ${ctx.editRequest}`);
+    const now=Date.now();
+    const item={
+      id: now, type:'', category:'CS', author:'📷',
+      text: lines.join('\n'),
+      imgs: urls, img: urls[0]||'',
+      vendorOrder:null, done:false, createdAt: now, replies:[], confirmed:[]
+    };
+    // 최신 목록 fetch 후 맨 앞에 추가해서 저장(work.html 과 동일 방식)
+    const r=await fetch(CS_FB_URL+'?t='+now,{cache:'no-store'});
+    const data=await r.json().catch(()=>null);
+    const list=(data&&data.list)?data.list:[];
+    list.unshift(item);
+    await fetch(CS_FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list})});
+  }catch(e){ /* 자동 등록 실패는 접수에 영향 없음 */ }
+}
+
 /* ---------- 공용 유틸 ---------- */
 function api(fn, body, extraHeaders){
   return fetch(CFG.FUNCTIONS_URL + '/api', {
@@ -475,6 +519,15 @@ document.getElementById('submitForm').addEventListener('submit', async e=>{
     // 확정
     const fin = await api('submit',{action:'finalize', receiptId});
     if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
+
+    // work.html CS 게시판에 자동 등록(백그라운드 · 실패해도 접수엔 영향 없음)
+    // showDone 이 폼/파일을 초기화하므로 그 전에 값·파일을 넘겨준다.
+    postToCsBoard({
+      name, addr, phone, mall:selectedMall,
+      editRequest: editRequest.value.trim(),
+      receiptNo: fin.body.receiptNo, count: files.length,
+      files: files.slice()
+    });
 
     showDone(fin.body, {name, addr, phone, count:files.length}, p1);
   }catch(err){
