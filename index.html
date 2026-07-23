@@ -1,27 +1,823 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>반갑습니다</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif;
-    }
-    p {
-      font-size: 1.2rem;
-      color: #555;
-      letter-spacing: .05em;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>미리토퍼 · 사진 접수 &amp; 조회</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>" />
+<style>
+  :root{
+    --pink:#ff5a7a; --pink-d:#f43f66; --pink-l:#ffe6ec; --pink-bg:#fff5f7;
+    --navy:#2b2f3a; --gray:#8a8f99; --line:#eceef2; --ok:#20b26c; --warn:#f6a609; --err:#e5484d;
+    --card:#fff; --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0; background:var(--pink-bg); color:var(--navy);
+    font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif; line-height:1.55;}
+  .wrap{max-width:480px; margin:0 auto; min-height:100vh; background:var(--pink-bg);
+    padding-bottom:76px; position:relative;}
+  header.top{background:#fff; padding:14px 18px; display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;}
+  header.top .logo{font-weight:800; color:var(--pink); font-size:18px}
+  header.top .sub{font-size:12px; color:var(--gray); margin-left:auto}
+  .view{display:none; padding:16px}
+  .view.active{display:block; animation:fade .2s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card); border-radius:var(--radius); padding:18px; margin-bottom:14px;
+    box-shadow:0 2px 10px rgba(30,30,50,.04)}
+  h2{font-size:19px; margin:2px 0 14px}
+  h3{font-size:15px; margin:0 0 8px}
+  label{display:block; font-size:13px; font-weight:700; margin:14px 0 6px}
+  label .opt{color:var(--gray); font-weight:500; font-size:12px}
+  .req{color:var(--pink)}
+  input[type=text],input[type=password],input[type=tel],textarea,select{
+    width:100%; padding:12px 13px; border:1.5px solid var(--line); border-radius:11px;
+    font-size:15px; font-family:inherit; background:#fff; outline:none; transition:border .15s}
+  input:focus,textarea:focus{border-color:var(--pink)}
+  textarea{resize:vertical; min-height:70px}
+  .hint{font-size:12px; color:var(--gray); margin-top:6px}
+  .malls{display:flex; gap:8px}
+  .malls button{flex:1; padding:11px 0; border:1.5px solid var(--line); background:#fff;
+    border-radius:11px; font-size:14px; font-weight:700; color:var(--gray); cursor:pointer}
+  .malls button.on{border-color:var(--pink); background:var(--pink); color:#fff}
+  .malls button.on.naver{background:#22c55e;border-color:#22c55e}
+  .malls button.on.etc{background:#64748b;border-color:#64748b}
+  .btn{display:block; width:100%; padding:15px; border:none; border-radius:12px; font-size:16px;
+    font-weight:800; cursor:pointer; background:var(--pink); color:#fff; transition:.15s}
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+  .btn.ghost{background:#fff; color:var(--navy); border:1.5px solid var(--line)}
+  .btn.dark{background:var(--navy)}
+  .notice{background:var(--pink-l); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#a03a52}
+  .notice ul{margin:6px 0 0; padding-left:18px} .notice li{margin:3px 0}
+  .pw-msg{font-size:12px; margin-top:6px; font-weight:700}
+  .pw-msg.ok{color:var(--ok)} .pw-msg.no{color:var(--err)}
+  /* uploader */
+  .drop{border:2px dashed #ffc4d0; border-radius:14px; padding:26px 12px; text-align:center;
+    color:var(--gray); font-size:13px; background:#fff; cursor:pointer}
+  .drop.drag{background:var(--pink-l); border-color:var(--pink)}
+  .thumbs{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px}
+  .thumb{position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:#f2f2f5;
+    border:1px solid var(--line)}
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .thumb .x{position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%;
+    background:rgba(0,0,0,.55); color:#fff; border:none; font-size:13px; cursor:pointer; line-height:22px}
+  .thumb .ord{position:absolute; left:4px; bottom:4px; background:var(--pink); color:#fff;
+    font-size:11px; font-weight:800; border-radius:6px; padding:1px 6px}
+  .thumb.dragging{opacity:.4}
+  .filemeta{display:flex; justify-content:space-between; font-size:12px; color:var(--gray); margin-top:10px}
+  .bar{height:7px; background:var(--line); border-radius:5px; overflow:hidden; margin-top:10px; display:none}
+  .bar.show{display:block} .bar>i{display:block; height:100%; width:0; background:var(--pink); transition:width .2s}
+  .agree{display:flex; align-items:flex-start; gap:9px; margin-top:14px; font-size:13px}
+  .agree input{margin-top:2px; width:18px; height:18px; accent-color:var(--pink)}
+  /* complete */
+  .done-ic{width:74px;height:74px;border-radius:50%;border:4px solid var(--pink);color:var(--pink);
+    display:flex;align-items:center;justify-content:center;font-size:38px;margin:6px auto 12px}
+  .kv{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:14px}
+  .kv:last-child{border:none} .kv b{color:var(--gray); font-weight:600}
+  .rno{background:var(--pink-l); border-radius:12px; text-align:center; padding:12px; margin:14px 0}
+  .rno .n{font-size:20px; font-weight:800; color:var(--pink-d); letter-spacing:.5px}
+  /* results */
+  .rescard{border:1.5px solid var(--line); border-radius:13px; padding:14px; margin-bottom:10px;
+    cursor:pointer; background:#fff; transition:.12s; position:relative}
+  .rescard:active{transform:scale(.99)} .rescard:hover{border-color:var(--pink)}
+  .rescard .nm{font-size:16px; font-weight:800} .rescard .row{font-size:13px; color:#555; margin-top:3px}
+  .rescard .del{color:var(--pink-d); font-weight:700}
+  .rescard .arw{position:absolute; right:14px; top:50%; transform:translateY(-50%); color:#ccc; font-size:20px}
+  .badge{display:inline-block; font-size:11px; font-weight:800; padding:3px 9px; border-radius:20px}
+  .b-new{background:#eef2ff;color:#4f6bed}.b-chk{background:#e7f7ef;color:#17a866}
+  .b-prod{background:#fff3e0;color:#e08a00}.b-done{background:#f0eaff;color:#7c4dff}.b-ship{background:#e8f0fe;color:#3b7de0}
+  .remain{background:#fff6ea; border:1px solid #ffe2b8; border-radius:11px; padding:11px 13px;
+    font-size:13px; color:#a76a00; font-weight:700; text-align:center}
+  .deleted{background:#fdecec; border:1px solid #f6c9c9; color:#c23; border-radius:11px; padding:13px; text-align:center; font-size:13.5px}
+  .gallery{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px}
+  .gallery a{position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
+  .gallery img{width:100%;height:100%;object-fit:cover}
+  .gallery .ord{position:absolute; left:4px; bottom:4px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; border-radius:5px; padding:1px 5px}
+  /* nav */
+  nav.bottom{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
+    background:#fff; border-top:1px solid var(--line); display:flex; z-index:30}
+  nav.bottom button{flex:1; border:none; background:none; padding:9px 0 11px; font-size:11px; color:var(--gray); cursor:pointer}
+  nav.bottom button .i{font-size:19px; display:block; margin-bottom:2px}
+  nav.bottom button.on{color:var(--pink); font-weight:800}
+  .toast{position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:#333; color:#fff;
+    padding:11px 18px; border-radius:24px; font-size:13px; z-index:99; opacity:0; transition:.25s; pointer-events:none; max-width:90%}
+  .toast.show{opacity:.95}
+  .lightbox{position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:100; display:none; align-items:center; justify-content:center}
+  .lightbox.show{display:flex} .lightbox img{max-width:96%; max-height:92%}
+  .lightbox .close{position:absolute; top:16px; right:18px; color:#fff; font-size:30px; background:none; border:none}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .link{color:var(--pink-d); font-size:13px; text-align:center; margin-top:12px; cursor:pointer; text-decoration:underline}
+</style>
 </head>
 <body>
-  <p>반갑습니다</p>
+<div class="wrap">
+  <header class="top">
+    <span class="logo">♥ 미리토퍼</span>
+    <span class="sub">사진 접수 &amp; 조회</span>
+  </header>
+
+  <!-- ===================== 홈 ===================== -->
+  <section class="view active" id="v-home">
+    <div class="card" style="text-align:center">
+      <div style="font-size:40px">📷</div>
+      <h2 style="margin:8px 0 4px">사진 제작상품 접수</h2>
+      <p style="color:var(--gray); font-size:13.5px; margin:0 0 4px">
+        회원가입 없이 사진을 접수하고 조회할 수 있어요.</p>
+    </div>
+    <div class="card">
+      <button class="btn" onclick="go('submit')">📤 사진 접수하기</button>
+      <button class="btn ghost" style="margin-top:10px" onclick="go('lookup')">🔍 접수한 사진 조회하기</button>
+    </div>
+    <div class="notice">
+      <b>📌 접수 안내</b>
+      <ul>
+        <li>접수된 사진은 접수 완료 시점으로부터 <b>3일 후 자동 삭제</b>됩니다.</li>
+        <li>삭제 전까지 조회 페이지에서 사진을 확인할 수 있습니다.</li>
+        <li>삭제된 사진은 다시 확인하거나 복구할 수 없습니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 접수하기 ===================== -->
+  <section class="view" id="v-submit">
+    <div class="notice" style="margin-bottom:14px">
+      <b>📷 사진 첨부 안내</b>
+      <ul>
+        <li>얼굴이 선명하게 나온 <b>원본 사진</b>을 첨부해 주세요.</li>
+        <li>얼굴과 머리카락이 잘리지 않은 사진을 권장합니다.</li>
+        <li>얼굴이 손이나 물건에 가려진 사진은 제작이 어려울 수 있습니다.</li>
+        <li>캡처·메신저로 재저장한 사진은 화질이 낮을 수 있습니다.</li>
+        <li>여러 장이면 <b>사용을 원하는 순서대로</b> 첨부해 주세요.</li>
+        <li>화질에 따라 인쇄 결과가 달라질 수 있습니다.</li>
+        <li>접수된 사진은 완료 시점부터 <b>3일 후 자동 삭제</b>됩니다.</li>
+      </ul>
+    </div>
+
+    <form id="submitForm" class="card" autocomplete="off">
+      <h2>사진 제작상품 사진 접수</h2>
+
+      <label>주문 쇼핑몰 <span class="req">*</span></label>
+      <div class="malls" id="malls">
+        <button type="button" data-mall="coupang">쿠팡</button>
+        <button type="button" data-mall="naver" class="naver">네이버</button>
+        <button type="button" data-mall="etc" class="etc">기타</button>
+      </div>
+
+      <label>주문자 이름 <span class="req">*</span></label>
+      <input type="text" id="ordererName" placeholder="예) 김미리" maxlength="40" />
+
+      <label>배송지 주소 <span class="req">*</span> <span class="opt">(동까지)</span></label>
+      <input type="text" id="addressDong" placeholder="예) 경기 광명시 하안동" maxlength="60" />
+      <div class="hint">동명이인 구분을 위해 배송지 주소를 <b>동까지만</b> 입력해 주세요.
+        아파트명, 동·호수 등 상세주소는 입력하지 마세요.</div>
+
+      <label>전화번호 뒷자리 4자리 <span class="req">*</span></label>
+      <input type="tel" id="phoneLast4" placeholder="1234" maxlength="4" inputmode="numeric" />
+      <div class="hint">동명이인 구분을 위해 주문 시 등록한 <b>실제 휴대전화 번호의 마지막 4자리</b>를 입력해 주세요.
+        (안심번호 아님 · 전체 번호는 저장하지 않습니다)</div>
+
+      <label>사진 편집 요청사항 <span class="opt">(선택)</span></label>
+      <textarea id="editRequest" placeholder="예) 밝게 보정해주세요, 배경 깔끔하게" maxlength="1000"></textarea>
+
+      <label>조회 비밀번호 <span class="req">*</span> <span class="opt">(숫자 4자리 또는 6자리)</span></label>
+      <input type="password" id="pw1" placeholder="숫자 4자리 또는 6자리" maxlength="6" inputmode="numeric" />
+      <div class="hint">접수한 사진을 다시 확인할 때 필요한 비밀번호입니다. 잊어버리지 않도록 기억해 주세요.</div>
+
+      <label>조회 비밀번호 확인 <span class="req">*</span></label>
+      <input type="password" id="pw2" placeholder="비밀번호 다시 입력" maxlength="6" inputmode="numeric" />
+      <div class="pw-msg" id="pwMsg"></div>
+
+      <label>사진 첨부 <span class="req">*</span> <span class="opt">(최대 5장 · 1장당 20MB)</span></label>
+      <div class="drop" id="drop">
+        <div style="font-size:26px">☁️</div>
+        사진을 선택하거나<br>여기에 드래그해 주세요
+      </div>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden />
+      <div class="thumbs" id="thumbs"></div>
+      <div class="filemeta"><span id="fileCount">0 / 5 장</span><span id="fileSize">0 MB</span></div>
+      <div class="hint">📎 사용을 원하는 순서대로 첨부해 주세요. 드래그하여 순서 변경이 가능합니다.</div>
+      <div class="bar" id="bar"><i></i></div>
+
+      <label class="agree">
+        <input type="checkbox" id="agree" />
+        <span>개인정보(주문자명·주소 동·전화 뒷자리) 및 첨부 사진을 <b>제작·조회 목적</b>으로 이용하고,
+          접수 완료 후 3일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span></span>
+      </label>
+
+      <button type="submit" class="btn" id="submitBtn" style="margin-top:16px">사진 접수하기</button>
+    </form>
+  </section>
+
+  <!-- ===================== 접수 완료 ===================== -->
+  <section class="view" id="v-done">
+    <div class="card" style="text-align:center">
+      <div class="done-ic">✓</div>
+      <h2 style="margin:0 0 4px">사진 접수가 완료되었습니다!</h2>
+    </div>
+    <div class="card" id="doneInfo"></div>
+    <div class="rno"><div style="font-size:12px;color:var(--gray)">접수 완료번호</div>
+      <div class="n" id="doneNo">MRTO-...</div></div>
+    <div class="notice" style="margin-bottom:14px">
+      접수된 사진은 개인정보 보호를 위해 접수 완료 시점으로부터 <b>3일 후 자동 삭제</b>됩니다.
+      삭제 전까지 조회 페이지에서 첨부한 사진을 확인할 수 있습니다.
+    </div>
+    <button class="btn" id="doneViewBtn">📷 접수한 사진 확인하기</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="go('home')">🏠 홈으로 이동</button>
+  </section>
+
+  <!-- ===================== 조회: 이름검색 ===================== -->
+  <section class="view" id="v-lookup">
+    <div class="card">
+      <h2>접수한 사진 조회</h2>
+      <label>주문자 이름 입력</label>
+      <input type="text" id="searchName" placeholder="예) 김미리" maxlength="40" />
+      <button class="btn dark" id="searchBtn" style="margin-top:12px">검색하기</button>
+      <div class="hint">• 이름만 입력하면 접수 내역을 확인할 수 있어요.</div>
+    </div>
+    <div id="searchResults"></div>
+  </section>
+
+  <!-- ===================== 조회: 비밀번호 ===================== -->
+  <section class="view" id="v-pw">
+    <div class="card">
+      <h3 id="pwTitle" style="color:var(--gray);font-weight:600;font-size:13px"></h3>
+      <h2 style="margin-top:4px">비밀번호를 입력해주세요</h2>
+      <input type="password" id="lookupPw" placeholder="접수 시 설정한 비밀번호" maxlength="6" inputmode="numeric" />
+      <button class="btn dark" id="pwBtn" style="margin-top:12px">확인</button>
+      <div class="pw-msg no" id="pwErr" style="text-align:center"></div>
+      <div class="hint" style="text-align:center">비밀번호는 접수 시 설정한 4~6자리 숫자입니다.</div>
+      <div class="link" onclick="go('lookup')">← 목록으로 돌아가기</div>
+    </div>
+  </section>
+
+  <!-- ===================== 조회: 상세 ===================== -->
+  <section class="view" id="v-detail">
+    <div class="card" id="detailInfo"></div>
+    <div class="card">
+      <h3>첨부한 사진 <span id="photoN" style="color:var(--pink)"></span></h3>
+      <div id="remainBox"></div>
+      <div class="gallery" id="gallery"></div>
+      <div id="deletedBox"></div>
+    </div>
+    <button class="btn" id="editBtn" style="margin-bottom:10px">✏️ 접수 내용 수정하기</button>
+    <button class="btn ghost" onclick="go('lookup')">← 조회 목록으로</button>
+  </section>
+
+  <!-- ===================== 조회: 수정 ===================== -->
+  <section class="view" id="v-edit">
+    <div class="notice" style="margin-bottom:14px">
+      ✏️ 접수 내용을 수정할 수 있어요. 수정하면 관리자에게 <b>변경 사실이 표시</b>됩니다.
+      제작이 이미 진행된 경우 변경이 반영되지 않을 수 있으니 급하면 판매자에게 문의해 주세요.
+    </div>
+    <form class="card" id="editForm" autocomplete="off">
+      <h2>접수 내용 수정</h2>
+
+      <label>주문 쇼핑몰</label>
+      <div class="malls" id="editMalls">
+        <button type="button" data-mall="coupang">쿠팡</button>
+        <button type="button" data-mall="naver" class="naver">네이버</button>
+        <button type="button" data-mall="etc" class="etc">기타</button>
+      </div>
+
+      <label>사진 편집 요청사항</label>
+      <textarea id="editReq" placeholder="예) 밝게 보정해주세요" maxlength="1000"></textarea>
+
+      <label>첨부 사진 <span class="opt">(최대 5장 · 드래그로 순서변경 · × 로 삭제)</span></label>
+      <div class="thumbs" id="editThumbs"></div>
+      <div class="drop" id="editDrop" style="margin-top:10px">
+        <div style="font-size:22px">➕</div>사진 추가
+      </div>
+      <input type="file" id="editFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden />
+      <div class="filemeta"><span id="editCount">0 / 5 장</span></div>
+      <div class="bar" id="editBar"><i></i></div>
+
+      <button type="submit" class="btn" id="editSaveBtn" style="margin-top:16px">💾 수정 저장하기</button>
+      <button type="button" class="btn ghost" style="margin-top:10px" id="editCancelBtn">취소</button>
+    </form>
+  </section>
+</div>
+
+<!-- 하단 네비 -->
+<nav class="bottom">
+  <button data-nav="home" class="on" onclick="go('home')"><span class="i">🏠</span>홈</button>
+  <button data-nav="submit" onclick="go('submit')"><span class="i">📤</span>접수하기</button>
+  <button data-nav="lookup" onclick="go('lookup')"><span class="i">🔍</span>조회하기</button>
+  <button data-nav="info" onclick="go('home')"><span class="i">ℹ️</span>안내</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox"><button class="close" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
+
+<script src="./photo-config.js"></script>
+<script>
+const CFG = window.MIRITOPPER_CONFIG;
+const MALL_LABEL = {coupang:'쿠팡', naver:'네이버', etc:'기타'};
+const STATUS = {
+  new:['접수 완료','b-new'], photo_checked:['사진 확인 완료','b-chk'],
+  producing:['제작 중','b-prod'], produced:['제작 완료','b-done'], shipped:['출고 완료','b-ship']
+};
+
+/* ==================================================================
+   work.html CS실시간공유 게시판 자동 등록
+   - 접수 완료 시 Cloudinary 썸네일 업로드 후 Firebase RTDB(cs_share)에 새 글 추가
+   - work.html 과 동일한 무인증 방식(Cloudinary preset / RTDB REST) 사용
+   - 자동 등록 실패는 접수 자체에 영향 주지 않음(조용히 무시)
+================================================================== */
+const CS_FB_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/cs_share.json';
+const CS_CLOUD_NAME = 'dfc05tbbk', CS_UPLOAD_PRESET = 'hwx2iwfz';
+
+function csCloudinaryUpload(fileOrBlob){
+  const fd=new FormData(); fd.append('file',fileOrBlob,'thumb.jpg'); fd.append('upload_preset',CS_UPLOAD_PRESET);
+  return fetch('https://api.cloudinary.com/v1_1/'+CS_CLOUD_NAME+'/image/upload',{method:'POST',body:fd})
+    .then(r=>r.json()).then(d=>d.secure_url||null).catch(()=>null);
+}
+
+// 원본이 아닌 작은 미리보기용 썸네일(JPEG)만 생성해서 올린다(빠르고 용량 작음).
+// HEIC 등 브라우저가 디코드 못 하면 null 반환 → 해당 사진만 건너뜀(텍스트 글은 이미 등록됨).
+function csMakeThumb(file){
+  return new Promise((resolve)=>{
+    try{
+      const url=URL.createObjectURL(file);
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          const max=640; // 확인용 미리보기 — 가볍게
+          const scale=Math.min(1, max/Math.max(img.width,img.height));
+          const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+          const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+          cv.getContext('2d').drawImage(img,0,0,w,h);
+          URL.revokeObjectURL(url);
+          cv.toBlob(b=>resolve(b),'image/jpeg',0.6);
+        }catch(e){ URL.revokeObjectURL(url); resolve(null); }
+      };
+      img.onerror=()=>{ URL.revokeObjectURL(url); resolve(null); };
+      img.src=url;
+    }catch(e){ resolve(null); }
+  });
+}
+
+async function postToCsBoard(ctx){
+  const now=Date.now();
+  const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
+  const lines=[
+    `📷 사진접수 · ${mallLabel}`,
+    `${ctx.name} / 뒷번호 ${ctx.phone}`,
+    `${ctx.addr}`,
+    `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
+  ];
+  if(ctx.editRequest) lines.push(`요청: ${ctx.editRequest}`);
+  const item={
+    id: now, type:'', category:'CS', author:'📷',
+    text: lines.join('\n'),
+    imgs: [], img: '',
+    vendorOrder:null, done:false, createdAt: now, replies:[], confirmed:[]
+  };
+
+  // 1) 텍스트 글을 먼저 즉시 등록 — 사진 업로드가 느리거나 실패해도 글은 무조건 남는다.
+  try{
+    const r=await fetch(CS_FB_URL+'?t='+now,{cache:'no-store'});
+    const data=await r.json().catch(()=>null);
+    const list=(data&&data.list)?data.list:[];
+    list.unshift(item);
+    await fetch(CS_FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list})});
+  }catch(e){ return; /* 글 등록 자체 실패 시 이미지 시도 안 함 */ }
+
+  // 2) 썸네일 업로드 후 해당 글에 이미지 추가(첨부 순서 유지)
+  try{
+    const urls=[];
+    for(const f of ctx.files){
+      const thumb = await csMakeThumb(f);      // 원본 대신 가벼운 미리보기 썸네일
+      const u = thumb ? await csCloudinaryUpload(thumb) : null;
+      if(u) urls.push(u);
+    }
+    if(!urls.length) return;
+    const r2=await fetch(CS_FB_URL+'?t='+Date.now(),{cache:'no-store'});
+    const data2=await r2.json().catch(()=>null);
+    const list2=(data2&&data2.list)?data2.list:[];
+    const it=list2.find(x=>x.id===now);
+    if(it){
+      it.imgs=urls; it.img=urls[0]||'';
+      await fetch(CS_FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:list2})});
+    }
+  }catch(e){ /* 이미지 반영 실패해도 텍스트 글은 이미 등록됨 */ }
+}
+
+/* ---------- 공용 유틸 ---------- */
+function api(fn, body, extraHeaders){
+  return fetch(CFG.FUNCTIONS_URL + '/api', {
+    method:'POST',
+    headers: Object.assign({
+      'Content-Type':'application/json',
+      'apikey': CFG.SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + CFG.SUPABASE_ANON_KEY
+    }, extraHeaders||{}),
+    body: JSON.stringify(Object.assign({route:fn}, body||{}))
+  }).then(async r=>{ const j = await r.json().catch(()=>({error:'bad_response'})); return {status:r.status, body:j}; });
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
+function kstParts(iso){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(iso));
+  const g=t=>(p.find(x=>x.type===t)||{}).value; return {y:g('year'),mo:g('month'),d:g('day'),h:g('hour')==='24'?'00':g('hour'),mi:g('minute')};
+}
+function fmtDT(iso){ if(!iso) return '-'; const k=kstParts(iso); return `${k.y}-${k.mo}-${k.d} ${k.h}:${k.mi}`; }
+function fmtDate(iso){ if(!iso) return '-'; const k=kstParts(iso); return `${parseInt(k.mo)}월 ${parseInt(k.d)}일`; }
+function humanSize(b){ return (b/1048576).toFixed(1)+' MB'; }
+function statusBadge(s){ const [t,c]=STATUS[s]||['접수 완료','b-new']; return `<span class="badge ${c}">${t}</span>`; }
+
+/* ---------- 뷰 전환 ---------- */
+function go(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const map={home:'v-home',submit:'v-submit',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit'};
+  document.getElementById(map[name]).classList.add('active');
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.remove('on'));
+  const navName = (name==='done'||name==='submit')?'submit':(name==='pw'||name==='detail'||name==='lookup'||name==='edit')?'lookup':'home';
+  const nb=document.querySelector(`nav.bottom button[data-nav="${navName}"]`); if(nb) nb.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+/* ==================================================================
+   접수하기
+================================================================== */
+let selectedMall=null, files=[];
+const MAX_FILES=5, MAX_SIZE=20*1048576;
+const ALLOWED=['image/jpeg','image/png','image/webp','image/heic','image/heif'];
+// HEIC 등 브라우저가 f.type 을 비워두는 경우 확장자로 보정(Storage 의 허용 MIME 검사 통과용)
+function ctypeOf(f){
+  if(ALLOWED.includes(f.type)) return f.type;
+  const ext=((f.name||'').match(/\.(\w+)$/)||[])[1];
+  return ({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'})[(ext||'').toLowerCase()]||'image/jpeg';
+}
+
+document.getElementById('malls').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-mall]'); if(!b) return;
+  selectedMall=b.dataset.mall;
+  document.querySelectorAll('#malls button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+});
+
+// 비밀번호 실시간 확인
+function checkPw(){
+  const a=pw1.value, b=pw2.value, m=document.getElementById('pwMsg');
+  if(!b){ m.textContent=''; return; }
+  if(a===b && /^([0-9]{4}|[0-9]{6})$/.test(a)){ m.textContent='✓ 일치합니다!'; m.className='pw-msg ok'; }
+  else if(a===b){ m.textContent='숫자 4자리 또는 6자리로 입력해 주세요.'; m.className='pw-msg no'; }
+  else { m.textContent='비밀번호가 일치하지 않습니다.'; m.className='pw-msg no'; }
+}
+['pw1','pw2'].forEach(id=>{ const el=document.getElementById(id);
+  el.addEventListener('input',()=>{ el.value=el.value.replace(/[^0-9]/g,''); checkPw(); }); });
+document.getElementById('phoneLast4').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
+
+// 업로더
+const drop=document.getElementById('drop'), fileInput=document.getElementById('fileInput');
+drop.addEventListener('click',()=>fileInput.click());
+drop.addEventListener('dragover',e=>{e.preventDefault(); drop.classList.add('drag');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
+drop.addEventListener('drop',e=>{e.preventDefault(); drop.classList.remove('drag'); addFiles(e.dataTransfer.files);});
+fileInput.addEventListener('change',e=>{ addFiles(e.target.files); fileInput.value=''; });
+
+// 클립보드 이미지 붙여넣기(Ctrl+V) — 접수/수정 화면에서 붙여넣으면 첨부에 추가
+function filesFromPaste(e){
+  const out=[]; const items=(e.clipboardData||window.clipboardData||{}).items||[];
+  for(const it of items){
+    if(it.kind==='file' && (it.type||'').indexOf('image')===0){
+      const f=it.getAsFile(); if(f) out.push(f);
+    }
+  }
+  return out;
+}
+document.addEventListener('paste', e=>{
+  const imgs=filesFromPaste(e); if(!imgs.length) return;
+  if(document.getElementById('v-submit').classList.contains('active')){ e.preventDefault(); addFiles(imgs); }
+  else if(document.getElementById('v-edit').classList.contains('active')){ e.preventDefault(); addEditFiles(imgs); }
+});
+
+function addFiles(list){
+  for(const f of list){
+    if(files.length>=MAX_FILES){ toast('사진은 최대 5장까지 첨부할 수 있어요.'); break; }
+    const okType = ALLOWED.includes(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+    if(!okType){ toast('JPG, PNG, WEBP, HEIC 형식만 첨부할 수 있어요.'); continue; }
+    if(f.size>MAX_SIZE){ toast(`"${f.name}" 은 20MB를 초과합니다.`); continue; }
+    files.push(f);
+  }
+  renderThumbs();
+}
+function renderThumbs(){
+  const box=document.getElementById('thumbs'); box.innerHTML='';
+  files.forEach((f,i)=>{
+    const d=document.createElement('div'); d.className='thumb'; d.draggable=true; d.dataset.i=i;
+    const url=URL.createObjectURL(f);
+    d.innerHTML=`<img src="${url}" alt=""><span class="ord">${i+1}</span><button type="button" class="x">×</button>`;
+    d.querySelector('.x').onclick=()=>{ files.splice(i,1); renderThumbs(); };
+    // 드래그 순서변경
+    d.addEventListener('dragstart',()=>d.classList.add('dragging'));
+    d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+    d.addEventListener('dragover',ev=>{ ev.preventDefault();
+      const dragging=box.querySelector('.dragging'); if(!dragging||dragging===d) return;
+      const from=+dragging.dataset.i, to=+d.dataset.i;
+      files.splice(to,0,files.splice(from,1)[0]); renderThumbs(); });
+    box.appendChild(d);
+  });
+  document.getElementById('fileCount').textContent=`${files.length} / 5 장`;
+  const total=files.reduce((s,f)=>s+f.size,0);
+  document.getElementById('fileSize').textContent=humanSize(total);
+}
+
+// XHR 업로드(진행률)
+function uploadOne(up, file, onProg){
+  return new Promise((res,rej)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.open('PUT', up.uploadUrl, true);
+    xhr.setRequestHeader('apikey', CFG.SUPABASE_ANON_KEY);
+    xhr.setRequestHeader('authorization','Bearer '+CFG.SUPABASE_ANON_KEY);
+    xhr.setRequestHeader('x-upsert','true');
+    xhr.setRequestHeader('content-type', ctypeOf(file));
+    xhr.upload.onprogress=e=>{ if(e.lengthComputable) onProg(e.loaded, e.total); };
+    xhr.onload=()=> (xhr.status>=200&&xhr.status<300)?res():rej(new Error('upload '+xhr.status));
+    xhr.onerror=()=>rej(new Error('network'));
+    xhr.send(file);
+  });
+}
+
+let submitting=false;
+document.getElementById('submitForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(submitting) return;
+  const name=ordererName.value.trim(), addr=addressDong.value.trim(), phone=phoneLast4.value.trim();
+  const p1=pw1.value, p2=pw2.value;
+  if(!selectedMall) return toast('주문 쇼핑몰을 선택해 주세요.');
+  if(!name) return toast('주문자 이름을 입력해 주세요.');
+  if(!addr) return toast('배송지 주소(동)를 입력해 주세요.');
+  if(!/^[0-9]{4}$/.test(phone)) return toast('전화번호 뒷자리 4자리를 입력해 주세요.');
+  if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
+  if(p1!==p2) return toast('비밀번호가 일치하지 않습니다.');
+  if(files.length<1) return toast('사진을 1장 이상 첨부해 주세요.');
+  if(!document.getElementById('agree').checked) return toast('개인정보 및 사진 이용에 동의해 주세요.');
+
+  submitting=true;
+  const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 접수 중...';
+  const bar=document.getElementById('bar'); bar.classList.add('show'); const barI=bar.querySelector('i');
+
+  try{
+    const create = await api('submit',{action:'create', mall:selectedMall, ordererName:name,
+      addressDong:addr, phoneLast4:phone, editRequest:editRequest.value.trim(),
+      password:p1, passwordConfirm:p2,
+      files: files.map(f=>({name:f.name, size:f.size, contentType: ctypeOf(f)}))});
+    if(create.status!==200) throw new Error(errMsg(create.body.error));
+    const {receiptId, uploads} = create.body;
+
+    // 순서대로 업로드
+    const totalBytes=files.reduce((s,f)=>s+f.size,0); let done=0;
+    for(let i=0;i<files.length;i++){
+      const up = uploads.find(u=>u.sortOrder===i);
+      await uploadOne(up, files[i], (loaded)=>{ barI.style.width=Math.round((done+loaded)/totalBytes*100)+'%'; });
+      done+=files[i].size; barI.style.width=Math.round(done/totalBytes*100)+'%';
+    }
+    // 확정
+    const fin = await api('submit',{action:'finalize', receiptId});
+    if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
+
+    // work.html CS 게시판에 자동 등록(백그라운드 · 실패해도 접수엔 영향 없음)
+    // showDone 이 폼/파일을 초기화하므로 그 전에 값·파일을 넘겨준다.
+    postToCsBoard({
+      name, addr, phone, mall:selectedMall,
+      editRequest: editRequest.value.trim(),
+      receiptNo: fin.body.receiptNo, count: files.length,
+      files: files.slice()
+    });
+
+    showDone(fin.body, {name, addr, phone, count:files.length}, p1);
+  }catch(err){
+    toast(err.message||'접수 중 오류가 발생했습니다.');
+  }finally{
+    submitting=false; btn.disabled=false; btn.textContent='사진 접수하기';
+    bar.classList.remove('show'); barI.style.width='0';
+  }
+});
+
+function errMsg(code){
+  return ({invalid_mall:'쇼핑몰을 선택해 주세요.',invalid_name:'이름을 확인해 주세요.',
+    invalid_address:'주소를 확인해 주세요.',invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.',
+    invalid_password:'비밀번호는 숫자 4 또는 6자리입니다.',password_mismatch:'비밀번호가 일치하지 않습니다.',
+    invalid_file_count:'사진은 1~5장입니다.',file_too_large:'사진 용량이 너무 큽니다(최대 20MB).',
+    invalid_file_type:'허용되지 않는 사진 형식입니다.'})[code] || '접수 정보를 확인해 주세요.';
+}
+
+let doneCtx=null;
+function showDone(fin, info, password){
+  doneCtx={receiptId:fin.receiptId, password};
+  document.getElementById('doneNo').textContent=fin.receiptNo;
+  document.getElementById('doneInfo').innerHTML=`
+    <div class="kv"><b>주문자 이름</b><span>${esc(info.name)}</span></div>
+    <div class="kv"><b>배송지 주소(동)</b><span>${esc(info.addr)}</span></div>
+    <div class="kv"><b>전화번호 뒷자리</b><span>${esc(info.phone)}</span></div>
+    <div class="kv"><b>첨부한 사진</b><span>${info.count}장</span></div>
+    <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
+    <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>`;
+  // 초기화
+  document.getElementById('submitForm').reset(); files=[]; selectedMall=null; renderThumbs();
+  document.querySelectorAll('#malls button').forEach(x=>x.classList.remove('on'));
+  document.getElementById('pwMsg').textContent='';
+  go('done');
+}
+document.getElementById('doneViewBtn').onclick=()=>{
+  if(!doneCtx) return;
+  // 접수 직후: 비밀번호를 이미 알고 있으므로 바로 상세 조회
+  openDetail(doneCtx.receiptId, doneCtx.password);
+};
+
+/* ==================================================================
+   조회하기
+================================================================== */
+document.getElementById('searchBtn').onclick=doSearch;
+document.getElementById('searchName').addEventListener('keydown',e=>{ if(e.key==='Enter') doSearch(); });
+
+async function doSearch(){
+  const name=document.getElementById('searchName').value.trim();
+  if(!name) return toast('주문자 이름을 입력해 주세요.');
+  const box=document.getElementById('searchResults');
+  box.innerHTML='<div class="card" style="text-align:center;color:#999"><span class="spin" style="border-color:#ccc;border-top-color:transparent"></span> 검색 중...</div>';
+  const r=await api('lookup-search',{name});
+  if(r.status!==200){ box.innerHTML='<div class="card">검색 중 오류가 발생했습니다.</div>'; return; }
+  const list=r.body.results||[];
+  if(!list.length){ box.innerHTML=`<div class="card" style="text-align:center;color:#999">"${esc(name)}" 님으로 접수된 내역이 없습니다.</div>`; return; }
+  box.innerHTML=`<div class="card"><h3>${esc(name)} 님의 접수 내역 <span style="color:var(--gray);font-weight:500">(총 ${list.length}건)</span></h3>`
+    + list.map(r=>`
+    <div class="rescard" onclick='pickReceipt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="nm">${esc(r.ordererName)} <span style="font-size:12px;color:var(--gray)">/ ${MALL_LABEL[r.mall]||r.mall}</span></div>
+      <div class="row">전화번호 뒷자리 <b>${esc(r.phoneLast4)}</b></div>
+      <div class="row">${esc(r.addressDong)}</div>
+      <div class="row">${fmtDate(r.createdAt)} 접수 · <span class="del">${fmtDate(r.deleteAt)} 자동 삭제</span></div>
+      <span class="arw">›</span>
+    </div>`).join('') + `</div>`;
+}
+
+let pickCtx=null;
+function pickReceipt(r){
+  pickCtx=r;
+  document.getElementById('pwTitle').textContent=`${r.ordererName} / ${r.phoneLast4} / ${r.addressDong} (${MALL_LABEL[r.mall]||r.mall})`;
+  document.getElementById('lookupPw').value='';
+  document.getElementById('pwErr').textContent='';
+  go('pw');
+}
+document.getElementById('lookupPw').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
+document.getElementById('pwBtn').onclick=async()=>{
+  const pw=document.getElementById('lookupPw').value;
+  if(!pw) return;
+  if(!pickCtx) return go('lookup');
+  await openDetail(pickCtx.id, pw, true);
+};
+
+let LK=null; // {receiptId, password}
+async function openDetail(receiptId, password, fromPwView){
+  const btn=document.getElementById('pwBtn'); if(fromPwView){ btn.disabled=true; btn.innerHTML='<span class="spin"></span>'; }
+  const r=await api('lookup-verify',{receiptId, password});
+  if(fromPwView){ btn.disabled=false; btn.textContent='확인'; }
+  if(r.status===429){ document.getElementById('pwErr').textContent=`시도가 많아 ${Math.ceil((r.body.retryAfterSec||600)/60)}분 후 다시 시도해 주세요.`; go('pw'); return; }
+  if(r.status===401){ document.getElementById('pwErr').textContent=`비밀번호가 올바르지 않습니다. (남은 시도 ${r.body.remaining??0}회)`; go('pw'); return; }
+  if(r.status!==200){ document.getElementById('pwErr').textContent='조회 중 오류가 발생했습니다.'; go('pw'); return; }
+  LK={receiptId, password};
+  renderDetail(r.body);
+}
+
+function renderDetail(data){
+  const d=data.detail;
+  if(LK){ LK.detail=d; LK.photos=data.photos||[]; }
+  document.getElementById('editBtn').style.display = data.photosDeleted ? 'none' : 'block';
+  document.getElementById('detailInfo').innerHTML=`
+    <h2 style="margin-bottom:12px">접수 상세 조회</h2>
+    <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
+    <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
+    <div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>
+    <div class="kv"><b>주문 쇼핑몰</b><span>${MALL_LABEL[d.mall]||d.mall}</span></div>
+    <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
+    <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(d.deleteAt)}</span></div>
+    <div class="kv"><b>접수 상태</b><span>${statusBadge(d.status)}</span></div>
+    ${d.editRequest?`<div class="kv"><b>편집 요청</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)}</span></div>`:''}`;
+
+  const photos=data.photos||[];
+  document.getElementById('photoN').textContent = photos.length?`(${photos.length}장)`:'';
+  const gal=document.getElementById('gallery'); const rb=document.getElementById('remainBox'); const db=document.getElementById('deletedBox');
+  gal.innerHTML=''; rb.innerHTML=''; db.innerHTML='';
+
+  if(data.photosDeleted){
+    db.innerHTML=`<div class="deleted">🗑️ 보관기간이 지나 첨부한 사진이 자동 삭제되었습니다.<br>삭제된 사진은 복구할 수 없습니다.</div>`;
+  }else{
+    rb.innerHTML=`<div class="remain">⏳ ${remainText(d.deleteAt)}</div>`;
+    photos.forEach(p=>{
+      const a=document.createElement('a'); a.href='javascript:void(0)';
+      a.innerHTML=`<img src="${p.url}" alt=""><span class="ord">${p.order+1}</span>`;
+      a.onclick=()=>openLB(p.url);
+      gal.appendChild(a);
+    });
+  }
+  go('detail');
+}
+function remainText(deleteAtIso){
+  const ms=new Date(deleteAtIso)-new Date();
+  if(ms<=0) return '곧 자동 삭제됩니다.';
+  const d=Math.floor(ms/86400000), h=Math.floor(ms%86400000/3600000), m=Math.floor(ms%3600000/60000);
+  let s='첨부한 사진은 '; if(d) s+=d+'일 '; if(h||d) s+=h+'시간 '; s+=m+'분 후 자동 삭제됩니다.';
+  return s;
+}
+
+/* 라이트박스 */
+function openLB(url){ document.getElementById('lbImg').src=url; document.getElementById('lightbox').classList.add('show'); }
+function closeLB(){ document.getElementById('lightbox').classList.remove('show'); }
+document.getElementById('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') closeLB(); });
+
+/* ==================================================================
+   고객 수정 모드
+================================================================== */
+let ES=null, origExistingIds=[];
+document.getElementById('editBtn').onclick=openEdit;
+document.getElementById('editCancelBtn').onclick=()=>{ if(LK) openDetail(LK.receiptId, LK.password); };
+document.getElementById('editMalls').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-mall]'); if(!b||!ES) return;
+  ES.mall=b.dataset.mall;
+  document.querySelectorAll('#editMalls button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+});
+const editDrop=document.getElementById('editDrop'), editFileInput=document.getElementById('editFileInput');
+editDrop.addEventListener('click',()=>editFileInput.click());
+editDrop.addEventListener('dragover',e=>{e.preventDefault(); editDrop.classList.add('drag');});
+editDrop.addEventListener('dragleave',()=>editDrop.classList.remove('drag'));
+editDrop.addEventListener('drop',e=>{e.preventDefault(); editDrop.classList.remove('drag'); addEditFiles(e.dataTransfer.files);});
+editFileInput.addEventListener('change',e=>{ addEditFiles(e.target.files); editFileInput.value=''; });
+
+function openEdit(){
+  if(!LK||!LK.detail) return;
+  ES={ mall: LK.detail.mall, items: (LK.photos||[]).map(p=>({type:'ex', id:p.id, url:p.url})) };
+  origExistingIds=(LK.photos||[]).map(p=>p.id);
+  document.getElementById('editReq').value=LK.detail.editRequest||'';
+  document.querySelectorAll('#editMalls button').forEach(b=>b.classList.toggle('on', b.dataset.mall===ES.mall));
+  renderEditThumbs(); go('edit');
+}
+function addEditFiles(list){
+  for(const f of list){
+    if(ES.items.length>=MAX_FILES){ toast('사진은 최대 5장까지예요.'); break; }
+    const okType = ALLOWED.includes(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+    if(!okType){ toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.'); continue; }
+    if(f.size>MAX_SIZE){ toast(`"${f.name}" 은 20MB를 초과합니다.`); continue; }
+    ES.items.push({type:'new', file:f, url:URL.createObjectURL(f)});
+  }
+  renderEditThumbs();
+}
+function renderEditThumbs(){
+  const box=document.getElementById('editThumbs'); box.innerHTML='';
+  ES.items.forEach((it,i)=>{
+    const d=document.createElement('div'); d.className='thumb'; d.draggable=true; d.dataset.i=i;
+    d.innerHTML=`<img src="${it.url}" alt=""><span class="ord">${i+1}</span>`+
+      (it.type==='new'?`<span class="ord" style="left:auto;right:22px;bottom:auto;top:4px;background:#22c55e">NEW</span>`:``)+
+      `<button type="button" class="x">×</button>`;
+    d.querySelector('.x').onclick=()=>{ ES.items.splice(i,1); renderEditThumbs(); };
+    d.addEventListener('dragstart',()=>d.classList.add('dragging'));
+    d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+    d.addEventListener('dragover',ev=>{ ev.preventDefault(); const dragging=box.querySelector('.dragging'); if(!dragging||dragging===d) return;
+      const from=+dragging.dataset.i, to=+d.dataset.i; ES.items.splice(to,0,ES.items.splice(from,1)[0]); renderEditThumbs(); });
+    box.appendChild(d);
+  });
+  document.getElementById('editCount').textContent=`${ES.items.length} / 5 장`;
+}
+
+let editing=false;
+document.getElementById('editForm').addEventListener('submit', async e=>{
+  e.preventDefault(); if(editing||!LK||!ES) return;
+  if(ES.items.length<1) return toast('사진을 1장 이상 남겨주세요.');
+  editing=true;
+  const btn=document.getElementById('editSaveBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 저장 중...';
+  const bar=document.getElementById('editBar'); const barI=bar.querySelector('i');
+  try{
+    const order=ES.items.filter(i=>i.type==='ex').map(i=>i.id);
+    const newItems=ES.items.filter(i=>i.type==='new');
+    const deletePhotoIds=origExistingIds.filter(id=>!order.includes(id));
+    const addFiles=newItems.map(i=>({name:i.file.name, size:i.file.size, contentType:ctypeOf(i.file)}));
+    const payload={receiptId:LK.receiptId, password:LK.password, action:'apply',
+      editRequest:document.getElementById('editReq').value.trim(), mall:ES.mall, order, deletePhotoIds, addFiles};
+    const res=await api('lookup-update', payload);
+    if(res.status===429) throw new Error('시도가 많아 잠시 후 다시 시도해 주세요.');
+    if(res.status!==200) throw new Error('수정 저장에 실패했습니다.');
+    const uploads=res.body.uploads||[];
+    if(uploads.length){
+      bar.classList.add('show');
+      const total=newItems.reduce((s,it)=>s+it.file.size,0); let done=0;
+      for(let i=0;i<uploads.length;i++){
+        await uploadOne(uploads[i], newItems[i].file, (loaded)=>{ barI.style.width=Math.round((done+loaded)/total*100)+'%'; });
+        done+=newItems[i].file.size;
+      }
+      await api('lookup-update',{receiptId:LK.receiptId, password:LK.password, action:'finalize'});
+    }
+    toast('✓ 수정되었습니다');
+    await openDetail(LK.receiptId, LK.password);
+  }catch(err){ toast(err.message||'수정 중 오류가 발생했습니다.'); }
+  finally{ editing=false; btn.disabled=false; btn.textContent='💾 수정 저장하기'; bar.classList.remove('show'); barI.style.width='0'; }
+});
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* 설정 미입력 경고 */
+if(!CFG || CFG.SUPABASE_URL.includes('PROJECT_REF')){
+  setTimeout(()=>toast('⚠️ photo-config.js 에 Supabase 주소/키를 설정해 주세요.'),600);
+}
+</script>
 </body>
 </html>
