@@ -10093,22 +10093,25 @@ function renderCsShare() {
     body.style.cssText = 'padding:0 16px 14px';
 
     // ── 코드/메모 인라인 입력란 (수정 모드 없이 카드에서 바로 입력·저장) ──
+    // 사진접수 자동글(작성자 📷)에만 표시. 직원이 직접 쓰는 일반 메모엔 표시 안 함.
     // 확인 체크(은/수/민) 바로 아래, 메모 위. Enter 또는 포커스 아웃 시 저장.
-    var codeMemoWrap = document.createElement('div');
-    codeMemoWrap.style.cssText = 'padding:2px 0 12px';
-    var codeMemoInp = document.createElement('input');
-    codeMemoInp.type = 'text';
-    codeMemoInp.value = it.codeMemo || '';
-    codeMemoInp.placeholder = '코드 / 메모 입력';
-    codeMemoInp.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid #d0dff8;border-radius:10px;padding:9px 12px;font-size:.92rem;font-family:Pretendard,sans-serif;outline:none;background:#f8fbff';
-    codeMemoInp.onclick = function(e){ e.stopPropagation(); };
-    codeMemoInp.onkeydown = function(e){ e.stopPropagation(); if (e.key==='Enter'){ e.preventDefault(); this.blur(); } };
-    codeMemoInp.onchange = (function(id){ return function(){
-      var v = this.value.trim();
-      csUpdateItem(id, function(item){ item.codeMemo = v; });
-    }; })(it.id);
-    codeMemoWrap.appendChild(codeMemoInp);
-    body.appendChild(codeMemoWrap);
+    if (it.author === '📷') {
+      var codeMemoWrap = document.createElement('div');
+      codeMemoWrap.style.cssText = 'padding:2px 0 12px';
+      var codeMemoInp = document.createElement('input');
+      codeMemoInp.type = 'text';
+      codeMemoInp.value = it.codeMemo || '';
+      codeMemoInp.placeholder = '코드 / 메모 입력';
+      codeMemoInp.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid #d0dff8;border-radius:10px;padding:9px 12px;font-size:.92rem;font-family:Pretendard,sans-serif;outline:none;background:#f8fbff';
+      codeMemoInp.onclick = function(e){ e.stopPropagation(); };
+      codeMemoInp.onkeydown = function(e){ e.stopPropagation(); if (e.key==='Enter'){ e.preventDefault(); this.blur(); } };
+      codeMemoInp.onchange = (function(id){ return function(){
+        var v = this.value.trim();
+        csUpdateItem(id, function(item){ item.codeMemo = v; });
+      }; })(it.id);
+      codeMemoWrap.appendChild(codeMemoInp);
+      body.appendChild(codeMemoWrap);
+    }
 
     // 2. 메모 먼저 (이미지 위에)
     if (it.text) {
