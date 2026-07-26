@@ -308,6 +308,53 @@ Deno.serve(async (req) => {
     return json({ ok: true, uploads, summary }, 200, origin);
   }
 
+  // ============ QUICK-SUBMIT (사장님 간편등록, 비번 없음 / 이름+사진만) ============
+  if (route === "quick-submit") {
+    if (body.action === "finalize") {
+      const receiptId = String(body.receiptId ?? "");
+      const { data: objects } = await sb.storage.from(BUCKET).list(receiptId, { limit: 100 });
+      const present = new Set((objects ?? []).map((o) => `${receiptId}/${o.name}`));
+      const { data: files } = await sb.from("photo_files").select("id, storage_path").eq("receipt_id", receiptId);
+      let up = 0;
+      for (const f of files ?? []) { const ok = present.has(f.storage_path); if (ok) up++; await sb.from("photo_files").update({ uploaded: ok }).eq("id", f.id); }
+      await sb.from("photo_files").delete().eq("receipt_id", receiptId).eq("uploaded", false);
+      if (up === 0) return json({ error: "no_uploaded_files" }, 400, origin);
+      await sb.from("photo_receipts").update({ finalized: true, photo_count: up, status: "new" }).eq("id", receiptId);
+      return json({ ok: true, photoCount: up }, 200, origin);
+    }
+    const name = String(body.ordererName ?? "").trim();
+    const files: any[] = Array.isArray(body.files) ? body.files : [];
+    if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
+    if (files.length < 1 || files.length > MAX_FILES) return json({ error: "invalid_file_count" }, 400, origin);
+    for (const f of files) {
+      if (typeof f.size !== "number" || f.size <= 0 || f.size > MAX_SIZE) return json({ error: "file_too_large" }, 400, origin);
+      if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
+    }
+    const holdDays = await getHoldDays();
+    const now = new Date(), deleteAt = new Date(now.getTime() + holdDays * 86400000);
+    let rec: any = null;
+    for (let a = 0; a < 5; a++) {
+      const { data, error } = await sb.from("photo_receipts").insert({
+        receipt_no: makeReceiptNo(now), mall: "etc", orderer_name: name, address_dong: "-",
+        phone_last4: "0000", password_hash: await hashPassword("0000"), photo_count: files.length,
+        delete_at: deleteAt.toISOString(), finalized: false,
+      }).select("id, receipt_no, created_at, delete_at").single();
+      if (!error) { rec = data; break; }
+      if (error.code !== "23505") return json({ error: "db_error", detail: error.message }, 500, origin);
+    }
+    if (!rec) return json({ error: "receipt_no_conflict" }, 500, origin);
+    const uploads: any[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const path = `${rec.id}/${i}_${crypto.randomUUID().slice(0, 8)}.${extOf(String(f.contentType))}`;
+      const { data: signed, error: e } = await sb.storage.from(BUCKET).createSignedUploadUrl(path);
+      if (e || !signed) return json({ error: "signed_url_failed" }, 500, origin);
+      await sb.from("photo_files").insert({ receipt_id: rec.id, storage_path: path, original_name: (f.name ?? "").slice(0, 200), size_bytes: f.size, content_type: f.contentType, sort_order: i, uploaded: false });
+      uploads.push({ sortOrder: i, path, token: signed.token, uploadUrl: signed.signedUrl });
+    }
+    return json({ ok: true, receiptId: rec.id, receiptNo: rec.receipt_no, createdAt: rec.created_at, deleteAt: rec.delete_at, uploads }, 200, origin);
+  }
+
   // ============ ADMIN ============
   if (route === "admin") {
     const action = String(body.action ?? "");
@@ -423,52 +470,6 @@ Deno.serve(async (req) => {
       const days = Math.max(1, Math.min(60, Number(body.days ?? 3)));
       await sb.from("app_settings").upsert({ key: "default_hold_days", value: days });
       return json({ ok: true, defaultHoldDays: days }, 200, origin);
-    }
-    // 관리자 간편등록: 주문자 이름 + 사진만 (내부용, 나머지 필드는 기본값)
-    if (action === "quickCreate") {
-      const name = String(body.ordererName ?? "").trim();
-      const files: any[] = Array.isArray(body.files) ? body.files : [];
-      if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
-      if (files.length < 1 || files.length > MAX_FILES) return json({ error: "invalid_file_count" }, 400, origin);
-      for (const f of files) {
-        if (typeof f.size !== "number" || f.size <= 0 || f.size > MAX_SIZE) return json({ error: "file_too_large" }, 400, origin);
-        if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
-      }
-      const holdDays = await getHoldDays();
-      const now = new Date(), deleteAt = new Date(now.getTime() + holdDays * 86400000);
-      let rec: any = null;
-      for (let a = 0; a < 5; a++) {
-        const { data, error } = await sb.from("photo_receipts").insert({
-          receipt_no: makeReceiptNo(now), mall: "etc", orderer_name: name, address_dong: "-",
-          phone_last4: "0000", password_hash: await hashPassword("0000"), photo_count: files.length,
-          delete_at: deleteAt.toISOString(), finalized: false,
-        }).select("id, receipt_no, created_at, delete_at").single();
-        if (!error) { rec = data; break; }
-        if (error.code !== "23505") return json({ error: "db_error", detail: error.message }, 500, origin);
-      }
-      if (!rec) return json({ error: "receipt_no_conflict" }, 500, origin);
-      const uploads: any[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        const path = `${rec.id}/${i}_${crypto.randomUUID().slice(0, 8)}.${extOf(String(f.contentType))}`;
-        const { data: signed, error: e } = await sb.storage.from(BUCKET).createSignedUploadUrl(path);
-        if (e || !signed) return json({ error: "signed_url_failed" }, 500, origin);
-        await sb.from("photo_files").insert({ receipt_id: rec.id, storage_path: path, original_name: (f.name ?? "").slice(0, 200), size_bytes: f.size, content_type: f.contentType, sort_order: i, uploaded: false });
-        uploads.push({ sortOrder: i, path, token: signed.token, uploadUrl: signed.signedUrl });
-      }
-      return json({ ok: true, receiptId: rec.id, receiptNo: rec.receipt_no, createdAt: rec.created_at, deleteAt: rec.delete_at, uploads }, 200, origin);
-    }
-    if (action === "quickFinalize") {
-      const receiptId = String(body.receiptId ?? "");
-      const { data: objects } = await sb.storage.from(BUCKET).list(receiptId, { limit: 100 });
-      const present = new Set((objects ?? []).map((o) => `${receiptId}/${o.name}`));
-      const { data: files } = await sb.from("photo_files").select("id, storage_path").eq("receipt_id", receiptId);
-      let up = 0;
-      for (const f of files ?? []) { const ok = present.has(f.storage_path); if (ok) up++; await sb.from("photo_files").update({ uploaded: ok }).eq("id", f.id); }
-      await sb.from("photo_files").delete().eq("receipt_id", receiptId).eq("uploaded", false);
-      if (up === 0) return json({ error: "no_uploaded_files" }, 400, origin);
-      await sb.from("photo_receipts").update({ finalized: true, photo_count: up, status: "new" }).eq("id", receiptId);
-      return json({ ok: true, photoCount: up }, 200, origin);
     }
     return json({ error: "unknown_action" }, 400, origin);
   }
