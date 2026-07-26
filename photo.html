@@ -137,6 +137,10 @@
         <li>삭제된 사진은 다시 확인하거나 복구할 수 없습니다.</li>
       </ul>
     </div>
+    <!-- 관리자 간편등록 입구 (비번 잠금) -->
+    <div style="text-align:center;margin-top:16px">
+      <span onclick="openQuickAdmin()" style="color:#e6c8d2;font-size:12px;cursor:pointer;user-select:none;letter-spacing:.1em">· 미리토퍼 ·</span>
+    </div>
   </section>
 
   <!-- ===================== 접수하기 ===================== -->
@@ -296,6 +300,37 @@
       <button type="button" class="btn ghost" style="margin-top:10px" id="editCancelBtn">취소</button>
     </form>
   </section>
+
+  <!-- ===================== 관리자 간편등록 (숨은 입구) ===================== -->
+  <section class="view" id="v-qadmin">
+    <div class="card">
+      <h2>🔒 관리자 간편등록</h2>
+      <p style="color:var(--gray);font-size:13px;margin:0 0 8px">따로 받은 사진을 주문자 이름 + 사진만으로 빠르게 등록합니다.</p>
+
+      <div id="qaLogin">
+        <label>관리자 비밀번호</label>
+        <input type="password" id="qaPw" placeholder="관리자 비밀번호" autocomplete="current-password" />
+        <button class="btn dark" id="qaLoginBtn" style="margin-top:10px">확인</button>
+        <div class="pw-msg no" id="qaLoginErr" style="text-align:center"></div>
+      </div>
+
+      <form id="qaForm" style="display:none" autocomplete="off">
+        <label>주문자 이름 <span class="req">*</span></label>
+        <input type="text" id="qaName" placeholder="예) 김미리" maxlength="40" />
+
+        <label>사진 첨부 <span class="req">*</span> <span class="opt">(최대 5장 · 순서 드래그)</span></label>
+        <div class="drop" id="qaDrop"><div style="font-size:24px">☁️</div>사진 선택 또는 드래그</div>
+        <input type="file" id="qaFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden />
+        <div class="thumbs" id="qaThumbs"></div>
+        <div class="filemeta"><span id="qaCount">0 / 5 장</span><span id="qaSize">0 MB</span></div>
+        <div class="bar" id="qaBar"><i></i></div>
+        <button type="submit" class="btn" id="qaSaveBtn" style="margin-top:14px">등록하기</button>
+      </form>
+
+      <div id="qaDone" style="display:none"></div>
+    </div>
+    <button class="btn ghost" onclick="qaReset(); go('home')">← 홈으로</button>
+  </section>
 </div>
 
 <!-- 하단 네비 -->
@@ -428,7 +463,7 @@ function statusBadge(s){ const [t,c]=STATUS[s]||['접수 완료','b-new']; retur
 /* ---------- 뷰 전환 ---------- */
 function go(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:'v-home',submit:'v-submit',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit'};
+  const map={home:'v-home',submit:'v-submit',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin'};
   document.getElementById(map[name]).classList.add('active');
   document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.remove('on'));
   const navName = (name==='done'||name==='submit')?'submit':(name==='pw'||name==='detail'||name==='lookup'||name==='edit')?'lookup':'home';
@@ -810,6 +845,101 @@ document.getElementById('editForm').addEventListener('submit', async e=>{
     await openDetail(LK.receiptId, LK.password);
   }catch(err){ toast(err.message||'수정 중 오류가 발생했습니다.'); }
   finally{ editing=false; btn.disabled=false; btn.textContent='💾 수정 저장하기'; bar.classList.remove('show'); barI.style.width='0'; }
+});
+
+/* ==================================================================
+   관리자 간편등록 (숨은 입구, 관리자 비번 잠금)
+================================================================== */
+let QA_TOKEN = localStorage.getItem('mt_admin_token') || null;
+let qaFiles = [];
+function openQuickAdmin(){ qaReset(); qaShowGate(); go('qadmin'); }
+function qaShowGate(){
+  const loggedIn = !!QA_TOKEN;
+  document.getElementById('qaLogin').style.display = loggedIn ? 'none' : 'block';
+  document.getElementById('qaForm').style.display = loggedIn ? 'block' : 'none';
+  document.getElementById('qaDone').style.display = 'none';
+  document.getElementById('qaForm').style.display = loggedIn ? 'block' : 'none';
+}
+function qaReset(){ qaFiles=[]; renderQaThumbs(); const n=document.getElementById('qaName'); if(n) n.value=''; document.getElementById('qaLoginErr').textContent=''; }
+
+document.getElementById('qaLoginBtn').onclick=async()=>{
+  const pw=document.getElementById('qaPw').value;
+  if(!pw) return;
+  const btn=document.getElementById('qaLoginBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  const r=await api('admin',{action:'login',username:'admin',password:pw});
+  btn.disabled=false; btn.textContent='확인';
+  if(r.status!==200){ document.getElementById('qaLoginErr').textContent='비밀번호가 올바르지 않습니다.'; return; }
+  QA_TOKEN=r.body.token; localStorage.setItem('mt_admin_token', QA_TOKEN);
+  document.getElementById('qaPw').value=''; qaShowGate();
+};
+document.getElementById('qaPw').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('qaLoginBtn').click(); });
+
+const qaDrop=document.getElementById('qaDrop'), qaFileInput=document.getElementById('qaFileInput');
+qaDrop.addEventListener('click',()=>qaFileInput.click());
+qaDrop.addEventListener('dragover',e=>{e.preventDefault(); qaDrop.classList.add('drag');});
+qaDrop.addEventListener('dragleave',()=>qaDrop.classList.remove('drag'));
+qaDrop.addEventListener('drop',e=>{e.preventDefault(); qaDrop.classList.remove('drag'); qaAdd(e.dataTransfer.files);});
+qaFileInput.addEventListener('change',e=>{ qaAdd(e.target.files); qaFileInput.value=''; });
+function qaAdd(list){
+  for(const f of list){
+    if(qaFiles.length>=MAX_FILES){ toast('최대 5장까지예요.'); break; }
+    const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+    if(!okType){ toast('JPG, PNG, WEBP, HEIC만 가능해요.'); continue; }
+    if(f.size>MAX_SIZE){ toast(`"${f.name}" 은 20MB 초과.`); continue; }
+    qaFiles.push(f);
+  }
+  renderQaThumbs();
+}
+function renderQaThumbs(){
+  const box=document.getElementById('qaThumbs'); if(!box) return; box.innerHTML='';
+  qaFiles.forEach((f,i)=>{
+    const d=document.createElement('div'); d.className='thumb'; d.draggable=true; d.dataset.i=i;
+    d.innerHTML=`<img src="${URL.createObjectURL(f)}" alt=""><span class="ord">${i+1}</span><button type="button" class="x">×</button>`;
+    d.querySelector('.x').onclick=()=>{ qaFiles.splice(i,1); renderQaThumbs(); };
+    d.addEventListener('dragstart',()=>d.classList.add('dragging'));
+    d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+    d.addEventListener('dragover',ev=>{ ev.preventDefault(); const dr=box.querySelector('.dragging'); if(!dr||dr===d) return; qaFiles.splice(+d.dataset.i,0,qaFiles.splice(+dr.dataset.i,1)[0]); renderQaThumbs(); });
+    box.appendChild(d);
+  });
+  document.getElementById('qaCount').textContent=`${qaFiles.length} / 5 장`;
+  document.getElementById('qaSize').textContent=humanSize(qaFiles.reduce((s,f)=>s+f.size,0));
+}
+
+let qaBusy=false;
+document.getElementById('qaForm').addEventListener('submit', async e=>{
+  e.preventDefault(); if(qaBusy) return;
+  const name=document.getElementById('qaName').value.trim();
+  if(!name) return toast('주문자 이름을 입력해 주세요.');
+  if(qaFiles.length<1) return toast('사진을 1장 이상 첨부해 주세요.');
+  qaBusy=true;
+  const btn=document.getElementById('qaSaveBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 등록 중...';
+  const bar=document.getElementById('qaBar'); bar.classList.add('show'); const barI=bar.querySelector('i');
+  const H={'x-admin-token':QA_TOKEN};
+  try{
+    const cr=await api('admin',{action:'quickCreate', ordererName:name, files:qaFiles.map(f=>({name:f.name,size:f.size,contentType:ctypeOf(f)}))}, H);
+    if(cr.status===401){ QA_TOKEN=null; localStorage.removeItem('mt_admin_token'); qaShowGate(); throw new Error('로그인이 만료됐어요. 비밀번호를 다시 입력해 주세요.'); }
+    if(cr.status!==200) throw new Error('등록에 실패했습니다.');
+    const uploads=cr.body.uploads||[]; const total=qaFiles.reduce((s,f)=>s+f.size,0); let done=0;
+    for(let i=0;i<qaFiles.length;i++){
+      const up=uploads.find(u=>u.sortOrder===i);
+      await uploadOne(up, qaFiles[i], (loaded)=>{ barI.style.width=Math.round((done+loaded)/total*100)+'%'; });
+      done+=qaFiles[i].size;
+    }
+    await api('admin',{action:'quickFinalize', receiptId:cr.body.receiptId}, H);
+    document.getElementById('qaForm').style.display='none';
+    const done2=document.getElementById('qaDone'); done2.style.display='block';
+    done2.innerHTML=`<div style="text-align:center;padding:8px 0">
+      <div class="done-ic">✓</div>
+      <h3>등록 완료</h3>
+      <div class="rno"><div style="font-size:12px;color:var(--gray)">접수 완료번호</div><div class="n">${esc(cr.body.receiptNo)}</div></div>
+      <div class="kv"><b>주문자</b><span>${esc(name)}</span></div>
+      <div class="kv"><b>사진</b><span>${qaFiles.length}장</span></div>
+      <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(cr.body.deleteAt)}</span></div>
+      <button class="btn" style="margin-top:14px" onclick="qaReset(); qaShowGate();">➕ 계속 등록</button>
+    </div>`;
+    toast('✓ 등록되었습니다');
+  }catch(err){ toast(err.message||'등록 중 오류'); }
+  finally{ qaBusy=false; btn.disabled=false; btn.textContent='등록하기'; bar.classList.remove('show'); barI.style.width='0'; }
 });
 
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
