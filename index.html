@@ -397,7 +397,10 @@ function csMakeThumb(file){
 async function postToCsBoard(ctx){
   const now=Date.now();
   const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
-  const lines=[
+  const lines = ctx.quick ? [
+    `📷 사진접수(간편) · ${ctx.name}`,
+    `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
+  ] : [
     `📷 사진접수 · ${mallLabel}`,
     `${ctx.name} / 뒷번호 ${ctx.phone}`,
     `${ctx.addr}`,
@@ -911,6 +914,8 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
       done+=qaFiles[i].size;
     }
     await api('quick-submit',{action:'finalize', receiptId:cr.body.receiptId});
+    // CS 실시간공유 게시판에도 자동 등록(간편 표시, 실패해도 등록엔 영향 없음)
+    postToCsBoard({ name, mall:'etc', receiptNo:cr.body.receiptNo, count:qaFiles.length, files:qaFiles.slice(), quick:true });
     document.getElementById('qaForm').style.display='none';
     const done2=document.getElementById('qaDone'); done2.style.display='block';
     done2.innerHTML=`<div style="text-align:center;padding:8px 0">
