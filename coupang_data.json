@@ -7867,97 +7867,121 @@
     },
     "07/01": {
       "cpAdCost": 219280,
-      "mongCpAdCost": 37819
+      "mongCpAdCost": 37819,
+      "naverSales": 280800
     },
     "07/02": {
       "cpAdCost": 214653,
-      "mongCpAdCost": 42221
+      "mongCpAdCost": 42221,
+      "naverSales": 225900
     },
     "07/03": {
       "cpAdCost": 216596,
-      "mongCpAdCost": 19005
+      "mongCpAdCost": 19005,
+      "naverSales": 149400
     },
     "07/04": {
       "cpAdCost": 132987,
-      "mongCpAdCost": 7438
+      "mongCpAdCost": 7438,
+      "naverSales": 79000
     },
     "07/05": {
       "cpAdCost": 116341,
-      "mongCpAdCost": 10036
+      "mongCpAdCost": 10036,
+      "naverSales": 186600
     },
     "07/06": {
       "cpAdCost": 213689,
-      "mongCpAdCost": 9607
+      "mongCpAdCost": 9607,
+      "naverSales": 284500
     },
     "07/07": {
       "cpAdCost": 255058,
-      "mongCpAdCost": 14859
+      "mongCpAdCost": 14859,
+      "naverSales": 353800
     },
     "07/08": {
       "cpAdCost": 246292,
-      "mongCpAdCost": 17732
+      "mongCpAdCost": 17732,
+      "naverSales": 398100
     },
     "07/09": {
       "cpAdCost": 257699,
-      "mongCpAdCost": 23597
+      "mongCpAdCost": 23597,
+      "naverSales": 197000
     },
     "07/10": {
       "cpAdCost": 214349,
-      "mongCpAdCost": 23472
+      "mongCpAdCost": 23472,
+      "naverSales": 95700
     },
     "07/11": {
       "cpAdCost": 150375,
-      "mongCpAdCost": 22933
+      "mongCpAdCost": 22933,
+      "naverSales": 51100
     },
     "07/12": {
       "cpAdCost": 161228,
-      "mongCpAdCost": 15064
+      "mongCpAdCost": 15064,
+      "naverSales": 153600
     },
     "07/13": {
       "cpAdCost": 234968,
-      "mongCpAdCost": 26129
+      "mongCpAdCost": 26129,
+      "naverSales": 318300
     },
     "07/14": {
       "cpAdCost": 214535,
-      "mongCpAdCost": 24652
+      "mongCpAdCost": 24652,
+      "naverSales": 309800
     },
     "07/15": {
       "cpAdCost": 201153,
-      "mongCpAdCost": 29357
+      "mongCpAdCost": 29357,
+      "naverSales": 309700
     },
     "07/16": {
-      "cpAdCost": 210357
+      "cpAdCost": 210357,
+      "naverSales": 207200
     },
     "07/17": {
-      "mongCpAdCost": 18542
+      "mongCpAdCost": 18542,
+      "naverSales": 110800
     },
     "07/19": {
       "cpAdCost": 175130,
-      "mongCpAdCost": 10851
+      "mongCpAdCost": 10851,
+      "naverSales": 216700
     },
     "07/20": {
       "cpAdCost": 219783,
-      "mongCpAdCost": 14402
+      "mongCpAdCost": 14402,
+      "naverSales": 513000
     },
     "07/21": {
       "cpAdCost": 198605,
-      "mongCpAdCost": 18209
+      "mongCpAdCost": 18209,
+      "naverSales": 312500
     },
     "07/22": {
       "cpAdCost": 218570,
-      "mongCpAdCost": 23266
+      "mongCpAdCost": 23266,
+      "naverSales": 262100
     },
     "07/23": {
       "cpAdCost": 207100,
-      "mongCpAdCost": 17208
+      "mongCpAdCost": 17208,
+      "naverSales": 239700
     },
     "07/24": {
       "cpAdCost": 209569,
-      "mongCpAdCost": 23612
+      "mongCpAdCost": 23612,
+      "naverSales": 103000
     },
     "07/25": {
       "cpAdCost": 155063,
-      "mongCpAdCost": 15512
+      "mongCpAdCost": 15512,
+      "naverSales": 134500
     },
     "07/26": {
       "cpAdCost": 120504,
@@ -7968,6 +7992,9 @@
       "cpAdCost": 200788,
       "mongCpAdCost": 23601,
       "naverSales": 334000
+    },
+    "07/18": {
+      "naverSales": 163400
     }
   },
   "ad_performance": {
