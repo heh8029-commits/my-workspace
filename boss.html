@@ -2619,6 +2619,28 @@ body.mode-mob .mobile-subnav{display:flex!important}
 </div>
 
 <script>
+// ── 복사 헬퍼 (HTTP/비보안 페이지에서도 동작: execCommand 폴백) ──
+function copyText(text){
+  text = (text == null ? '' : String(text));
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function(resolve, reject){
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.top='0'; ta.style.left='0'; ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { ta.setSelectionRange(0, text.length); } catch(e){}
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('copy failed'));
+    } catch(e) { reject(e); }
+  });
+}
+
 // ── 메뉴 구조 ─────────────────────────────────────────────
 const MENUS = [
   {id:'home', label:'홈', emoji:'🏠'},
@@ -3478,7 +3500,7 @@ async function togglePnlDone(id, done){
 
 function copyPnlMemo(i){
   const text = pnlMemos[i]?.text||'';
-  navigator.clipboard.writeText(text).catch(()=>{ prompt('복사:', text); });
+  copyText(text).catch(()=>{ prompt('복사:', text); });
 }
 
 function startPnlEdit(id){ pnlEditId=id; renderPnlMemos(); setTimeout(()=>document.getElementById('pnl-edit-'+id)?.focus(),40); }
@@ -3858,7 +3880,7 @@ function promptChange(id, field, val){
 function promptCopy(id){
   const p = _pData.prompts.find(x=>x.id===id);
   if(!p) return;
-  navigator.clipboard.writeText(p.content||'').then(()=>{
+  copyText(p.content||'').then(()=>{
     const btn = document.getElementById('pcopy-'+id);
     if(btn){ const o=btn.textContent; btn.textContent='✅ 복사됨'; setTimeout(()=>btn.textContent=o,1500); }
   }).catch(()=>{
@@ -3960,7 +3982,7 @@ function tmplUpdatePreview(id){
 function tmplCopy(id){
   const res = document.getElementById('tmpl-result-'+id);
   if(!res) return;
-  navigator.clipboard.writeText(res.value).then(()=>{
+  copyText(res.value).then(()=>{
     const btn = document.getElementById('tmpl-copybtn-'+id);
     if(btn){ const o=btn.textContent; btn.textContent='✅ 복사됨!'; setTimeout(()=>btn.textContent=o,1500); }
   }).catch(()=>{ res.select(); document.execCommand('copy'); });
@@ -7082,7 +7104,7 @@ function ytSetCatFilter(cat){
   memoRender('youtube');
 }
 function memoToggle(k,id,v){const m=_MW[k].data.find(x=>x.id===id);if(m){m.done=v;_memoDbSave(k);memoRender(k);}}
-function memoCopy(k,i){const t=_MW[k].data[i]?.text||'';navigator.clipboard.writeText(t).catch(()=>prompt('복사:',t));}
+function memoCopy(k,i){const t=_MW[k].data[i]?.text||'';copyText(t).catch(()=>prompt('복사:',t));}
 function memoStartEdit(k,id){_MW[k].editId=id;memoRender(k);setTimeout(()=>{const el=document.getElementById(`${k}-edit-${id}`);if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},40);}
 function memoCancelEdit(k){_MW[k].editId=null;memoRender(k);}
 function memoSaveEdit(k,id){
@@ -7317,7 +7339,7 @@ function boStartEdit(id){
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
   ov.querySelector('#bo-ep-text').focus();
 }
-function boCopyOrder(i){const t=boData[i]?.text||'';navigator.clipboard.writeText(t).catch(()=>prompt('복사:',t));}
+function boCopyOrder(i){const t=boData[i]?.text||'';copyText(t).catch(()=>prompt('복사:',t));}
 function boRender(){
   const el=document.getElementById('bo-list');if(!el)return;
   const badge=document.getElementById('bo-badge');
@@ -7842,14 +7864,14 @@ function bcscEditOpen(id){
 }
 function bcscCopy(id){
   const m=_bcscData.find(x=>x.id===id);if(!m)return;
-  navigator.clipboard.writeText(m.text||'').then(()=>{
+  copyText(m.text||'').then(()=>{
     const btn=document.getElementById('bcsc-cb-'+id);
     if(btn){btn.style.background='#e8f5e8';setTimeout(()=>{btn.style.background='';},800);}
   });
 }
 function bcscCopyBtn(id,btn){
   const m=_bcscData.find(x=>x.id===id);if(!m)return;
-  navigator.clipboard.writeText(m.text||'').then(()=>{
+  copyText(m.text||'').then(()=>{
     const orig=btn.textContent;
     btn.textContent='✅';
     setTimeout(()=>{btn.textContent=orig;},1000);
@@ -8825,7 +8847,7 @@ function pwDel(i) {
 }
 
 function pwCopy(text) {
-  navigator.clipboard.writeText(text).then(() => {
+  copyText(text).then(() => {
     const t = event.target.closest('button');
     if (t) { t.textContent = '✅'; setTimeout(() => t.textContent = '📋', 1200); }
   });
@@ -8866,7 +8888,7 @@ function pwRender() {
 // 전체 검색
 // ══════════════════════════════════════════════
 function gsCopy(text, btnId) {
-  navigator.clipboard.writeText(text).then(() => {
+  copyText(text).then(() => {
     const b = document.getElementById(btnId);
     if (b) { const orig=b.textContent; b.textContent='✅'; setTimeout(()=>b.textContent=orig, 1500); }
   });
