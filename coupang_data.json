@@ -7524,7 +7524,7 @@
       "time": "2026-08-08 07:20",
       "account": "몽몽토퍼",
       "status": "fail",
-      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
+      "reason": "예외: Page.wait_for_timeout: Target page, context or browser has been closed"
     }
   ],
   "ad_data": {
