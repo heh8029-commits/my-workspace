@@ -1942,6 +1942,39 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
 </div>
 
 <script>
+// ── 복사 기능 http 대체 (navigator.clipboard 는 https 에서만 동작하므로 fallback 제공) ──
+(function () {
+  function fallbackCopy(text) {
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        // 화면 밖(-9999px)으로 빼면 모바일에서 선택이 안 잡히므로 투명하게 처리
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { ta.setSelectionRange(0, ta.value.length); } catch (e) {}
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy failed'));
+      } catch (e) { reject(e); }
+    });
+  }
+  // http 접속(비보안 컨텍스트)에서는 navigator.clipboard 가 있어도 항상 실패하므로 무조건 교체
+  if (!navigator.clipboard || !navigator.clipboard.writeText || !window.isSecureContext) {
+    try {
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: fallbackCopy }, configurable: true });
+    } catch (e) {
+      try { navigator.clipboard = { writeText: fallbackCopy }; } catch (e2) {}
+    }
+  }
+})();
+
 function toast(msg) {
   var el = document.getElementById('toast');
   if (!el) { el = document.createElement('div'); el.id='toast'; el.className='toast'; document.body.appendChild(el); }
@@ -9755,6 +9788,15 @@ function addCsShare() {
       vendorOrder = { vendorId: vendor.id, vendorName: vendor.name, qty: qty, price: price, shipping: ship, total: total, paid: false };
     }
   }
+  // 업체주문건 명단은 가나다순으로 정렬해서 등록 (빈 줄 제거)
+  if (vendorOrder && txt) {
+    txt = txt.split('\n')
+             .map(function(l){ return l.trim(); })
+             .filter(function(l){ return l; })
+             .sort(function(a, b){ return a.localeCompare(b, 'ko'); })
+             .join('\n');
+  }
+
   txt = vendorLines.concat(txt ? [txt] : []).join('\n');
 
   if (!txt && imgs.length === 0) {
