@@ -8410,6 +8410,24 @@ function bCsAlarmStart() {
 }
 
 // ── 초기화 ─────────────────────────────────────────────────
+// ── 주소로 바로 열기 ───────────────────────────────────────
+// boss.html#stock 처럼 주소 뒤에 메뉴 이름을 붙이면 그 화면부터 뜬다.
+// (AI 본사 버튼에서 곧장 재고관리·부가세 화면으로 들어오려고 넣었다)
+function openFromHash(){
+  var want = (location.hash || '').replace('#','').trim();
+  if(!want) return false;
+  for(var i=0;i<MENUS.length;i++){
+    var m = MENUS[i];
+    if(m.id === want){ setMenu(m.id); return true; }
+    var subs = m.sub || [];
+    for(var j=0;j<subs.length;j++){
+      if(subs[j].id === want){ setSub(subs[j].id, subs[j].label); return true; }
+    }
+  }
+  return false;
+}
+window.addEventListener('hashchange', openFromHash);
+
 (function init(){
   renderTopMenu();
   renderSidebar();
@@ -8427,6 +8445,9 @@ function bCsAlarmStart() {
   bregFetch();
   bcscFetch();
   bossRow2Init();
+
+  // 주소에 메뉴가 적혀 있으면 그 화면으로 바로 간다
+  openFromHash();
 })();
 
 // ── 세금관리 ──────────────────────────────────────────────────
