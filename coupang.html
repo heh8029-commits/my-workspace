@@ -97,6 +97,10 @@ tr.today-row{background:#fffbe6}
 .sales-table tfoot td.date-col{text-align:center}
 .sales-updated{font-size:.72rem;color:#bbb;padding:8px 16px}
 .sales-summary{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;padding:0 16px 12px}
+/* 요약정리(월별 모아보기)용 그리드. 9칸 고정이면 금액이 nowrap이라 모달 밖으로 삐져나가서,
+   폭에 맞춰 자동으로 줄바꿈되게 한다. */
+.monthly-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:8px}
+.monthly-summary-grid>.sales-summary-card{min-width:0}
 .sales-summary-card{border-radius:10px;padding:8px 10px;line-height:1.3;border:1px solid transparent}
 .sales-summary-card.rev{background:#eafaf1;border-color:#bfe8d2}
 .sales-summary-card.cost{background:#fdeef2;border-color:#f6cddc}
@@ -709,7 +713,7 @@ function showMonthlySummary() {
           <div style="font-size:.8rem;font-weight:800;color:#2c3e50;margin:0 0 6px">
             ${parseInt(x.mm)}월 <span style="font-weight:600;color:#aaa">· ${x.dayCount}일</span>
           </div>
-          <div class="sales-summary" style="padding:0">${salesSummaryCards(x.row, x.ad, x.dayCount)}</div>
+          <div class="monthly-summary-grid">${salesSummaryCards(x.row, x.ad, x.dayCount)}</div>
         </div>`).join('')
     : '<div style="padding:20px;color:#aaa;text-align:center">표시할 데이터가 없습니다</div>';
 
@@ -719,7 +723,7 @@ function showMonthlySummary() {
                 align-items:flex-start;justify-content:center;padding:24px;overflow:auto"
          onclick="if(event.target===this)closeMonthlySummary()">
       <div style="background:#fff;border-radius:14px;max-width:1240px;width:100%;padding:16px 18px 20px;
-                  box-shadow:0 10px 40px rgba(0,0,0,.25)">
+                  box-shadow:0 10px 40px rgba(0,0,0,.25);box-sizing:border-box;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <div style="font-weight:800;color:#2c3e50">📊 월별 요약정리 — ${currentSalesBrand}</div>
           <button onclick="closeMonthlySummary()"
