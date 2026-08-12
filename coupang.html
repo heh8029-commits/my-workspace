@@ -653,7 +653,9 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
     card('네이버 총매출', naverSales, 'rev', pctOf(naverSales)),
     card('네이버 검색광고', naverSearchAd, 'cost', pctAd(naverSearchAd)),
     card('네이버 AI광고', naverAiAd, 'cost', pctAd(naverAiAd)),
-    card('전체 총광고비', totalAdCost, 'cost', totalAdCost ? `<span class="sales-summary-pct">100%</span>` : ''),
+    // 총광고비만은 '전체 매출의 몇 %를 광고에 썼나'를 보여준다(광고비 3종의 합=100%는 자명해서 뺌)
+    card('전체 총광고비', totalAdCost, 'cost',
+         totalSales ? `<span class="sales-summary-pct">${(totalAdCost / totalSales * 100).toFixed(1)}%</span>` : ''),
     card('전체 총매출', totalSales, 'grand', totalSales ? `<span class="sales-summary-pct">100%</span>` : ''),
   ].join('');
 }
