@@ -632,6 +632,9 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
   const totalAdCost = cpAdCost + naverSearchAd + naverAiAd;
 
   const pctOf = v => totalSales ? `<span class="sales-summary-pct">${fmtPct(v / totalSales * 100)}</span>` : '';
+  // 광고비 카드는 '매출 대비 광고비율'을 붙인다. 기준은 아래 일자별 표와 똑같이 맞춤
+  // (쿠팡 광고비는 쿠팡 총매출, 네이버 광고는 네이버 총매출, 전체 총광고비는 전체 총매출 기준).
+  const pctAd = (v, base) => base ? `<span class="sales-summary-pct">${(v / base * 100).toFixed(1)}%</span>` : '';
   const avgHtml = v => dayCount ? `<div class="sales-summary-avg">일평균 ${fmtNum(Math.round(v / dayCount))}</div>` : '';
 
   const card = (label, val, cls, pctHtml) => `
@@ -646,12 +649,12 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
     card('쿠팡 그로스', rg, 'rev', pctOf(rg)),
     card('쿠팡 판매자배송', sd, 'rev', pctOf(sd)),
     card('쿠팡 총매출', cpTotal, 'rev', pctOf(cpTotal)),
-    card('쿠팡 광고비', cpAdCost, 'cost', ''),
+    card('쿠팡 광고비', cpAdCost, 'cost', pctAd(cpAdCost, cpTotal)),
     card('네이버 총매출', naverSales, 'rev', pctOf(naverSales)),
-    card('네이버 검색광고', naverSearchAd, 'cost', ''),
-    card('네이버 AI광고', naverAiAd, 'cost', ''),
-    card('전체 총광고비', totalAdCost, 'cost', ''),
-    card('전체 총매출', totalSales, 'grand', ''),
+    card('네이버 검색광고', naverSearchAd, 'cost', pctAd(naverSearchAd, naverSales)),
+    card('네이버 AI광고', naverAiAd, 'cost', pctAd(naverAiAd, naverSales)),
+    card('전체 총광고비', totalAdCost, 'cost', pctAd(totalAdCost, totalSales)),
+    card('전체 총매출', totalSales, 'grand', totalSales ? `<span class="sales-summary-pct">100%</span>` : ''),
   ].join('');
 }
 
