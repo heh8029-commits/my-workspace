@@ -613,11 +613,8 @@ function updateAdField(date, field, value) {
   renderSales();
 }
 
-function renderSalesSummary(date, m, ad, dayCount, label) {
-  const box = document.getElementById('sales-summary');
-  if (!date) { box.innerHTML = ''; return; }
-  const titleHtml = label ? `<div style="grid-column:1/-1;font-size:.72rem;font-weight:700;color:#888;padding-bottom:2px">${label}</div>` : '';
-
+// 요약 카드 9장을 만드는 부분. 상단 요약과 '요약정리'(월별 모아보기)가 같은 걸 쓴다.
+function salesSummaryCards(m, ad, dayCount) {
   const fmtNum = n => Number(n || 0).toLocaleString('ko-KR') + '원';
   const fmtPct = n => n.toFixed(0) + '%';
 
@@ -644,8 +641,7 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
       ${avgHtml(val)}
     </div>`;
 
-  box.innerHTML = [
-    titleHtml,
+  return [
     card('쿠팡 그로스', rg, 'rev', pctOf(rg)),
     card('쿠팡 판매자배송', sd, 'rev', pctOf(sd)),
     card('쿠팡 총매출', cpTotal, 'rev', pctOf(cpTotal)),
@@ -659,6 +655,84 @@ function renderSalesSummary(date, m, ad, dayCount, label) {
     card('전체 총매출', totalSales, 'grand', totalSales ? `<span class="sales-summary-pct">100%</span>` : ''),
   ].join('');
 }
+
+function renderSalesSummary(date, m, ad, dayCount, label) {
+  const box = document.getElementById('sales-summary');
+  if (!date) { box.innerHTML = ''; return; }
+  const titleHtml = label
+    ? `<div style="grid-column:1/-1;font-size:.72rem;font-weight:700;color:#888;padding-bottom:2px;display:flex;align-items:center;gap:8px">
+         <span>${label}</span>
+         <button onclick="showMonthlySummary()"
+           style="border:1px solid #d6d0f3;background:#eeecfb;color:#6c4fd1;border-radius:8px;
+                  padding:2px 9px;font-size:.68rem;font-weight:800;cursor:pointer">📊 요약정리</button>
+       </div>`
+    : '';
+  box.innerHTML = titleHtml + salesSummaryCards(m, ad, dayCount);
+}
+
+// '요약정리' 버튼용. renderSales 안의 값들을 여기에 담아두고 월별 집계에 재사용한다.
+let _salesCtx = null;
+
+function monthSummaries() {
+  if (!_salesCtx) return [];
+  const { brandMap, fCp, fNvS, fNvSe, fNvAi, getRgSd } = _salesCtx;
+  const months = Array.from(new Set(Object.keys(brandMap).map(d => d.split('/')[0])))
+                      .sort().reverse();            // 최신 달이 위로
+  return months.map(mm => {
+    const dates = Object.keys(brandMap).filter(d => d.split('/')[0] === mm);
+    const row = { rocket_growth: 0, seller_delivery: 0, total: 0 };
+    const ad  = { cpAdCost: 0, naverSales: 0, naverSearchAd: 0, naverAiAd: 0 };
+    for (const d of dates) {
+      const { rg, sd } = getRgSd(d);
+      row.rocket_growth += rg; row.seller_delivery += sd; row.total += rg + sd;
+      const a = adData[d] || {};
+      ad.cpAdCost      += a[fCp]   || 0;
+      ad.naverSales    += a[fNvS]  || 0;
+      ad.naverSearchAd += a[fNvSe] || 0;
+      ad.naverAiAd     += a[fNvAi] || 0;
+    }
+    return { mm, row, ad, dayCount: dates.length };
+  });
+}
+
+function closeMonthlySummary() {
+  const el = document.getElementById('monthly-summary-overlay');
+  if (el) el.remove();
+}
+
+function showMonthlySummary() {
+  closeMonthlySummary();
+  const list = monthSummaries();
+  const body = list.length
+    ? list.map(x => `
+        <div style="margin-bottom:16px">
+          <div style="font-size:.8rem;font-weight:800;color:#2c3e50;margin:0 0 6px">
+            ${parseInt(x.mm)}월 <span style="font-weight:600;color:#aaa">· ${x.dayCount}일</span>
+          </div>
+          <div class="sales-summary" style="padding:0">${salesSummaryCards(x.row, x.ad, x.dayCount)}</div>
+        </div>`).join('')
+    : '<div style="padding:20px;color:#aaa;text-align:center">표시할 데이터가 없습니다</div>';
+
+  const html = `
+    <div id="monthly-summary-overlay"
+         style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;
+                align-items:flex-start;justify-content:center;padding:24px;overflow:auto"
+         onclick="if(event.target===this)closeMonthlySummary()">
+      <div style="background:#fff;border-radius:14px;max-width:1240px;width:100%;padding:16px 18px 20px;
+                  box-shadow:0 10px 40px rgba(0,0,0,.25)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-weight:800;color:#2c3e50">📊 월별 요약정리 — ${currentSalesBrand}</div>
+          <button onclick="closeMonthlySummary()"
+            style="border:1px solid #ddd;background:#f7f7f9;border-radius:8px;padding:4px 12px;
+                   font-weight:700;cursor:pointer">닫기</button>
+        </div>
+        ${body}
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMonthlySummary(); });
 
 function renderSales() {
   document.getElementById('sales-updated').textContent = salesUpdated
@@ -707,6 +781,9 @@ function renderSales() {
     const sd = (ad[fSd] !== undefined && ad[fSd] !== null && ad[fSd] !== '') ? ad[fSd] : (m.seller_delivery || 0);
     return { rg, sd };
   };
+
+  // '요약정리'(월별 모아보기)가 같은 계산을 쓰도록 현재 브랜드 기준 값들을 넘겨둔다
+  _salesCtx = { brandMap, fRg, fSd, fCp, fNvS, fNvSe, fNvAi, getRgSd };
 
   // 요약: 선택된 월 또는 현재 월 기준
   const nowMM = String(new Date().getMonth()+1).padStart(2,'0');
