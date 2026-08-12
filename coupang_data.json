@@ -1,13 +1,9 @@
 {
-  "last_updated": "2026-08-12 23:45",
+  "last_updated": "2026-08-13 00:20",
   "accounts": {
     "미리토퍼": {
-      "current_amount": 1493310,
+      "current_amount": 10800,
       "history": [
-        {
-          "time": "2026-07-11 00:20",
-          "amount": 21600
-        },
         {
           "time": "2026-07-11 01:20",
           "amount": 74800
@@ -2883,6 +2879,10 @@
         {
           "time": "2026-08-12 23:20",
           "amount": 1493310
+        },
+        {
+          "time": "2026-08-13 00:20",
+          "amount": 10800
         }
       ]
     },
@@ -5773,7 +5773,7 @@
     }
   },
   "sales_data": {
-    "last_updated": "2026-08-12",
+    "last_updated": "2026-08-13",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -6970,6 +6970,12 @@
         "rocket_growth": 290100,
         "seller_delivery": 0,
         "total": 290100
+      },
+      {
+        "date": "08/12",
+        "rocket_growth": 401930,
+        "seller_delivery": 0,
+        "total": 401930
       }
     ]
   },
