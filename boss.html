@@ -1227,6 +1227,12 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-calc-del:hover{background:#FFE8E8;color:#E03A3A}
 .pnl-calc-drag{cursor:grab;color:#D0D0D0;font-size:.85rem;flex-shrink:0;padding:0 2px;user-select:none}
 .pnl-calc-row.drag-over{outline:2px dashed #C4714A;border-radius:7px}
+.pnl-calc-total{display:flex;align-items:center;gap:5px;padding:7px 0;margin-top:3px;background:#FFF6F4;border-radius:9px}
+.pnl-calc-total-label{flex:1;padding:0 7px;font-size:.8rem;font-weight:800;color:#996055;min-width:0}
+.pnl-calc-total-amount{width:110px;padding:0 7px;font-size:.86rem;font-weight:800;color:#E03A3A;text-align:right;flex-shrink:0}
+.pnl-calc-total-pct{width:36px;font-size:.71rem;font-weight:800;color:#E03A3A;text-align:right;flex-shrink:0}
+.pnl-calc-total-gap{width:52px;flex-shrink:0}
+.pnl-calc-total-gap2{width:22px;flex-shrink:0}
 /* ── 월별지출 ── */
 .exp-month-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;border:1px solid #EDE8E1;padding:11px 16px;margin-bottom:12px}
 .exp-month-btn{width:30px;height:30px;border-radius:50%;border:none;background:#F5F0EB;color:#C4714A;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .13s;line-height:1}
@@ -4116,10 +4122,12 @@ function renderCalc(){
         onchange="onCalcAmtChange('income',${i},this.value)" onblur="saveCalcData()">
       <button class="pnl-calc-del" onclick="delCalcRow('income',${i})">✕</button>
     </div>`).join('');
+  let expPctSum = 0;   // 화면에 보이는 %를 그대로 더해서 합계가 눈으로 맞아떨어지게
   const expRows = calcData.expenses.map((r,i)=>{
     const amt = _calcExpAmount(r, totalInc);
     const hasPct = r.pct != null && r.pct !== '';
     const dispPct = totalInc && amt ? (amt/totalInc*100).toFixed(1) : '0';
+    expPctSum += parseFloat(dispPct);
     return `
     <div class="pnl-calc-row" draggable="true"
       ondragstart="calcExpDragStart(${i})"
@@ -4139,6 +4147,15 @@ function renderCalc(){
       <button class="pnl-calc-del" onclick="delCalcRow('expenses',${i})">✕</button>
     </div>`;
   }).join('');
+  const expTotalRow = calcData.expenses.length ? `
+    <div class="pnl-calc-total">
+      <span class="pnl-calc-drag" style="visibility:hidden">⠿</span>
+      <span class="pnl-calc-total-label">합계 ${calcData.expenses.length}건</span>
+      <span class="pnl-calc-total-amount">${_fmtAmt(totalExp)}</span>
+      <span class="pnl-calc-total-pct">${expPctSum.toFixed(1)}%</span>
+      <span class="pnl-calc-total-gap"></span>
+      <span class="pnl-calc-total-gap2"></span>
+    </div>` : '';
   cont.innerHTML = `
   <div class="pnl-summary-card">
     <div class="pnl-summary-row">
@@ -4172,6 +4189,7 @@ function renderCalc(){
       <button class="pnl-calc-add-btn exp" onclick="addCalcRow('expenses')">+ 추가</button>
     </div>
     ${expRows}
+    ${expTotalRow}
   </div>`;
 }
 
