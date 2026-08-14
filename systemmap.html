@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미리토퍼캐슬 · 부팅하면 뜨는 것 전부</title>
+<style>
+  *{box-sizing:border-box; margin:0; padding:0;}
+  :root{
+    --bg:#0f1420; --panel:#fff; --line:#dfe3ea; --ink:#171b26; --dim:#6b7383;
+    --ok:#12a150; --bad:#e5342b; --warn:#e8820c; --blue:#2563eb;
+  }
+  body{
+    font-family:"Pretendard","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    background:#eef1f6; color:var(--ink); font-size:17px; line-height:1.6; padding:0 0 100px;
+  }
+  .wrap{max-width:1240px; margin:0 auto; padding:0 24px;}
+
+  .hero{background:var(--bg); color:#fff; padding:44px 0 38px; margin-bottom:34px;}
+  .hero h1{font-size:46px; font-weight:800; letter-spacing:-1.5px; line-height:1.15;}
+  .hero .sub{font-size:19px; color:#9aa4bb; margin-top:12px;}
+  .hero .who{margin-top:20px; display:inline-block; background:#1e2739; border:1px solid #333f57;
+    border-radius:12px; padding:12px 20px; font-size:17px; color:#cfd7e8;}
+  .hero .who b{color:#fff;}
+
+  .tally{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:40px;}
+  .t{background:#fff; border-radius:18px; padding:26px 28px; border:3px solid var(--line);}
+  .t .n{font-size:64px; font-weight:800; line-height:1; letter-spacing:-3px;}
+  .t .l{font-size:19px; font-weight:700; margin-top:10px;}
+  .t .d{font-size:15px; color:var(--dim); margin-top:4px;}
+  .t.ok{border-color:#b9ebcd;} .t.ok .n{color:var(--ok);}
+  .t.fix{border-color:#b9d3f5;} .t.fix .n{color:var(--blue);}
+  .t.todo{border-color:#ffdfae;} .t.todo .n{color:var(--warn);}
+
+  .sec{margin-bottom:48px;}
+  .sec-h{display:flex; align-items:center; gap:16px; margin-bottom:8px;}
+  .sec-h .num{width:54px; height:54px; flex:0 0 54px; border-radius:15px; background:var(--ink); color:#fff;
+    font-size:28px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+  .sec-h h2{font-size:32px; font-weight:800; letter-spacing:-1px;}
+  .sec-note{font-size:16px; color:var(--dim); margin:0 0 18px 70px;}
+  .sec-note code{background:#e3e7ef; padding:3px 9px; border-radius:6px; font-size:14.5px;
+    font-family:Consolas,monospace; color:#333c50;}
+
+  .rows{background:#fff; border:3px solid var(--line); border-radius:18px; overflow:hidden;}
+  .row{display:flex; align-items:center; gap:18px; padding:18px 22px; border-bottom:1px solid #eef0f5;}
+  .row:last-child{border-bottom:none;}
+  .row.down{background:#fff5f4;}
+  .row.new{background:#f2fbf5;}
+  .dot{width:20px; height:20px; flex:0 0 20px; border-radius:50%;}
+  .dot.on{background:var(--ok); box-shadow:0 0 0 5px #d6f5e3;}
+  .dot.off{background:var(--bad); box-shadow:0 0 0 5px #ffdedb;}
+  .dot.man{background:var(--warn); box-shadow:0 0 0 5px #ffeacd;}
+  .dot.gray{background:#aab1bf; box-shadow:0 0 0 5px #e6e9ef;}
+  .r-main{flex:1 1 auto; min-width:0;}
+  .r-name{font-size:21px; font-weight:800; letter-spacing:-.4px;}
+  .r-name .tag{font-size:13.5px; font-weight:800; background:#dcfce7; color:#12703c;
+    padding:3px 10px; border-radius:7px; margin-left:8px; vertical-align:3px;}
+  .r-sub{font-size:16px; font-weight:600; color:#6b7383;}
+  .r-path{font-family:Consolas,monospace; font-size:14.5px; color:#5c6474; margin-top:5px; word-break:break-all;}
+  .r-path b{color:var(--blue); font-weight:700;}
+  .r-why{font-size:15.5px; color:#b02c24; margin-top:7px; font-weight:600;}
+  .pill{flex:0 0 auto; font-size:16px; font-weight:800; padding:9px 18px; border-radius:11px; white-space:nowrap;}
+  .pill.on{background:#daf6e6; color:#0a7a3c;}
+  .pill.off{background:#ffe0dd; color:#c22a20;}
+  .pill.man{background:#ffeed4; color:#9a5a00;}
+  .pill.gray{background:#eaedf2; color:#5c6474;}
+  .port{flex:0 0 auto; background:#e8eefc; color:#1e40af; font-family:Consolas,monospace;
+    font-size:16px; font-weight:700; padding:8px 14px; border-radius:10px;}
+  .clock{flex:0 0 150px; text-align:center; background:#f3f5fa; border-radius:12px; padding:10px 6px;}
+  .clock .big{font-size:22px; font-weight:800; font-family:Consolas,monospace; letter-spacing:-.5px; white-space:nowrap;}
+  .clock .small{font-size:13.5px; color:var(--dim); margin-top:2px;}
+
+  .box{background:#fff; border:3px solid var(--line); border-radius:18px; padding:26px 28px; margin-bottom:34px;}
+  .box.green{border-color:#9fe0bb;}
+  .box.amber{border-color:#ffcf87;}
+  .box h3{font-size:27px; font-weight:800; margin-bottom:6px;}
+  .box.green h3{color:#0a7a3c;} .box.amber h3{color:#b56a00;}
+  .box .lead{font-size:16.5px; color:#5c6474; margin-bottom:18px;}
+  .plist{display:grid; gap:14px;}
+  .p{display:flex; gap:16px; align-items:flex-start; border-radius:13px; padding:16px 20px;}
+  .box.green .p{background:#f2fbf5; border:1px solid #c6ecd6;}
+  .box.amber .p{background:#fffaf0; border:1px solid #ffe0ae;}
+  .p .x{font-size:26px; line-height:1.1;}
+  .p .t2{font-size:19px; font-weight:800;}
+  .p .d2{font-size:15.5px; color:#4d5566; margin-top:5px; line-height:1.7;}
+  .p .d2 code{background:#fff; border:1px solid #d8dee8; padding:2px 7px; border-radius:5px;
+    font-family:Consolas,monospace; font-size:14px;}
+  .p .d2 .was{color:#b02c24; font-weight:700;}
+  .p .d2 .now{color:#0a7a3c; font-weight:700;}
+
+  .cmd{position:relative; background:#12182a; color:#dbe4f7; border-radius:14px; padding:20px 22px;
+    font-family:Consolas,monospace; font-size:15px; line-height:1.85; white-space:pre-wrap;
+    word-break:break-all; margin:14px 0;}
+  .cmd .c{color:#7c8bad;}
+  .copy{position:absolute; top:12px; right:12px; background:#2b3550; color:#cfd8ee; border:none;
+    border-radius:8px; padding:8px 14px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .copy:hover{background:#3a4767; color:#fff;}
+  .copy.done{background:var(--ok); color:#fff;}
+
+  .tip{border-radius:15px; padding:20px 24px; font-size:16.5px; line-height:1.8; margin:18px 0;}
+  .tip.y{background:#fff8e6; border:2px solid #ffd77a; color:#6b4e00;}
+  .tip.b{background:#eef3ff; border:2px solid #b9cdff; color:#1e3a8a;}
+  .tip.r{background:#fff4f3; border:2px solid #ffbdb7; color:#8a2b23;}
+  .tip b{font-weight:800;}
+  .tip .hd{font-size:20px; font-weight:800; display:block; margin-bottom:8px;}
+
+  .step{display:flex; gap:18px; align-items:flex-start; padding:20px 0; border-bottom:1px solid #e6e9f0;}
+  .step:last-child{border-bottom:none;}
+  .step .sn{width:44px; height:44px; flex:0 0 44px; border-radius:12px; background:var(--blue); color:#fff;
+    font-size:21px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+  .step .st{font-size:21px; font-weight:800;}
+  .step .sd{font-size:16px; color:#4d5566; margin-top:6px; line-height:1.75;}
+  .step .sd code{background:#e9edf5; padding:2px 8px; border-radius:5px; font-family:Consolas,monospace; font-size:14.5px;}
+
+  .foot{text-align:center; color:var(--dim); font-size:15px; margin-top:50px;}
+
+  @media (max-width:900px){
+    .tally{grid-template-columns:1fr;}
+    .hero h1{font-size:34px;}
+    .sec-h h2{font-size:25px;}
+    .row{flex-wrap:wrap;}
+    .clock{flex:0 0 auto;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>🔌 컴퓨터를 켜면<br>이게 전부 뜬다</h1>
+    <div class="sub">미리토퍼캐슬 자동화 · 부팅/로그인 기준 전체 목록</div>
+    <div class="who">기준 PC <b>사무실 PC (A)</b> &nbsp;·&nbsp; Tailscale <b>100.99.181.104</b> &nbsp;·&nbsp; 마지막 점검 <b>2026-08-14</b></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="tally">
+    <div class="t ok">
+      <div class="n">23</div>
+      <div class="l">지금 잘 도는 것</div>
+      <div class="d">부팅 자동 17 + 시간 예약 6</div>
+    </div>
+    <div class="t fix">
+      <div class="n">6</div>
+      <div class="l">08-14 에 고친 것</div>
+      <div class="d">3개는 되살리고, 3개는 정리</div>
+    </div>
+    <div class="t todo">
+      <div class="n">3</div>
+      <div class="l">아직 남은 숙제</div>
+      <div class="d">손이 더 가야 끝나는 것</div>
+    </div>
+  </div>
+
+  <!-- ══════ 고친 것 ══════ -->
+  <div class="box green">
+    <h3>✅ 2026-08-14 에 고친 것</h3>
+    <div class="lead">전부 이 PC에서 실제로 돌려보고 확인했습니다. 재부팅 없이 지금 이미 돌고 있습니다.</div>
+    <div class="plist">
+
+      <div class="p">
+        <div class="x">1️⃣</div>
+        <div>
+          <div class="t2">그로스리스트봇 — 되살림</div>
+          <div class="d2">
+            <span class="was">원인</span> <code>그로스리스트봇.vbs</code> 만 <b>UTF-8</b>로 저장돼 있었습니다.
+            윈도우는 vbs 를 ANSI 로 읽기 때문에 한글 경로가 깨져서, 파일을 못 찾고 조용히 포기하고 있었습니다.
+            (같은 내용으로 테스트해 보니 UTF-8 = <b>못 찾음</b> / ANSI = <b>찾음</b>)
+            <br><span class="now">고침</span> <b>ANSI(cp949)로 다시 저장</b> → 지금 <code>growthlist_bot.py</code> 정상 실행 중.
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">2️⃣</div>
+        <div>
+          <div class="t2">완료이미지 감시 — 되살림</div>
+          <div class="d2">
+            <span class="was">원인</span> 켜주는 통로가 실패하던 예약작업 하나뿐이었습니다.
+            <br><span class="now">고침</span> 시작프로그램에 <code>완료이미지감시.vbs</code> 새로 만듦 (ANSI 저장) → <code>folder_watcher.py</code> 실행 중.
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">3️⃣</div>
+        <div>
+          <div class="t2">보스매니저봇 — 되살림</div>
+          <div class="d2">
+            <span class="was">원인</span> 위와 같음.
+            <br><span class="now">고침</span> 시작프로그램에 <code>보스매니저봇.vbs</code> 새로 만듦 → <code>boss_manager_bot.py</code> 실행 중.
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">4️⃣</div>
+        <div>
+          <div class="t2">미리토퍼 알림 10:30 · 11:30 — 고침</div>
+          <div class="d2">
+            <span class="was">원인</span> <code>C:\scripts\run_notification.bat</code> 이 UTF-8 인데 <code>chcp 65001</code> 줄이 없었습니다.
+            예약작업은 코드페이지 949 로 돌기 때문에 <code>cd /d</code> 가 실패 → py 를 못 찾음(결과 2).
+            <br>같은 UTF-8 인 <code>전체py실행.bat</code> 은 2번째 줄에 <code>chcp 65001</code> 이 있어서 멀쩡했습니다 — 그게 차이였습니다.
+            <br><span class="now">고침</span> <code>chcp 65001</code> 추가 + 파이썬 전체 경로로 변경. 949 환경에서 <b>cd 성공 · 파일 찾음</b> 확인.
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">5️⃣</div>
+        <div>
+          <div class="t2">예약작업 「봇전체시작」 — 사용 안 함으로</div>
+          <div class="d2">
+            <span class="was">원인</span> <code>powershell.exe -File</code> 만 쓰고 <b>-ExecutionPolicy Bypass 가 없어서</b>
+            <code>running scripts is disabled on this system</code> 으로 죽고 있었습니다.
+            게다가 켜려던 7개 중 5개가 시작프로그램과 <b>완전 중복</b>이었습니다.
+            <br><span class="now">고침</span> <b>삭제가 아니라 「사용 안 함」</b> 으로 돌려놨습니다. 필요한 2개(완료이미지·보스매니저)는 위에서 따로 살렸습니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">6️⃣</div>
+        <div>
+          <div class="t2">군인사진자동화 — 시작프로그램에서 뺌</div>
+          <div class="d2">
+            <span class="was">원인</span> vbs 가 찾는 <code>military_automation.py</code> 가 시작프로그램 폴더에 없습니다.
+            실제 파일은 <code>C:\Users\A\Documents\Codex\2026-07-23\...\military_automation\</code> 안에 있습니다 (임시 작업 폴더).
+            <br><span class="now">고침</span> 거기서 자동 실행하는 건 위험해서 <b>시작프로그램에서 빼서 보관</b>만 했습니다.
+            다시 쓰시려면 py 를 제대로 된 폴더로 옮기고 vbs 경로를 고쳐야 합니다.
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="tip b" style="margin-bottom:0">
+      <span class="hd">📦 되돌리고 싶으면</span>
+      건드린 원본은 전부 <code>C:\Users\A\startup_백업_20260814\</code> 에 그대로 있습니다.
+      (그로스리스트봇 원본 · run_notification.bat 원본 · 군인사진자동화.vbs)
+    </div>
+  </div>
+
+  <!-- ══════ 남은 숙제 ══════ -->
+  <div class="box amber">
+    <h3>🟠 아직 남은 숙제 3개</h3>
+    <div class="lead">여기부터는 손이 더 가야 끝납니다.</div>
+    <div class="plist">
+
+      <div class="p">
+        <div class="x">🔑</div>
+        <div>
+          <div class="t2">관리자 권한이 있어야 되는 것 2개</div>
+          <div class="d2">
+            ① <b>예약작업 기록(History)이 꺼져 있습니다.</b> 그래서 "왜 안 돌았지" 를 추적할 로그가 아예 안 남습니다. 이건 꼭 켜는 게 좋습니다.<br>
+            ② <b>미리토퍼_알림 10:30 · 11:30</b> 은 '놓친 실행 따라잡기' 설정을 못 바꿨습니다 (다른 작업 4개는 켰습니다).<br>
+            <b>관리자 권한으로 PowerShell 을 열고</b> 아래를 붙여넣으면 둘 다 끝납니다.
+          </div>
+          <div class="cmd"><button class="copy" onclick="cp(this)">복사</button><span class="c"># 관리자 권한 PowerShell 에서</span>
+wevtutil sl Microsoft-Windows-TaskScheduler/Operational /e:true
+
+foreach (<span style="color:#9ecbff">$n</span> in "미리토퍼_알림1030","미리토퍼_알림1130") {
+  <span style="color:#9ecbff">$t</span> = Get-ScheduledTask -TaskName <span style="color:#9ecbff">$n</span>
+  <span style="color:#9ecbff">$t</span>.Settings.StartWhenAvailable = <span style="color:#9ecbff">$true</span>
+  Set-ScheduledTask -InputObject <span style="color:#9ecbff">$t</span>
+}</div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">📉</div>
+        <div>
+          <div class="t2">광고 엑셀이 08-13 · 08-14 치 2일 비어 있음</div>
+          <div class="d2">
+            마지막으로 제대로 받아온 게 <b>08-12 09:00 (08-11 자료)</b> 입니다.
+            <code>광고데이터.json</code> 도 <b>08-12 23:40</b> 에 멈춰 있습니다.
+            그런데 CoupangAdReport 예약작업은 08-13 09:00 에 <b>결과 0(성공)</b> 으로 기록돼 있습니다 —
+            <b>성공이라고 하면서 아무것도 안 만든 것</b>입니다.
+            <br>→ <b>내일 09시 자동 실행 결과를 보기로</b> 했습니다. 그때도 안 늘면 <code>coupang_ad_report.bat</code> 의 1단계(ad_report)부터 손봐야 합니다.
+            <br>※ 쿠팡 수집은 봇차단 때문에 <b>수동으로 여러 번 돌리면 안 됩니다.</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="x">💳</div>
+        <div>
+          <div class="t2">네이버 광고비 체커 — 세션 만료</div>
+          <div class="d2">
+            08-13 10:40 자동 실행은 <b>결과 1(실패)</b>, 그 뒤 11:12 에 <b>수동으로 돌려서 성공</b>한 흔적이 있습니다 (잔액 84,095원).
+            자동으로 되려면 <b>네이버 로그인을 사람이 한 번 해줘야</b> 합니다. (저장된 계정 자동입력 → 초록 로그인 버튼)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="tip r">
+    <span class="hd">🧠 오늘 배운 것 — 한 줄로</span>
+    안 돌던 자동화는 <b>거의 다 「한글 경로 + 파일 인코딩」</b> 때문이었습니다.
+    <b>vbs 는 반드시 ANSI(cp949)</b> 로 저장하고, <b>bat 은 UTF-8 이면 두 번째 줄에 <code>chcp 65001</code></b> 을 넣으세요.
+    그리고 <b>ps1 을 예약작업에 걸 때는 반드시 <code>-ExecutionPolicy Bypass</code></b> 를 붙이세요. 이 세 가지만 지키면 오늘 같은 일이 안 납니다.
+  </div>
+
+  <!-- ══════ ① 시작프로그램 폴더 ══════ -->
+  <div class="sec">
+    <div class="sec-h"><div class="num">1</div><h2>로그인하면 바로 뜨는 것</h2></div>
+    <div class="sec-note">
+      시작프로그램 폴더에 들어 있는 것들. 이게 <b>진짜로 일하는 주력</b>입니다.<br>
+      <code>C:\Users\A\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup</code>
+    </div>
+    <div class="rows">
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🏢 토글봇 <span class="r-sub">주문·문의 자동화</span></div>
+        <div class="r-path">토글봇.vbs → <b>미리토퍼캐슬\코드\togle_bot.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🎨 디자인도우미봇 <span class="r-sub">요청 수신</span></div>
+        <div class="r-path">디자인도우미봇.vbs → <b>미리토퍼캐슬\코드\bot_receiver.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🖍️ 디자인자동화봇</div>
+        <div class="r-path">디자인자동화봇.vbs → <b>★메모장&amp;디자인★\토글자동화\디자인봇.py poll</b><br>로그: 토글자동화\봇_출력.log</div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">📝 메모장 엑셀연동</div>
+        <div class="r-path">메모장디자인.vbs → <b>★메모장&amp;디자인★\메모장_엑셀연동.py</b><br>로그: 메모장_출력.log</div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">👁️ 메모장·디자인봇 감시기</div>
+        <div class="r-path">메모장디자인_감시기.vbs — <b>5분마다</b> 위 두 개가 살아있는지 보고 죽었으면 다시 띄움<br>로그: ★메모장&amp;디자인★\감시기_로그.txt</div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">📊 상품관리 서버</div>
+        <div class="r-path">상품관리서버_숨김시작.vbs → <b>미리토퍼캐슬\광고분석\상품관리_서버.py</b></div>
+      </div><div class="port">:5127</div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">📈 광고리포트 서버</div>
+        <div class="r-path">광고리포트서버_숨김시작.vbs → <b>미리토퍼캐슬\광고분석\ads_rebuild_server.py</b></div>
+      </div><div class="port">:5125</div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">📦 그로스봇</div>
+        <div class="r-path">그로스봇_숨김시작.vbs → 런처바로가기\새로운그로스\봇_루프실행.bat → <b>bot.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🌐 그로스 웹</div>
+        <div class="r-path">그로스웹_숨김시작.vbs → 런처바로가기\새로운그로스\웹_루프실행.bat → <b>app.py</b></div>
+      </div><div class="port">:5124</div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🧭 사이트매니저봇 <span class="r-sub">손익·집안일</span></div>
+        <div class="r-path">사이트매니저봇.vbs → 새로운그로스\boss_루프실행.bat → <b>boss_bot.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🏠 홈베이스봇</div>
+        <div class="r-path">홈베이스봇.vbs → 런처바로가기\homebase_bot\homebase_loop.bat → <b>homebase_bot.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row new"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">📋 그로스리스트봇 <span class="tag">08-14 되살림</span></div>
+        <div class="r-path">그로스리스트봇.vbs → <b>미리토퍼캐슬\코드\growthlist_bot.py</b><br>※ 이 파일은 <b>반드시 ANSI(cp949)</b> 로 저장할 것</div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row new"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🖼️ 완료이미지 감시 <span class="tag">08-14 새로 만듦</span></div>
+        <div class="r-path">완료이미지감시.vbs → <b>미리토퍼캐슬\코드\folder_watcher.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row new"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🗂️ 보스매니저봇 <span class="tag">08-14 새로 만듦</span></div>
+        <div class="r-path">보스매니저봇.vbs → <b>미리토퍼캐슬\코드\boss_manager_bot.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🚀 바로가기 런처</div>
+        <div class="r-path">shortcut_launcher - 바로 가기.lnk → <b>런처바로가기\shortcut_launcher.py</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🕘 출퇴근 · 검색사이트 3종</div>
+        <div class="r-path">전체py실행 - 바로 가기 (2).lnk → <b>G:\내 드라이브\전체py실행.bat</b><br>
+          출퇴근\attendance_suren\attendance_server.py · 검색사이트\app.py · 출퇴근\attendance_server.py<br>
+          20초 기다렸다 켜고, 마지막에 http://192.168.0.38:5123/eun 을 자동으로 엽니다</div>
+      </div><div class="port">:5000 :5001 :5123</div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">✂️ Snipaste <span class="r-sub">캡처 도구 · 자동화 아님</span></div>
+        <div class="r-path">D:\Desktop\Snipaste-2.10.8-x64\Snipaste.exe</div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🔗 AnyDesk · Tailscale <span class="r-sub">공용 시작프로그램</span></div>
+        <div class="r-path">원격접속 · 집에서 사무실 서버(100.99.181.104)에 붙는 통로. <b>이게 꺼지면 집에서 아무것도 못 봅니다.</b></div>
+      </div><div class="pill on">켜짐</div></div>
+
+      <div class="row"><div class="dot gray"></div><div class="r-main">
+        <div class="r-name">🎖️ 군인사진자동화 <span class="r-sub">08-14 에 뺌</span></div>
+        <div class="r-path">→ <b>C:\Users\A\startup_백업_20260814\군인사진자동화.vbs</b> 에 보관 중</div>
+      </div><div class="pill gray">보관</div></div>
+
+    </div>
+  </div>
+
+  <!-- ══════ ② 예약작업 - 로그온 ══════ -->
+  <div class="sec">
+    <div class="sec-h"><div class="num">2</div><h2>로그인 때 도는 예약작업</h2></div>
+    <div class="sec-note">작업스케줄러(<code>taskschd.msc</code>) 안에 있는 것들 중 <b>로그온 트리거</b>인 것.</div>
+    <div class="rows">
+
+      <div class="row"><div class="dot on"></div><div class="r-main">
+        <div class="r-name">🤖 Claude자동실행</div>
+        <div class="r-path"><b>wt.exe powershell -NoExit -Command claude</b> — 로그인하면 터미널에 클로드코드가 자동으로 뜸</div>
+      </div><div class="pill on">정상</div></div>
+
+      <div class="row"><div class="dot gray"></div><div class="r-main">
+        <div class="r-name">🧨 봇전체시작 <span class="r-sub">08-14 에 사용 안 함으로</span></div>
+        <div class="r-path">C:\Users\A\start_all_bots.ps1 — 실행정책 때문에 늘 실패했고, 시작프로그램과 5개 중복이었음</div>
+      </div><div class="pill gray">사용 안 함</div></div>
+
+    </div>
+  </div>
+
+  <!-- ══════ ③ 예약작업 - 시간 ══════ -->
+  <div class="sec">
+    <div class="sec-h"><div class="num">3</div><h2>시간 맞춰 저절로 도는 것</h2></div>
+    <div class="sec-note">사람이 안 켜도 시각이 되면 알아서 돕니다. 봇이 꺼져 있어도 이건 따로 돕니다.</div>
+    <div class="rows">
+
+      <div class="row"><div class="dot on"></div>
+        <div class="clock"><div class="big">20분 · 45분</div><div class="small">매시간</div></div>
+        <div class="r-main">
+          <div class="r-name">🛒 쿠팡 매출수집 <span class="r-sub">CoupangSalesCheck</span></div>
+          <div class="r-path">C:\Users\A\coupang_run.bat → <b>coupang_runner.py</b></div>
+        </div><div class="pill on">정상</div></div>
+
+      <div class="row"><div class="dot on"></div>
+        <div class="clock"><div class="big">07:00</div><div class="small">매일</div></div>
+        <div class="r-main">
+          <div class="r-name">💰 쿠팡 광고비 체크 <span class="r-sub">CoupangAdCheck</span></div>
+          <div class="r-path">coupang_run.bat &nbsp;·&nbsp; <b>08-14: 놓친 실행 따라잡기 켬</b></div>
+        </div><div class="pill on">정상</div></div>
+
+      <div class="row"><div class="dot on"></div>
+        <div class="clock"><div class="big">07:20</div><div class="small">매일</div></div>
+        <div class="r-main">
+          <div class="r-name">🐼 몽몽토퍼 수집 <span class="r-sub">CoupangMongmongCheck</span></div>
+          <div class="r-path">coupang_run.bat &nbsp;·&nbsp; <b>08-14: 놓친 실행 따라잡기 켬</b></div>
+        </div><div class="pill on">정상</div></div>
+
+      <div class="row"><div class="dot man"></div>
+        <div class="clock"><div class="big">09:00</div><div class="small">매일</div></div>
+        <div class="r-main">
+          <div class="r-name">📥 쿠팡 광고보고서 자동다운 <span class="r-sub">CoupangAdReport</span></div>
+          <div class="r-path"><b>C:\Users\A\coupang_ad_report.bat</b> — 3단계로 돕니다<br>
+            ① coupang_checker.py ad_report 미리토퍼 (어제치 + 빠진 날짜 보충)<br>
+            ② make_ads_report.py (광고데이터.json 다시 만들기)<br>
+            ③ make_product_gallery.ps1 (상품관리.html 다시 만들기)</div>
+          <div class="r-why">⚠ 결과는 '성공'인데 08-13 · 08-14 치 엑셀이 안 들어옴 — 내일 09시 결과를 보고 판단</div>
+        </div><div class="pill man">확인 필요</div></div>
+
+      <div class="row"><div class="dot on"></div>
+        <div class="clock"><div class="big">10분마다</div><div class="small">하루 종일</div></div>
+        <div class="r-main">
+          <div class="r-name">🩺 쿠팡 세션 감시 <span class="r-sub">CoupangSessionWatchdog</span></div>
+          <div class="r-path">coupang_session_watchdog.ps1 — 엣지 9301·9302 가 응답하는지 보고, 먹통이면 죽여서 다음 실행 때 새로 뜨게 함<br>
+            로그(<b>문제가 있을 때만 생김</b>): C:\Users\A\coupang_watchdog_log.txt — 지금까지 한 번도 안 생겼습니다 = 세션은 계속 멀쩡했다는 뜻</div>
+        </div><div class="pill on">정상</div></div>
+
+      <div class="row"><div class="dot on"></div>
+        <div class="clock"><div class="big">5분마다</div><div class="small">하루 종일</div></div>
+        <div class="r-main">
+          <div class="r-name">📷 미리토퍼 사진 자동백업</div>
+          <div class="r-path"><b>미리토퍼캐슬\미리토퍼_사진백업\_자동백업.py</b></div>
+        </div><div class="pill on">정상</div></div>
+
+      <div class="row down"><div class="dot off"></div>
+        <div class="clock"><div class="big">10:40</div><div class="small">매일</div></div>
+        <div class="r-main">
+          <div class="r-name">💳 네이버 광고비 잔액 체크 <span class="r-sub">NaverAdBalanceCheck</span></div>
+          <div class="r-path">naver_ad_run.bat → <b>코드\naver_checker\naver_ad_checker.py</b> &nbsp;·&nbsp; <b>08-14: 놓친 실행 따라잡기 켬</b></div>
+          <div class="r-why">⚠ 세션 만료 — 네이버 로그인을 사람이 한 번 해줘야 자동으로 돌아옵니다</div>
+        </div><div class="pill off">로그인 필요</div></div>
+
+      <div class="row"><div class="dot on"></div>
+        <div class="clock"><div class="big">10:30·11:30</div><div class="small">매일 두 번</div></div>
+        <div class="r-main">
+          <div class="r-name">🔔 미리토퍼 알림 <span class="tag">08-14 고침</span></div>
+          <div class="r-path">C:\scripts\run_notification.bat → <b>코드\send_notification.py</b><br>
+            chcp 65001 추가 + 파이썬 전체경로로 변경 — 내일 10:30 부터 정상 동작 예상</div>
+        </div><div class="pill on">고침</div></div>
+
+    </div>
+  </div>
+
+  <!-- ══════ ④ 손으로 ══════ -->
+  <div class="sec">
+    <div class="sec-h"><div class="num">4</div><h2>손으로 켜야 하는 것</h2></div>
+    <div class="sec-note">이건 <b>부팅해도 저절로 안 뜹니다.</b> 쿠팡·토글 로그인이 사람 손을 타야 해서요.</div>
+    <div class="rows">
+
+      <div class="row"><div class="dot man"></div><div class="r-main">
+        <div class="r-name">🟦 미리토퍼 엣지 세션</div>
+        <div class="r-path">프로필 <b>C:\Users\A\edge_profiles\미리토퍼</b> · 쿠팡 WING 로그인 유지용</div>
+      </div><div class="port">:9301</div><div class="pill man">수동</div></div>
+
+      <div class="row"><div class="dot man"></div><div class="r-main">
+        <div class="r-name">🟪 몽몽토퍼 엣지 세션</div>
+        <div class="r-path">프로필 <b>C:\Users\A\edge_profiles\몽몽토퍼</b></div>
+      </div><div class="port">:9302</div><div class="pill man">수동</div></div>
+
+      <div class="row"><div class="dot man"></div><div class="r-main">
+        <div class="r-name">🟧 토글 엣지 세션</div>
+        <div class="r-path">프로필 <b>C:\Users\A\edge_profiles\토글</b> · togle.io 주문 자동화용</div>
+      </div><div class="port">:9401</div><div class="pill man">수동</div></div>
+
+    </div>
+    <div class="tip y">
+      <span class="hd">💡 "Access Denied" 가 뜨면</span>
+      쿠팡 봇차단(Akamai)에 걸린 겁니다. <b>브라우저 데이터를 지우고 손으로 다시 로그인</b>하세요.
+      창은 <b>-2000, 0</b> 위치로 숨겨 두면 화면을 안 가립니다. 계정이 맞는지는 <b>창 제목</b>으로 확인하세요.
+    </div>
+  </div>
+
+  <!-- ══════ ⑤ 포트 ══════ -->
+  <div class="sec">
+    <div class="sec-h"><div class="num">5</div><h2>포트 지도</h2></div>
+    <div class="sec-note">집에서는 앞에 <code>http://100.99.181.104:</code> 를 붙이면 그대로 열립니다 (Tailscale 켜져 있을 때).</div>
+    <div class="rows">
+      <div class="row"><div class="port">5000</div><div class="r-main"><div class="r-name">출퇴근 (수련)</div><div class="r-path">출퇴근\attendance_suren\attendance_server.py</div></div></div>
+      <div class="row"><div class="port">5001</div><div class="r-main"><div class="r-name">출퇴근</div><div class="r-path">출퇴근\attendance_server.py</div></div></div>
+      <div class="row"><div class="port">5123</div><div class="r-main"><div class="r-name">검색사이트</div><div class="r-path">검색사이트\app.py — 자동으로 /eun 페이지가 열림</div></div></div>
+      <div class="row"><div class="port">5124</div><div class="r-main"><div class="r-name">그로스 웹 (재고 뷰어)</div><div class="r-path">런처바로가기\새로운그로스\app.py</div></div></div>
+      <div class="row"><div class="port">5125</div><div class="r-main"><div class="r-name">광고리포트 서버</div><div class="r-path">미리토퍼캐슬\광고분석\ads_rebuild_server.py</div></div></div>
+      <div class="row"><div class="port">5127</div><div class="r-main"><div class="r-name">상품관리 · 광고관리 <span class="r-sub">제일 많이 쓰는 것</span></div><div class="r-path">미리토퍼캐슬\광고분석\상품관리_서버.py &nbsp;·&nbsp; 이 서버가 <b>G:\내 드라이브 전체</b>를 열어주기 때문에,<br>이 시스템맵도 <b>http://100.99.181.104:5127/미리토퍼캐슬/미리토퍼캐슬_시스템맵.html</b> 로 집에서 볼 수 있습니다</div></div></div>
+      <div class="row"><div class="port">9301</div><div class="r-main"><div class="r-name">엣지 — 미리토퍼</div><div class="r-path">쿠팡 로그인 세션 (CDP)</div></div></div>
+      <div class="row"><div class="port">9302</div><div class="r-main"><div class="r-name">엣지 — 몽몽토퍼</div><div class="r-path">쿠팡 로그인 세션 (CDP)</div></div></div>
+      <div class="row"><div class="port">9401</div><div class="r-main"><div class="r-name">엣지 — 토글</div><div class="r-path">togle.io 세션 (CDP)</div></div></div>
+    </div>
+  </div>
+
+  <!-- ══════ ⑥ 집에서 살리기 ══════ -->
+  <div class="sec">
+    <div class="sec-h"><div class="num">6</div><h2>사무실 PC 없이 집에서 살리는 법</h2></div>
+    <div class="sec-note">이 페이지만 집 PC 클로드코드에 보여주면 그대로 따라 할 수 있게 적어둡니다.</div>
+
+    <div class="tip b">
+      <span class="hd">🚨 제일 먼저 — 텔레그램 봇은 한 PC에서만</span>
+      togle_bot · bot_receiver · bot(그로스) · growthlist_bot · boss_bot · boss_manager_bot · homebase_bot 은 <b>텔레그램 봇</b>입니다.
+      사무실 PC가 켜져 있는 채로 집에서 또 켜면 <b>둘 다 먹통</b>이 됩니다.<br>
+      → 집에서 봇까지 켜려면 <b>사무실 PC의 봇을 먼저 끄거나, 사무실 PC를 꺼야</b> 합니다.
+      웹서버(5124·5125·5127)와 수집 예약작업은 겹쳐도 괜찮습니다.
+    </div>
+
+    <div class="tip y">
+      <span class="hd">✍️ 파일 만들 때 꼭 지킬 것 (오늘 사고 원인)</span>
+      · <b>vbs 는 ANSI(cp949)</b> 로 저장 — UTF-8 로 저장하면 한글 경로가 깨져서 조용히 안 돕니다<br>
+      · <b>bat 이 UTF-8 이면 2번째 줄에 <code>chcp 65001 >nul</code></b> 을 반드시 넣기<br>
+      · <b>ps1 을 예약작업에 걸 때는 <code>-ExecutionPolicy Bypass</code></b> 를 반드시 붙이기
+    </div>
+
+    <div style="background:#fff;border:3px solid var(--line);border-radius:18px;padding:8px 26px;">
+      <div class="step"><div class="sn">1</div><div>
+        <div class="st">먼저 갖춰야 하는 것</div>
+        <div class="sd">
+          · <b>구글드라이브</b>가 <code>G:</code> 로 붙어 있을 것 (다른 문자면 경로를 전부 바꿔야 합니다)<br>
+          · <b>Python 3.13</b> — <code>C:\Users\사용자\AppData\Local\Programs\Python\Python313\</code><br>
+          · <b>Tailscale</b> 로그인 (사무실 것을 볼 때만 필요)<br>
+          · 패키지: <code>pip install flask patchright openpyxl pandas python-telegram-bot requests</code>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="sn">2</div><div>
+        <div class="st">서버 3개만 먼저 켜기 (제일 안전)</div>
+        <div class="sd">봇이 아니라서 사무실 PC와 같이 켜져 있어도 아무 문제 없습니다.</div>
+        <div class="cmd"><button class="copy" onclick="cp(this)">복사</button><span class="c"># 상품관리·광고관리 (5127)</span>
+python -X utf8 "G:\내 드라이브\미리토퍼캐슬\광고분석\상품관리_서버.py"
+
+<span class="c"># 광고리포트 (5125)</span>
+python -X utf8 "G:\내 드라이브\미리토퍼캐슬\광고분석\ads_rebuild_server.py"
+
+<span class="c"># 그로스 웹 (5124)</span>
+cd /d "G:\내 드라이브\런처바로가기\새로운그로스" &amp;&amp; python -X utf8 app.py</div>
+      </div></div>
+
+      <div class="step"><div class="sn">3</div><div>
+        <div class="st">시작프로그램 폴더 통째로 옮기기</div>
+        <div class="sd">
+          사무실 PC의 이 폴더를 집 PC의 같은 자리에 복사하면 <b>부팅 자동실행이 그대로 재현</b>됩니다.
+          단, <b>봇 vbs 는 빼고</b> 복사하세요 (위 경고). 복사한 뒤에는 <b>인코딩이 ANSI 인지</b> 꼭 확인하세요.
+        </div>
+        <div class="cmd"><button class="copy" onclick="cp(this)">복사</button><span class="c"># 시작프로그램 폴더 열기 — 양쪽 PC에서 똑같이</span>
+explorer shell:startup
+
+<span class="c"># 지금 뭐가 들어있는지 보기</span>
+dir "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"</div>
+      </div></div>
+
+      <div class="step"><div class="sn">4</div><div>
+        <div class="st">예약작업 옮기기</div>
+        <div class="sd">
+          쿠팡·네이버 수집은 예약작업입니다. 사무실 PC에서 <b>내보내기(XML)</b> 하고 집 PC에서 <b>가져오기</b> 하면 됩니다.<br>
+          <code>C:\Users\A\</code> 안의 파일들도 같이 복사해야 합니다
+          (<code>coupang_run.bat</code> · <code>coupang_ad_report.bat</code> · <code>naver_ad_run.bat</code> ·
+          <code>coupang_session_watchdog.ps1</code> · <code>coupang_runner.py</code>), 그리고 <code>C:\scripts\run_notification.bat</code> 도요.
+        </div>
+        <div class="cmd"><button class="copy" onclick="cp(this)">복사</button><span class="c"># 사무실 PC — 예약작업 내보내기</span>
+schtasks /query /xml /tn "CoupangSalesCheck"      &gt; C:\temp\CoupangSalesCheck.xml
+schtasks /query /xml /tn "CoupangAdCheck"         &gt; C:\temp\CoupangAdCheck.xml
+schtasks /query /xml /tn "CoupangMongmongCheck"   &gt; C:\temp\CoupangMongmongCheck.xml
+schtasks /query /xml /tn "CoupangAdReport"        &gt; C:\temp\CoupangAdReport.xml
+schtasks /query /xml /tn "CoupangSessionWatchdog" &gt; C:\temp\CoupangSessionWatchdog.xml
+schtasks /query /xml /tn "NaverAdBalanceCheck"    &gt; C:\temp\NaverAdBalanceCheck.xml
+
+<span class="c"># 집 PC — 가져오기</span>
+schtasks /create /xml C:\temp\CoupangSalesCheck.xml /tn "CoupangSalesCheck"</div>
+      </div></div>
+
+      <div class="step"><div class="sn">5</div><div>
+        <div class="st">쿠팡·토글 엣지 세션 띄우기</div>
+        <div class="sd">
+          이건 <b>손으로 로그인</b>해야 합니다. 프로필 폴더를 따로 쓰기 때문에, 창을 띄우고 한 번 로그인해 두면 계속 유지됩니다.
+        </div>
+        <div class="cmd"><button class="copy" onclick="cp(this)">복사</button><span class="c"># 미리토퍼 (쿠팡)</span>
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9301 --no-first-run --no-default-browser-check --user-data-dir="C:\Users\A\edge_profiles\미리토퍼"
+
+<span class="c"># 몽몽토퍼 (쿠팡)</span>
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9302 --no-first-run --no-default-browser-check --user-data-dir="C:\Users\A\edge_profiles\몽몽토퍼"
+
+<span class="c"># 토글</span>
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9401 --no-first-run --no-default-browser-check --user-data-dir="C:\Users\A\edge_profiles\토글"</div>
+      </div></div>
+
+      <div class="step"><div class="sn">6</div><div>
+        <div class="st">제대로 떴는지 확인</div>
+        <div class="sd">이 두 줄이면 지금 뭐가 살아있는지 한눈에 보입니다.</div>
+        <div class="cmd"><button class="copy" onclick="cp(this)">복사</button><span class="c"># 파이썬으로 도는 것 전부</span>
+powershell "Get-CimInstance Win32_Process -Filter \"Name LIKE '%python%'\" | ForEach-Object { $_.CommandLine }"
+
+<span class="c"># 열려 있는 포트</span>
+powershell "Get-NetTCPConnection -State Listen | Where-Object { $_.LocalPort -in 5000,5001,5123,5124,5125,5127,9301,9302,9401 } | Sort-Object LocalPort -Unique"</div>
+      </div></div>
+
+    </div>
+  </div>
+
+  <div class="tip y">
+    <span class="hd">📌 기억해 둘 것</span>
+    · 이 시스템은 <b>구글드라이브 G:</b> 위에 얹혀 있습니다. 드라이브가 안 붙으면 vbs 들이 최대 60초 기다렸다 포기합니다.<br>
+    · 상품관리 화면의 <b>메모·장바구니·작업목록</b>은 <code>광고분석\상품관리_상태.json</code> 에 저장돼 드라이브로 동기화됩니다.<br>
+    · 쿠팡 수집은 <b>수동으로 여러 번 돌리면 안 됩니다</b> (봇차단 위험). 요청당 한 번만.<br>
+    · 예전 <code>start_all.ps1</code> · <code>전체시작.bat</code> · <code>자동시작_등록.bat</code> 은 <b>지금 안 쓰입니다.</b>
+      시작프로그램 폴더 방식으로 갈아탄 뒤 남아 있는 옛 방식입니다.
+  </div>
+
+  <div class="foot">
+    2026-08-14 점검 · 사무실 PC에서 실제로 돌고 있는 프로세스·시작프로그램·예약작업을 직접 읽고, 고친 뒤 다시 확인한 목록입니다.<br>
+    예전 기능 설명 지도는 <b>미리토퍼캐슬_시스템맵_예전_기능도메인.html</b> 로 남겨 뒀습니다.
+  </div>
+
+</div>
+
+<script>
+  function cp(btn){
+    var box = btn.parentNode.cloneNode(true);
+    var b = box.querySelector('.copy'); if(b) b.remove();
+    var txt = box.innerText.replace(/\u00a0/g,' ');
+    navigator.clipboard.writeText(txt).then(function(){
+      btn.textContent='복사됨 ✓'; btn.classList.add('done');
+      setTimeout(function(){ btn.textContent='복사'; btn.classList.remove('done'); }, 1500);
+    });
+  }
+</script>
+</body>
+</html>
