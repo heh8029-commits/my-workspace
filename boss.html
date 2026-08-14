@@ -1227,8 +1227,11 @@ body.mode-mob .mobile-subnav{display:flex!important}
 .pnl-calc-del:hover{background:#FFE8E8;color:#E03A3A}
 .pnl-calc-drag{cursor:grab;color:#D0D0D0;font-size:.85rem;flex-shrink:0;padding:0 2px;user-select:none}
 .pnl-calc-row.drag-over{outline:2px dashed #C4714A;border-radius:7px}
+.pnl-calc-check{width:15px;height:15px;flex-shrink:0;margin:0;accent-color:#E03A3A;cursor:pointer}
+.pnl-calc-row.off .pnl-calc-name,.pnl-calc-row.off .pnl-calc-amount,.pnl-calc-row.off .pnl-calc-pct{opacity:.35}
 .pnl-calc-total{display:flex;align-items:center;gap:5px;padding:7px 0;margin-top:3px;background:#FFF6F4;border-radius:9px}
 .pnl-calc-total-label{flex:1;padding:0 7px;font-size:.8rem;font-weight:800;color:#996055;min-width:0}
+.pnl-calc-total-sub{font-size:.69rem;font-weight:700;color:#BCA9A2;margin-left:5px}
 .pnl-calc-total-amount{width:110px;padding:0 7px;font-size:.86rem;font-weight:800;color:#E03A3A;text-align:right;flex-shrink:0}
 .pnl-calc-total-pct{width:36px;font-size:.71rem;font-weight:800;color:#E03A3A;text-align:right;flex-shrink:0}
 .pnl-calc-total-gap{width:52px;flex-shrink:0}
@@ -4122,19 +4125,23 @@ function renderCalc(){
         onchange="onCalcAmtChange('income',${i},this.value)" onblur="saveCalcData()">
       <button class="pnl-calc-del" onclick="delCalcRow('income',${i})">✕</button>
     </div>`).join('');
-  let expPctSum = 0;   // 화면에 보이는 %를 그대로 더해서 합계가 눈으로 맞아떨어지게
+  // 합계에 넣을 항목만 체크. sel이 없으면(기존 데이터) 체크된 것으로 본다.
+  let expPctSum = 0, selExp = 0, selCnt = 0;   // %는 화면에 보이는 값을 그대로 더해서 눈으로 맞아떨어지게
   const expRows = calcData.expenses.map((r,i)=>{
     const amt = _calcExpAmount(r, totalInc);
     const hasPct = r.pct != null && r.pct !== '';
     const dispPct = totalInc && amt ? (amt/totalInc*100).toFixed(1) : '0';
-    expPctSum += parseFloat(dispPct);
+    const on = _calcSelOn(r);
+    if(on){ selExp += amt; selCnt++; expPctSum += parseFloat(dispPct); }
     return `
-    <div class="pnl-calc-row" draggable="true"
+    <div class="pnl-calc-row${on?'':' off'}" draggable="true"
       ondragstart="calcExpDragStart(${i})"
       ondragover="calcExpDragOver(event,${i})"
       ondragleave="this.classList.remove('drag-over')"
       ondrop="calcExpDrop(event,${i})"
       ondragend="calcExpDragEnd()">
+      <input type="checkbox" class="pnl-calc-check" ${on?'checked':''}
+        onchange="toggleCalcSel(${i},this.checked)" title="합계에 포함">
       <span class="pnl-calc-drag">⠿</span>
       <input class="pnl-calc-name" value="${r.name.replace(/"/g,'&quot;')}" placeholder="항목명"
         onchange="calcData.expenses[${i}].name=this.value" onblur="saveCalcData()">
@@ -4147,11 +4154,15 @@ function renderCalc(){
       <button class="pnl-calc-del" onclick="delCalcRow('expenses',${i})">✕</button>
     </div>`;
   }).join('');
-  const expTotalRow = calcData.expenses.length ? `
+  const expCnt = calcData.expenses.length;
+  const partial = selCnt < expCnt;   // 일부만 체크했으면 전체 금액도 같이 보여준다
+  const expTotalRow = expCnt ? `
     <div class="pnl-calc-total">
+      <input type="checkbox" class="pnl-calc-check" id="pnl-calc-check-all" ${selCnt===expCnt?'checked':''}
+        onchange="toggleCalcSelAll(this.checked)" title="전체 선택/해제">
       <span class="pnl-calc-drag" style="visibility:hidden">⠿</span>
-      <span class="pnl-calc-total-label">합계 ${calcData.expenses.length}건</span>
-      <span class="pnl-calc-total-amount">${_fmtAmt(totalExp)}</span>
+      <span class="pnl-calc-total-label">합계 ${selCnt}건${partial?`<span class="pnl-calc-total-sub">전체 ${expCnt}건 ${_fmtAmt(totalExp)}원</span>`:''}</span>
+      <span class="pnl-calc-total-amount">${_fmtAmt(selExp)}</span>
       <span class="pnl-calc-total-pct">${expPctSum.toFixed(1)}%</span>
       <span class="pnl-calc-total-gap"></span>
       <span class="pnl-calc-total-gap2"></span>
@@ -4191,6 +4202,23 @@ function renderCalc(){
     ${expRows}
     ${expTotalRow}
   </div>`;
+  // 일부만 선택된 상태는 속성으로 못 주므로 렌더 후에 설정
+  const allBox = document.getElementById('pnl-calc-check-all');
+  if(allBox) allBox.indeterminate = selCnt > 0 && selCnt < expCnt;
+}
+
+function _calcSelOn(r){ return r.sel !== false; }   // 기존 데이터엔 sel이 없음 → 체크된 것으로
+
+function toggleCalcSel(idx, on){
+  calcData.expenses[idx].sel = on;
+  renderCalc();
+  saveCalcData();
+}
+
+function toggleCalcSelAll(on){
+  calcData.expenses.forEach(r=>{ r.sel = on; });
+  renderCalc();
+  saveCalcData();
 }
 
 function onCalcAmtChange(type, idx, val){
