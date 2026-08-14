@@ -8092,7 +8092,31 @@ async function cardImgClipboard(url){
     const r=await fetch(url);const blob=await r.blob();
     await navigator.clipboard.write([new ClipboardItem({[blob.type]:blob})]);
     _cardShowToast('이미지 클립보드 복사됨!');
-  }catch(e){window.open(url,'_blank');}
+  }catch(e){
+    // http 사이트에선 클립보드 API가 막혀 있다. 새 창을 띄우지 말고 알려만 준다.
+    _cardShowToast('복사가 안 되는 브라우저예요. 이미지에서 우클릭 → 복사');
+  }
+}
+// 이미지 클릭 → 원본 모달. 원본 바깥을 누르거나 ESC로 닫힌다.
+function cardOpenFullImg(url){
+  if(!url)return;
+  cardHoverOut();
+  document.getElementById('card-full-img')?.remove();
+  const m=document.createElement('div');
+  m.id='card-full-img';
+  m.setAttribute('tabindex','-1');
+  m.style.cssText='position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;padding:34px;cursor:zoom-out;outline:none';
+  m.innerHTML=`
+    <button class="_cfi-x" title="닫기" style="position:fixed;top:16px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.16);border:none;color:#fff;font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    <button class="_cfi-copy" style="position:fixed;top:16px;right:66px;height:36px;padding:0 15px;border-radius:20px;background:rgba(255,255,255,.16);border:none;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">📋 복사</button>
+    <img src="${url}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;box-shadow:0 10px 50px rgba(0,0,0,.55);cursor:default;display:block">`;
+  const close=()=>m.remove();
+  m.onclick=e=>{ if(e.target===m) close(); };   // 원본 바깥만 닫힘
+  m.onkeydown=e=>{ if(e.key==='Escape') close(); };
+  m.querySelector('._cfi-x').onclick=close;
+  m.querySelector('._cfi-copy').onclick=e=>{ e.stopPropagation(); cardImgClipboard(url); };
+  document.body.appendChild(m);
+  m.focus();
 }
 function _cardShowToast(msg){
   const t=document.createElement('div');
@@ -8139,9 +8163,9 @@ function _cardThumbs(subs,cardId){
   const list=(subs||[]).filter(Boolean);
   const thumbs=list.map((u,i)=>`
     <div style="position:relative;width:38px;height:38px;flex-shrink:0;border-radius:7px;overflow:hidden;border:1px solid #EDE8E1;background:#F5F0EB">
-      <img src="${u}" title="클릭 → 클립보드 복사" style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer"
+      <img src="${u}" title="클릭 → 원본 크게 보기" style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in"
         onmouseenter="cardHoverImg(event,'${u}')" onmousemove="cardHoverMove(event)" onmouseleave="cardHoverOut()"
-        onclick="cardHoverOut();cardImgClipboard('${u}')">
+        onclick="cardOpenFullImg('${u}')">
       <button onclick="event.stopPropagation();cardHoverOut();cardDelSubImg(${cardId},${i})" title="빼기"
         style="position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;border:none;background:#E03A3A;color:#fff;font-size:.5rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>
     </div>`).join('');
@@ -8153,12 +8177,12 @@ function _cardThumbs(subs,cardId){
   </div>`;
 }
 
-// 왼쪽 큰 카드사진. 사진을 누르면 클립보드 복사, 모서리 '변경'을 누르면 교체.
+// 왼쪽 큰 카드사진. 사진을 누르면 원본 모달, 모서리 '변경'을 누르면 교체.
 function _cardImgBox(url,cardId){
   if(url){
     return `<div style="width:100%;height:100%;position:relative;overflow:hidden;background:#F5F0EB">
-      <img src="${url}" onclick="cardImgClipboard('${url}')" title="클릭 → 클립보드 복사"
-        style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer">
+      <img src="${url}" onclick="cardOpenFullImg('${url}')" title="클릭 → 원본 크게 보기"
+        style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in">
       <button onclick="event.stopPropagation();cardPickImg(${cardId},'main')" title="사진 바꾸기"
         style="position:absolute;right:6px;bottom:6px;padding:3px 9px;border-radius:20px;border:none;background:rgba(255,255,255,.92);color:#C4714A;font-size:.62rem;font-weight:700;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.18)">변경</button>
     </div>`;
