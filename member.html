@@ -2369,6 +2369,9 @@ async function renderAdmin(){
   for(const h of['월','화','수','목','금','토','일'])
     cal+=`<div class="admin-cal-hd">${h}</div>`;
 
+  // 달력에서는 빼는 사람 (누적표·급여에는 그대로 나온다)
+  const calHide=new Set(activeMembers.filter(m=>m.name==='유민호').map(m=>m.id));
+
   const todayMid=new Date(); todayMid.setHours(0,0,0,0);
   const cur=new Date(calStart);
   while(cur<=calEnd){
@@ -2379,7 +2382,8 @@ async function renderAdmin(){
     const isPastWeekday=inP&&!isSat&&!isSun&&cur<todayMid;
     const dayMems=dayData[ds]||{};
     let dayTotal=0;
-    for(const mid of Object.keys(dayMems)) if(!dayMems[mid].isOff) dayTotal+=dayMems[mid].totalMin;
+    // 이름을 뺐으면 합계에서도 빼야 숫자가 맞는다
+    for(const mid of Object.keys(dayMems)) if(!dayMems[mid].isOff&&!calHide.has(mid)) dayTotal+=dayMems[mid].totalMin;
     const dth=Math.floor(dayTotal/60),dtm=dayTotal%60;
     const weBadge=(isSat||isSun)&&inP?`<span style="font-size:.55rem;background:var(--pink-dark);color:white;border-radius:5px;padding:0 4px">주말</span>`:'';
     cal+=`<div class="admin-cal-day${inP?'':' out-period'}${isSat?' saturday':''}${isSun?' sunday':''}">
@@ -2387,6 +2391,7 @@ async function renderAdmin(){
       ${dayTotal>0?`<div class="admin-cal-total">🕐 ${dth}시간${dtm?' '+dtm+'분':''}</div>`:''}`;
     for(let i=0;i<activeMembers.length;i++){
       const m=activeMembers[i];
+      if(calHide.has(m.id)) continue;
       const md=dayMems[m.id];
       const color=COLORS[i%COLORS.length];
       const has=md&&(md.isOff||md.totalMin>0);
