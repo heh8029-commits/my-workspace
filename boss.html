@@ -509,6 +509,13 @@ a{text-decoration:none;color:inherit}
 /* 카드 그리드는 auto-fill이 폭 보고 알아서 열 수를 정한다.
    예전엔 768~1100px에서 2열을 강제했는데, 카드 한 장에 480px는 있어야
    저장/취소 버튼과 항목값이 안 잘려서 그 규칙을 뺐다. */
+/* 카드관리: 편집 버튼 없이 늘 바로 입력하는 칸.
+   평소엔 그냥 글자처럼 보이고, 마우스를 올리거나 누르면 입력칸 티가 난다. */
+.card-inp{border:1.5px solid transparent;border-radius:7px;background:transparent;font-family:inherit;outline:none;padding:3px 6px;transition:background .12s,border-color .12s}
+.card-inp:hover{background:#FAF7F4;border-color:#F0EBE5}
+.card-inp:focus{background:#FFFDF9;border-color:#C4714A}
+.card-inp::placeholder{color:#D8D0C8;font-weight:400}
+textarea.card-inp{resize:none}
 .bmg-card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;height:600px}
 .bmg-title{font-size:.82rem;font-weight:800;color:#555;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .bmg-title-badge{font-size:.7rem;color:#CCC;font-weight:500}
@@ -7973,9 +7980,9 @@ function bcscDragEnd(){_bcscDragId=null;document.querySelectorAll('.bcsc-drag-it
 
 // ── 카드관리 ──────────────────────────────────────────────
 const FB_CARDS='https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/boss_cards.json';
-let _cardData=[], _cardEditId=null, _cardImgTarget=null;
-// main = 왼쪽 큰 이미지 1장, subs = 메모 아래 첨부 썸네일(개수 제한 없음)
-let _cardFormImgs={main:null,subs:[]};
+// 편집 모드 없이 늘 바로 입력한다. 칸에서 빠져나갈 때(onchange) 저장.
+// imgMain = 왼쪽 큰 이미지 1장, imgSubs = 메모 아래 첨부 썸네일(개수 제한 없음)
+let _cardData=[], _cardImgTarget=null, _cardImgCardId=null;
 
 async function cardFetch(){
   try{const r=await fetch(FB_CARDS+'?t='+Date.now());if(r.ok){const d=await r.json();_cardData=Array.isArray(d?.list)?d.list:[];}}catch(e){}
@@ -7985,21 +7992,43 @@ function _cardDbSave(){
   fetch(FB_CARDS,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({list:_cardData})}).catch(()=>{});
 }
 function cardOpenNew(){
-  _cardEditId='new';
-  _cardFormImgs={main:null,subs:[]};
+  const id=Date.now();
+  _cardData.unshift({id,name:'',num:'',fee:'',spend:'',bank:'',memo:'',imgMain:null,imgSubs:[]});
+  _cardDbSave();
   cardRender();
-  setTimeout(()=>document.getElementById('card-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  setTimeout(()=>{
+    const el=document.getElementById('cf-name-'+id);
+    if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); }
+  },60);
 }
-function cardOpenEdit(id){
+// 입력칸에서 값이 바뀌면 바로 반영해서 저장 (다시 그리지 않으니 포커스가 안 튄다)
+function cardField(id,field,val){
   const m=_cardData.find(x=>x.id===id);if(!m)return;
-  _cardEditId=id;
-  _cardFormImgs={main:m.imgMain||null,subs:[...(m.imgSubs||[])].filter(Boolean)};
-  cardRender();
+  m[field]=val;
+  _cardDbSave();
 }
-function cardCancelEdit(){_cardEditId=null;_cardFormImgs={main:null,subs:[]};cardRender();}
-let _cardQuickId=null;
-function cardPickImg(slot){_cardImgTarget=slot;_cardQuickId=null;_cardOpenImgModal();}
-function cardQuickPickImg(cardId,slot){_cardQuickId=cardId;_cardImgTarget=slot;_cardOpenImgModal();}
+
+// 연회비·실적금액 천단위 콤마. '400000 이상'처럼 뒤에 글자가 붙어도
+// 숫자 덩어리만 골라서 찍는다.
+function _cardCommaify(s){
+  return String(s==null?'':s).replace(/\d[\d,]*/g,m=>
+    m.replace(/,/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,','));
+}
+function cardFmtNum(el){
+  const pos=el.selectionStart;
+  const digitsBefore=(el.value.slice(0,pos).match(/\d/g)||[]).length;
+  const out=_cardCommaify(el.value);
+  if(out===el.value)return;
+  el.value=out;
+  if(!digitsBefore){el.setSelectionRange(pos,pos);return;}
+  // 콤마가 끼어든 만큼 커서를 밀어준다 (앞에서 digitsBefore번째 숫자 뒤)
+  let seen=0,np=out.length;
+  for(let i=0;i<out.length;i++){
+    if(out[i]>='0'&&out[i]<='9'){seen++;if(seen===digitsBefore){np=i+1;break;}}
+  }
+  el.setSelectionRange(np,np);
+}
+function cardPickImg(cardId,slot){_cardImgCardId=cardId;_cardImgTarget=slot;_cardOpenImgModal();}
 
 // 파일 선택 / Ctrl+V / 끌어다 놓기 셋 다 받는 이미지 추가 창
 function _cardOpenImgModal(){
@@ -8039,37 +8068,19 @@ function _cardOpenImgModal(){
 }
 async function cardHandleFile(file){
   if(!file)return;
-  const statusEl=document.getElementById('card-upload-status');
-  if(statusEl)statusEl.textContent='업로드 중...';
-  else _cardShowToast('이미지 업로드 중...');   // 뷰 모드엔 상태 표시줄이 없음
+  _cardShowToast('이미지 업로드 중...');
   const fd=new FormData();fd.append('file',file);fd.append('upload_preset','hwx2iwfz');
   try{
     const r=await fetch('https://api.cloudinary.com/v1_1/dfc05tbbk/image/upload',{method:'POST',body:fd});
     const d=await r.json();const url=d.secure_url;
-    if(_cardQuickId){
-      // 뷰 모드에서 바로 저장
-      const m=_cardData.find(x=>x.id===_cardQuickId);
-      if(m){
-        if(_cardImgTarget==='main')m.imgMain=url;
-        else if(_cardImgTarget==='add'){m.imgSubs=[...(m.imgSubs||[])].filter(Boolean);m.imgSubs.push(url);}
-        _cardDbSave();
-      }
-      _cardQuickId=null;cardRender();_cardShowToast('이미지 추가됨!');
-    } else {
-      if(_cardImgTarget==='main')_cardFormImgs.main=url;
-      else if(_cardImgTarget==='add')_cardFormImgs.subs.push(url);
-      if(statusEl)statusEl.textContent='';
-      cardRender();
+    const m=_cardData.find(x=>x.id===_cardImgCardId);
+    if(m){
+      if(_cardImgTarget==='main')m.imgMain=url;
+      else if(_cardImgTarget==='add'){m.imgSubs=[...(m.imgSubs||[])].filter(Boolean);m.imgSubs.push(url);}
+      _cardDbSave();
     }
-  }catch(e){if(statusEl)statusEl.textContent='업로드 실패';alert('이미지 업로드 실패');}
-}
-function cardSave(){
-  const v=f=>{const el=document.getElementById('cedit-'+f);return el?(el.tagName==='TEXTAREA'?el.value:el.value).trim():'';};
-  const name=v('name');if(!name){alert('카드사명을 입력해주세요');return;}
-  const obj={name,num:v('num'),fee:v('fee'),spend:v('spend'),bank:v('bank'),memo:v('memo'),imgMain:_cardFormImgs.main,imgSubs:_cardFormImgs.subs.filter(Boolean)};
-  if(_cardEditId==='new'){_cardData.unshift({id:Date.now(),...obj});}
-  else{const m=_cardData.find(x=>x.id===_cardEditId);if(m)Object.assign(m,obj);}
-  _cardDbSave();_cardEditId=null;cardRender();
+    _cardImgCardId=null;cardRender();_cardShowToast('이미지 추가됨!');
+  }catch(e){alert('이미지 업로드 실패');}
 }
 function cardDel(id){
   if(!confirm('카드를 삭제할까요?'))return;
@@ -8115,23 +8126,26 @@ function cardHoverMove(ev){
 }
 function cardHoverOut(){ if(_cardHoverEl){_cardHoverEl.remove();_cardHoverEl=null;} }
 
-function cardDelSubImg(i){
-  _cardFormImgs.subs.splice(i,1);
-  cardRender();
+function cardDelSubImg(cardId,i){
+  const m=_cardData.find(x=>x.id===cardId);if(!m)return;
+  if(!confirm('이 첨부 이미지를 뺄까요?'))return;
+  m.imgSubs=[...(m.imgSubs||[])].filter(Boolean);
+  m.imgSubs.splice(i,1);
+  _cardDbSave();cardRender();
 }
 
 // 메모 아래 첨부 이미지 줄 (작은 썸네일 + 📎 추가 버튼)
-function _cardThumbs(subs,editMode,cardId){
+function _cardThumbs(subs,cardId){
   const list=(subs||[]).filter(Boolean);
   const thumbs=list.map((u,i)=>`
     <div style="position:relative;width:38px;height:38px;flex-shrink:0;border-radius:7px;overflow:hidden;border:1px solid #EDE8E1;background:#F5F0EB">
       <img src="${u}" title="클릭 → 클립보드 복사" style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer"
         onmouseenter="cardHoverImg(event,'${u}')" onmousemove="cardHoverMove(event)" onmouseleave="cardHoverOut()"
         onclick="cardHoverOut();cardImgClipboard('${u}')">
-      ${editMode?`<button onclick="event.stopPropagation();cardHoverOut();cardDelSubImg(${i})" title="빼기"
-        style="position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;border:none;background:#E03A3A;color:#fff;font-size:.5rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`:''}
+      <button onclick="event.stopPropagation();cardHoverOut();cardDelSubImg(${cardId},${i})" title="빼기"
+        style="position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;border:none;background:#E03A3A;color:#fff;font-size:.5rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>
     </div>`).join('');
-  const addBtn=`<button onclick="${editMode?"cardPickImg('add')":`cardQuickPickImg(${cardId},'add')`}" title="이미지 첨부 (Ctrl+V 붙여넣기 가능)"
+  const addBtn=`<button onclick="cardPickImg(${cardId},'add')" title="이미지 첨부 (Ctrl+V 붙여넣기 가능)"
     style="width:38px;height:38px;flex-shrink:0;border-radius:7px;border:1.5px dashed #E0D5CC;background:#FAFAF8;color:#C4714A;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">📎</button>`;
   return `<div style="display:flex;gap:5px;align-items:center;padding:7px 14px;border-top:1px solid #F0EBE5;overflow-x:auto;flex-shrink:0">
     ${thumbs}${addBtn}
@@ -8139,83 +8153,106 @@ function _cardThumbs(subs,editMode,cardId){
   </div>`;
 }
 
-function _cardImgBox(url,slot,editMode,cardId){
-  if(editMode){
-    return `<div onclick="cardPickImg('${slot}')" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;background:#F5F0EB">
-      ${url?`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:.65rem;color:#CCC">📷</span>'}
-      <div style="position:absolute;inset:0;background:rgba(196,113,74,.15);display:flex;align-items:center;justify-content:center"><span style="font-size:.6rem;color:#C4714A;background:rgba(255,255,255,.9);padding:2px 7px;border-radius:20px;font-weight:700">${url?'변경':'＋추가'}</span></div>
-    </div>`;
-  }
+// 왼쪽 큰 카드사진. 사진을 누르면 클립보드 복사, 모서리 '변경'을 누르면 교체.
+function _cardImgBox(url,cardId){
   if(url){
-    return `<div onclick="cardImgClipboard('${url}')" style="width:100%;height:100%;cursor:pointer;overflow:hidden;background:#F5F0EB" title="클릭 → 클립보드 복사">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover">
+    return `<div style="width:100%;height:100%;position:relative;overflow:hidden;background:#F5F0EB">
+      <img src="${url}" onclick="cardImgClipboard('${url}')" title="클릭 → 클립보드 복사"
+        style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer">
+      <button onclick="event.stopPropagation();cardPickImg(${cardId},'main')" title="사진 바꾸기"
+        style="position:absolute;right:6px;bottom:6px;padding:3px 9px;border-radius:20px;border:none;background:rgba(255,255,255,.92);color:#C4714A;font-size:.62rem;font-weight:700;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.18)">변경</button>
     </div>`;
   }
-  return `<div onclick="cardQuickPickImg(${cardId},'${slot}')" style="width:100%;height:100%;cursor:pointer;overflow:hidden;background:#F5F0EB;display:flex;align-items:center;justify-content:center" title="클릭해서 이미지 추가">
-    <span style="font-size:.65rem;color:#CCC">📷</span>
+  return `<div onclick="cardPickImg(${cardId},'main')" title="클릭해서 카드 사진 넣기 (Ctrl+V 붙여넣기 가능)"
+    style="width:100%;height:100%;cursor:pointer;overflow:hidden;background:#F5F0EB;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+    <span style="font-size:1.2rem;opacity:.5">📷</span>
+    <span style="font-size:.63rem;color:#C4714A;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:20px;font-weight:700">＋추가</span>
   </div>`;
 }
-function _cardRow(icon,label,value,editMode,field){
-  if(editMode)return `<div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #F0EBE5">
-    <span style="font-size:.8rem;flex-shrink:0">${icon}</span>
-    <span style="font-size:.72rem;color:#AAA;width:55px;flex-shrink:0">${label}</span>
-    <input id="cedit-${field}" value="${(value||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:0;width:0;border:none;border-bottom:1.5px solid #EDE8E1;outline:none;font-size:.82rem;font-family:inherit;padding:2px 4px;background:transparent;color:#333">
-  </div>`;
-  if(!value)return '';
+function _cardRow(icon,label,ph,value,cardId,field,isNum){
+  const shown=isNum?_cardCommaify(value):(value||'');
   return `<div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #F0EBE5">
     <span style="font-size:.8rem;flex-shrink:0">${icon}</span>
     <span style="font-size:.72rem;color:#AAA;width:55px;flex-shrink:0">${label}</span>
-    <span style="font-size:.83rem;font-weight:700;color:#333">${value}</span>
+    <input class="card-inp" id="cf-${field}-${cardId}" value="${shown.replace(/"/g,'&quot;')}" placeholder="${ph}"
+      ${isNum?'oninput="cardFmtNum(this)" ':''}onchange="cardField(${cardId},'${field}',this.value)"
+      style="flex:1;min-width:0;width:0;font-size:.83rem;font-weight:700;color:#333">
   </div>`;
 }
 function cardRender(){
   const el=document.getElementById('card-grid');if(!el)return;
   cardHoverOut();   // 다시 그리면 떠 있던 미리보기는 치운다
-  let html='';
-  if(_cardEditId==='new')html+=_cardCardHTML(null,true);
-  html+=_cardData.map(m=>_cardCardHTML(m,_cardEditId===m.id)).join('');
-  if(!html)html='<div style="color:#BBB;font-size:.85rem;grid-column:1/-1;padding:20px 0">카드를 추가해요</div>';
-  el.innerHTML=html;
+  el.innerHTML=_cardData.length
+    ? _cardData.map((m,i)=>_cardCardHTML(m,i)).join('')
+    : '<div style="color:#BBB;font-size:.85rem;grid-column:1/-1;padding:20px 0">카드를 추가해요</div>';
 }
-function _cardCardHTML(m,editMode){
-  const fi=editMode?_cardFormImgs:{main:m?.imgMain,subs:m?.imgSubs||[]};
-  const mid=m?m.id:'new';
-  return `<div style="height:340px;display:flex;border-radius:16px;border:${editMode?'2px solid #C4714A':'1.5px solid #EDE8E1'};overflow:hidden;background:#fff;box-shadow:${editMode?'0 4px 20px rgba(196,113,74,.18)':'0 2px 10px rgba(0,0,0,.06)'}">
+
+/* ── 카드 순서 드래그 ──
+   ⠿ 손잡이를 잡았을 때만 끌리게 한다. 안 그러면 글자 선택이 안 된다. */
+let _cardDragIdx=-1;
+function cardDragHandle(el,on){
+  const card=el.closest('[data-card-idx]');
+  if(card)card.draggable=on;
+}
+function cardDragStart(e,i){
+  _cardDragIdx=i;
+  e.dataTransfer.effectAllowed='move';
+  e.currentTarget.style.opacity='.45';
+}
+function cardDragOver(e,i){
+  if(_cardDragIdx<0)return;
+  e.preventDefault();
+  document.querySelectorAll('#card-grid [data-card-idx]').forEach(c=>c.style.outline='');
+  if(i!==_cardDragIdx)e.currentTarget.style.outline='2.5px dashed #C4714A';
+}
+function cardDrop(e,i){
+  e.preventDefault();
+  document.querySelectorAll('#card-grid [data-card-idx]').forEach(c=>{c.style.outline='';c.style.opacity='';});
+  if(_cardDragIdx<0||_cardDragIdx===i)return;
+  const moved=_cardData.splice(_cardDragIdx,1)[0];
+  _cardData.splice(i,0,moved);
+  _cardDragIdx=-1;
+  _cardDbSave();cardRender();
+}
+function cardDragEnd(){
+  _cardDragIdx=-1;
+  document.querySelectorAll('#card-grid [data-card-idx]').forEach(c=>{c.style.outline='';c.style.opacity='';c.draggable=false;});
+}
+
+function _cardCardHTML(m,idx){
+  const id=m.id;
+  return `<div data-card-idx="${idx}"
+    ondragstart="cardDragStart(event,${idx})" ondragover="cardDragOver(event,${idx})"
+    ondrop="cardDrop(event,${idx})" ondragend="cardDragEnd()"
+    style="height:340px;display:flex;border-radius:16px;border:1.5px solid #EDE8E1;overflow:hidden;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06)">
     <!-- 왼쪽: 카드 사진 1장 -->
     <div style="flex:0 1 200px;min-width:104px;border-right:1.5px solid #EDE8E1;display:flex;flex-direction:column">
-      <div style="flex:1;overflow:hidden;min-height:0">${_cardImgBox(fi.main,'main',editMode,mid)}</div>
-      ${editMode?'<div id="card-upload-status" style="font-size:.65rem;color:#C4714A;text-align:center;padding:3px;flex-shrink:0"></div>':''}
+      <div style="flex:1;overflow:hidden;min-height:0">${_cardImgBox(m.imgMain,id)}</div>
     </div>
     <!-- 오른쪽 정보 -->
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
       <!-- 타이틀 행 -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1.5px solid #EDE8E1;flex-shrink:0">
-        ${editMode
-          ?`<input id="cedit-name" value="${(m?.name||'').replace(/"/g,'&quot;')}" placeholder="카드사명" style="flex:1;min-width:0;width:0;border:none;outline:none;font-size:.9rem;font-weight:800;color:#333;font-family:inherit;background:transparent">`
-          :`<div style="flex:1;min-width:0;font-size:.88rem;font-weight:800;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.name}</div>`}
-        <div style="display:flex;gap:5px;flex-shrink:0;margin-left:8px">
-          ${editMode
-            ?`<button onclick="cardSave()" style="padding:5px 14px;border-radius:8px;background:#4472C4;color:#fff;border:none;font-size:.75rem;font-weight:700;cursor:pointer">저장</button>
-               <button onclick="cardCancelEdit()" style="padding:5px 10px;border-radius:8px;background:#eee;border:none;font-size:.75rem;cursor:pointer">취소</button>`
-            :`<button onclick="cardOpenEdit(${mid})" style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#C4714A;padding:2px 4px">✏️</button>
-               <button onclick="cardDel(${mid})" style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#E04040;padding:2px 4px">🗑️</button>`}
-        </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1.5px solid #EDE8E1;flex-shrink:0">
+        <span onmousedown="cardDragHandle(this,true)" onmouseup="cardDragHandle(this,false)" title="끌어서 순서 바꾸기"
+          style="cursor:grab;color:#D5CCC4;font-size:.9rem;flex-shrink:0;user-select:none;padding:0 2px">⠿</span>
+        <input class="card-inp" id="cf-name-${id}" value="${(m.name||'').replace(/"/g,'&quot;')}" placeholder="카드사명"
+          onchange="cardField(${id},'name',this.value)"
+          style="flex:1;min-width:0;width:0;font-size:.9rem;font-weight:800;color:#333">
+        <button onclick="cardDel(${id})" title="카드 삭제"
+          style="border:none;background:none;cursor:pointer;font-size:.85rem;color:#E04040;padding:2px 4px;flex-shrink:0">🗑️</button>
       </div>
-      <!-- 번호 -->
-      ${editMode?`<div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #F0EBE5"><span style="font-size:.8rem;flex-shrink:0">💳</span><span style="font-size:.72rem;color:#AAA;width:55px;flex-shrink:0">카드번호</span><input id="cedit-num" value="${(m?.num||'').replace(/"/g,'&quot;')}" placeholder="1234-****-****-5678" style="flex:1;min-width:0;width:0;border:none;border-bottom:1.5px solid #EDE8E1;outline:none;font-size:.82rem;font-family:inherit;padding:2px 4px;background:transparent;color:#333"></div>`:
-        m?.num?`<div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #F0EBE5"><span style="font-size:.8rem">💳</span><span style="font-size:.72rem;color:#AAA;width:55px;flex-shrink:0">카드번호</span><span style="font-size:.83rem;color:#555">${m.num}</span></div>`:''}
-      ${_cardRow('🎫','연회비',m?.fee,editMode,'fee')}
-      ${_cardRow('📊','실적금액',m?.spend,editMode,'spend')}
-      ${_cardRow('🏦','납부은행',m?.bank,editMode,'bank')}
+      ${_cardRow('💳','카드번호','1234-****-****-5678',m.num,id,'num')}
+      ${_cardRow('🎫','연회비','',m.fee,id,'fee',true)}
+      ${_cardRow('📊','실적금액','',m.spend,id,'spend',true)}
+      ${_cardRow('🏦','납부은행','',m.bank,id,'bank')}
       <!-- 메모 (혜택 등) -->
-      <div style="flex:1;padding:10px 14px;overflow-y:auto;min-height:0">
-        ${editMode
-          ?`<textarea id="cedit-memo" placeholder="혜택, 실적 조건, 메모..." rows="5" style="width:100%;height:100%;box-sizing:border-box;border:none;outline:none;font-size:.78rem;font-family:inherit;color:#555;resize:none;line-height:1.6;background:transparent">${(m?.memo||'').replace(/</g,'&lt;')}</textarea>`
-          :m?.memo?`<div style="font-size:.78rem;color:#666;line-height:1.6;white-space:pre-wrap">${m.memo.replace(/</g,'&lt;')}</div>`:
-          `<div style="font-size:.75rem;color:#DDD;padding-top:4px">혜택, 실적 조건, 메모...</div>`}
+      <div style="flex:1;padding:6px 10px;min-height:0;display:flex">
+        <textarea class="card-inp" id="cf-memo-${id}" placeholder="혜택, 실적 조건, 메모..."
+          onchange="cardField(${id},'memo',this.value)"
+          style="width:100%;height:100%;font-size:.78rem;color:#555;resize:none;line-height:1.6">${(m.memo||'').replace(/</g,'&lt;')}</textarea>
       </div>
       <!-- 첨부 이미지 -->
-      ${_cardThumbs(fi.subs,editMode,mid)}
+      ${_cardThumbs(m.imgSubs,id)}
     </div>
   </div>`;
 }
