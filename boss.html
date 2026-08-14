@@ -8446,8 +8446,15 @@ window.addEventListener('hashchange', openFromHash);
   bcscFetch();
   bossRow2Init();
 
-  // 주소에 메뉴가 적혀 있으면 그 화면으로 바로 간다
-  openFromHash();
+  /*
+   * 주소에 메뉴가 적혀 있으면 그 화면으로 바로 간다.
+   *
+   * 여기서 바로 부르면 안 된다 — 중국발주(cnInit) 같은 함수는 아래쪽 script 에 있어서
+   * 이 시점에는 아직 없다. 그대로 부르면 'cnInit is not defined' 로 멈춰서,
+   * 화면만 뜨고 내용이 안 나왔다. 문서를 다 읽은 뒤에 부른다.
+   */
+  if (document.readyState === 'complete') openFromHash();
+  else window.addEventListener('load', openFromHash);
 })();
 
 // ── 세금관리 ──────────────────────────────────────────────────
