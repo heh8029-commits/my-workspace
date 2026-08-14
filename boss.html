@@ -3694,6 +3694,15 @@ async function submitExpense(){
 function startExpEdit(id){ expEditId=id; renderExpenses(); document.getElementById('exp-day').focus(); }
 function cancelExpEdit(){ expEditId=null; renderExpenses(); }
 
+async function delExpense(id){
+  const m = expItems.find(e=>e.id===id);
+  if(!confirm(`"${m?m.name:'이 항목'}" 삭제할까요?`)) return;
+  expItems = expItems.filter(e=>e.id!==id);
+  if(expEditId===id) expEditId=null;
+  await saveExpenses();
+  renderExpenses();
+}
+
 // ── 보스메모 (bm) 공통 노트 패널 ─────────────────────────────
 const BM_NOTES_CFG = {
   a:{ fbKey:'boss_exp_notes_a', items:[], editId:null },
