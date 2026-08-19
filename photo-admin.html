@@ -77,6 +77,7 @@
   .toast.show{opacity:.96}
   .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;display:none;align-items:center;justify-content:center}
   .lightbox.show{display:flex}.lightbox img{max-width:94%;max-height:92%}.lightbox .x{position:absolute;top:16px;right:20px;color:#fff;font-size:30px;background:none;border:none}
+  .lightbox .lbsave{position:absolute;top:20px;right:64px;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:7px 16px;font-size:14px;cursor:pointer}
   .empty{padding:50px;text-align:center;color:var(--gray)}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
@@ -166,7 +167,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="lightbox" id="lightbox"><button class="x" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
+<div class="lightbox" id="lightbox"><button class="x" onclick="closeLB()">×</button><button class="lbsave" onclick="dlFromLB(event)">⬇ 저장</button><img id="lbImg" src="" alt=""></div>
 
 <script src="./photo-config.js"></script>
 <script>
@@ -285,7 +286,7 @@ async function openDetail(id){
     <div class="kv"><b>삭제 예정일</b><span style="color:#c23">${fmtDT(d.deleteAt)}</span></div>
     ${d.edited?`<div class="kv"><b>고객 수정</b><span style="color:#e5487d;text-align:right;max-width:60%">✏️ ${esc(d.lastEditSummary||'수정됨')}<br><span style="color:var(--gray);font-size:11px">${d.editedAt?fmtDT(d.editedAt):''}</span></span></div>`:''}
     ${d.photosDeleted?'<div style="margin-top:12px;color:#c23;text-align:center">🗑️ 사진이 삭제되었습니다.</div>':
-      `<div class="dgal">${photos.map(p=>`<div class="c"><span class="ord">${p.order+1}</span><img src="${p.url}" onclick="openLB('${p.url}')"><a class="dl" href="${p.downloadUrl}">저장</a></div>`).join('')}</div>`}
+      `<div class="dgal">${photos.map(p=>`<div class="c"><span class="ord">${p.order+1}</span><img src="${p.url}" onclick="openLB('${d.id}','${p.id}')"><a class="dl" href="#" onclick="return dlPhoto(event,'${d.id}','${p.id}')">저장</a></div>`).join('')}</div>`}
     <div class="actions">
       <div class="row"><select id="dStatus">${opts}</select><button class="btn nv" onclick="setStatus('${d.id}')">상태 변경</button></div>
       <div class="row"><select id="dDays">${dayOpts}</select><button class="warnbtn" style="flex:1" onclick="setDays('${d.id}')">📅 보관기간 설정(접수일+N)</button></div>
@@ -350,8 +351,42 @@ async function loadExpiring(){
 }
 async function extendExp(id){ const r=await api('extend',{receiptId:id,days:3}); if(r.status===200){toast('연장 완료');loadExpiring();} else toast('실패'); }
 
+/* 사진 저장 — 서명 URL 수명이 짧아서 상세를 연 뒤 시간이 지나면 만료된다.
+   만료된 링크를 그냥 열면 이미지 대신 에러 JSON 이 파일로 저장되므로,
+   저장/확대 시점에 항상 새 서명 URL 을 받아온 뒤 blob 으로 내려받는다. */
+async function freshPhoto(receiptId, photoId){
+  const r=await api('detail',{receiptId});
+  if(r.status!==200) return null;
+  return (r.body.photos||[]).find(p=>String(p.id)===String(photoId))||null;
+}
+async function dlPhoto(ev, receiptId, photoId){
+  ev.preventDefault(); ev.stopPropagation();
+  const p=await freshPhoto(receiptId,photoId);
+  if(!p||!p.downloadUrl) return toast('사진 주소를 가져오지 못했습니다.'), false;
+  try{
+    const res=await fetch(p.downloadUrl);
+    if(!res.ok) throw new Error('http '+res.status);
+    const b=await res.blob();
+    if(!b.size || /json|text/.test(b.type)) throw new Error('not_image');
+    const url=URL.createObjectURL(b), a=document.createElement('a');
+    a.href=url; a.download=p.originalName||('photo_'+(p.order+1)+'.jpg');
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+    toast('저장했습니다.');
+  }catch(e){ toast('저장 실패 — 잠시 후 다시 시도해 주세요.'); }
+  return false;
+}
+
 /* 라이트박스 */
-function openLB(u){ document.getElementById('lbImg').src=u; document.getElementById('lightbox').classList.add('show'); }
+async function openLB(receiptId, photoId){
+  const img=document.getElementById('lbImg');
+  img.src=''; document.getElementById('lightbox').classList.add('show');
+  const p=await freshPhoto(receiptId,photoId);
+  if(p&&p.url){ img.src=p.url; lbCur={receiptId,photoId}; }
+  else toast('사진을 불러오지 못했습니다.');
+}
+let lbCur=null;
+function dlFromLB(ev){ if(!lbCur) return false; return dlPhoto(ev,lbCur.receiptId,lbCur.photoId); }
 function closeLB(){ document.getElementById('lightbox').classList.remove('show'); }
 document.getElementById('lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLB();});
 
