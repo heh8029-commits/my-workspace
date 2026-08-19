@@ -373,7 +373,11 @@ async function dlPhoto(ev, receiptId, photoId){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),10000);
     toast('저장했습니다.');
-  }catch(e){ toast('저장 실패 — 잠시 후 다시 시도해 주세요.'); }
+  }catch(e){
+    /* fetch 가 막히면(CORS/네트워크) 새로 받은 링크로 직접 열어 저장 */
+    try{ window.open(p.downloadUrl,'_blank'); toast('새 창에서 저장을 시도합니다.'); }
+    catch(_){ toast('저장 실패 — 잠시 후 다시 시도해 주세요.'); }
+  }
   return false;
 }
 
