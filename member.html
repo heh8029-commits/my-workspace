@@ -129,6 +129,12 @@ button{font-family:inherit;cursor:pointer}
 .off-cell.sat .d{color:#2a7ac0}
 .off-cell.on{background:#e9f8f2;border-color:#7fd6b4;box-shadow:0 0 0 2px rgba(61,187,143,.18) inset}
 .off-legend{font-size:.72rem;color:var(--soft);margin-top:10px;text-align:center}
+.off-reasons{margin-top:12px;border-top:1px dashed var(--pink-mid);padding-top:10px}
+.off-reasons-t{font-size:.74rem;font-weight:700;color:var(--soft);margin-bottom:6px}
+.off-reason-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.off-reason-row .dt{font-size:.78rem;font-weight:700;color:var(--rose);min-width:62px}
+.off-reason-row input{flex:1;min-width:0;border:1.5px solid var(--pink-mid);border-radius:9px;padding:5px 9px;font-family:inherit;font-size:.8rem;outline:none;background:#fff;color:var(--text)}
+.off-reason-row input:focus{border-color:var(--rose)}
 .off-modal-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
 .off-modal-btns button{padding:9px 12px;border-radius:14px;border:none;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
 .off-btn-gray{background:#f0ecf4;color:#7a6a76}
@@ -545,20 +551,24 @@ button{font-family:inherit;cursor:pointer}
 .log-sum-item span{font-size:1.1rem;font-weight:800;color:var(--rose)}
 .log-sum-item.minus span{color:#c0392b}
 .log-sum-item.net span{color:#1f8f6b}
-/* 지출/공제 항목 */
-.ded-box{margin-bottom:14px;background:linear-gradient(135deg,#fff6f0,#fff0f6);border:1.5px solid #f6d5c0;border-radius:14px;padding:12px 16px}
-.ded-title{font-size:.85rem;font-weight:800;color:#c0392b;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ded-title small{font-size:.7rem;font-weight:600;color:var(--soft)}
-.ded-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.ded-name{flex:1;min-width:0;border:1.5px solid #f0d0c0;border-radius:9px;padding:7px 10px;font-family:inherit;font-size:.85rem;outline:none;background:#fff}
-.ded-amt{width:110px;border:1.5px solid #f0d0c0;border-radius:9px;padding:7px 8px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:right;outline:none;background:#fff}
-.ded-won{font-size:.78rem;color:var(--soft);font-weight:700}
-.ded-del{width:30px;height:30px;border-radius:9px;border:none;background:#f7e7e7;color:#c0392b;font-size:.85rem;line-height:1;flex-shrink:0}
-.ded-btns{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
-.ded-add{padding:7px 14px;border-radius:16px;border:1.5px dashed #e0a890;background:#fff;color:#c0392b;font-size:.8rem;font-weight:700}
-.ded-save{padding:7px 20px;border-radius:16px;border:none;background:linear-gradient(135deg,#e8804a,#d0452a);color:#fff;font-size:.82rem;font-weight:700}
-.ded-total{margin-left:auto;font-size:.88rem;font-weight:800;color:#c0392b}
-@media(max-width:600px){.ded-amt{width:92px}}
+/* 지출항목 — 합계바 오른쪽에 작게 */
+.ded-inline{margin-left:auto;display:flex;align-items:center;gap:7px}
+.ded-inline-lbl{font-size:.72rem;font-weight:700;color:#c98a72;white-space:nowrap}
+.ded-inline-rows{display:flex;flex-direction:column;gap:3px}
+.ded-row{display:flex;align-items:center;gap:3px}
+.ded-name{width:78px;border:1px solid #eddfe6;border-radius:6px;padding:2px 5px;font-family:inherit;font-size:.68rem;outline:none;background:#fff;color:var(--text)}
+.ded-amt{width:62px;border:1px solid #eddfe6;border-radius:6px;padding:2px 4px;font-family:inherit;font-size:.68rem;font-weight:700;text-align:right;outline:none;background:#fff;color:var(--text)}
+.ded-name:focus,.ded-amt:focus{border-color:var(--pink)}
+.ded-del{width:16px;height:16px;border-radius:4px;border:none;background:transparent;color:#d0a8b8;font-size:.6rem;line-height:1;padding:0;flex-shrink:0}
+.ded-del:hover{background:#f7e7e7;color:#c0392b}
+.ded-mini{border:none;background:transparent;font-size:.72rem;font-weight:700;color:#c98a72;padding:1px 3px;line-height:1}
+.ded-mini:hover{color:#c0392b}
+.ded-total{font-size:.72rem;font-weight:700;color:#c0392b;white-space:nowrap}
+.ded-info{font-size:.68rem;font-weight:700;color:var(--rose);white-space:nowrap}
+@media(max-width:600px){
+  .ded-inline{margin-left:0;width:100%}
+  .ded-name{width:64px}.ded-amt{width:56px}
+}
 
 /* ── 원천징수 고지서 ── */
 .taxdoc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px;}
@@ -922,6 +932,7 @@ button{font-family:inherit;cursor:pointer}
     </div>
     <div class="off-grid" id="offGrid"></div>
     <div class="off-legend">🔴 빨간날(공휴일·명절·대체공휴일) · 🌴 공동 휴무</div>
+    <div class="off-reasons" id="offReasons"></div>
     <div class="off-modal-btns">
       <button class="off-btn-gray" onclick="offApplyHolidays()">🔴 이달 빨간날 휴무로</button>
       <button class="off-btn-gray" onclick="offClearMonth()">이달 휴무 해제</button>
@@ -975,7 +986,11 @@ button{font-family:inherit;cursor:pointer}
         </div>
         <div class="log-att-item">
           <label>🐻 휴무</label>
-          <label class="att-off-lbl"><input type="checkbox" id="logAttOff"> 휴무</label>
+          <label class="att-off-lbl"><input type="checkbox" id="logAttOff" onchange="logToggleOff()"> 휴무</label>
+        </div>
+        <div class="log-att-item" id="logOffReasonWrap" style="display:none">
+          <label>📝 휴무 사유</label>
+          <input type="text" id="logOffReason" class="att-input-date" style="width:130px">
         </div>
         <button class="att-btn-save" onclick="saveLogAttendance()" style="flex:1;min-width:120px">💾 저장</button>
         <button class="att-btn-save" onclick="resetLogAttendance()" style="flex:0;min-width:90px;background:#eee;color:#888">🗑️ 초기화</button>
@@ -1010,18 +1025,6 @@ button{font-family:inherit;cursor:pointer}
       </div>
     </div>
     <div class="log-summary" id="logSummary" style="margin-bottom:14px"></div>
-
-    <!-- 지출/공제 항목 (이 기간 급여에서 차감) -->
-    <div class="ded-box" id="logDeductBox">
-      <div class="ded-title">💸 지출항목 <small>이 기간(11일~다음달 10일) 급여에서 빠져요</small></div>
-      <div id="logDeductRows"></div>
-      <div class="ded-btns">
-        <button class="ded-add" onclick="addDeductRow()">＋ 항목 추가</button>
-        <button class="ded-save" onclick="saveLogDeduct()">💾 저장</button>
-        <span class="ded-total" id="logDeductTotal">합계 0원</span>
-      </div>
-      <div class="log-att-info" id="logDeductInfo" style="min-height:0"></div>
-    </div>
 
     <div id="logCalendar"></div>
     <div id="logDailyMsg" style="margin-top:16px;text-align:center;font-size:.9rem;font-weight:700;color:var(--lav-dark);background:linear-gradient(135deg,#fff0f6,#f2ecff);border-radius:14px;padding:12px 16px;line-height:1.5"></div>
@@ -1609,6 +1612,8 @@ function openLogView(id){
   const lh=document.getElementById('logAttHour'); if(lh)lh.value=4;
   const lm=document.getElementById('logAttMin');  if(lm)lm.value=0;
   const lo=document.getElementById('logAttOff');  if(lo)lo.checked=false;
+  const lr=document.getElementById('logOffReason');if(lr)lr.value='';
+  logToggleOff();
   updateLogAttLabel();
   const li=document.getElementById('logAttInfo'); if(li)li.textContent='';
 
@@ -1633,6 +1638,13 @@ function logResetStaffFields(){
   const oe=document.getElementById('logOtEnd');     if(oe)oe.value='20:00';
   logToggleOt();
   logCalcWorked();
+}
+
+// 휴무 체크 시 사유 입력칸 노출/숨김
+function logToggleOff(){
+  const on=document.getElementById('logAttOff').checked;
+  const w=document.getElementById('logOffReasonWrap');
+  if(w)w.style.display=on?'':'none';
 }
 
 // 연장근무 체크 시 시간대 입력 노출/숨김
@@ -1717,6 +1729,7 @@ async function saveLogAttendance(){
       el.textContent='';return;
     }
   }
+  const offReason=isOff?(document.getElementById('logOffReason').value||'').trim():'';
   const isStaff=m.empType==='staff';
   let hour,min,entry;
   if(isStaff){
@@ -1731,18 +1744,21 @@ async function saveLogAttendance(){
     const meal=document.getElementById('logMealChk').checked&&totalMin>=240;
     hour=String(Math.floor(totalMin/60));
     min=String(totalMin%60);
-    entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,
+    entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,offReason,
       checkIn,checkOut,meal,mealCost:meal?10000:0,otOn,otStart,otEnd,otMin,at:Date.now()};
   } else {
     hour=document.getElementById('logAttHour').value;
     min=document.getElementById('logAttMin').value;
-    entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,at:Date.now()};
+    entry={memberId:attSelected,name:m.name,eng:m.eng||m.name,nick:m.nick||'',date,hour,min,isOff,offReason,at:Date.now()};
   }
 
   await saveAttLog(entry);
-  el.innerHTML=`✅ 저장됐어! ${fmtDateKo(date)} ${isOff?'· 🌴 휴무':'· ⏰ '+hour+'시간 '+min+'분'}`;
+  el.innerHTML=`✅ 저장됐어! ${fmtDateKo(date)} ${isOff?'· 🌴 휴무'+(offReason?' ('+esc(offReason)+')':''):'· ⏰ '+hour+'시간 '+min+'분'}`;
   el.style.color='var(--rose)';
   if(isStaff) logResetStaffFields();
+  const lr=document.getElementById('logOffReason'); if(lr)lr.value='';
+  const lo=document.getElementById('logAttOff'); if(lo)lo.checked=false;
+  logToggleOff();
   await renderLog();
 }
 
@@ -1837,30 +1853,30 @@ function renderDeductRows(){
   if(!logDeductItems.length)logDeductItems=[{name:'',amount:0}];
   box.innerHTML=logDeductItems.map((it,i)=>`
     <div class="ded-row">
-      <input type="text" class="ded-name" value="${esc(it.name||'')}" placeholder="지출항목 (예: 가불, 물품구입)"
+      <input type="text" class="ded-name" value="${esc(it.name||'')}"
              oninput="logDeductItems[${i}].name=this.value">
       <input type="number" class="ded-amt" value="${Number(it.amount)||0}" min="0" step="1000" inputmode="numeric"
              onfocus="this.select()" oninput="logDeductItems[${i}].amount=Number(this.value)||0;updateDeductTotal()">
-      <span class="ded-won">원</span>
-      <button class="ded-del" onclick="removeDeductRow(${i})" title="이 항목 삭제">🗑</button>
+      <button class="ded-del" onclick="removeDeductRow(${i})" title="삭제">✕</button>
     </div>`).join('');
   updateDeductTotal();
 }
 function updateDeductTotal(){
   const t=logDeductItems.reduce((s,i)=>s+(Number(i.amount)||0),0);
   const el=document.getElementById('logDeductTotal');
-  if(el)el.textContent=`합계 -${t.toLocaleString()}원`;
+  if(el)el.textContent=t?`-${t.toLocaleString()}원`:'';
 }
 function addDeductRow(){logDeductItems.push({name:'',amount:0});renderDeductRows();}
 function removeDeductRow(i){logDeductItems.splice(i,1);renderDeductRows();}
 async function saveLogDeduct(){
   if(!attSelected)return;
   const info=document.getElementById('logDeductInfo');
-  info.style.color='var(--soft)';info.textContent='저장 중...';
+  if(info){info.style.color='var(--soft)';info.textContent='저장 중...';}
   const ok=await saveDeduct(attSelected,getPeriodKey(logPeriodOffset),logDeductItems);
-  if(!ok){info.style.color='#c0392b';info.textContent='❌ 저장 실패! 인터넷 확인하고 다시 시도해줘';return}
-  info.style.color='var(--rose)';info.textContent='✅ 저장됐어요!';
+  if(!ok){if(info){info.style.color='#c0392b';info.textContent='❌ 저장 실패';}return}
   await renderLog();
+  const info2=document.getElementById('logDeductInfo');
+  if(info2){info2.style.color='var(--rose)';info2.textContent='✅ 저장됐어요';}
 }
 
 async function renderLog(){
@@ -1879,11 +1895,10 @@ async function renderLog(){
   const periodKey=getPeriodKey(logPeriodOffset);
   const [logs,sjMonthData,dedData]=await Promise.all([loadAttLogs(),hasSj?loadSjMonth(attSelected,periodKey):Promise.resolve(null),loadDeduct(attSelected,periodKey),loadGlobalOffs()]);
   logDeductItems=(dedData&&Array.isArray(dedData.items)&&dedData.items.length)?dedData.items.map(i=>({name:i.name||'',amount:Number(i.amount)||0})):[{name:'',amount:0}];
-  renderDeductRows();
   const dayMap={};
   for(const l of logs.filter(l=>l.memberId===attSelected)){
-    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0,meal:false,otMin:0,mealCost:0};
-    if(l.isOff){dayMap[l.date].isOff=true;}
+    if(!dayMap[l.date])dayMap[l.date]={totalMin:0,isOff:false,count:0,meal:false,otMin:0,mealCost:0,offReason:''};
+    if(l.isOff){dayMap[l.date].isOff=true;if(l.offReason)dayMap[l.date].offReason=l.offReason;}
     else{
       dayMap[l.date].totalMin+=parseInt(l.hour)*60+parseInt(l.min);dayMap[l.date].count++;
       if(l.meal)dayMap[l.date].meal=true;
@@ -1944,7 +1959,10 @@ async function renderLog(){
     if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;mealTotal+=(dd.mealCost||0);}}
     const h=Math.floor(mins/60),mn=mins%60;
     let lbl='';
-    if(isOff) lbl=gOff?`🌴 휴무${globalOffLabel(ds)&&globalOffLabel(ds)!=='휴무'?'<br><span style="font-size:.62rem">'+esc(globalOffLabel(ds))+'</span>':''}`:'🌴 휴무';
+    if(isOff){
+      const why=gOff?globalOffLabel(ds):(dd&&dd.offReason?dd.offReason:'');
+      lbl='🌴 휴무'+((why&&why!=='휴무')?`<br><span style="font-size:.62rem;font-weight:600">${esc(why)}</span>`:'');
+    }
     else if(mins>0){
       lbl=`⏰ ${h}시간${mn?' '+mn+'분':''}`;
       if(dd&&dd.meal) lbl+=' (+식대)';
@@ -1984,7 +2002,16 @@ async function renderLog(){
      ${dedTotal?`<div class="log-sum-item minus">지출 <span>-${dedTotal.toLocaleString()}원</span></div>
      <div class="log-sum-item net">실지급 <span>${(wageFinal-dedTotal).toLocaleString()}원</span></div>`:''}
      ${sjSummary}
+     <div class="ded-inline">
+       <span class="ded-inline-lbl">지출</span>
+       <div class="ded-inline-rows" id="logDeductRows"></div>
+       <button class="ded-mini" onclick="addDeductRow()" title="항목 추가">＋</button>
+       <button class="ded-mini" onclick="saveLogDeduct()" title="저장">💾</button>
+       <span class="ded-total" id="logDeductTotal"></span>
+       <span class="ded-info" id="logDeductInfo"></span>
+     </div>
 `;
+  renderDeductRows();
 
   const psBtn=document.getElementById('logPayslipBtn');
   if(psBtn) psBtn.style.display='';  // 급여명세서 버튼은 항상 표시
@@ -2244,6 +2271,30 @@ function renderOffGrid(){
     cur.setDate(cur.getDate()+1);
   }
   document.getElementById('offGrid').innerHTML=html;
+  renderOffReasons();
+}
+// 이 달 지정한 휴무일의 "왜 쉬는지" 입력
+function renderOffReasons(){
+  const box=document.getElementById('offReasons');
+  if(!box)return;
+  const pre=`${offCursor.y}-${String(offCursor.m+1).padStart(2,'0')}-`;
+  const days=Object.keys(offDraft).filter(k=>k.startsWith(pre)).sort();
+  if(!days.length){box.innerHTML='';return}
+  box.innerHTML=`<div class="off-reasons-t">📝 휴무 사유 (직원 달력에 같이 보여요)</div>`+
+    days.map(ds=>{
+      const d=new Date(ds+'T00:00:00');
+      const o=offDraft[ds]||{};
+      const val=(typeof o==='object'&&o.label)?o.label:'';
+      return `<div class="off-reason-row">
+        <span class="dt">${d.getMonth()+1}/${d.getDate()} ${WK_KO[d.getDay()]}</span>
+        <input type="text" value="${esc(val==='휴무'?'':val)}" oninput="offSetReason('${ds}',this.value)">
+      </div>`;
+    }).join('');
+}
+function offSetReason(ds,v){
+  if(!offDraft[ds])return;
+  if(typeof offDraft[ds]!=='object')offDraft[ds]={};
+  offDraft[ds].label=(v||'').trim()||'휴무';
 }
 async function saveOffDaysAll(){
   const info=document.getElementById('offModalInfo');
@@ -2646,7 +2697,7 @@ async function renderAdmin(){
     const ms=memberStats[l.memberId];
     if(!ms)continue;
     if(!dayData[l.date])dayData[l.date]={};
-    if(!dayData[l.date][l.memberId])dayData[l.date][l.memberId]={totalMin:0,isOff:false,meal:false,otMin:0,skipMin:0};
+    if(!dayData[l.date][l.memberId])dayData[l.date][l.memberId]={totalMin:0,isOff:false,meal:false,otMin:0,skipMin:0,offReason:''};
     const cell=dayData[l.date][l.memberId];
     // 공동 휴무일 → 적어둔 시간은 계산에서 제외 (달력에만 흔적으로 남김)
     if(isGlobalOff(l.date)){
@@ -2657,6 +2708,7 @@ async function renderAdmin(){
     if(l.isOff){
       ms.offDays++;
       cell.isOff=true;
+      if(l.offReason)cell.offReason=l.offReason;
     }else{
       const mins=parseInt(l.hour)*60+parseInt(l.min);
       ms.totalMin+=mins; ms.workDays++;
@@ -2674,7 +2726,7 @@ async function renderAdmin(){
     if(!dayData[ds])dayData[ds]={};
     for(const m of activeMembers){
       if(m.join&&ds<m.join)continue;
-      if(!dayData[ds][m.id])dayData[ds][m.id]={totalMin:0,isOff:true,meal:false,otMin:0,skipMin:0,globalOff:true};
+      if(!dayData[ds][m.id])dayData[ds][m.id]={totalMin:0,isOff:true,meal:false,otMin:0,skipMin:0,offReason:'',globalOff:true};
       else{dayData[ds][m.id].isOff=true;dayData[ds][m.id].globalOff=true;}
       memberStats[m.id].offDays++;
     }
@@ -2764,6 +2816,7 @@ async function renderAdmin(){
       if(has){
         const mth=Math.floor(md.totalMin/60),mtm=md.totalMin%60;
         let label=md.isOff?'🌴 휴무':`${mth}시간${mtm?' '+mtm+'분':''}`;
+        if(md.isOff&&!md.globalOff&&md.offReason) label+=`<span style="color:var(--soft);margin-left:2px">(${esc(md.offReason)})</span>`;
         if(md.globalOff&&md.skipMin>0){
           const sh=Math.floor(md.skipMin/60),sm=md.skipMin%60;
           label+=`<span class="admin-cal-emp-skip">${sh}시간${sm?sm+'분':''}</span>`;
