@@ -2890,6 +2890,10 @@
       "current_amount": 21000,
       "history": [
         {
+          "time": "2026-07-15 14:45",
+          "amount": 112600
+        },
+        {
           "time": "2026-07-15 15:45",
           "amount": 123100
         },
@@ -5764,10 +5768,6 @@
         {
           "time": "2026-08-22 06:45",
           "amount": 21000
-        },
-        {
-          "time": "2026-08-22 07:20",
-          "amount": 21000
         }
       ]
     }
@@ -7089,12 +7089,6 @@
   },
   "run_log": [
     {
-      "time": "2026-07-20 09:45",
-      "account": "몽몽토퍼",
-      "status": "fail",
-      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
-    },
-    {
       "time": "2026-07-21 01:45",
       "account": "몽몽토퍼",
       "status": "fail",
@@ -7687,6 +7681,12 @@
       "account": "미리토퍼",
       "status": "fail",
       "reason": "로그인 폼 없음"
+    },
+    {
+      "time": "2026-08-22 07:20",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "예외: Page.wait_for_timeout: Target page, context or browser has been closed"
     }
   ],
   "ad_data": {
