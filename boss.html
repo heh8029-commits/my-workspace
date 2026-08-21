@@ -9275,6 +9275,53 @@ const AP_DEFAULT = {
 let _apData = null;
 let _apSaveTimer = null;
 
+// ── 자동이체 → AI본사 알림(미아 비서)로 자동 등록 ──
+// 같은 firebase 프로젝트(my-workspace-b1b7a)의 topper_push_plan.json 을 그대로 쓴다.
+// (AI본사 staff-alarm.tsx 가 읽는 것과 동일한 데이터)
+const AP_ALARM_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/topper_push_plan.json';
+const AP_ALARM_WHO_URL = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/topper_push_who.json';
+const AP_ALARM_WHO = 'secretary-m2'; // 미아 (대표님 건강·일정·고정지출 담당)
+const AP_ALARM_TIME = '18:30';
+let _apAlarmWhoOn = false;
+
+async function apAlarmEnsureWhoOn() {
+  if (_apAlarmWhoOn) return;
+  try {
+    const r = await fetch(AP_ALARM_WHO_URL + '?t=' + Date.now());
+    const map = r.ok ? (await r.json() || {}) : {};
+    if (map[AP_ALARM_WHO] !== true) {
+      map[AP_ALARM_WHO] = true;
+      await fetch(AP_ALARM_WHO_URL, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(map)});
+    }
+    _apAlarmWhoOn = true;
+  } catch(e) { /* 못 켜도 자동이체 저장 자체는 계속 진행 */ }
+}
+
+async function apAlarmSync(t) {
+  if (!t) return;
+  await apAlarmEnsureWhoOn();
+  try {
+    const r = await fetch(AP_ALARM_URL + '?t=' + Date.now());
+    const raw = r.ok ? await r.json() : null;
+    const list = (raw && Array.isArray(raw.list)) ? raw.list : [];
+    const amount = Number(t.amount) || 0;
+    const body = (t.name || '자동이체') + ' ' + amount.toLocaleString() + '원 나가요' + (t.memo ? ' (' + t.memo + ')' : '');
+    const next = list.filter(a => a.id !== t.id);
+    next.push({ id: t.id, time: AP_ALARM_TIME, title: '', body: body, who: AP_ALARM_WHO, monthDays: [t.day] });
+    await fetch(AP_ALARM_URL, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ list: next })});
+  } catch(e) { /* 알림 등록 실패해도 자동이체 저장 자체는 막지 않는다 */ }
+}
+
+async function apAlarmRemove(id) {
+  try {
+    const r = await fetch(AP_ALARM_URL + '?t=' + Date.now());
+    const raw = r.ok ? await r.json() : null;
+    const list = (raw && Array.isArray(raw.list)) ? raw.list : [];
+    const next = list.filter(a => a.id !== id);
+    await fetch(AP_ALARM_URL, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ list: next })});
+  } catch(e) {}
+}
+
 async function apFetch() {
   try {
     const r = await fetch(FB_AUTOPAY + '?t=' + Date.now());
@@ -9347,9 +9394,11 @@ function apTransferRender() {
 
 function apTransferAdd() {
   const newId = Date.now();
-  _apData.transfers.push({id:newId, day:1, name:'', from:'미래에셋', to:'', amount:0, memo:''});
+  const t = {id:newId, day:1, name:'', from:'미래에셋', to:'', amount:0, memo:''};
+  _apData.transfers.push(t);
   apTransferRender();
   apSaveDebounce();
+  apAlarmSync(t);
 }
 function apTransferEdit(id, field, val) {
   const t = _apData.transfers.find(x => x.id === id);
@@ -9360,11 +9409,13 @@ function apTransferEdit(id, field, val) {
     if (tot) tot.textContent = total.toLocaleString() + '원';
   }
   apSaveDebounce();
+  if (t) apAlarmSync(t);
 }
 function apTransferDel(id) {
   _apData.transfers = _apData.transfers.filter(t => t.id !== id);
   apTransferRender();
   apSaveDebounce();
+  apAlarmRemove(id);
 }
 
 // ── 카드값 ──
