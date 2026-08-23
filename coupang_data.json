@@ -5773,7 +5773,7 @@
     }
   },
   "sales_data": {
-    "last_updated": "2026-08-23",
+    "last_updated": "2026-08-24",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -6632,6 +6632,12 @@
         "rocket_growth": 706190,
         "seller_delivery": 89000,
         "total": 795190
+      },
+      {
+        "date": "08/23",
+        "rocket_growth": 589230,
+        "seller_delivery": 158400,
+        "total": 747630
       }
     ],
     "몽몽토퍼": [
@@ -7102,6 +7108,12 @@
         "rocket_growth": 197300,
         "seller_delivery": 0,
         "total": 197300
+      },
+      {
+        "date": "08/23",
+        "rocket_growth": 202900,
+        "seller_delivery": 0,
+        "total": 202900
       }
     ]
   },
