@@ -6620,6 +6620,18 @@
         "rocket_growth": 1592430,
         "seller_delivery": 331100,
         "total": 1923530
+      },
+      {
+        "date": "08/21",
+        "rocket_growth": 1673340,
+        "seller_delivery": 81900,
+        "total": 1755240
+      },
+      {
+        "date": "08/22",
+        "rocket_growth": 706190,
+        "seller_delivery": 89000,
+        "total": 795190
       }
     ],
     "몽몽토퍼": [
@@ -7081,9 +7093,9 @@
       },
       {
         "date": "08/21",
-        "rocket_growth": 339600,
+        "rocket_growth": 350100,
         "seller_delivery": 0,
-        "total": 339600
+        "total": 350100
       },
       {
         "date": "08/22",
