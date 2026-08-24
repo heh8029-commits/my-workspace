@@ -129,6 +129,33 @@ button{font-family:inherit;cursor:pointer}
 .off-cell.sat .d{color:#2a7ac0}
 .off-cell.on{background:#e9f8f2;border-color:#7fd6b4;box-shadow:0 0 0 2px rgba(61,187,143,.18) inset}
 .off-legend{font-size:.72rem;color:var(--soft);margin-top:10px;text-align:center}
+/* 송금 목록 */
+.tr-modal-bg{display:none;position:fixed;inset:0;z-index:500;background:rgba(100,50,80,.42);backdrop-filter:blur(4px);overflow:auto}
+.tr-modal-bg.open{display:block}
+.tr-modal{background:var(--cream);max-width:480px;margin:40px auto;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.22);padding:20px 18px 18px}
+.tr-modal h2{font-size:1.05rem;font-weight:800;color:var(--rose);margin-bottom:4px}
+.tr-period{font-size:.78rem;color:var(--soft);margin-bottom:14px}
+.tr-card{background:#fff;border:1.5px solid var(--pink-mid);border-radius:14px;padding:12px 14px;margin-bottom:9px;transition:opacity .15s}
+.tr-card.done{opacity:.45;background:#f6f4f7}
+.tr-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tr-name{font-size:.95rem;font-weight:800;color:var(--text)}
+.tr-bank{font-size:.72rem;color:var(--soft);font-weight:600}
+.tr-chk{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--soft);border:1.5px solid var(--pink-mid);background:#fff;border-radius:14px;padding:4px 10px}
+.tr-chk.on{background:#e6f7f0;border-color:#7fd6b4;color:#1f8f6b}
+.tr-copy{display:flex;gap:7px}
+.tr-btn{flex:1;min-width:0;border:1.5px solid var(--pink-mid);background:linear-gradient(180deg,#fff,#fffafc);border-radius:11px;padding:9px 10px;text-align:left;font-family:inherit;cursor:pointer}
+.tr-btn:active{background:var(--pink-pale)}
+.tr-btn .k{display:block;font-size:.62rem;font-weight:700;color:var(--soft);margin-bottom:2px}
+.tr-btn .v{display:block;font-size:.95rem;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr-btn.amt .v{color:var(--rose)}
+.tr-noacc{font-size:.75rem;color:#c0392b;font-weight:700;padding:6px 2px}
+.tr-sum{margin-top:12px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#fff0f6,#f5f0fd);border:1.5px solid var(--pink-mid);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:.88rem;font-weight:800;color:var(--text)}
+.tr-sum b{font-size:1.15rem;color:var(--rose)}
+.tr-close{width:100%;margin-top:12px;padding:11px;border-radius:14px;border:none;background:#eee;color:#888;font-family:inherit;font-size:.85rem;font-weight:700}
+.tr-toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(58,26,46,.92);color:#fff;padding:10px 20px;border-radius:20px;font-size:.85rem;font-weight:700;z-index:600;opacity:0;transition:opacity .18s;pointer-events:none}
+.tr-toast.show{opacity:1}
+@media(max-width:600px){.tr-modal{margin:16px 10px;padding:16px 12px}}
+
 .off-reasons{margin-top:12px;border-top:1px dashed var(--pink-mid);padding-top:10px}
 .off-reasons-t{font-size:.74rem;font-weight:700;color:var(--soft);margin-bottom:6px}
 .off-reason-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
@@ -811,6 +838,7 @@ button{font-family:inherit;cursor:pointer}
     </div>
     <div class="admin-action-row">
       <button class="admin-action-btn" id="btnAdminCal" onclick="showAdminView('cal')">📅 달력</button>
+      <button class="admin-action-btn pink-btn" onclick="openTransferModal()">💸 송금목록</button>
       <button class="admin-action-btn" onclick="openOffModal()">🌴 휴무설정</button>
       <button class="admin-action-btn" id="btnAdminManage" onclick="showAdminView('manage')">👥 직원관리</button>
       <button class="admin-action-btn" id="btnAdminTax" onclick="showAdminView('tax')">📋 원천징수</button>
@@ -916,6 +944,18 @@ button{font-family:inherit;cursor:pointer}
     </div>
   </div>
 </div>
+
+<!-- 송금 목록 모달 -->
+<div class="tr-modal-bg" id="trModalBg" onclick="closeTransferModalBg(event)">
+  <div class="tr-modal">
+    <h2>💸 송금 목록</h2>
+    <div class="tr-period" id="trPeriod"></div>
+    <div id="trList"></div>
+    <div class="tr-sum" id="trSum"></div>
+    <button class="tr-close" onclick="closeTransferModal()">닫기</button>
+  </div>
+</div>
+<div class="tr-toast" id="trToast"></div>
 
 <!-- 공동 휴무일 설정 모달 (관리자) -->
 <div class="off-modal-bg" id="offModalBg" onclick="closeOffModalBg(event)">
@@ -2200,7 +2240,84 @@ function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&am
 
 function adminMove(d){adminOffset+=d;renderAdmin();}
 
-/* ── 공동 휴무일 설정 모달 ── */
+/* -- 송금 목록 (계좌번호 눌러서 바로 복사) -- */
+let _transferRows=[],_transferPeriod='',_transferDone={};
+
+// "KB국민은행 62480201202544" -> 은행명 / 숫자만
+function splitAccount(acc){
+  const raw=String(acc||'').trim();
+  if(!raw)return{bank:'',num:''};
+  const num=(raw.match(/[\d-]{6,}/)||[''])[0];
+  const bank=raw.replace(num,'').trim().replace(/[()\s]+$/,'');
+  return{bank:bank||'',num:num.replace(/-/g,'')};
+}
+function copyText(txt,label){
+  const done=()=>showToast('\U0001F4CB '+label+' 복사됐어요');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done));
+  }else fallbackCopy(txt,done);
+}
+function fallbackCopy(txt,done){
+  const ta=document.createElement('textarea');
+  ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}catch(e){}
+  document.body.removeChild(ta);
+}
+let _toastTimer=null;
+function showToast(msg){
+  const el=document.getElementById('trToast');
+  if(!el)return;
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'),1600);
+}
+function openTransferModal(){
+  document.getElementById('trModalBg').classList.add('open');
+  renderTransferList();
+}
+function closeTransferModal(){document.getElementById('trModalBg').classList.remove('open')}
+function closeTransferModalBg(e){if(e.target.id==='trModalBg')closeTransferModal()}
+function toggleTransferDone(i){_transferDone[i]=!_transferDone[i];renderTransferList();}
+function renderTransferList(){
+  document.getElementById('trPeriod').textContent=_transferPeriod;
+  const rows=_transferRows.filter(r=>r.amount>0);
+  const box=document.getElementById('trList');
+  if(!rows.length){
+    box.innerHTML='<div style="text-align:center;padding:26px;color:var(--soft);font-size:.85rem">보낼 급여가 없어요</div>';
+    document.getElementById('trSum').innerHTML='';
+    return;
+  }
+  box.innerHTML=rows.map((r,i)=>{
+    const a=splitAccount(r.account);
+    const done=!!_transferDone[i];
+    const amtBtn=`<button class="tr-btn amt" onclick="copyText('${r.amount}','금액')">
+          <span class="k">금액 · 눌러서 복사</span><span class="v">${r.amount.toLocaleString()}원</span>
+        </button>`;
+    return `<div class="tr-card${done?' done':''}">
+      <div class="tr-top">
+        <span class="tr-name">${esc(r.name)}</span>
+        ${a.bank?`<span class="tr-bank">${esc(a.bank)}</span>`:''}
+        <button class="tr-chk${done?' on':''}" onclick="toggleTransferDone(${i})">${done?'✅ 보냄':'보냄 표시'}</button>
+      </div>
+      ${a.num?`<div class="tr-copy">
+        <button class="tr-btn" onclick="copyText('${a.num}','계좌번호')">
+          <span class="k">계좌번호 · 눌러서 복사</span><span class="v">${esc(a.num)}</span>
+        </button>
+        ${amtBtn}
+      </div>`:`<div class="tr-noacc">⚠️ 계좌가 없어요 - 직원관리에서 넣어주세요</div>
+        <div class="tr-copy" style="margin-top:6px">${amtBtn}</div>`}
+    </div>`;
+  }).join('');
+  const left=rows.filter((r,i)=>!_transferDone[i]);
+  const remain=left.reduce((s,r)=>s+r.amount,0);
+  const total=rows.reduce((s,r)=>s+r.amount,0);
+  document.getElementById('trSum').innerHTML=
+    `<span>남은 송금 ${left.length}명</span><b>${remain.toLocaleString()}원</b>`+
+    (remain!==total?`<span style="font-size:.72rem;color:var(--soft);width:100%;text-align:right;font-weight:600">전체 ${total.toLocaleString()}원</span>`:'');
+}
+
+/* -- 공동 휴무일 설정 모달 -- */
 let offDraft=null, offCursor=null;
 async function openOffModal(){
   await loadGlobalOffs();
@@ -2741,6 +2858,8 @@ async function renderAdmin(){
     </tr></thead><tbody>`;
   let totalFinal=0,totalSj=0,totalDed=0;
   const payLines=[];
+  _transferRows=[]; _transferDone={};
+  _transferPeriod=`${fmt(start)}~${fmt(end)} 급여`;
   for(let i=0;i<activeMembers.length;i++){
     const m=activeMembers[i];
     const st=memberStats[m.id]||{totalMin:0,offDays:0,sjTotal:0,mealTotal:0,dedTotal:0,dedItems:[]};
@@ -2749,7 +2868,10 @@ async function renderAdmin(){
     const wageFinal=(wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0)+(st.mealTotal||0);
     const rowTotal=wageFinal+(st.sjTotal||0)-(st.dedTotal||0);
     totalFinal+=wageFinal; totalSj+=st.sjTotal||0; totalDed+=st.dedTotal||0;
-    if(m.name!=='유민호') payLines.push(`${m.name} ${rowTotal.toLocaleString()}원`);
+    if(m.name!=='유민호'){
+      payLines.push(`${m.name} ${rowTotal.toLocaleString()}원`);
+      _transferRows.push({name:m.name,account:m.account||'',amount:rowTotal});
+    }
     const color=COLORS[i%COLORS.length];
     tbl+=`<tr>
       <td><div class="emp-name" onclick="openLogWindow('${m.id}')" style="cursor:pointer" title="근무일정표 새 창으로 열기"><span style="color:${color}">✦</span><span style="text-decoration:underline;text-decoration-color:var(--pink-mid)">${esc(m.name)}</span>${m.account?`<small style="color:var(--soft);font-weight:400;font-size:.72rem"> ${esc(m.account)}</small>`:''}</div></td>
