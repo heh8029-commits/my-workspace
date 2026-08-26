@@ -10,8 +10,8 @@
   <meta name="theme-color" content="#7040c0">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <title>🎀 미리제작소 작업공간</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" rel="stylesheet">
   <style>
   body { margin:0; font-family:Pretendard,sans-serif; background:#fdf6fa; }
   .work-wrap { max-width:1200px; margin:0 auto; padding:16px; }
@@ -1912,14 +1912,14 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
       </div>
 
     </div>
-  <div class="subpage" id="work-sub-3" class="subpage">
+  <div class="subpage" id="work-sub-3">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#f0fff8,#b2f0d0)">🛒</div>
         <div><div class="subpage-title">상품관리</div><div class="subpage-desc">판매 상품 목록 &amp; 상태 관리</div></div>
       </div>
       <div id="product-mgmt-wrap"></div>
     </div>
-  <div class="subpage" id="work-sub-4" class="subpage">
+  <div class="subpage" id="work-sub-4">
       <div class="subpage-header">
         <div class="subpage-icon" style="background:linear-gradient(135deg,#fffbe0,#ffe880)">✍️</div>
         <div><div class="subpage-title">문구추천리스트</div><div class="subpage-desc">토퍼·작업에 쓰기 좋은 문구 모음</div></div>
@@ -9044,9 +9044,9 @@ function initRender(pageId) {
     renderStaff && renderStaff();
     renderPnlPage && renderPnlPage();
     renderInv && renderInv();
-    loadInvMemoBox && loadInvMemoBox();
-    renderInvCatTabs && renderInvCatTabs();
-    updateInvCatSelect && updateInvCatSelect();
+    typeof loadInvMemoBox === 'function' && loadInvMemoBox();
+    typeof renderInvCatTabs === 'function' && renderInvCatTabs();
+    typeof updateInvCatSelect === 'function' && updateInvCatSelect();
     renderDesignLinks && renderDesignLinks();
     renderDesignCards && renderDesignCards();
     loadDesignCommentBox && loadDesignCommentBox();
@@ -9110,7 +9110,7 @@ function initRender(pageId) {
   _startAutoSync();
   syncFromSheet().then(function() {
     const lastSub = localStorage.getItem('ws_sub_'+savedTab);
-    if (lastSub !== null && savedTab === 'menu5') renderMenu5 && renderMenu5(parseInt(lastSub));
+    if (lastSub !== null && savedTab === 'menu5') typeof renderMenu5 === 'function' && renderMenu5(parseInt(lastSub));
     // work 탭 렌더
     renderDesignLinks && renderDesignLinks();
     renderDesignCards && renderDesignCards();
@@ -9118,11 +9118,11 @@ function initRender(pageId) {
     renderPhrases && renderPhrases();
     setTimeout(function() {
       loadDesignCommentBox && loadDesignCommentBox();
-      loadInvMemoBox && loadInvMemoBox();
-      loadAssetPlan && loadAssetPlan();
-      loadAssetLoan && loadAssetLoan();
-      loadAutotxMemoBox && loadAutotxMemoBox();
-      loadInvestMemoBox && loadInvestMemoBox();
+      typeof loadInvMemoBox === 'function' && loadInvMemoBox();
+      typeof loadAssetPlan === 'function' && loadAssetPlan();
+      typeof loadAssetLoan === 'function' && loadAssetLoan();
+      typeof loadAutotxMemoBox === 'function' && loadAutotxMemoBox();
+      typeof loadInvestMemoBox === 'function' && loadInvestMemoBox();
     }, 50);
     updateTodaySchedBar && updateTodaySchedBar();
     
@@ -10186,8 +10186,29 @@ function renderCsShare() {
           memoEl.appendChild(lbl);
         });
       } else {
-        memoEl.style.cssText = 'text-align:center;font-size:1.15rem;font-weight:900;color:#1a1a2e;line-height:1.8;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
-        memoEl.textContent = it.text;
+        memoEl.style.cssText = 'text-align:center;padding:6px 0 12px;border-bottom:1px solid #f0f0f0;margin-bottom:12px';
+        // '메모: ...' 줄이 있으면 그 줄만 크고 진하게, 나머지(주문자 정보·상세내용)는 작고 연하게 나눠서 보여준다.
+        // (예전엔 전부 똑같은 크기라 정작 중요한 메모가 안 튀었다 — 2026-08-26 실제 지적받음)
+        var lines = it.text.split('\n');
+        var memoIdx = -1;
+        for (var _li=0; _li<lines.length; _li++){ if (/^메모\s*[:：]/.test(lines[_li])) { memoIdx = _li; break; } }
+        if (memoIdx >= 0) {
+          lines.forEach(function(line, li){
+            if (line.trim()===''){ var sp=document.createElement('div'); sp.style.cssText='height:6px'; memoEl.appendChild(sp); return; }
+            var lineEl = document.createElement('div');
+            if (li===memoIdx){
+              lineEl.style.cssText = 'font-size:1.3rem;font-weight:900;color:#c0206a;line-height:1.6;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em;margin:2px 0 4px';
+              lineEl.textContent = '📝 ' + line.replace(/^메모\s*[:：]\s*/, '');
+            }else{
+              lineEl.style.cssText = 'font-size:.88rem;font-weight:700;color:#9096a3;line-height:1.6;white-space:pre-wrap;word-break:break-all';
+              lineEl.textContent = line;
+            }
+            memoEl.appendChild(lineEl);
+          });
+        } else {
+          memoEl.style.cssText += 'font-size:1.15rem;font-weight:900;color:#1a1a2e;line-height:1.8;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em';
+          memoEl.textContent = it.text;
+        }
       }
       body.appendChild(memoEl);
 
