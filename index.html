@@ -50,6 +50,7 @@
   .btn.dark{background:var(--navy)}
   .btn.sky{background:var(--sky)}
   #mgSet button.on{background:var(--sky); border-color:var(--sky)}
+  .prod-ic{display:flex; align-items:center; justify-content:center}
   .ptag{display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:20px; vertical-align:middle}
   .ptag.topper{background:var(--pink-l); color:var(--pink-d)}
   .ptag.magnet{background:var(--sky-l); color:var(--sky-d)}
@@ -157,14 +158,29 @@
     </div>
 
     <div class="card" style="text-align:center">
-      <div style="font-size:30px">🎖️</div>
+      <div class="prod-ic">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="30" rx="17" ry="4" fill="#2b2f3a"/>
+          <path d="M8 26c0-9 6-15 13-15s13 6 13 15H8Z" fill="#2b2f3a"/>
+          <rect x="8" y="24" width="26" height="4" rx="2" fill="#1c1f27"/>
+          <circle cx="21" cy="18" r="5" fill="#ffd166" stroke="#e0a83a" stroke-width="1"/>
+          <circle cx="21" cy="18" r="2" fill="#fff3d0"/>
+        </svg>
+      </div>
       <h3 style="margin:8px 0 2px">군인토퍼 사진 접수</h3>
       <p style="color:var(--gray); font-size:13px; margin:0 0 12px">수료 · 전역 · 임관 토퍼 주문 고객</p>
       <button class="btn" onclick="go('submit')">군인토퍼 접수하기</button>
     </div>
 
     <div class="card" style="text-align:center">
-      <div style="font-size:30px">🧲</div>
+      <div class="prod-ic">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="6" width="28" height="24" rx="6" fill="#eaf6fc" stroke="#5fc1ea" stroke-width="2"/>
+          <circle cx="12" cy="15" r="3" fill="#ffd166"/>
+          <path d="M6 27 L15 18 L20 23 L26 15 L29 20 V27 Z" fill="#5fc1ea"/>
+          <path d="M33 39s-6-3.9-8.4-7.3c-1.6-2.3-1.1-4.9 1.2-6.4 1.8-1.2 3.9-.6 5.1.9.4.5.7 1 .9 1.4.2-.4.5-.9.9-1.4 1.2-1.5 3.3-2.1 5.1-.9 2.3 1.5 2.8 4.1 1.2 6.4C39 35.1 33 39 33 39z" fill="#ff8fab"/>
+        </svg>
+      </div>
       <h3 style="margin:8px 0 2px">포토마그넷 사진 접수</h3>
       <p style="color:var(--gray); font-size:13px; margin:0 0 12px">냉장고 자석 · 포토마그넷 주문 고객</p>
       <button class="btn sky" onclick="go('mg')">포토마그넷 접수하기</button>
@@ -229,7 +245,7 @@
         (안심번호 아님 · 전체 번호는 저장하지 않습니다)</div>
 
       <label>사진 편집 요청사항 <span class="opt">(선택)</span></label>
-      <textarea id="editRequest" placeholder="예) 밝게 보정해주세요, 배경 깔끔하게" maxlength="1000"></textarea>
+      <textarea id="editRequest" maxlength="1000"></textarea>
 
       <label>조회 비밀번호 <span class="req">*</span> <span class="opt">(숫자 4자리 또는 6자리)</span></label>
       <input type="password" id="pw1" placeholder="숫자 4자리 또는 6자리" maxlength="6" inputmode="numeric" />
@@ -302,14 +318,8 @@
       <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 사진을 넣고 위치·확대를 맞춰주세요)</span></label>
       <div class="slots" id="mgSlots"></div>
 
-      <label class="agree" style="margin-top:18px">
-        <input type="checkbox" id="mgPhraseChk" />
-        <span>사진에 넣을 문구가 있어요</span>
-      </label>
-      <textarea id="mgPhraseText" placeholder="예) 우리 아이 100일 축하해" maxlength="200" style="display:none;margin-top:8px"></textarea>
-
       <label>기타 요청사항 <span class="opt">(선택)</span></label>
-      <textarea id="mgExtra" placeholder="예) 배경 밝게 보정해주세요" maxlength="1000"></textarea>
+      <textarea id="mgExtra" maxlength="1000"></textarea>
 
       <label>조회 비밀번호 <span class="req">*</span> <span class="opt">(숫자 4자리 또는 6자리)</span></label>
       <input type="password" id="mgPw1" placeholder="숫자 4자리 또는 6자리" maxlength="6" inputmode="numeric" />
@@ -804,9 +814,6 @@ document.getElementById('mgSet').addEventListener('click',e=>{
   renderMgSlots();
 });
 document.getElementById('mgPhone').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
-document.getElementById('mgPhraseChk').addEventListener('change',e=>{
-  document.getElementById('mgPhraseText').style.display = e.target.checked ? 'block':'none';
-});
 function checkMgPw(){
   const a=mgPw1.value, b=mgPw2.value, m=document.getElementById('mgPwMsg');
   if(!b){ m.textContent=''; return; }
@@ -963,8 +970,6 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   if(mgSubmitting) return;
   const name=mgName.value.trim(), phone=mgPhone.value.trim(), orderNo=mgOrderNo.value.trim();
   const p1=mgPw1.value, p2=mgPw2.value;
-  const phraseEnabled=document.getElementById('mgPhraseChk').checked;
-  const phraseText=document.getElementById('mgPhraseText').value.trim();
   const extra=document.getElementById('mgExtra').value.trim();
   if(!mgSelectedMall) return toast('주문한 쇼핑몰을 선택해 주세요.');
   if(!name) return toast('주문자 이름을 입력해 주세요.');
@@ -972,7 +977,6 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   if(!orderNo) return toast('주문번호를 입력해 주세요.');
   if(!mgSetSize) return toast('세트를 선택해 주세요.');
   if(mgSlotsData.some(x=>!x)) return toast(`${mgSetSize}칸 모두에 사진을 넣어 주세요.`);
-  if(phraseEnabled && !phraseText) return toast('넣을 문구를 입력해 주세요.');
   if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
   if(p1!==p2) return toast('비밀번호가 일치하지 않습니다.');
   if(!document.getElementById('mgAgree').checked) return toast('개인정보 및 사진 이용에 동의해 주세요.');
@@ -983,7 +987,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   try{
     const filesMeta=mgSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
     const create=await api('submit-magnet',{ mall:mgSelectedMall, ordererName:name, phoneLast4:phone,
-      orderNo, setSize:mgSetSize, phraseEnabled, phraseText, extraRequest:extra,
+      orderNo, setSize:mgSetSize, extraRequest:extra,
       password:p1, passwordConfirm:p2, files:filesMeta });
     if(create.status!==200) throw new Error(mgErrMsg(create.body.error));
     const {receiptId, uploads}=create.body;
@@ -1005,7 +1009,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
 function mgErrMsg(code){
   return ({invalid_mall:'쇼핑몰을 선택해 주세요.', invalid_name:'이름을 확인해 주세요.',
     invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.', invalid_order_no:'주문번호를 확인해 주세요.',
-    invalid_set_size:'세트를 선택해 주세요.', invalid_phrase:'문구를 입력해 주세요.',
+    invalid_set_size:'세트를 선택해 주세요.',
     invalid_password:'비밀번호는 숫자 4 또는 6자리입니다.', password_mismatch:'비밀번호가 일치하지 않습니다.',
     invalid_file_count:'세트 칸 수만큼 사진을 모두 넣어 주세요.', file_too_large:'사진 용량이 너무 큽니다.',
     invalid_file_type:'허용되지 않는 사진 형식입니다.'})[code] || '접수 정보를 확인해 주세요.';
@@ -1024,7 +1028,6 @@ function showMgDone(fin, info){
   mgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); });
   mgSelectedMall=null; mgSetSize=0; mgSlotsData=[];
   document.querySelectorAll('#mgMalls button, #mgSet button').forEach(x=>x.classList.remove('on'));
-  document.getElementById('mgPhraseText').style.display='none';
   document.getElementById('mgSlots').innerHTML='';
   document.getElementById('mgPwMsg').textContent='';
   go('done');
@@ -1100,8 +1103,7 @@ function renderDetail(data){
     ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
     : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
   const mgRows = isMg ? `
-    <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>
-    <div class="kv"><b>문구</b><span style="max-width:60%;text-align:right">${d.phraseEnabled?esc(d.phraseText||''):'없음'}</span></div>` : '';
+    <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>` : '';
   document.getElementById('detailInfo').innerHTML=`
     <h2 style="margin-bottom:12px">접수 상세 조회 ${tag}</h2>
     <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>

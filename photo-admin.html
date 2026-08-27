@@ -285,8 +285,7 @@ async function openDetail(id){
     ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
     : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
   const mgRows = isMg ? `
-    <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>
-    <div class="kv"><b>문구</b><span style="max-width:60%;text-align:right">${d.phraseEnabled?esc(d.phraseText||''):'없음'}</span></div>` : '';
+    <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>` : '';
   document.getElementById('drawerBody').innerHTML=`
     <div class="kv"><b>상품종류</b><span>${ptag(d.productType)}</span></div>
     <div class="kv"><b>접수번호</b><span>${esc(d.receiptNo)}</span></div>
