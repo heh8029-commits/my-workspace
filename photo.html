@@ -49,7 +49,7 @@
   .btn.ghost{background:#fff; color:var(--navy); border:1.5px solid var(--line)}
   .btn.dark{background:var(--navy)}
   .btn.sky{background:var(--sky)}
-  #mgSet button.on{background:var(--sky); border-color:var(--sky)}
+  #mgSet button.on, #qaMgSet button.on, #qaType button[data-qtype="magnet"].on{background:var(--sky); border-color:var(--sky)}
   .prod-ic{display:flex; align-items:center; justify-content:center}
   #mgBulkPickBtn{border-color:var(--sky)}
   #mgBulkPickBtn span.shineTxt{
@@ -453,15 +453,39 @@
       </div>
 
       <form id="qaForm" style="display:none" autocomplete="off">
+        <label>등록 종류</label>
+        <div class="malls" id="qaType">
+          <button type="button" class="on" data-qtype="topper">단순등록</button>
+          <button type="button" data-qtype="magnet">마그넷등록</button>
+        </div>
+
         <label>주문자 이름 <span class="req">*</span></label>
         <input type="text" id="qaName" placeholder="예) 김미리" maxlength="40" />
 
-        <label>사진 첨부 <span class="req">*</span> <span class="opt">(최대 5장 · 순서 드래그)</span></label>
-        <div class="drop" id="qaDrop"><div style="font-size:24px">☁️</div>사진 선택 또는 드래그</div>
-        <input type="file" id="qaFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden />
-        <div class="thumbs" id="qaThumbs"></div>
-        <div class="filemeta"><span id="qaCount">0 / 5 장</span><span id="qaSize">0 MB</span></div>
-        <div class="bar" id="qaBar"><i></i></div>
+        <div id="qaTopperSection">
+          <label>사진 첨부 <span class="req">*</span> <span class="opt">(최대 5장 · 순서 드래그)</span></label>
+          <div class="drop" id="qaDrop"><div style="font-size:24px">☁️</div>사진 선택 또는 드래그</div>
+          <input type="file" id="qaFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden />
+          <div class="thumbs" id="qaThumbs"></div>
+          <div class="filemeta"><span id="qaCount">0 / 5 장</span><span id="qaSize">0 MB</span></div>
+          <div class="bar" id="qaBar"><i></i></div>
+        </div>
+
+        <div id="qaMagnetSection" style="display:none">
+          <label>세트 수 <span class="req">*</span></label>
+          <div class="malls" id="qaMgSet">
+            <button type="button" data-set="6">6세트</button>
+            <button type="button" data-set="9">9세트</button>
+            <button type="button" data-set="custom">임의등록</button>
+          </div>
+          <input type="number" id="qaMgCustomCount" placeholder="원하는 장수 입력" min="1" max="99" style="display:none;margin-top:8px" />
+
+          <label style="margin-top:16px">사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
+          <button type="button" class="btn ghost" id="qaMgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
+          <div class="slots" id="qaMgSlots"></div>
+          <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
+        </div>
+
         <button type="submit" class="btn" id="qaSaveBtn" style="margin-top:14px">등록하기</button>
       </form>
 
@@ -862,13 +886,13 @@ mgPickInput.addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
   const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
   if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
-  openCropModal(f, mgPickSlot);
+  openCropModal(f, mgPickSlot, mgSlotsData, renderMgSlots);
 });
 // 채워진 칸을 다시 누르면(파일 재선택이 아니라) 그 사진의 크롭 화면을 바로 엶
 function openCropForExisting(i){
   const item=mgSlotsData[i];
   if(!item || !item.srcFile) return pickPhotoForSlot(i);
-  openCropModal(item.srcFile, i);
+  openCropModal(item.srcFile, i, mgSlotsData, renderMgSlots);
 }
 
 // 여러 장 한번에 선택 → 빈 칸에 순서대로 채우고, 가운데 기준 자동 크롭(나중에 칸을 눌러 재조정 가능)
@@ -929,9 +953,10 @@ mgBulkInput.addEventListener('change', async e=>{
 /* ---- 정사각형 크롭 모달 ---- */
 const cropWrap=document.getElementById('cropWrap'), cropStage=document.getElementById('cropStage'),
       cropImgEl=document.getElementById('cropImgEl'), cropZoom=document.getElementById('cropZoom');
-let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName}
+let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName,arr,renderFn}
 
-function openCropModal(file, slotIndex){
+// arr/renderFn 은 이 크롭 결과를 저장할 슬롯 배열과 그걸 다시 그릴 함수(고객 화면/관리자 화면이 공용으로 씀)
+function openCropModal(file, slotIndex, arr, renderFn){
   const url=URL.createObjectURL(file);
   cropImgEl.src='';
   cropWrap.classList.add('show'); // 먼저 보이게 해야 실제 폭을 잴 수 있음
@@ -939,7 +964,7 @@ function openCropModal(file, slotIndex){
   img.onload=()=>{
     const stageSize=cropStage.getBoundingClientRect().width || 300;
     const baseScale=stageSize/Math.min(img.naturalWidth, img.naturalHeight);
-    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file};
+    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn};
     cropImgEl.src=url;
     cropZoom.value=100;
     applyCropTransform();
@@ -1026,14 +1051,14 @@ function confirmCrop(){
   const dw=cropState.natW*eff*k, dh=cropState.natH*eff*k;
   const dx=cropState.tx*k, dy=cropState.ty*k;
   ctx.drawImage(cropState.img, dx, dy, dw, dh);
-  const slot=cropState.slot, srcName=cropState.srcName, srcFile=cropState.srcFile;
+  const slot=cropState.slot, srcName=cropState.srcName, srcFile=cropState.srcFile, arr=cropState.arr, renderFn=cropState.renderFn;
   cv.toBlob(blob=>{
     if(!blob) return toast('사진 처리에 실패했습니다.');
     const url=URL.createObjectURL(blob);
-    if(mgSlotsData[slot]) URL.revokeObjectURL(mgSlotsData[slot].url);
-    mgSlotsData[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false };
+    if(arr[slot]) URL.revokeObjectURL(arr[slot].url);
+    arr[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false };
     closeCropModal();
-    renderMgSlots();
+    renderFn();
   }, 'image/jpeg', 0.92);
 }
 
@@ -1313,7 +1338,110 @@ function qaShowForm(){
   document.getElementById('qaForm').style.display='block';
   document.getElementById('qaDone').style.display='none';
 }
-function qaReset(){ qaFiles=[]; renderQaThumbs(); const n=document.getElementById('qaName'); if(n) n.value=''; }
+function qaReset(){
+  qaFiles=[]; renderQaThumbs(); const n=document.getElementById('qaName'); if(n) n.value='';
+  qaType='topper';
+  document.querySelectorAll('#qaType button').forEach(x=>x.classList.toggle('on', x.dataset.qtype==='topper'));
+  document.getElementById('qaTopperSection').style.display='block';
+  document.getElementById('qaMagnetSection').style.display='none';
+  qaMgSetSize=0; qaMgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); }); qaMgSlotsData=[];
+  document.querySelectorAll('#qaMgSet button').forEach(x=>x.classList.remove('on'));
+  const cc=document.getElementById('qaMgCustomCount'); if(cc){ cc.value=''; cc.style.display='none'; }
+  renderQaMgSlots();
+}
+
+/* ---- 관리자 간편등록: 마그넷등록 ---- */
+let qaType='topper', qaMgSetSize=0, qaMgSlotsData=[];
+document.getElementById('qaType').addEventListener('click', e=>{
+  const b=e.target.closest('button[data-qtype]'); if(!b) return;
+  qaType=b.dataset.qtype;
+  document.querySelectorAll('#qaType button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById('qaTopperSection').style.display = qaType==='topper' ? 'block' : 'none';
+  document.getElementById('qaMagnetSection').style.display = qaType==='magnet' ? 'block' : 'none';
+});
+function applyQaMgSetSize(n){
+  n=Math.max(1, Math.min(99, Math.round(n)));
+  if(qaMgSetSize && qaMgSetSize!==n && qaMgSlotsData.some(Boolean)){
+    if(!confirm('장수를 바꾸면 이미 넣은 사진이 초기화돼요. 계속할까요?')) return;
+  }
+  qaMgSetSize=n;
+  qaMgSlotsData=new Array(n).fill(null);
+  renderQaMgSlots();
+}
+document.getElementById('qaMgSet').addEventListener('click', e=>{
+  const b=e.target.closest('button[data-set]'); if(!b) return;
+  document.querySelectorAll('#qaMgSet button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  const cc=document.getElementById('qaMgCustomCount');
+  if(b.dataset.set==='custom'){ cc.style.display='block'; cc.focus(); return; }
+  cc.style.display='none'; cc.value='';
+  applyQaMgSetSize(Number(b.dataset.set));
+});
+document.getElementById('qaMgCustomCount').addEventListener('input', e=>{
+  const n=Number(e.target.value);
+  if(n>=1) applyQaMgSetSize(n);
+});
+function renderQaMgSlots(){
+  const box=document.getElementById('qaMgSlots'); if(!box) return; box.innerHTML='';
+  for(let i=0;i<qaMgSetSize;i++){
+    const d=document.createElement('div'); d.className='slot'+(qaMgSlotsData[i]?' filled':'');
+    if(qaMgSlotsData[i]){
+      const chk=qaMgSlotsData[i].needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
+      d.innerHTML=`<img src="${qaMgSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
+      d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(qaMgSlotsData[i].url); qaMgSlotsData[i]=null; renderQaMgSlots(); };
+      d.onclick=()=>qaOpenCropForExisting(i);
+    }else{
+      d.innerHTML=`<div>➕<br>${i+1}번</div>`;
+      d.onclick=()=>qaPickPhotoForSlot(i);
+    }
+    box.appendChild(d);
+  }
+}
+const qaMgPickInput=document.createElement('input');
+qaMgPickInput.type='file'; qaMgPickInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; qaMgPickInput.hidden=true;
+document.body.appendChild(qaMgPickInput);
+let qaMgPickSlot=-1;
+function qaPickPhotoForSlot(i){ qaMgPickSlot=i; qaMgPickInput.value=''; qaMgPickInput.click(); }
+qaMgPickInput.addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+  if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
+  openCropModal(f, qaMgPickSlot, qaMgSlotsData, renderQaMgSlots);
+});
+function qaOpenCropForExisting(i){
+  const item=qaMgSlotsData[i];
+  if(!item || !item.srcFile) return qaPickPhotoForSlot(i);
+  openCropModal(item.srcFile, i, qaMgSlotsData, renderQaMgSlots);
+}
+const qaMgBulkInput=document.createElement('input');
+qaMgBulkInput.type='file'; qaMgBulkInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; qaMgBulkInput.multiple=true; qaMgBulkInput.hidden=true;
+document.body.appendChild(qaMgBulkInput);
+document.getElementById('qaMgBulkPickBtn').onclick=()=>{
+  if(!qaMgSetSize) return toast('세트 수를 먼저 정해 주세요.');
+  qaMgBulkInput.value=''; qaMgBulkInput.click();
+};
+qaMgBulkInput.addEventListener('change', async e=>{
+  const picked=Array.from(e.target.files||[]);
+  if(!picked.length) return;
+  const emptyIdx=[]; for(let i=0;i<qaMgSetSize;i++) if(!qaMgSlotsData[i]) emptyIdx.push(i);
+  if(!emptyIdx.length) return toast('모든 칸이 이미 채워져 있어요. 칸을 눌러 사진을 바꿀 수 있어요.');
+  if(picked.length>emptyIdx.length) toast(`빈 칸이 ${emptyIdx.length}개라 앞의 ${emptyIdx.length}장만 채웠어요.`);
+  let filled=0;
+  for(let k=0;k<Math.min(picked.length, emptyIdx.length);k++){
+    const f=picked[k];
+    const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+    if(!okType) continue;
+    const result=await autoCropFile(f);
+    if(!result) continue;
+    const slot=emptyIdx[k];
+    if(qaMgSlotsData[slot]) URL.revokeObjectURL(qaMgSlotsData[slot].url);
+    qaMgSlotsData[slot]=result;
+    filled++;
+    renderQaMgSlots();
+  }
+  if(filled) toast('네모 안에 보이는 그대로 제작돼요. "위치·확대 조정하기"가 표시된 칸을 눌러 조정해 주세요.', 4500);
+});
 
 const qaDrop=document.getElementById('qaDrop'), qaFileInput=document.getElementById('qaFileInput');
 qaDrop.addEventListener('click',()=>qaFileInput.click());
@@ -1351,6 +1479,39 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
   e.preventDefault(); if(qaBusy) return;
   const name=document.getElementById('qaName').value.trim();
   if(!name) return toast('주문자 이름을 입력해 주세요.');
+
+  if(qaType==='magnet'){
+    if(!qaMgSetSize) return toast('세트 수를 먼저 정해 주세요.');
+    if(qaMgSlotsData.some(x=>!x)) return toast(`${qaMgSetSize}칸 모두에 사진을 넣어 주세요.`);
+    qaBusy=true;
+    const btn=document.getElementById('qaSaveBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 등록 중...';
+    try{
+      const filesMeta=qaMgSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
+      const cr=await api('quick-submit',{ productType:'magnet', ordererName:name, setSize:qaMgSetSize, files:filesMeta });
+      if(cr.status!==200) throw new Error('등록에 실패했습니다.');
+      const uploads=cr.body.uploads||[];
+      for(let i=0;i<qaMgSlotsData.length;i++){
+        const up=uploads.find(u=>u.sortOrder===i);
+        await uploadOne(up, qaMgSlotsData[i].blob, ()=>{});
+      }
+      await api('quick-submit',{action:'finalize', receiptId:cr.body.receiptId});
+      document.getElementById('qaForm').style.display='none';
+      const done2=document.getElementById('qaDone'); done2.style.display='block';
+      done2.innerHTML=`<div style="text-align:center;padding:8px 0">
+        <div class="done-ic">✓</div>
+        <h3>등록 완료</h3>
+        <div class="rno"><div style="font-size:12px;color:var(--gray)">접수 완료번호</div><div class="n">${esc(cr.body.receiptNo)}</div></div>
+        <div class="kv"><b>주문자</b><span>${esc(name)}</span></div>
+        <div class="kv"><b>세트</b><span>${qaMgSetSize}장</span></div>
+        <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(cr.body.deleteAt)}</span></div>
+        <button class="btn" style="margin-top:14px" onclick="qaReset(); qaShowForm();">➕ 계속 등록</button>
+      </div>`;
+      toast('✓ 등록되었습니다');
+    }catch(err){ toast(err.message||'등록 중 오류'); }
+    finally{ qaBusy=false; btn.disabled=false; btn.textContent='등록하기'; }
+    return;
+  }
+
   if(qaFiles.length<1) return toast('사진을 1장 이상 첨부해 주세요.');
   qaBusy=true;
   const btn=document.getElementById('qaSaveBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 등록 중...';

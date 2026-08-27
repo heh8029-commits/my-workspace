@@ -390,9 +390,16 @@ Deno.serve(async (req) => {
       return json({ ok: true, photoCount: up }, 200, origin);
     }
     const name = String(body.ordererName ?? "").trim();
+    const isMagnet = body.productType === "magnet";
+    const setSize = isMagnet ? Math.round(Number(body.setSize)) : null;
     const files: any[] = Array.isArray(body.files) ? body.files : [];
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
-    if (files.length < 1 || files.length > MAX_FILES) return json({ error: "invalid_file_count" }, 400, origin);
+    if (isMagnet) {
+      if (!Number.isFinite(setSize) || (setSize as number) < 1 || (setSize as number) > 99) return json({ error: "invalid_set_size" }, 400, origin);
+      if (files.length !== setSize) return json({ error: "invalid_file_count" }, 400, origin);
+    } else {
+      if (files.length < 1 || files.length > MAX_FILES) return json({ error: "invalid_file_count" }, 400, origin);
+    }
     for (const f of files) {
       if (typeof f.size !== "number" || f.size <= 0 || f.size > MAX_SIZE) return json({ error: "file_too_large" }, 400, origin);
       if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
@@ -405,6 +412,7 @@ Deno.serve(async (req) => {
         receipt_no: makeReceiptNo(now), mall: "etc", orderer_name: name, address_dong: "-",
         phone_last4: "0000", password_hash: await hashPassword("0000"), photo_count: files.length,
         delete_at: deleteAt.toISOString(), finalized: false,
+        product_type: isMagnet ? "magnet" : "topper", set_size: setSize,
       }).select("id, receipt_no, created_at, delete_at").single();
       if (!error) { rec = data; break; }
       if (error.code !== "23505") return json({ error: "db_error", detail: error.message }, 500, origin);
