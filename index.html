@@ -153,7 +153,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <span class="logo">♥ 미리토퍼</span>
+    <span class="logo" onclick="go('home')" style="cursor:pointer">♥ 미리토퍼</span>
     <span class="sub">사진 접수 &amp; 조회</span>
   </header>
 
@@ -841,7 +841,7 @@ function renderMgSlots(){
   for(let i=0;i<mgSetSize;i++){
     const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'');
     if(mgSlotsData[i]){
-      const chk=mgSlotsData[i].needsCheck?`<span class="chk">🔍 확인</span>`:'';
+      const chk=mgSlotsData[i].needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
       d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
       d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(mgSlotsData[i].url); mgSlotsData[i]=null; renderMgSlots(); };
       d.onclick=()=>openCropForExisting(i);
@@ -923,7 +923,7 @@ mgBulkInput.addEventListener('change', async e=>{
     filled++;
     renderMgSlots();
   }
-  if(filled) toast('네모 안에 보이는 그대로 제작돼요. 🔍확인 표시된 칸을 눌러 위치를 확인해 주세요.', 4500);
+  if(filled) toast('네모 안에 보이는 그대로 제작돼요. "위치·확대 조정하기"가 표시된 칸을 눌러 조정해 주세요.', 4500);
 });
 
 /* ---- 정사각형 크롭 모달 ---- */
