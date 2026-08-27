@@ -51,13 +51,12 @@
   .btn.sky{background:var(--sky)}
   #mgSet button.on{background:var(--sky); border-color:var(--sky)}
   .prod-ic{display:flex; align-items:center; justify-content:center}
-  #mgBulkPickBtn{position:relative; overflow:hidden; border-color:var(--sky); color:var(--sky-d);
-    box-shadow:0 0 0 0 rgba(56,166,224,.45); animation:mgGlow 1.8s ease-in-out infinite}
-  #mgBulkPickBtn::after{content:''; position:absolute; top:0; left:-60%; width:45%; height:100%;
-    background:linear-gradient(120deg, transparent, rgba(56,166,224,.5), transparent);
-    animation:mgShine 2.2s ease-in-out infinite}
-  @keyframes mgGlow{0%,100%{box-shadow:0 0 0 0 rgba(56,166,224,.35)}50%{box-shadow:0 0 0 6px rgba(56,166,224,0)}}
-  @keyframes mgShine{0%{left:-60%}60%{left:130%}100%{left:130%}}
+  #mgBulkPickBtn{border-color:var(--sky)}
+  #mgBulkPickBtn span.shineTxt{
+    background:linear-gradient(90deg, var(--sky-d) 0%, var(--sky-d) 40%, #9fe0ff 50%, var(--sky-d) 60%, var(--sky-d) 100%);
+    background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:mgTextShine 2.6s linear infinite; font-weight:800}
+  @keyframes mgTextShine{0%{background-position:200% 0}100%{background-position:-50% 0}}
   .ptag{display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:20px; vertical-align:middle}
   .ptag.topper{background:var(--pink-l); color:var(--pink-d)}
   .ptag.magnet{background:var(--sky-l); color:var(--sky-d)}
@@ -72,6 +71,8 @@
     font-weight:800; border-radius:6px; padding:1px 6px}
   .slot .x{position:absolute; right:4px; top:4px; width:20px; height:20px; border-radius:50%;
     background:rgba(0,0,0,.55); color:#fff; border:none; font-size:12px; line-height:20px; cursor:pointer}
+  .slot .chk{position:absolute; left:0; right:0; bottom:0; background:var(--warn); color:#fff;
+    font-size:10.5px; font-weight:800; text-align:center; padding:3px 0}
   /* 정사각형 크롭 모달 */
   .cropWrap{position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:200; display:none;
     flex-direction:column; align-items:center; justify-content:center}
@@ -325,7 +326,7 @@
       </div>
 
       <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
-      <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ 여러 장 한번에 선택해서 채우기</button>
+      <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
       <div class="slots" id="mgSlots"></div>
       <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
 
@@ -593,7 +594,7 @@ function api(fn, body, extraHeaders){
     body: JSON.stringify(Object.assign({route:fn}, body||{}))
   }).then(async r=>{ const j = await r.json().catch(()=>({error:'bad_response'})); return {status:r.status, body:j}; });
 }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600); }
+function toast(msg,ms){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),ms||2600); }
 function kstParts(iso){
   const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(iso));
   const g=t=>(p.find(x=>x.type===t)||{}).value; return {y:g('year'),mo:g('month'),d:g('day'),h:g('hour')==='24'?'00':g('hour'),mi:g('minute')};
@@ -840,7 +841,8 @@ function renderMgSlots(){
   for(let i=0;i<mgSetSize;i++){
     const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'');
     if(mgSlotsData[i]){
-      d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span><button type="button" class="x">×</button>`;
+      const chk=mgSlotsData[i].needsCheck?`<span class="chk">🔍 확인</span>`:'';
+      d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
       d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(mgSlotsData[i].url); mgSlotsData[i]=null; renderMgSlots(); };
       d.onclick=()=>openCropForExisting(i);
     }else{
@@ -893,7 +895,7 @@ function autoCropFile(file){
           URL.revokeObjectURL(url);
           cv.toBlob(blob=>{
             if(!blob) return resolve(null);
-            resolve({ blob, url:URL.createObjectURL(blob), name:(file.name||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile:file });
+            resolve({ blob, url:URL.createObjectURL(blob), name:(file.name||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile:file, needsCheck:true });
           },'image/jpeg',0.92);
         }catch(e){ URL.revokeObjectURL(url); resolve(null); }
       };
@@ -908,6 +910,7 @@ mgBulkInput.addEventListener('change', async e=>{
   const emptyIdx=[]; for(let i=0;i<mgSetSize;i++) if(!mgSlotsData[i]) emptyIdx.push(i);
   if(!emptyIdx.length) return toast('모든 칸이 이미 채워져 있어요. 칸을 눌러 사진을 바꿀 수 있어요.');
   if(picked.length>emptyIdx.length) toast(`빈 칸이 ${emptyIdx.length}개라 앞의 ${emptyIdx.length}장만 채웠어요.`);
+  let filled=0;
   for(let k=0;k<Math.min(picked.length, emptyIdx.length);k++){
     const f=picked[k];
     const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
@@ -917,8 +920,10 @@ mgBulkInput.addEventListener('change', async e=>{
     const slot=emptyIdx[k];
     if(mgSlotsData[slot]) URL.revokeObjectURL(mgSlotsData[slot].url);
     mgSlotsData[slot]=result;
+    filled++;
     renderMgSlots();
   }
+  if(filled) toast('네모 안에 보이는 그대로 제작돼요. 🔍확인 표시된 칸을 눌러 위치를 확인해 주세요.', 4500);
 });
 
 /* ---- 정사각형 크롭 모달 ---- */
@@ -1026,7 +1031,7 @@ function confirmCrop(){
     if(!blob) return toast('사진 처리에 실패했습니다.');
     const url=URL.createObjectURL(blob);
     if(mgSlotsData[slot]) URL.revokeObjectURL(mgSlotsData[slot].url);
-    mgSlotsData[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile };
+    mgSlotsData[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false };
     closeCropModal();
     renderMgSlots();
   }, 'image/jpeg', 0.92);
