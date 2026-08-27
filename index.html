@@ -51,6 +51,13 @@
   .btn.sky{background:var(--sky)}
   #mgSet button.on{background:var(--sky); border-color:var(--sky)}
   .prod-ic{display:flex; align-items:center; justify-content:center}
+  #mgBulkPickBtn{position:relative; overflow:hidden; border-color:var(--sky); color:var(--sky-d);
+    box-shadow:0 0 0 0 rgba(56,166,224,.45); animation:mgGlow 1.8s ease-in-out infinite}
+  #mgBulkPickBtn::after{content:''; position:absolute; top:0; left:-60%; width:45%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(56,166,224,.5), transparent);
+    animation:mgShine 2.2s ease-in-out infinite}
+  @keyframes mgGlow{0%,100%{box-shadow:0 0 0 0 rgba(56,166,224,.35)}50%{box-shadow:0 0 0 6px rgba(56,166,224,0)}}
+  @keyframes mgShine{0%{left:-60%}60%{left:130%}100%{left:130%}}
   .ptag{display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:20px; vertical-align:middle}
   .ptag.topper{background:var(--pink-l); color:var(--pink-d)}
   .ptag.magnet{background:var(--sky-l); color:var(--sky-d)}
@@ -835,7 +842,7 @@ function renderMgSlots(){
     if(mgSlotsData[i]){
       d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span><button type="button" class="x">×</button>`;
       d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(mgSlotsData[i].url); mgSlotsData[i]=null; renderMgSlots(); };
-      d.onclick=()=>pickPhotoForSlot(i);
+      d.onclick=()=>openCropForExisting(i);
     }else{
       d.innerHTML=`<div>➕<br>${i+1}번</div>`;
       d.onclick=()=>pickPhotoForSlot(i);
@@ -855,6 +862,12 @@ mgPickInput.addEventListener('change',e=>{
   if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
   openCropModal(f, mgPickSlot);
 });
+// 채워진 칸을 다시 누르면(파일 재선택이 아니라) 그 사진의 크롭 화면을 바로 엶
+function openCropForExisting(i){
+  const item=mgSlotsData[i];
+  if(!item || !item.srcFile) return pickPhotoForSlot(i);
+  openCropModal(item.srcFile, i);
+}
 
 // 여러 장 한번에 선택 → 빈 칸에 순서대로 채우고, 가운데 기준 자동 크롭(나중에 칸을 눌러 재조정 가능)
 const mgBulkInput=document.createElement('input');
@@ -880,7 +893,7 @@ function autoCropFile(file){
           URL.revokeObjectURL(url);
           cv.toBlob(blob=>{
             if(!blob) return resolve(null);
-            resolve({ blob, url:URL.createObjectURL(blob), name:(file.name||'photo').replace(/\.\w+$/,'')+'_crop.jpg' });
+            resolve({ blob, url:URL.createObjectURL(blob), name:(file.name||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile:file });
           },'image/jpeg',0.92);
         }catch(e){ URL.revokeObjectURL(url); resolve(null); }
       };
@@ -921,7 +934,7 @@ function openCropModal(file, slotIndex){
   img.onload=()=>{
     const stageSize=cropStage.getBoundingClientRect().width || 300;
     const baseScale=stageSize/Math.min(img.naturalWidth, img.naturalHeight);
-    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name};
+    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file};
     cropImgEl.src=url;
     cropZoom.value=100;
     applyCropTransform();
@@ -1008,12 +1021,12 @@ function confirmCrop(){
   const dw=cropState.natW*eff*k, dh=cropState.natH*eff*k;
   const dx=cropState.tx*k, dy=cropState.ty*k;
   ctx.drawImage(cropState.img, dx, dy, dw, dh);
-  const slot=cropState.slot, srcName=cropState.srcName;
+  const slot=cropState.slot, srcName=cropState.srcName, srcFile=cropState.srcFile;
   cv.toBlob(blob=>{
     if(!blob) return toast('사진 처리에 실패했습니다.');
     const url=URL.createObjectURL(blob);
     if(mgSlotsData[slot]) URL.revokeObjectURL(mgSlotsData[slot].url);
-    mgSlotsData[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg' };
+    mgSlotsData[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile };
     closeCropModal();
     renderMgSlots();
   }, 'image/jpeg', 0.92);
