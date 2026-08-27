@@ -50,7 +50,9 @@
   .btn.dark{background:var(--navy)}
   .btn.sky{background:var(--sky)}
   #mgSet button.on, #qaMgSet button.on, #qaType button[data-qtype="magnet"].on{background:var(--sky); border-color:var(--sky)}
-  .prod-photo{display:block; margin:0 auto; max-width:96px; max-height:82px; width:auto; height:auto}
+  .prod-row{display:flex; align-items:center; gap:14px; text-align:left}
+  .prod-photo{flex-shrink:0; max-width:88px; max-height:76px; width:auto; height:auto; border-radius:10px}
+  .prod-text h3{font-size:18px; margin:0 0 3px}
   #mgBulkPickBtn{border-color:var(--sky)}
   #mgBulkPickBtn span.shineTxt{
     background:linear-gradient(90deg, var(--sky-d) 0%, var(--sky-d) 40%, #9fe0ff 50%, var(--sky-d) 60%, var(--sky-d) 100%);
@@ -165,18 +167,26 @@
       <p style="color:var(--gray); font-size:13.5px; margin:0 0 4px">사진을 등록할 상품을 선택해주세요.</p>
     </div>
 
-    <div class="card" style="text-align:center">
-      <img src="./card-topper.jpg" alt="" class="prod-photo">
-      <h3 style="margin:8px 0 2px">군인토퍼 사진 접수</h3>
-      <p style="color:var(--gray); font-size:13px; margin:0 0 12px">수료 · 전역 · 임관 토퍼 주문 고객</p>
-      <button class="btn" onclick="go('submit')">군인토퍼 접수하기</button>
+    <div class="card">
+      <div class="prod-row">
+        <img src="./card-topper.jpg" alt="" class="prod-photo">
+        <div class="prod-text">
+          <h3>군인토퍼 사진 접수</h3>
+          <p style="color:var(--gray); font-size:13px; margin:0">수료 · 전역 · 임관 토퍼 주문 고객</p>
+        </div>
+      </div>
+      <button class="btn" style="margin-top:14px" onclick="go('submit')">군인토퍼 접수하기</button>
     </div>
 
-    <div class="card" style="text-align:center">
-      <img src="./card-magnet.jpg" alt="" class="prod-photo">
-      <h3 style="margin:8px 0 2px">포토마그넷 사진 접수</h3>
-      <p style="color:var(--gray); font-size:13px; margin:0 0 12px">6개 세트 · 9개 세트 주문 고객</p>
-      <button class="btn sky" onclick="go('mg')">포토마그넷 접수하기</button>
+    <div class="card">
+      <div class="prod-row">
+        <img src="./card-magnet.jpg" alt="" class="prod-photo">
+        <div class="prod-text">
+          <h3>포토마그넷 사진 접수</h3>
+          <p style="color:var(--gray); font-size:13px; margin:0">6개 세트 · 9개 세트 주문 고객</p>
+        </div>
+      </div>
+      <button class="btn sky" style="margin-top:14px" onclick="go('mg')">포토마그넷 접수하기</button>
     </div>
 
     <div class="card" style="text-align:center">
