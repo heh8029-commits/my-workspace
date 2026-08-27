@@ -117,7 +117,7 @@
       <div class="head"><h2>접수 목록</h2><div class="total">총 <b id="totalCount">0</b>건</div></div>
       <div class="filters" style="grid-template-columns:auto auto 1fr;align-items:end">
         <div><label>신규접수 기본 보관기간 (연휴엔 길게)</label>
-          <select id="defHold"><option value="3">3일</option><option value="5">5일</option><option value="7">7일</option><option value="10">10일</option><option value="14">14일</option><option value="21">21일</option><option value="30">30일</option></select></div>
+          <select id="defHold"><option value="3">3일</option><option value="5">5일</option><option value="6">6일</option><option value="7">7일</option><option value="10">10일</option><option value="14">14일</option><option value="21">21일</option><option value="30">30일</option></select></div>
         <div><button class="go" onclick="saveDefHold()">기본값 저장</button></div>
         <div style="color:var(--gray);font-size:12px;padding-bottom:8px">지금부터 <b>새로 접수되는 건</b>이 이 기간만큼 보관됩니다. (이미 접수된 건은 상세에서 개별 조정)</div>
       </div>
@@ -274,7 +274,7 @@ async function openDetail(id){
   if(r.status!==200) return toast('상세 조회 실패');
   const d=r.body.detail, photos=r.body.photos||[], logs=r.body.editLogs||[];
   const opts=STATUS_OPTS.map(([v,l])=>`<option value="${v}" ${v===d.status?'selected':''}>${l}</option>`).join('');
-  const dayOpts=[3,5,7,10,14,21,30].map(n=>`<option value="${n}">${n}일</option>`).join('');
+  const dayOpts=[3,5,6,7,10,14,21,30].map(n=>`<option value="${n}">${n}일</option>`).join('');
   const logHtml = logs.length ? `<h4 style="margin:16px 0 6px;font-size:14px">📝 수정 이력</h4>`+logs.map(l=>`
     <div style="border-left:3px solid #ffc4d0;padding:4px 0 4px 10px;margin-bottom:6px;font-size:12.5px">
       <div><b>${l.actor==='admin'?'관리자':'고객'}</b> · ${esc(l.summary||'')}</div>
