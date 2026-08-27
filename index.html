@@ -50,7 +50,7 @@
   .btn.dark{background:var(--navy)}
   .btn.sky{background:var(--sky)}
   #mgSet button.on, #qaMgSet button.on, #qaType button[data-qtype="magnet"].on{background:var(--sky); border-color:var(--sky)}
-  .prod-ic{display:flex; align-items:center; justify-content:center}
+  .prod-photo{display:block; margin:0 auto; max-width:150px; max-height:130px; width:auto; height:auto}
   #mgBulkPickBtn{border-color:var(--sky)}
   #mgBulkPickBtn span.shineTxt{
     background:linear-gradient(90deg, var(--sky-d) 0%, var(--sky-d) 40%, #9fe0ff 50%, var(--sky-d) 60%, var(--sky-d) 100%);
@@ -166,31 +166,16 @@
     </div>
 
     <div class="card" style="text-align:center">
-      <div class="prod-ic">
-        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="21" cy="30" rx="17" ry="4" fill="#2b2f3a"/>
-          <path d="M8 26c0-9 6-15 13-15s13 6 13 15H8Z" fill="#2b2f3a"/>
-          <rect x="8" y="24" width="26" height="4" rx="2" fill="#1c1f27"/>
-          <circle cx="21" cy="18" r="5" fill="#ffd166" stroke="#e0a83a" stroke-width="1"/>
-          <circle cx="21" cy="18" r="2" fill="#fff3d0"/>
-        </svg>
-      </div>
+      <img src="./card-topper.jpg" alt="" class="prod-photo">
       <h3 style="margin:8px 0 2px">군인토퍼 사진 접수</h3>
       <p style="color:var(--gray); font-size:13px; margin:0 0 12px">수료 · 전역 · 임관 토퍼 주문 고객</p>
       <button class="btn" onclick="go('submit')">군인토퍼 접수하기</button>
     </div>
 
     <div class="card" style="text-align:center">
-      <div class="prod-ic">
-        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="3" y="6" width="28" height="24" rx="6" fill="#eaf6fc" stroke="#5fc1ea" stroke-width="2"/>
-          <circle cx="12" cy="15" r="3" fill="#ffd166"/>
-          <path d="M6 27 L15 18 L20 23 L26 15 L29 20 V27 Z" fill="#5fc1ea"/>
-          <path d="M33 39s-6-3.9-8.4-7.3c-1.6-2.3-1.1-4.9 1.2-6.4 1.8-1.2 3.9-.6 5.1.9.4.5.7 1 .9 1.4.2-.4.5-.9.9-1.4 1.2-1.5 3.3-2.1 5.1-.9 2.3 1.5 2.8 4.1 1.2 6.4C39 35.1 33 39 33 39z" fill="#ff8fab"/>
-        </svg>
-      </div>
+      <img src="./card-magnet.jpg" alt="" class="prod-photo">
       <h3 style="margin:8px 0 2px">포토마그넷 사진 접수</h3>
-      <p style="color:var(--gray); font-size:13px; margin:0 0 12px">냉장고 자석 · 포토마그넷 주문 고객</p>
+      <p style="color:var(--gray); font-size:13px; margin:0 0 12px">6개 세트 · 9개 세트 주문 고객</p>
       <button class="btn sky" onclick="go('mg')">포토마그넷 접수하기</button>
     </div>
 
