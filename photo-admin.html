@@ -49,6 +49,8 @@
   .badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
   .b-new{background:#eef2ff;color:#4f6bed}.b-chk{background:#e7f7ef;color:#17a866}
   .b-prod{background:#fff3e0;color:#e08a00}.b-done{background:#f0eaff;color:#7c4dff}.b-ship{background:#e8f0fe;color:#3b7de0}
+  .ptag{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .ptag.topper{background:#ffe6ec;color:#f43f66}.ptag.magnet{background:#e8f6fc;color:#2c8dc2}
   .mini{padding:5px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer;font-size:12px;font-weight:700}
   .mini.p{border-color:var(--pink);color:var(--pink-d)}
   .toolbar{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:center;flex-wrap:wrap}
@@ -119,7 +121,8 @@
         <div><button class="go" onclick="saveDefHold()">기본값 저장</button></div>
         <div style="color:var(--gray);font-size:12px;padding-bottom:8px">지금부터 <b>새로 접수되는 건</b>이 이 기간만큼 보관됩니다. (이미 접수된 건은 상세에서 개별 조정)</div>
       </div>
-      <div class="filters">
+      <div class="filters" style="grid-template-columns:repeat(7,1fr)">
+        <div><label>상품종류</label><select id="f-ptype"><option value="">전체</option><option value="topper">군인토퍼</option><option value="magnet">포토마그넷</option></select></div>
         <div><label>주문자 이름</label><input id="f-name" placeholder="이름"></div>
         <div><label>전화 뒷자리</label><input id="f-phone" placeholder="1234" maxlength="4"></div>
         <div><label>주소(동)</label><input id="f-dong" placeholder="하안동"></div>
@@ -136,10 +139,10 @@
         <table>
           <thead><tr>
             <th style="width:34px"><input type="checkbox" id="checkAll"></th>
-            <th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)</th>
+            <th>상품</th><th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)/주문번호</th>
             <th>사진</th><th>상태</th><th>수정</th><th>삭제예정</th><th>관리</th>
           </tr></thead>
-          <tbody id="listBody"><tr><td colspan="11" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
+          <tbody id="listBody"><tr><td colspan="12" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
         </table>
         <div class="toolbar">
           <button class="danger" onclick="bulkDelete()">선택 사진 일괄 삭제</button>
@@ -173,6 +176,8 @@
 <script>
 const CFG=window.MIRITOPPER_CONFIG;
 const MALL={coupang:'쿠팡',naver:'네이버',etc:'기타'};
+const PTYPE={topper:'군인토퍼',magnet:'포토마그넷'};
+function ptag(t){ const k=t==='magnet'?'magnet':'topper'; return `<span class="ptag ${k}">${PTYPE[k]}</span>`; }
 const STATUS={new:['접수 완료','b-new'],photo_checked:['사진 확인 완료','b-chk'],producing:['제작 중','b-prod'],produced:['제작 완료','b-done'],shipped:['출고 완료','b-ship']};
 const STATUS_OPTS=[['new','신규 접수'],['photo_checked','사진 확인 완료'],['producing','제작 중'],['produced','제작 완료'],['shipped','출고 완료']];
 let TOKEN=sessionStorage.getItem('mt_admin_token')||null;
@@ -224,23 +229,25 @@ async function loadList(){
   const body=document.getElementById('listBody');
   body.innerHTML='<tr><td colspan="11" class="empty"><span class="spin" style="border-color:#ccc;border-top-color:transparent"></span> 불러오는 중...</td></tr>';
   const filters={ name:document.getElementById('f-name').value.trim(), phone:document.getElementById('f-phone').value.trim(),
-    dong:document.getElementById('f-dong').value.trim(), mall:document.getElementById('f-mall').value, status:document.getElementById('f-status').value };
+    dong:document.getElementById('f-dong').value.trim(), mall:document.getElementById('f-mall').value, status:document.getElementById('f-status').value,
+    productType:document.getElementById('f-ptype').value };
   const from=document.getElementById('f-from').value, to=document.getElementById('f-to').value;
   if(from) filters.dateFrom=from+'T00:00:00+09:00';
   if(to) filters.dateTo=to+'T23:59:59+09:00';
   const r=await api('list',{filters});
-  if(r.status!==200){ body.innerHTML='<tr><td colspan="11" class="empty">불러오기 실패</td></tr>'; return; }
+  if(r.status!==200){ body.innerHTML='<tr><td colspan="12" class="empty">불러오기 실패</td></tr>'; return; }
   rows=r.body.rows||[];
   document.getElementById('totalCount').textContent=rows.length;
-  if(!rows.length){ body.innerHTML='<tr><td colspan="11" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
+  if(!rows.length){ body.innerHTML='<tr><td colspan="12" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
   body.innerHTML=rows.map(r=>`
     <tr>
       <td><input type="checkbox" class="rowck" value="${r.id}" onchange="updateSel()"></td>
+      <td>${ptag(r.productType)}</td>
       <td>${fmtDT(r.createdAt)}</td>
       <td>${MALL[r.mall]||r.mall}</td>
       <td><b>${esc(r.ordererName)}</b></td>
       <td>${esc(r.phoneLast4)}</td>
-      <td>${esc(r.addressDong)}</td>
+      <td>${r.productType==='magnet'?('주문번호 '+esc(r.orderNo||'-')):esc(r.addressDong||'')}</td>
       <td>${r.photosDeleted?'<span style="color:#c23;font-size:12px">삭제됨</span>':`<div class="tt">${r.thumb?`<img src="${r.thumb}">`:''}<span class="more">${r.photoCount}장</span></div>`}</td>
       <td>${badge(r.status)}</td>
       <td>${r.edited?`<span class="badge" style="background:#fff0f4;color:#e5487d" title="${esc(r.lastEditSummary||'')}\n${r.editedAt?fmtDT(r.editedAt):''}">✏️ ${esc(r.lastEditSummary||'수정됨')}</span>`:'<span style="color:#ccc">-</span>'}</td>
@@ -273,14 +280,23 @@ async function openDetail(id){
       <div><b>${l.actor==='admin'?'관리자':'고객'}</b> · ${esc(l.summary||'')}</div>
       <div style="color:var(--gray);font-size:11px">${fmtDT(l.created_at)}</div>
     </div>`).join('') : '';
+  const isMg = d.productType==='magnet';
+  const idRow = isMg
+    ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
+    : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
+  const mgRows = isMg ? `
+    <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>
+    <div class="kv"><b>문구</b><span style="max-width:60%;text-align:right">${d.phraseEnabled?esc(d.phraseText||''):'없음'}</span></div>` : '';
   document.getElementById('drawerBody').innerHTML=`
+    <div class="kv"><b>상품종류</b><span>${ptag(d.productType)}</span></div>
     <div class="kv"><b>접수번호</b><span>${esc(d.receiptNo)}</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
     <div class="kv"><b>쇼핑몰</b><span>${MALL[d.mall]||d.mall}</span></div>
     <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
     <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
-    <div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>
-    <div class="kv"><b>편집 요청사항</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)||'-'}</span></div>
+    ${idRow}
+    ${mgRows}
+    <div class="kv"><b>${isMg?'기타 요청사항':'편집 요청사항'}</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)||'-'}</span></div>
     <div class="kv"><b>사진 개수</b><span>${d.photoCount}장</span></div>
     <div class="kv"><b>현재 상태</b><span>${badge(d.status)}</span></div>
     <div class="kv"><b>삭제 예정일</b><span style="color:#c23">${fmtDT(d.deleteAt)}</span></div>

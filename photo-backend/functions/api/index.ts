@@ -183,15 +183,81 @@ Deno.serve(async (req) => {
     return json({ ok: true, receiptId: r.id, receiptNo: r.receipt_no, createdAt: r.created_at, deleteAt: r.delete_at, uploads }, 200, origin);
   }
 
+  // ============ SUBMIT-MAGNET (포토마그넷: 세트 칸 수만큼 크롭된 사진 업로드) ============
+  if (route === "submit-magnet") {
+    if (body.action === "finalize") {
+      const receiptId = String(body.receiptId ?? "");
+      if (!receiptId) return json({ error: "missing_receipt" }, 400, origin);
+      const { data: r } = await sb.from("photo_receipts").select("id, receipt_no, delete_at, created_at").eq("id", receiptId).maybeSingle();
+      if (!r) return json({ error: "not_found" }, 404, origin);
+      const { data: objects } = await sb.storage.from(BUCKET).list(receiptId, { limit: 100 });
+      const present = new Set((objects ?? []).map((o) => `${receiptId}/${o.name}`));
+      const { data: files } = await sb.from("photo_files").select("id, storage_path").eq("receipt_id", receiptId);
+      let up = 0;
+      for (const f of files ?? []) { const ok = present.has(f.storage_path); if (ok) up++; await sb.from("photo_files").update({ uploaded: ok }).eq("id", f.id); }
+      await sb.from("photo_files").delete().eq("receipt_id", receiptId).eq("uploaded", false);
+      if (up === 0) return json({ error: "no_uploaded_files" }, 400, origin);
+      await sb.from("photo_receipts").update({ finalized: true, photo_count: up, status: "new" }).eq("id", receiptId);
+      return json({ ok: true, receiptId, receiptNo: r.receipt_no, photoCount: up, createdAt: r.created_at, deleteAt: r.delete_at }, 200, origin);
+    }
+    const mall = String(body.mall ?? ""), name = String(body.ordererName ?? "").trim();
+    const phone = String(body.phoneLast4 ?? "").trim(), orderNo = String(body.orderNo ?? "").trim();
+    const setSize = Number(body.setSize);
+    const phraseEnabled = !!body.phraseEnabled;
+    const phraseText = String(body.phraseText ?? "").trim().slice(0, 200);
+    const extra = String(body.extraRequest ?? "").trim().slice(0, 1000);
+    const pw = String(body.password ?? ""), pw2 = String(body.passwordConfirm ?? "");
+    const files: any[] = Array.isArray(body.files) ? body.files : [];
+    if (!ALLOWED_MALLS.includes(mall)) return json({ error: "invalid_mall" }, 400, origin);
+    if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
+    if (!/^[0-9]{4}$/.test(phone)) return json({ error: "invalid_phone" }, 400, origin);
+    if (!orderNo || orderNo.length > 60) return json({ error: "invalid_order_no" }, 400, origin);
+    if (setSize !== 6 && setSize !== 9) return json({ error: "invalid_set_size" }, 400, origin);
+    if (phraseEnabled && !phraseText) return json({ error: "invalid_phrase" }, 400, origin);
+    if (!/^([0-9]{4}|[0-9]{6})$/.test(pw)) return json({ error: "invalid_password" }, 400, origin);
+    if (pw !== pw2) return json({ error: "password_mismatch" }, 400, origin);
+    if (files.length !== setSize) return json({ error: "invalid_file_count" }, 400, origin);
+    for (const f of files) {
+      if (typeof f.size !== "number" || f.size <= 0 || f.size > MAX_SIZE) return json({ error: "file_too_large" }, 400, origin);
+      if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
+    }
+    const passwordHash = await hashPassword(pw);
+    const holdDays = await getHoldDays();
+    const now = new Date(), deleteAt = new Date(now.getTime() + holdDays * 86400000);
+    let r: any = null;
+    for (let a = 0; a < 5; a++) {
+      const { data, error } = await sb.from("photo_receipts").insert({
+        receipt_no: makeReceiptNo(now), mall, orderer_name: name, address_dong: null, phone_last4: phone,
+        edit_request: extra || null, password_hash: passwordHash, photo_count: files.length,
+        delete_at: deleteAt.toISOString(), finalized: false,
+        product_type: "magnet", order_no: orderNo, set_size: setSize,
+        phrase_enabled: phraseEnabled, phrase_text: phraseEnabled ? phraseText : null,
+      }).select("id, receipt_no, created_at, delete_at").single();
+      if (!error) { r = data; break; }
+      if (error.code !== "23505") return json({ error: "db_error", detail: error.message }, 500, origin);
+    }
+    if (!r) return json({ error: "receipt_no_conflict" }, 500, origin);
+    const uploads: any[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const path = `${r.id}/${i}_${crypto.randomUUID().slice(0, 8)}.${extOf(String(f.contentType))}`;
+      const { data: signed, error: e } = await sb.storage.from(BUCKET).createSignedUploadUrl(path);
+      if (e || !signed) return json({ error: "signed_url_failed", detail: e?.message }, 500, origin);
+      await sb.from("photo_files").insert({ receipt_id: r.id, storage_path: path, original_name: (f.name ?? "").slice(0, 200), size_bytes: f.size, content_type: f.contentType, sort_order: i, uploaded: false });
+      uploads.push({ sortOrder: i, path, token: signed.token, uploadUrl: signed.signedUrl });
+    }
+    return json({ ok: true, receiptId: r.id, receiptNo: r.receipt_no, createdAt: r.created_at, deleteAt: r.delete_at, uploads }, 200, origin);
+  }
+
   // ============ LOOKUP-SEARCH ============
   if (route === "lookup-search") {
     const name = String(body.name ?? "").trim();
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
     const { data, error } = await sb.from("photo_receipts")
-      .select("id, mall, orderer_name, address_dong, phone_last4, status, created_at, delete_at, photos_deleted")
+      .select("id, mall, orderer_name, address_dong, phone_last4, status, created_at, delete_at, photos_deleted, product_type, order_no")
       .eq("orderer_name", name).eq("finalized", true).order("created_at", { ascending: false }).limit(50);
     if (error) return json({ error: "db_error" }, 500, origin);
-    return json({ ok: true, results: (data ?? []).map((r) => ({ id: r.id, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted })) }, 200, origin);
+    return json({ ok: true, results: (data ?? []).map((r) => ({ id: r.id, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null })) }, 200, origin);
   }
 
   // ============ LOOKUP-VERIFY ============
@@ -209,7 +275,7 @@ Deno.serve(async (req) => {
       return json({ error: "wrong_password", remaining: Math.max(0, 5 - fc) }, 401, origin);
     }
     await sb.from("photo_receipts").update({ fail_count: 0, locked_until: null }).eq("id", receiptId);
-    const detail = { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null };
+    const detail = { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null };
     if (r.photos_deleted) return json({ ok: true, detail, photos: [], photosDeleted: true }, 200, origin);
     const { data: files } = await sb.from("photo_files").select("id, storage_path, original_name, sort_order").eq("receipt_id", receiptId).eq("uploaded", true).order("sort_order", { ascending: true });
     const photos: any[] = [];
@@ -389,12 +455,13 @@ Deno.serve(async (req) => {
 
     if (action === "list") {
       const f = body.filters ?? {};
-      let q = sb.from("photo_receipts").select("id, receipt_no, mall, orderer_name, address_dong, phone_last4, edit_request, status, photo_count, created_at, delete_at, photos_deleted, finalized, edited, edited_at, last_edit_summary").eq("finalized", true).order("created_at", { ascending: false }).limit(500);
+      let q = sb.from("photo_receipts").select("id, receipt_no, mall, orderer_name, address_dong, phone_last4, edit_request, status, photo_count, created_at, delete_at, photos_deleted, finalized, edited, edited_at, last_edit_summary, product_type, order_no, set_size, phrase_enabled, phrase_text").eq("finalized", true).order("created_at", { ascending: false }).limit(500);
       if (f.name) q = q.ilike("orderer_name", `%${String(f.name).trim()}%`);
       if (f.phone) q = q.eq("phone_last4", String(f.phone).trim());
       if (f.dong) q = q.ilike("address_dong", `%${String(f.dong).trim()}%`);
       if (f.mall) q = q.eq("mall", String(f.mall));
       if (f.status) q = q.eq("status", String(f.status));
+      if (f.productType) q = q.eq("product_type", String(f.productType));
       if (f.dateFrom) q = q.gte("created_at", String(f.dateFrom));
       if (f.dateTo) q = q.lte("created_at", String(f.dateTo));
       const { data, error } = await q;
@@ -406,7 +473,7 @@ Deno.serve(async (req) => {
           const { data: first } = await sb.from("photo_files").select("storage_path").eq("receipt_id", r.id).eq("uploaded", true).order("sort_order", { ascending: true }).limit(1).maybeSingle();
           if (first) { const { data: s } = await sb.storage.from(BUCKET).createSignedUrl(first.storage_path, 120); thumb = s?.signedUrl ?? null; }
         }
-        rows.push({ id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, thumb });
+        rows.push({ id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, thumb, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null });
       }
       return json({ ok: true, rows }, 200, origin);
     }
@@ -422,7 +489,7 @@ Deno.serve(async (req) => {
         photos.push({ id: fl.id, order: fl.sort_order, originalName: fl.original_name, sizeBytes: fl.size_bytes, url: v?.signedUrl ?? null, downloadUrl: dl?.signedUrl ?? null });
       }
       const { data: logs } = await sb.from("photo_edit_logs").select("actor, changed, summary, detail, created_at").eq("receipt_id", id).order("created_at", { ascending: false }).limit(50);
-      return json({ ok: true, detail: { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null }, photos, editLogs: logs ?? [] }, 200, origin);
+      return json({ ok: true, detail: { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null }, photos, editLogs: logs ?? [] }, 200, origin);
     }
     if (action === "setStatus") {
       const status = String(body.status ?? ""); if (!STATUSES.includes(status)) return json({ error: "invalid_status" }, 400, origin);

@@ -8,6 +8,7 @@
 <style>
   :root{
     --pink:#ff5a7a; --pink-d:#f43f66; --pink-l:#ffe6ec; --pink-bg:#fff5f7;
+    --sky:#38a6e0; --sky-d:#2c8dc2; --sky-l:#e8f6fc;
     --navy:#2b2f3a; --gray:#8a8f99; --line:#eceef2; --ok:#20b26c; --warn:#f6a609; --err:#e5484d;
     --card:#fff; --radius:16px;
   }
@@ -15,7 +16,7 @@
   body{margin:0; background:var(--pink-bg); color:var(--navy);
     font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif; line-height:1.55;}
   .wrap{max-width:480px; margin:0 auto; min-height:100vh; background:var(--pink-bg);
-    padding-bottom:76px; position:relative;}
+    padding-bottom:24px; position:relative;}
   header.top{background:#fff; padding:14px 18px; display:flex; align-items:center; gap:8px;
     border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;}
   header.top .logo{font-weight:800; color:var(--pink); font-size:18px}
@@ -47,6 +48,36 @@
   .btn:disabled{opacity:.5; cursor:not-allowed}
   .btn.ghost{background:#fff; color:var(--navy); border:1.5px solid var(--line)}
   .btn.dark{background:var(--navy)}
+  .btn.sky{background:var(--sky)}
+  #mgSet button.on{background:var(--sky); border-color:var(--sky)}
+  .ptag{display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:20px; vertical-align:middle}
+  .ptag.topper{background:var(--pink-l); color:var(--pink-d)}
+  .ptag.magnet{background:var(--sky-l); color:var(--sky-d)}
+  /* 포토마그넷 세트 슬롯 */
+  .slots{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px}
+  .slot{position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; cursor:pointer;
+    border:2px dashed #bfe3f5; background:#fff; display:flex; align-items:center; justify-content:center;
+    color:var(--sky-d); font-size:12px; font-weight:700; text-align:center; line-height:1.3}
+  .slot.filled{border-style:solid; border-color:var(--sky)}
+  .slot img{width:100%; height:100%; object-fit:cover; display:block}
+  .slot .num{position:absolute; left:4px; top:4px; background:var(--sky); color:#fff; font-size:10px;
+    font-weight:800; border-radius:6px; padding:1px 6px}
+  .slot .x{position:absolute; right:4px; top:4px; width:20px; height:20px; border-radius:50%;
+    background:rgba(0,0,0,.55); color:#fff; border:none; font-size:12px; line-height:20px; cursor:pointer}
+  /* 정사각형 크롭 모달 */
+  .cropWrap{position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:200; display:none;
+    flex-direction:column; align-items:center; justify-content:center}
+  .cropWrap.show{display:flex}
+  .cropStage{width:min(78vw,340px); aspect-ratio:1; position:relative; overflow:hidden; border-radius:12px;
+    touch-action:none; background:#111}
+  .cropStage img{position:absolute; left:0; top:0; transform-origin:0 0; user-select:none; -webkit-user-drag:none; pointer-events:none}
+  .cropCtrl{width:min(78vw,340px); margin-top:16px}
+  .cropCtrl input[type=range]{width:100%}
+  .cropBtns{display:flex; gap:10px; width:min(78vw,340px); margin-top:14px}
+  .cropBtns button{flex:1; padding:13px; border:none; border-radius:11px; font-weight:800; font-size:15px; cursor:pointer}
+  .cropBtns .ok{background:var(--sky); color:#fff}
+  .cropBtns .cancel{background:#3a3a3a; color:#fff}
+  .cropHint{color:#ddd; font-size:12px; margin-top:10px; text-align:center}
   .notice{background:var(--pink-l); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#a03a52}
   .notice ul{margin:6px 0 0; padding-left:18px} .notice li{margin:3px 0}
   .pw-msg{font-size:12px; margin-top:6px; font-weight:700}
@@ -122,17 +153,31 @@
     <div class="card" style="text-align:center">
       <div style="font-size:40px">📷</div>
       <h2 style="margin:8px 0 4px">사진 제작상품 접수</h2>
-      <p style="color:var(--gray); font-size:13.5px; margin:0 0 4px">
-        회원가입 없이 사진을 접수하고 조회할 수 있어요.</p>
+      <p style="color:var(--gray); font-size:13.5px; margin:0 0 4px">사진을 등록할 상품을 선택해주세요.</p>
     </div>
-    <div class="card">
-      <button class="btn" onclick="go('submit')">📤 사진 접수하기</button>
-      <button class="btn ghost" style="margin-top:10px" onclick="go('lookup')">🔍 접수한 사진 조회하기</button>
+
+    <div class="card" style="text-align:center">
+      <div style="font-size:30px">🎖️</div>
+      <h3 style="margin:8px 0 2px">군인토퍼 사진 접수</h3>
+      <p style="color:var(--gray); font-size:13px; margin:0 0 12px">수료 · 전역 · 임관 토퍼 주문 고객</p>
+      <button class="btn" onclick="go('submit')">군인토퍼 접수하기</button>
     </div>
+
+    <div class="card" style="text-align:center">
+      <div style="font-size:30px">🧲</div>
+      <h3 style="margin:8px 0 2px">포토마그넷 사진 접수</h3>
+      <p style="color:var(--gray); font-size:13px; margin:0 0 12px">냉장고 자석 · 포토마그넷 주문 고객</p>
+      <button class="btn sky" onclick="go('mg')">포토마그넷 접수하기</button>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <button class="btn ghost" onclick="go('lookup')">🔍 접수한 사진 조회하기</button>
+    </div>
+
     <div class="notice">
       <b>📌 접수 안내</b>
       <ul>
-        <li>접수된 사진은 접수 완료 시점으로부터 <b>3일 후 자동 삭제</b>됩니다.</li>
+        <li>접수한 사진은 접수 완료 시점으로부터 <b>3일 후 자동 삭제</b>됩니다.</li>
         <li>삭제 전까지 조회 페이지에서 사진을 확인할 수 있습니다.</li>
         <li>삭제된 사진은 다시 확인하거나 복구할 수 없습니다.</li>
       </ul>
@@ -212,6 +257,75 @@
       </label>
 
       <button type="submit" class="btn" id="submitBtn" style="margin-top:16px">사진 접수하기</button>
+    </form>
+  </section>
+
+  <!-- ===================== 포토마그넷 접수하기 ===================== -->
+  <section class="view" id="v-mg">
+    <div class="notice" style="margin-bottom:14px">
+      <b>🧲 포토마그넷 안내</b>
+      <ul>
+        <li>포토마그넷은 63.5×63.5mm 정사각형입니다.</li>
+        <li>구매하신 세트(6개입 · 9개입)를 선택하면 칸이 생겨요.</li>
+        <li>칸마다 사진을 올리고 화면에서 위치·확대를 맞춰 주세요.</li>
+        <li>맞춘 화면 그대로 잘려서 제작되니 신중하게 맞춰 주세요.</li>
+        <li>같은 사진을 여러 칸에 넣으면 그만큼 여러 장 제작됩니다.</li>
+        <li>접수된 사진은 완료 시점부터 <b>3일 후 자동 삭제</b>됩니다.</li>
+      </ul>
+    </div>
+
+    <form id="mgForm" class="card" autocomplete="off">
+      <h2>포토마그넷 사진 접수</h2>
+
+      <label>주문한 쇼핑몰 <span class="req">*</span></label>
+      <div class="malls" id="mgMalls">
+        <button type="button" data-mall="coupang">쿠팡</button>
+        <button type="button" data-mall="naver" class="naver">네이버</button>
+        <button type="button" data-mall="etc" class="etc">기타</button>
+      </div>
+
+      <label>주문자 이름 <span class="req">*</span></label>
+      <input type="text" id="mgName" placeholder="예) 김미리" maxlength="40" />
+
+      <label>전화번호 뒷자리 4자리 <span class="req">*</span></label>
+      <input type="tel" id="mgPhone" placeholder="1234" maxlength="4" inputmode="numeric" />
+
+      <label>주문번호 <span class="req">*</span></label>
+      <input type="text" id="mgOrderNo" placeholder="주문하신 쇼핑몰의 주문번호" maxlength="60" />
+
+      <label>세트 선택 <span class="req">*</span></label>
+      <div class="malls" id="mgSet">
+        <button type="button" data-set="6">6개입</button>
+        <button type="button" data-set="9">9개입</button>
+      </div>
+
+      <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 사진을 넣고 위치·확대를 맞춰주세요)</span></label>
+      <div class="slots" id="mgSlots"></div>
+
+      <label class="agree" style="margin-top:18px">
+        <input type="checkbox" id="mgPhraseChk" />
+        <span>사진에 넣을 문구가 있어요</span>
+      </label>
+      <textarea id="mgPhraseText" placeholder="예) 우리 아이 100일 축하해" maxlength="200" style="display:none;margin-top:8px"></textarea>
+
+      <label>기타 요청사항 <span class="opt">(선택)</span></label>
+      <textarea id="mgExtra" placeholder="예) 배경 밝게 보정해주세요" maxlength="1000"></textarea>
+
+      <label>조회 비밀번호 <span class="req">*</span> <span class="opt">(숫자 4자리 또는 6자리)</span></label>
+      <input type="password" id="mgPw1" placeholder="숫자 4자리 또는 6자리" maxlength="6" inputmode="numeric" />
+      <div class="hint">접수한 사진을 다시 확인할 때 필요한 비밀번호입니다. 잊어버리지 않도록 기억해 주세요.</div>
+
+      <label>조회 비밀번호 확인 <span class="req">*</span></label>
+      <input type="password" id="mgPw2" placeholder="비밀번호 다시 입력" maxlength="6" inputmode="numeric" />
+      <div class="pw-msg" id="mgPwMsg"></div>
+
+      <label class="agree">
+        <input type="checkbox" id="mgAgree" />
+        <span>개인정보(주문자명·전화 뒷자리) 및 첨부 사진을 <b>제작·조회 목적</b>으로 이용하고,
+          접수 완료 후 3일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span></span>
+      </label>
+
+      <button type="submit" class="btn sky" id="mgSubmitBtn" style="margin-top:16px">포토마그넷 접수하기</button>
     </form>
   </section>
 
@@ -335,16 +449,19 @@
   </section>
 </div>
 
-<!-- 하단 네비 -->
-<nav class="bottom">
-  <button data-nav="home" class="on" onclick="go('home')"><span class="i">🏠</span>홈</button>
-  <button data-nav="submit" onclick="go('submit')"><span class="i">📤</span>접수하기</button>
-  <button data-nav="lookup" onclick="go('lookup')"><span class="i">🔍</span>조회하기</button>
-  <button data-nav="info" onclick="go('home')"><span class="i">ℹ️</span>안내</button>
-</nav>
-
 <div class="toast" id="toast"></div>
 <div class="lightbox" id="lightbox"><button class="close" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
+
+<!-- 포토마그넷 정사각형 크롭 모달 -->
+<div class="cropWrap" id="cropWrap">
+  <div class="cropStage" id="cropStage"><img id="cropImgEl" src="" alt="" draggable="false"></div>
+  <div class="cropCtrl"><input type="range" id="cropZoom" min="100" max="400" value="100"></div>
+  <div class="cropHint">한 손가락으로 드래그해 위치를, 두 손가락(핀치)이나 슬라이더로 확대를 맞춰주세요</div>
+  <div class="cropBtns">
+    <button type="button" class="cancel" id="cropCancel">취소</button>
+    <button type="button" class="ok" id="cropConfirm">완료</button>
+  </div>
+</div>
 
 <script src="./photo-config.js"></script>
 <script>
@@ -468,11 +585,8 @@ function statusBadge(s){ const [t,c]=STATUS[s]||['접수 완료','b-new']; retur
 /* ---------- 뷰 전환 ---------- */
 function go(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:'v-home',submit:'v-submit',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin'};
+  const map={home:'v-home',submit:'v-submit',mg:'v-mg',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin'};
   document.getElementById(map[name]).classList.add('active');
-  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.remove('on'));
-  const navName = (name==='done'||name==='submit')?'submit':(name==='pw'||name==='detail'||name==='lookup'||name==='edit')?'lookup':'home';
-  const nb=document.querySelector(`nav.bottom button[data-nav="${navName}"]`); if(nb) nb.classList.add('on');
   window.scrollTo(0,0);
 }
 
@@ -667,6 +781,256 @@ document.getElementById('doneViewBtn').onclick=()=>{
 };
 
 /* ==================================================================
+   포토마그넷 접수 — 세트 슬롯 + 정사각형 크롭
+================================================================== */
+let mgSelectedMall=null, mgSetSize=0, mgSlotsData=[]; // mgSlotsData[i] = {blob,url,name} | null
+
+document.getElementById('mgMalls').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-mall]'); if(!b) return;
+  mgSelectedMall=b.dataset.mall;
+  document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+});
+document.getElementById('mgSet').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-set]'); if(!b) return;
+  const n=Number(b.dataset.set);
+  if(mgSetSize && mgSetSize!==n && mgSlotsData.some(Boolean)){
+    if(!confirm('세트를 바꾸면 이미 넣은 사진이 초기화돼요. 계속할까요?')) return;
+  }
+  mgSetSize=n;
+  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  mgSlotsData=new Array(n).fill(null);
+  renderMgSlots();
+});
+document.getElementById('mgPhone').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
+document.getElementById('mgPhraseChk').addEventListener('change',e=>{
+  document.getElementById('mgPhraseText').style.display = e.target.checked ? 'block':'none';
+});
+function checkMgPw(){
+  const a=mgPw1.value, b=mgPw2.value, m=document.getElementById('mgPwMsg');
+  if(!b){ m.textContent=''; return; }
+  if(a===b && /^([0-9]{4}|[0-9]{6})$/.test(a)){ m.textContent='✓ 일치합니다!'; m.className='pw-msg ok'; }
+  else if(a===b){ m.textContent='숫자 4자리 또는 6자리로 입력해 주세요.'; m.className='pw-msg no'; }
+  else { m.textContent='비밀번호가 일치하지 않습니다.'; m.className='pw-msg no'; }
+}
+['mgPw1','mgPw2'].forEach(id=>{ const el=document.getElementById(id);
+  el.addEventListener('input',()=>{ el.value=el.value.replace(/[^0-9]/g,''); checkMgPw(); }); });
+
+function renderMgSlots(){
+  const box=document.getElementById('mgSlots'); box.innerHTML='';
+  for(let i=0;i<mgSetSize;i++){
+    const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'');
+    if(mgSlotsData[i]){
+      d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span><button type="button" class="x">×</button>`;
+      d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(mgSlotsData[i].url); mgSlotsData[i]=null; renderMgSlots(); };
+      d.onclick=()=>pickPhotoForSlot(i);
+    }else{
+      d.innerHTML=`<div>➕<br>${i+1}번</div>`;
+      d.onclick=()=>pickPhotoForSlot(i);
+    }
+    box.appendChild(d);
+  }
+}
+
+const mgPickInput=document.createElement('input');
+mgPickInput.type='file'; mgPickInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; mgPickInput.hidden=true;
+document.body.appendChild(mgPickInput);
+let mgPickSlot=-1;
+function pickPhotoForSlot(i){ mgPickSlot=i; mgPickInput.value=''; mgPickInput.click(); }
+mgPickInput.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+  if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
+  openCropModal(f, mgPickSlot);
+});
+
+/* ---- 정사각형 크롭 모달 ---- */
+const cropWrap=document.getElementById('cropWrap'), cropStage=document.getElementById('cropStage'),
+      cropImgEl=document.getElementById('cropImgEl'), cropZoom=document.getElementById('cropZoom');
+let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName}
+
+function openCropModal(file, slotIndex){
+  const url=URL.createObjectURL(file);
+  cropImgEl.src='';
+  cropWrap.classList.add('show'); // 먼저 보이게 해야 실제 폭을 잴 수 있음
+  const img=new Image();
+  img.onload=()=>{
+    const stageSize=cropStage.getBoundingClientRect().width || 300;
+    const baseScale=stageSize/Math.min(img.naturalWidth, img.naturalHeight);
+    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name};
+    cropImgEl.src=url;
+    cropZoom.value=100;
+    applyCropTransform();
+  };
+  img.onerror=()=>{ toast('사진을 불러오지 못했습니다.'); URL.revokeObjectURL(url); cropWrap.classList.remove('show'); };
+  img.src=url;
+}
+function clampCrop(){
+  const s=cropState; const eff=s.baseScale*s.scale;
+  const dispW=s.natW*eff, dispH=s.natH*eff;
+  const minTx=Math.min(0, s.stageSize-dispW), minTy=Math.min(0, s.stageSize-dispH);
+  s.tx=Math.max(minTx, Math.min(0, s.tx));
+  s.ty=Math.max(minTy, Math.min(0, s.ty));
+}
+function applyCropTransform(){
+  if(!cropState) return;
+  clampCrop();
+  const eff=cropState.baseScale*cropState.scale;
+  cropImgEl.style.width=(cropState.natW*eff)+'px';
+  cropImgEl.style.height=(cropState.natH*eff)+'px';
+  cropImgEl.style.transform=`translate(${cropState.tx}px, ${cropState.ty}px)`;
+}
+function setCropScale(v){
+  if(!cropState) return;
+  cropState.scale=Math.max(1, Math.min(4, v));
+  cropZoom.value=Math.round(cropState.scale*100);
+  applyCropTransform();
+}
+cropZoom.addEventListener('input',e=>{ setCropScale(Number(e.target.value)/100); });
+
+// 드래그 이동(마우스 + 터치 공용: Pointer Events)
+let cropDragging=false, cropDragStart=null;
+cropStage.addEventListener('pointerdown',e=>{
+  if(!cropState) return;
+  cropDragging=true; cropDragStart={x:e.clientX, y:e.clientY, tx:cropState.tx, ty:cropState.ty};
+  try{ cropStage.setPointerCapture(e.pointerId); }catch(_){}
+});
+cropStage.addEventListener('pointermove',e=>{
+  if(!cropDragging||!cropState) return;
+  cropState.tx=cropDragStart.tx+(e.clientX-cropDragStart.x);
+  cropState.ty=cropDragStart.ty+(e.clientY-cropDragStart.y);
+  applyCropTransform();
+});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>cropStage.addEventListener(ev,()=>{ cropDragging=false; }));
+
+// 핀치 줌(두 손가락)
+let cropPinch=null;
+cropStage.addEventListener('touchstart',e=>{
+  if(e.touches.length===2 && cropState){
+    cropDragging=false;
+    const [a,b]=e.touches;
+    cropPinch={ d:Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY), scale:cropState.scale };
+  }
+},{passive:true});
+cropStage.addEventListener('touchmove',e=>{
+  if(e.touches.length===2 && cropPinch && cropState){
+    const [a,b]=e.touches;
+    const d=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+    setCropScale(cropPinch.scale*(d/cropPinch.d));
+  }
+},{passive:true});
+cropStage.addEventListener('touchend',e=>{ if(e.touches.length<2) cropPinch=null; });
+
+// 마우스 휠 줌(데스크톱)
+cropStage.addEventListener('wheel',e=>{
+  if(!cropState) return; e.preventDefault();
+  setCropScale(cropState.scale*(e.deltaY<0?1.08:0.93));
+},{passive:false});
+
+document.getElementById('cropCancel').onclick=()=>closeCropModal();
+document.getElementById('cropConfirm').onclick=()=>confirmCrop();
+function closeCropModal(){
+  cropWrap.classList.remove('show');
+  if(cropImgEl.src) URL.revokeObjectURL(cropImgEl.src);
+  cropImgEl.src=''; cropState=null;
+}
+function confirmCrop(){
+  if(!cropState) return;
+  const OUT=1200;
+  const cv=document.createElement('canvas'); cv.width=OUT; cv.height=OUT;
+  const ctx=cv.getContext('2d');
+  const eff=cropState.baseScale*cropState.scale;
+  const k=OUT/cropState.stageSize;
+  const dw=cropState.natW*eff*k, dh=cropState.natH*eff*k;
+  const dx=cropState.tx*k, dy=cropState.ty*k;
+  ctx.drawImage(cropState.img, dx, dy, dw, dh);
+  const slot=cropState.slot, srcName=cropState.srcName;
+  cv.toBlob(blob=>{
+    if(!blob) return toast('사진 처리에 실패했습니다.');
+    const url=URL.createObjectURL(blob);
+    if(mgSlotsData[slot]) URL.revokeObjectURL(mgSlotsData[slot].url);
+    mgSlotsData[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg' };
+    closeCropModal();
+    renderMgSlots();
+  }, 'image/jpeg', 0.92);
+}
+
+/* ---- 제출 ---- */
+let mgSubmitting=false;
+document.getElementById('mgForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(mgSubmitting) return;
+  const name=mgName.value.trim(), phone=mgPhone.value.trim(), orderNo=mgOrderNo.value.trim();
+  const p1=mgPw1.value, p2=mgPw2.value;
+  const phraseEnabled=document.getElementById('mgPhraseChk').checked;
+  const phraseText=document.getElementById('mgPhraseText').value.trim();
+  const extra=document.getElementById('mgExtra').value.trim();
+  if(!mgSelectedMall) return toast('주문한 쇼핑몰을 선택해 주세요.');
+  if(!name) return toast('주문자 이름을 입력해 주세요.');
+  if(!/^[0-9]{4}$/.test(phone)) return toast('전화번호 뒷자리 4자리를 입력해 주세요.');
+  if(!orderNo) return toast('주문번호를 입력해 주세요.');
+  if(!mgSetSize) return toast('세트를 선택해 주세요.');
+  if(mgSlotsData.some(x=>!x)) return toast(`${mgSetSize}칸 모두에 사진을 넣어 주세요.`);
+  if(phraseEnabled && !phraseText) return toast('넣을 문구를 입력해 주세요.');
+  if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
+  if(p1!==p2) return toast('비밀번호가 일치하지 않습니다.');
+  if(!document.getElementById('mgAgree').checked) return toast('개인정보 및 사진 이용에 동의해 주세요.');
+
+  mgSubmitting=true;
+  const btn=document.getElementById('mgSubmitBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 접수 중...';
+
+  try{
+    const filesMeta=mgSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
+    const create=await api('submit-magnet',{ mall:mgSelectedMall, ordererName:name, phoneLast4:phone,
+      orderNo, setSize:mgSetSize, phraseEnabled, phraseText, extraRequest:extra,
+      password:p1, passwordConfirm:p2, files:filesMeta });
+    if(create.status!==200) throw new Error(mgErrMsg(create.body.error));
+    const {receiptId, uploads}=create.body;
+
+    for(let i=0;i<mgSlotsData.length;i++){
+      const up=uploads.find(u=>u.sortOrder===i);
+      await uploadOne(up, mgSlotsData[i].blob, ()=>{});
+    }
+    const fin=await api('submit-magnet',{action:'finalize', receiptId});
+    if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
+
+    showMgDone(fin.body, {name, orderNo, setSize:mgSetSize});
+  }catch(err){
+    toast(err.message||'접수 중 오류가 발생했습니다.');
+  }finally{
+    mgSubmitting=false; btn.disabled=false; btn.textContent='포토마그넷 접수하기';
+  }
+});
+function mgErrMsg(code){
+  return ({invalid_mall:'쇼핑몰을 선택해 주세요.', invalid_name:'이름을 확인해 주세요.',
+    invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.', invalid_order_no:'주문번호를 확인해 주세요.',
+    invalid_set_size:'세트를 선택해 주세요.', invalid_phrase:'문구를 입력해 주세요.',
+    invalid_password:'비밀번호는 숫자 4 또는 6자리입니다.', password_mismatch:'비밀번호가 일치하지 않습니다.',
+    invalid_file_count:'세트 칸 수만큼 사진을 모두 넣어 주세요.', file_too_large:'사진 용량이 너무 큽니다.',
+    invalid_file_type:'허용되지 않는 사진 형식입니다.'})[code] || '접수 정보를 확인해 주세요.';
+}
+function showMgDone(fin, info){
+  doneCtx={receiptId:fin.receiptId, password:mgPw1.value};
+  document.getElementById('doneNo').textContent=fin.receiptNo;
+  document.getElementById('doneInfo').innerHTML=`
+    <div class="kv"><b>주문자 이름</b><span>${esc(info.name)}</span></div>
+    <div class="kv"><b>주문번호</b><span>${esc(info.orderNo)}</span></div>
+    <div class="kv"><b>세트</b><span>${info.setSize}개입</span></div>
+    <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
+    <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>`;
+  // 초기화
+  document.getElementById('mgForm').reset();
+  mgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); });
+  mgSelectedMall=null; mgSetSize=0; mgSlotsData=[];
+  document.querySelectorAll('#mgMalls button, #mgSet button').forEach(x=>x.classList.remove('on'));
+  document.getElementById('mgPhraseText').style.display='none';
+  document.getElementById('mgSlots').innerHTML='';
+  document.getElementById('mgPwMsg').textContent='';
+  go('done');
+}
+
+/* ==================================================================
    조회하기
 ================================================================== */
 document.getElementById('searchBtn').onclick=doSearch;
@@ -682,20 +1046,26 @@ async function doSearch(){
   const list=r.body.results||[];
   if(!list.length){ box.innerHTML=`<div class="card" style="text-align:center;color:#999">"${esc(name)}" 님으로 접수된 내역이 없습니다.</div>`; return; }
   box.innerHTML=`<div class="card"><h3>${esc(name)} 님의 접수 내역 <span style="color:var(--gray);font-weight:500">(총 ${list.length}건)</span></h3>`
-    + list.map(r=>`
+    + list.map(r=>{
+      const isMg=r.productType==='magnet';
+      const tag=`<span class="ptag ${isMg?'magnet':'topper'}">${isMg?'포토마그넷':'군인토퍼'}</span>`;
+      const line2=isMg?`주문번호 ${esc(r.orderNo||'-')}`:esc(r.addressDong||'');
+      return `
     <div class="rescard" onclick='pickReceipt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
-      <div class="nm">${esc(r.ordererName)} <span style="font-size:12px;color:var(--gray)">/ ${MALL_LABEL[r.mall]||r.mall}</span></div>
+      <div class="nm">${esc(r.ordererName)} <span style="font-size:12px;color:var(--gray)">/ ${MALL_LABEL[r.mall]||r.mall}</span> ${tag}</div>
       <div class="row">전화번호 뒷자리 <b>${esc(r.phoneLast4)}</b></div>
-      <div class="row">${esc(r.addressDong)}</div>
+      <div class="row">${line2}</div>
       <div class="row">${fmtDate(r.createdAt)} 접수 · <span class="del">${fmtDate(r.deleteAt)} 자동 삭제</span></div>
       <span class="arw">›</span>
-    </div>`).join('') + `</div>`;
+    </div>`;
+    }).join('') + `</div>`;
 }
 
 let pickCtx=null;
 function pickReceipt(r){
   pickCtx=r;
-  document.getElementById('pwTitle').textContent=`${r.ordererName} / ${r.phoneLast4} / ${r.addressDong} (${MALL_LABEL[r.mall]||r.mall})`;
+  const idLine = r.productType==='magnet' ? (r.orderNo||'-') : (r.addressDong||'');
+  document.getElementById('pwTitle').textContent=`${r.ordererName} / ${r.phoneLast4} / ${idLine} (${MALL_LABEL[r.mall]||r.mall})`;
   document.getElementById('lookupPw').value='';
   document.getElementById('pwErr').textContent='';
   go('pw');
@@ -723,17 +1093,26 @@ async function openDetail(receiptId, password, fromPwView){
 function renderDetail(data){
   const d=data.detail;
   if(LK){ LK.detail=d; LK.photos=data.photos||[]; }
-  document.getElementById('editBtn').style.display = data.photosDeleted ? 'none' : 'block';
+  const isMg = d.productType==='magnet';
+  document.getElementById('editBtn').style.display = (data.photosDeleted || isMg) ? 'none' : 'block';
+  const tag=`<span class="ptag ${isMg?'magnet':'topper'}" style="margin-left:6px">${isMg?'포토마그넷':'군인토퍼'}</span>`;
+  const idRow = isMg
+    ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
+    : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
+  const mgRows = isMg ? `
+    <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>
+    <div class="kv"><b>문구</b><span style="max-width:60%;text-align:right">${d.phraseEnabled?esc(d.phraseText||''):'없음'}</span></div>` : '';
   document.getElementById('detailInfo').innerHTML=`
-    <h2 style="margin-bottom:12px">접수 상세 조회</h2>
+    <h2 style="margin-bottom:12px">접수 상세 조회 ${tag}</h2>
     <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
     <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
-    <div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>
+    ${idRow}
     <div class="kv"><b>주문 쇼핑몰</b><span>${MALL_LABEL[d.mall]||d.mall}</span></div>
+    ${mgRows}
     <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
     <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(d.deleteAt)}</span></div>
     <div class="kv"><b>접수 상태</b><span>${statusBadge(d.status)}</span></div>
-    ${d.editRequest?`<div class="kv"><b>편집 요청</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)}</span></div>`:''}`;
+    ${d.editRequest?`<div class="kv"><b>${isMg?'기타 요청사항':'편집 요청'}</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)}</span></div>`:''}`;
 
   const photos=data.photos||[];
   document.getElementById('photoN').textContent = photos.length?`(${photos.length}장)`:'';
