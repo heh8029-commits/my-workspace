@@ -303,11 +303,13 @@
       <label>주문자 이름 <span class="req">*</span></label>
       <input type="text" id="mgName" placeholder="예) 김미리" maxlength="40" />
 
+      <label>배송지 주소 <span class="req">*</span> <span class="opt">(동까지)</span></label>
+      <input type="text" id="mgAddressDong" placeholder="예) 경기 광명시 하안동" maxlength="60" />
+      <div class="hint">동명이인 구분을 위해 배송지 주소를 <b>동까지만</b> 입력해 주세요.
+        아파트명, 동·호수 등 상세주소는 입력하지 마세요.</div>
+
       <label>전화번호 뒷자리 4자리 <span class="req">*</span></label>
       <input type="tel" id="mgPhone" placeholder="1234" maxlength="4" inputmode="numeric" />
-
-      <label>주문번호 <span class="req">*</span></label>
-      <input type="text" id="mgOrderNo" placeholder="주문하신 쇼핑몰의 주문번호" maxlength="60" />
 
       <label>세트 선택 <span class="req">*</span></label>
       <div class="malls" id="mgSet">
@@ -466,7 +468,7 @@
 <div class="cropWrap" id="cropWrap">
   <div class="cropStage" id="cropStage"><img id="cropImgEl" src="" alt="" draggable="false"></div>
   <div class="cropCtrl"><input type="range" id="cropZoom" min="100" max="400" value="100"></div>
-  <div class="cropHint">한 손가락으로 드래그해 위치를, 두 손가락(핀치)이나 슬라이더로 확대를 맞춰주세요</div>
+  <div class="cropHint">사진을 손가락으로 밀어서 위치를 맞추고, 아래 막대로 크게·작게 조절해 주세요</div>
   <div class="cropBtns">
     <button type="button" class="cancel" id="cropCancel">취소</button>
     <button type="button" class="ok" id="cropConfirm">완료</button>
@@ -968,13 +970,13 @@ let mgSubmitting=false;
 document.getElementById('mgForm').addEventListener('submit', async e=>{
   e.preventDefault();
   if(mgSubmitting) return;
-  const name=mgName.value.trim(), phone=mgPhone.value.trim(), orderNo=mgOrderNo.value.trim();
+  const name=mgName.value.trim(), addr=mgAddressDong.value.trim(), phone=mgPhone.value.trim();
   const p1=mgPw1.value, p2=mgPw2.value;
   const extra=document.getElementById('mgExtra').value.trim();
   if(!mgSelectedMall) return toast('주문한 쇼핑몰을 선택해 주세요.');
   if(!name) return toast('주문자 이름을 입력해 주세요.');
+  if(!addr) return toast('배송지 주소(동)를 입력해 주세요.');
   if(!/^[0-9]{4}$/.test(phone)) return toast('전화번호 뒷자리 4자리를 입력해 주세요.');
-  if(!orderNo) return toast('주문번호를 입력해 주세요.');
   if(!mgSetSize) return toast('세트를 선택해 주세요.');
   if(mgSlotsData.some(x=>!x)) return toast(`${mgSetSize}칸 모두에 사진을 넣어 주세요.`);
   if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
@@ -986,8 +988,8 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
 
   try{
     const filesMeta=mgSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
-    const create=await api('submit-magnet',{ mall:mgSelectedMall, ordererName:name, phoneLast4:phone,
-      orderNo, setSize:mgSetSize, extraRequest:extra,
+    const create=await api('submit-magnet',{ mall:mgSelectedMall, ordererName:name, addressDong:addr, phoneLast4:phone,
+      setSize:mgSetSize, extraRequest:extra,
       password:p1, passwordConfirm:p2, files:filesMeta });
     if(create.status!==200) throw new Error(mgErrMsg(create.body.error));
     const {receiptId, uploads}=create.body;
@@ -999,7 +1001,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
     const fin=await api('submit-magnet',{action:'finalize', receiptId});
     if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
 
-    showMgDone(fin.body, {name, orderNo, setSize:mgSetSize});
+    showMgDone(fin.body, {name, addr, setSize:mgSetSize});
   }catch(err){
     toast(err.message||'접수 중 오류가 발생했습니다.');
   }finally{
@@ -1008,7 +1010,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
 });
 function mgErrMsg(code){
   return ({invalid_mall:'쇼핑몰을 선택해 주세요.', invalid_name:'이름을 확인해 주세요.',
-    invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.', invalid_order_no:'주문번호를 확인해 주세요.',
+    invalid_address:'배송지 주소를 확인해 주세요.', invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.',
     invalid_set_size:'세트를 선택해 주세요.',
     invalid_password:'비밀번호는 숫자 4 또는 6자리입니다.', password_mismatch:'비밀번호가 일치하지 않습니다.',
     invalid_file_count:'세트 칸 수만큼 사진을 모두 넣어 주세요.', file_too_large:'사진 용량이 너무 큽니다.',
@@ -1019,7 +1021,7 @@ function showMgDone(fin, info){
   document.getElementById('doneNo').textContent=fin.receiptNo;
   document.getElementById('doneInfo').innerHTML=`
     <div class="kv"><b>주문자 이름</b><span>${esc(info.name)}</span></div>
-    <div class="kv"><b>주문번호</b><span>${esc(info.orderNo)}</span></div>
+    <div class="kv"><b>배송지 주소(동)</b><span>${esc(info.addr)}</span></div>
     <div class="kv"><b>세트</b><span>${info.setSize}개입</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
     <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>`;
@@ -1052,12 +1054,11 @@ async function doSearch(){
     + list.map(r=>{
       const isMg=r.productType==='magnet';
       const tag=`<span class="ptag ${isMg?'magnet':'topper'}">${isMg?'포토마그넷':'군인토퍼'}</span>`;
-      const line2=isMg?`주문번호 ${esc(r.orderNo||'-')}`:esc(r.addressDong||'');
       return `
     <div class="rescard" onclick='pickReceipt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <div class="nm">${esc(r.ordererName)} <span style="font-size:12px;color:var(--gray)">/ ${MALL_LABEL[r.mall]||r.mall}</span> ${tag}</div>
       <div class="row">전화번호 뒷자리 <b>${esc(r.phoneLast4)}</b></div>
-      <div class="row">${line2}</div>
+      <div class="row">${esc(r.addressDong||'')}</div>
       <div class="row">${fmtDate(r.createdAt)} 접수 · <span class="del">${fmtDate(r.deleteAt)} 자동 삭제</span></div>
       <span class="arw">›</span>
     </div>`;
@@ -1067,8 +1068,7 @@ async function doSearch(){
 let pickCtx=null;
 function pickReceipt(r){
   pickCtx=r;
-  const idLine = r.productType==='magnet' ? (r.orderNo||'-') : (r.addressDong||'');
-  document.getElementById('pwTitle').textContent=`${r.ordererName} / ${r.phoneLast4} / ${idLine} (${MALL_LABEL[r.mall]||r.mall})`;
+  document.getElementById('pwTitle').textContent=`${r.ordererName} / ${r.phoneLast4} / ${r.addressDong||''} (${MALL_LABEL[r.mall]||r.mall})`;
   document.getElementById('lookupPw').value='';
   document.getElementById('pwErr').textContent='';
   go('pw');
@@ -1099,9 +1099,7 @@ function renderDetail(data){
   const isMg = d.productType==='magnet';
   document.getElementById('editBtn').style.display = (data.photosDeleted || isMg) ? 'none' : 'block';
   const tag=`<span class="ptag ${isMg?'magnet':'topper'}" style="margin-left:6px">${isMg?'포토마그넷':'군인토퍼'}</span>`;
-  const idRow = isMg
-    ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
-    : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
+  const idRow = `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
   const mgRows = isMg ? `
     <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>` : '';
   document.getElementById('detailInfo').innerHTML=`

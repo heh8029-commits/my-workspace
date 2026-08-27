@@ -201,7 +201,8 @@ Deno.serve(async (req) => {
       return json({ ok: true, receiptId, receiptNo: r.receipt_no, photoCount: up, createdAt: r.created_at, deleteAt: r.delete_at }, 200, origin);
     }
     const mall = String(body.mall ?? ""), name = String(body.ordererName ?? "").trim();
-    const phone = String(body.phoneLast4 ?? "").trim(), orderNo = String(body.orderNo ?? "").trim();
+    const dong = String(body.addressDong ?? "").trim();
+    const phone = String(body.phoneLast4 ?? "").trim();
     const setSize = Number(body.setSize);
     const phraseEnabled = !!body.phraseEnabled;
     const phraseText = String(body.phraseText ?? "").trim().slice(0, 200);
@@ -210,8 +211,8 @@ Deno.serve(async (req) => {
     const files: any[] = Array.isArray(body.files) ? body.files : [];
     if (!ALLOWED_MALLS.includes(mall)) return json({ error: "invalid_mall" }, 400, origin);
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
+    if (!dong || dong.length > 60) return json({ error: "invalid_address" }, 400, origin);
     if (!/^[0-9]{4}$/.test(phone)) return json({ error: "invalid_phone" }, 400, origin);
-    if (!orderNo || orderNo.length > 60) return json({ error: "invalid_order_no" }, 400, origin);
     if (setSize !== 6 && setSize !== 9) return json({ error: "invalid_set_size" }, 400, origin);
     if (phraseEnabled && !phraseText) return json({ error: "invalid_phrase" }, 400, origin);
     if (!/^([0-9]{4}|[0-9]{6})$/.test(pw)) return json({ error: "invalid_password" }, 400, origin);
@@ -227,10 +228,10 @@ Deno.serve(async (req) => {
     let r: any = null;
     for (let a = 0; a < 5; a++) {
       const { data, error } = await sb.from("photo_receipts").insert({
-        receipt_no: makeReceiptNo(now), mall, orderer_name: name, address_dong: null, phone_last4: phone,
+        receipt_no: makeReceiptNo(now), mall, orderer_name: name, address_dong: dong, phone_last4: phone,
         edit_request: extra || null, password_hash: passwordHash, photo_count: files.length,
         delete_at: deleteAt.toISOString(), finalized: false,
-        product_type: "magnet", order_no: orderNo, set_size: setSize,
+        product_type: "magnet", set_size: setSize,
         phrase_enabled: phraseEnabled, phrase_text: phraseEnabled ? phraseText : null,
       }).select("id, receipt_no, created_at, delete_at").single();
       if (!error) { r = data; break; }

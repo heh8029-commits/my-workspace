@@ -139,7 +139,7 @@
         <table>
           <thead><tr>
             <th style="width:34px"><input type="checkbox" id="checkAll"></th>
-            <th>상품</th><th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)/주문번호</th>
+            <th>상품</th><th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)</th>
             <th>사진</th><th>상태</th><th>수정</th><th>삭제예정</th><th>관리</th>
           </tr></thead>
           <tbody id="listBody"><tr><td colspan="12" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
@@ -247,7 +247,7 @@ async function loadList(){
       <td>${MALL[r.mall]||r.mall}</td>
       <td><b>${esc(r.ordererName)}</b></td>
       <td>${esc(r.phoneLast4)}</td>
-      <td>${r.productType==='magnet'?('주문번호 '+esc(r.orderNo||'-')):esc(r.addressDong||'')}</td>
+      <td>${esc(r.addressDong||'')}</td>
       <td>${r.photosDeleted?'<span style="color:#c23;font-size:12px">삭제됨</span>':`<div class="tt">${r.thumb?`<img src="${r.thumb}">`:''}<span class="more">${r.photoCount}장</span></div>`}</td>
       <td>${badge(r.status)}</td>
       <td>${r.edited?`<span class="badge" style="background:#fff0f4;color:#e5487d" title="${esc(r.lastEditSummary||'')}\n${r.editedAt?fmtDT(r.editedAt):''}">✏️ ${esc(r.lastEditSummary||'수정됨')}</span>`:'<span style="color:#ccc">-</span>'}</td>
