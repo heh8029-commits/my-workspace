@@ -317,8 +317,10 @@
         <button type="button" data-set="9">9개입</button>
       </div>
 
-      <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 사진을 넣고 위치·확대를 맞춰주세요)</span></label>
+      <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
+      <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ 여러 장 한번에 선택해서 채우기</button>
       <div class="slots" id="mgSlots"></div>
+      <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
 
       <label>기타 요청사항 <span class="opt">(선택)</span></label>
       <textarea id="mgExtra" maxlength="1000"></textarea>
@@ -852,6 +854,58 @@ mgPickInput.addEventListener('change',e=>{
   const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
   if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
   openCropModal(f, mgPickSlot);
+});
+
+// 여러 장 한번에 선택 → 빈 칸에 순서대로 채우고, 가운데 기준 자동 크롭(나중에 칸을 눌러 재조정 가능)
+const mgBulkInput=document.createElement('input');
+mgBulkInput.type='file'; mgBulkInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; mgBulkInput.multiple=true; mgBulkInput.hidden=true;
+document.body.appendChild(mgBulkInput);
+document.getElementById('mgBulkPickBtn').onclick=()=>{
+  if(!mgSetSize) return toast('세트를 먼저 선택해 주세요.');
+  mgBulkInput.value=''; mgBulkInput.click();
+};
+function autoCropFile(file){
+  return new Promise(resolve=>{
+    try{
+      const url=URL.createObjectURL(file);
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          const OUT=1200;
+          const baseScale=OUT/Math.min(img.naturalWidth,img.naturalHeight);
+          const dw=img.naturalWidth*baseScale, dh=img.naturalHeight*baseScale;
+          const dx=(OUT-dw)/2, dy=(OUT-dh)/2;
+          const cv=document.createElement('canvas'); cv.width=OUT; cv.height=OUT;
+          cv.getContext('2d').drawImage(img,dx,dy,dw,dh);
+          URL.revokeObjectURL(url);
+          cv.toBlob(blob=>{
+            if(!blob) return resolve(null);
+            resolve({ blob, url:URL.createObjectURL(blob), name:(file.name||'photo').replace(/\.\w+$/,'')+'_crop.jpg' });
+          },'image/jpeg',0.92);
+        }catch(e){ URL.revokeObjectURL(url); resolve(null); }
+      };
+      img.onerror=()=>{ URL.revokeObjectURL(url); resolve(null); };
+      img.src=url;
+    }catch(e){ resolve(null); }
+  });
+}
+mgBulkInput.addEventListener('change', async e=>{
+  const picked=Array.from(e.target.files||[]);
+  if(!picked.length) return;
+  const emptyIdx=[]; for(let i=0;i<mgSetSize;i++) if(!mgSlotsData[i]) emptyIdx.push(i);
+  if(!emptyIdx.length) return toast('모든 칸이 이미 채워져 있어요. 칸을 눌러 사진을 바꿀 수 있어요.');
+  if(picked.length>emptyIdx.length) toast(`빈 칸이 ${emptyIdx.length}개라 앞의 ${emptyIdx.length}장만 채웠어요.`);
+  for(let k=0;k<Math.min(picked.length, emptyIdx.length);k++){
+    const f=picked[k];
+    const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+    if(!okType) continue;
+    const result=await autoCropFile(f);
+    if(!result) continue;
+    const slot=emptyIdx[k];
+    if(mgSlotsData[slot]) URL.revokeObjectURL(mgSlotsData[slot].url);
+    mgSlotsData[slot]=result;
+    renderMgSlots();
+  }
 });
 
 /* ---- 정사각형 크롭 모달 ---- */
