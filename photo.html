@@ -76,6 +76,7 @@
     background:rgba(0,0,0,.55); color:#fff; border:none; font-size:12px; line-height:20px; cursor:pointer}
   .slot .chk{position:absolute; left:0; right:0; bottom:0; background:var(--warn); color:#fff;
     font-size:10.5px; font-weight:800; text-align:center; padding:3px 0}
+  .slot.needsCheck img{filter:brightness(.55)}
   /* 정사각형 크롭 모달 */
   .cropWrap{position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:200; display:none;
     flex-direction:column; align-items:center; justify-content:center}
@@ -90,6 +91,8 @@
   .cropBtns .ok{background:var(--sky); color:#fff}
   .cropBtns .cancel{background:#3a3a3a; color:#fff}
   .cropHint{color:#ddd; font-size:12px; margin-top:10px; text-align:center}
+  .cropTopHint{color:var(--warn); font-size:13.5px; font-weight:800; margin-bottom:10px; text-align:center;
+    width:min(78vw,340px)}
   .notice{background:var(--pink-l); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#a03a52}
   .notice ul{margin:6px 0 0; padding-left:18px} .notice li{margin:3px 0}
   .pw-msg{font-size:12px; margin-top:6px; font-weight:700}
@@ -498,6 +501,7 @@
 
 <!-- 포토마그넷 정사각형 크롭 모달 -->
 <div class="cropWrap" id="cropWrap">
+  <div class="cropTopHint">화면에 보이는 그대로 제작됩니다.<br>위치랑 크기 꼭 조절해 주세요!</div>
   <div class="cropStage" id="cropStage"><img id="cropImgEl" src="" alt="" draggable="false"></div>
   <div class="cropCtrl"><input type="range" id="cropZoom" min="100" max="400" value="100"></div>
   <div class="cropHint">사진을 손가락으로 밀어서 위치를 맞추고, 아래 막대로 크게·작게 조절해 주세요</div>
@@ -876,9 +880,9 @@ function checkMgPw(){
 function renderMgSlots(){
   const box=document.getElementById('mgSlots'); box.innerHTML='';
   for(let i=0;i<mgSetSize;i++){
-    const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'');
+    const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'')+(mgSlotsData[i]&&mgSlotsData[i].needsCheck?' needsCheck':'');
     if(mgSlotsData[i]){
-      const chk=mgSlotsData[i].needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
+      const chk=mgSlotsData[i].needsCheck?`<span class="chk">👆 눌러서 위치·확대 조정하기</span>`:'';
       d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
       d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(mgSlotsData[i].url); mgSlotsData[i]=null; renderMgSlots(); };
       d.onclick=()=>openCropForExisting(i);
