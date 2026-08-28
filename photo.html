@@ -320,7 +320,8 @@
         <button type="button" data-set="9">9개입</button>
         <button type="button" data-set="custom">직접 입력</button>
       </div>
-      <input type="number" id="mgCustomCount" placeholder="원하는 장수 입력" min="1" max="99" style="display:none;margin-top:8px" />
+      <input type="tel" id="mgCustomCount" placeholder="숫자만 입력 (예: 12)" inputmode="numeric" style="display:none;margin-top:8px" />
+      <div class="hint" id="mgCustomCountHint" style="display:none">원하시는 개입 수를 입력해 주세요. 입력한 숫자만큼 사진 칸이 생겨요.</div>
 
       <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
       <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
@@ -851,12 +852,13 @@ document.getElementById('mgSet').addEventListener('click',e=>{
   const b=e.target.closest('button[data-set]'); if(!b) return;
   document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
-  const cc=document.getElementById('mgCustomCount');
-  if(b.dataset.set==='custom'){ cc.style.display='block'; cc.focus(); return; }
-  cc.style.display='none'; cc.value='';
+  const cc=document.getElementById('mgCustomCount'), ccHint=document.getElementById('mgCustomCountHint');
+  if(b.dataset.set==='custom'){ cc.style.display='block'; ccHint.style.display='block'; cc.focus(); return; }
+  cc.style.display='none'; ccHint.style.display='none'; cc.value='';
   applyMgSetSize(Number(b.dataset.set));
 });
 document.getElementById('mgCustomCount').addEventListener('input', e=>{
+  e.target.value=e.target.value.replace(/[^0-9]/g,'');
   const n=Number(e.target.value);
   if(n>=1) applyMgSetSize(n);
 });
@@ -1149,6 +1151,7 @@ function showMgDone(fin, info){
   document.querySelectorAll('#mgMalls button, #mgSet button').forEach(x=>x.classList.remove('on'));
   document.getElementById('mgSlots').innerHTML='';
   const mgCC=document.getElementById('mgCustomCount'); mgCC.style.display='none'; mgCC.value='';
+  document.getElementById('mgCustomCountHint').style.display='none';
   document.getElementById('mgPwMsg').textContent='';
   go('done');
 }
