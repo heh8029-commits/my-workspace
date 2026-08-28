@@ -354,9 +354,6 @@
       <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
       <div class="bar sky" id="mgBar"><i></i></div>
 
-      <label>기타 요청사항 <span class="opt">(선택)</span></label>
-      <textarea id="mgExtra" maxlength="1000"></textarea>
-
       <label>조회 비밀번호 <span class="req">*</span> <span class="opt">(숫자 4자리 또는 6자리)</span></label>
       <input type="password" id="mgPw1" placeholder="숫자 4자리 또는 6자리" maxlength="6" inputmode="numeric" />
       <div class="hint">접수한 사진을 다시 확인할 때 필요한 비밀번호입니다. 잊어버리지 않도록 기억해 주세요.</div>
@@ -900,7 +897,6 @@ async function mgSaveDraft(){
       name:document.getElementById('mgName').value,
       addr:document.getElementById('mgAddressDong').value,
       phone:document.getElementById('mgPhone').value,
-      extra:document.getElementById('mgExtra').value,
       slots: mgSlotsData.map(s=> s? {blob:s.blob, srcFile:s.srcFile, name:s.name, needsCheck:s.needsCheck,
         scale:s.scale, tx:s.tx, ty:s.ty, bri:s.bri, con:s.con, sat:s.sat, warm:s.warm} : null)
     };
@@ -927,7 +923,6 @@ function mgApplyDraft(d){
   document.getElementById('mgName').value=d.name||'';
   document.getElementById('mgAddressDong').value=d.addr||'';
   document.getElementById('mgPhone').value=d.phone||'';
-  document.getElementById('mgExtra').value=d.extra||'';
   document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.toggle('on', x.dataset.mall===mgSelectedMall));
   const cc=document.getElementById('mgCustomCount'), ccHint=document.getElementById('mgCustomCountHint');
   document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
@@ -958,7 +953,7 @@ document.getElementById('mgDraftDiscard').onclick=async()=>{
     document.getElementById('mgDraftBanner').classList.add('show');
   }
 })();
-['mgName','mgAddressDong','mgPhone','mgExtra'].forEach(id=>{
+['mgName','mgAddressDong','mgPhone'].forEach(id=>{
   document.getElementById(id).addEventListener('input', mgScheduleSaveDraft);
 });
 
@@ -1241,7 +1236,6 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   if(mgSubmitting) return;
   const name=mgName.value.trim(), addr=mgAddressDong.value.trim(), phone=mgPhone.value.trim();
   const p1=mgPw1.value, p2=mgPw2.value;
-  const extra=document.getElementById('mgExtra').value.trim();
   if(!mgSelectedMall) return toast('주문한 쇼핑몰을 선택해 주세요.');
   if(!name) return toast('주문자 이름을 입력해 주세요.');
   if(!addr) return toast('배송지 주소(동)를 입력해 주세요.');
@@ -1258,7 +1252,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   try{
     const filesMeta=mgSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
     const create=await api('submit-magnet',{ mall:mgSelectedMall, ordererName:name, addressDong:addr, phoneLast4:phone,
-      setSize:mgSetSize, extraRequest:extra,
+      setSize:mgSetSize,
       password:p1, passwordConfirm:p2, files:filesMeta });
     if(create.status!==200) throw new Error(mgErrMsg(create.body.error));
     const {receiptId, uploads}=create.body;
@@ -1286,7 +1280,6 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
     // work.html CS 게시판에 자동 등록(백그라운드 · 실패해도 접수엔 영향 없음)
     postToCsBoard({
       name, addr, phone, mall:mgSelectedMall,
-      editRequest: extra,
       receiptNo: fin.body.receiptNo, count: mgSlotsData.length,
       productType:'magnet', setSize: mgSetSize,
       files: mgSlotsData.map(s=>s.blob)

@@ -11,7 +11,7 @@ create extension if not exists "pgcrypto";
 -- ---------------------------------------------------------------------
 create table if not exists public.photo_receipts (
   id              uuid primary key default gen_random_uuid(),
-  receipt_no      text not null unique,              -- 고객 표시용 접수완료번호 (예: 7K3-9PF)
+  receipt_no      text not null unique,              -- 고객 표시용 접수완료번호 (예: 482-913)
   mall            text not null check (mall in ('coupang','naver','etc')),
   orderer_name    text not null,                     -- 주문자 이름
   address_dong    text not null,                     -- 배송지 주소(동까지)
@@ -72,6 +72,6 @@ create table if not exists public.admin_login_attempts (
 );
 
 -- ---------------------------------------------------------------------
--- 접수완료번호 생성 헬퍼 (XXX-XXX, 랜덤 6자리)
+-- 접수완료번호 생성 헬퍼 (숫자 6자리, 3-3 그룹)
 --   Edge Function 에서 생성하지만, DB 유니크 제약으로 중복 방지
 -- ---------------------------------------------------------------------

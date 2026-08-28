@@ -73,11 +73,10 @@ async function verifyToken(token: string | null) {
   try { const pl = JSON.parse(new TextDecoder().decode(u64d(p))); if (typeof pl.exp !== "number" || pl.exp < Math.floor(Date.now() / 1000)) return null; return { u: pl.u }; } catch { return null; }
 }
 
-/* ---------------- 접수번호: 고객이 외우기 쉽도록 짧게(6자, 헷갈리는 0/O/1/I/L 제외) ---------------- */
+/* ---------------- 접수번호: 전화번호처럼 익숙하도록 숫자 6자리(3-3) ---------------- */
 function makeReceiptNo(_now: Date) {
-  const A = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
-  let sfx = ""; for (const b of crypto.getRandomValues(new Uint8Array(6))) sfx += A[b % A.length];
-  return `${sfx.slice(0, 3)}-${sfx.slice(3)}`;
+  let n = ""; for (const b of crypto.getRandomValues(new Uint8Array(6))) n += String(b % 10);
+  return `${n.slice(0, 3)}-${n.slice(3)}`;
 }
 
 /* ---------------- 상수 ---------------- */

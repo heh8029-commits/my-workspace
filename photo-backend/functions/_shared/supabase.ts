@@ -15,11 +15,10 @@ export function admin(): SupabaseClient {
   return _client;
 }
 
-// 접수완료번호 생성: XXX-XXX (고객이 외우기 쉽도록 짧게, 헷갈리는 0/O/1/I/L 제외)
+// 접수완료번호 생성: 전화번호처럼 익숙하도록 숫자 6자리(3-3)
 export function makeReceiptNo(_now: Date): string {
-  const alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
   const rnd = crypto.getRandomValues(new Uint8Array(6));
-  let suffix = "";
-  for (const b of rnd) suffix += alphabet[b % alphabet.length];
-  return `${suffix.slice(0, 3)}-${suffix.slice(3)}`;
+  let n = "";
+  for (const b of rnd) n += String(b % 10);
+  return `${n.slice(0, 3)}-${n.slice(3)}`;
 }
