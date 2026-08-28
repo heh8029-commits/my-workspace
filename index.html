@@ -515,7 +515,7 @@
     <div class="cropAdjRow"><span>밝기</span><input type="range" id="cropBri" min="50" max="150" value="100"></div>
     <div class="cropAdjRow"><span>대비</span><input type="range" id="cropCon" min="50" max="150" value="100"></div>
     <div class="cropAdjRow"><span>채도</span><input type="range" id="cropSat" min="0" max="200" value="100"></div>
-    <div class="cropAdjRow"><span>따뜻함</span><input type="range" id="cropWarm" min="-50" max="50" value="0"></div>
+    <div class="cropAdjRow"><span>따뜻함</span><input type="range" id="cropWarm" min="0" max="50" value="0"></div>
     <button type="button" id="cropAdjReset" class="cropAdjResetBtn">보정 초기화</button>
   </div>
   <div class="cropBtns">
@@ -1007,8 +1007,7 @@ function openCropModal(file, slotIndex, arr, renderFn){
   img.src=url;
 }
 function buildFilterStr(s){
-  const warm=s.warm, warmCss = warm>=0 ? `sepia(${warm}%)` : `hue-rotate(${warm*1.4}deg) saturate(1.05)`;
-  return `brightness(${s.bri}%) contrast(${s.con}%) saturate(${s.sat}%) ${warmCss}`;
+  return `brightness(${s.bri}%) contrast(${s.con}%) saturate(${s.sat}%) sepia(${s.warm}%)`;
 }
 function applyCropFilter(){
   if(!cropState) return;
