@@ -79,7 +79,7 @@
   .slot.needsCheck img{filter:brightness(.55)}
   /* 정사각형 크롭 모달 */
   .cropWrap{position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:200; display:none;
-    flex-direction:column; align-items:center; justify-content:center}
+    flex-direction:column; align-items:center; justify-content:center; overflow-y:auto; padding:16px 0}
   .cropWrap.show{display:flex}
   .cropStage{width:min(78vw,340px); aspect-ratio:1; position:relative; overflow:hidden; border-radius:12px;
     touch-action:none; background:#111}
@@ -93,6 +93,12 @@
   .cropHint{color:#ddd; font-size:12px; margin-top:10px; text-align:center}
   .cropTopHint{color:var(--warn); font-size:13.5px; font-weight:800; margin-bottom:10px; text-align:center;
     width:min(78vw,340px)}
+  .cropAdjust{width:min(78vw,340px); margin-top:14px; display:flex; flex-direction:column; gap:7px}
+  .cropAdjRow{display:flex; align-items:center; gap:10px}
+  .cropAdjRow span{color:#ddd; font-size:12px; width:42px; flex-shrink:0}
+  .cropAdjRow input[type=range]{flex:1}
+  .cropAdjResetBtn{align-self:center; margin-top:4px; background:none; border:none; color:#9fd7f5;
+    font-size:12px; text-decoration:underline; cursor:pointer; padding:4px}
   .notice{background:var(--pink-l); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#a03a52}
   .notice ul{margin:6px 0 0; padding-left:18px} .notice li{margin:3px 0}
   .pw-msg{font-size:12px; margin-top:6px; font-weight:700}
@@ -504,7 +510,14 @@
   <div class="cropTopHint">화면에 보이는 그대로 제작됩니다.<br>위치랑 크기 꼭 조절해 주세요!</div>
   <div class="cropStage" id="cropStage"><img id="cropImgEl" src="" alt="" draggable="false"></div>
   <div class="cropCtrl"><input type="range" id="cropZoom" min="100" max="400" value="100"></div>
-  <div class="cropHint">사진을 손가락으로 밀어서 위치를 맞추고, 아래 막대로 크게·작게 조절해 주세요</div>
+  <div class="cropHint">사진을 손가락으로 밀어서 위치를 맞추고, 위 막대로 크게·작게 조절해 주세요</div>
+  <div class="cropAdjust" id="cropAdjust">
+    <div class="cropAdjRow"><span>밝기</span><input type="range" id="cropBri" min="50" max="150" value="100"></div>
+    <div class="cropAdjRow"><span>대비</span><input type="range" id="cropCon" min="50" max="150" value="100"></div>
+    <div class="cropAdjRow"><span>채도</span><input type="range" id="cropSat" min="0" max="200" value="100"></div>
+    <div class="cropAdjRow"><span>따뜻함</span><input type="range" id="cropWarm" min="-50" max="50" value="0"></div>
+    <button type="button" id="cropAdjReset" class="cropAdjResetBtn">보정 초기화</button>
+  </div>
   <div class="cropBtns">
     <button type="button" class="cancel" id="cropCancel">취소</button>
     <button type="button" class="ok" id="cropConfirm">완료</button>
@@ -969,8 +982,10 @@ mgBulkInput.addEventListener('change', async e=>{
 
 /* ---- 정사각형 크롭 모달 ---- */
 const cropWrap=document.getElementById('cropWrap'), cropStage=document.getElementById('cropStage'),
-      cropImgEl=document.getElementById('cropImgEl'), cropZoom=document.getElementById('cropZoom');
-let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName,arr,renderFn}
+      cropImgEl=document.getElementById('cropImgEl'), cropZoom=document.getElementById('cropZoom'),
+      cropBri=document.getElementById('cropBri'), cropCon=document.getElementById('cropCon'),
+      cropSat=document.getElementById('cropSat'), cropWarm=document.getElementById('cropWarm');
+let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName,arr,renderFn,bri,con,sat,warm}
 
 // arr/renderFn 은 이 크롭 결과를 저장할 슬롯 배열과 그걸 다시 그릴 함수(고객 화면/관리자 화면이 공용으로 씀)
 function openCropModal(file, slotIndex, arr, renderFn){
@@ -981,14 +996,34 @@ function openCropModal(file, slotIndex, arr, renderFn){
   img.onload=()=>{
     const stageSize=cropStage.getBoundingClientRect().width || 300;
     const baseScale=stageSize/Math.min(img.naturalWidth, img.naturalHeight);
-    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn};
+    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn, bri:100, con:100, sat:100, warm:0};
     cropImgEl.src=url;
     cropZoom.value=100;
+    cropBri.value=100; cropCon.value=100; cropSat.value=100; cropWarm.value=0;
     applyCropTransform();
+    applyCropFilter();
   };
   img.onerror=()=>{ toast('사진을 불러오지 못했습니다.'); URL.revokeObjectURL(url); cropWrap.classList.remove('show'); };
   img.src=url;
 }
+function buildFilterStr(s){
+  const warm=s.warm, warmCss = warm>=0 ? `sepia(${warm}%)` : `hue-rotate(${warm*1.4}deg) saturate(1.05)`;
+  return `brightness(${s.bri}%) contrast(${s.con}%) saturate(${s.sat}%) ${warmCss}`;
+}
+function applyCropFilter(){
+  if(!cropState) return;
+  cropImgEl.style.filter=buildFilterStr(cropState);
+}
+cropBri.addEventListener('input',e=>{ if(!cropState) return; cropState.bri=Number(e.target.value); applyCropFilter(); });
+cropCon.addEventListener('input',e=>{ if(!cropState) return; cropState.con=Number(e.target.value); applyCropFilter(); });
+cropSat.addEventListener('input',e=>{ if(!cropState) return; cropState.sat=Number(e.target.value); applyCropFilter(); });
+cropWarm.addEventListener('input',e=>{ if(!cropState) return; cropState.warm=Number(e.target.value); applyCropFilter(); });
+document.getElementById('cropAdjReset').onclick=()=>{
+  if(!cropState) return;
+  cropState.bri=100; cropState.con=100; cropState.sat=100; cropState.warm=0;
+  cropBri.value=100; cropCon.value=100; cropSat.value=100; cropWarm.value=0;
+  applyCropFilter();
+};
 function clampCrop(){
   const s=cropState; const eff=s.baseScale*s.scale;
   const dispW=s.natW*eff, dispH=s.natH*eff;
@@ -1067,6 +1102,7 @@ function confirmCrop(){
   const k=OUT/cropState.stageSize;
   const dw=cropState.natW*eff*k, dh=cropState.natH*eff*k;
   const dx=cropState.tx*k, dy=cropState.ty*k;
+  ctx.filter=buildFilterStr(cropState);
   ctx.drawImage(cropState.img, dx, dy, dw, dh);
   const slot=cropState.slot, srcName=cropState.srcName, srcFile=cropState.srcFile, arr=cropState.arr, renderFn=cropState.renderFn;
   cv.toBlob(blob=>{
