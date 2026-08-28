@@ -941,7 +941,7 @@ function mgApplyDraft(d){
   mgSetSize=d.setSize||0;
   mgSlotsData=(d.slots||[]).map(s=> s? {...s, url:URL.createObjectURL(s.blob)} : null);
   renderMgSlots();
-  go('v-mg');
+  go('mg');
 }
 document.getElementById('mgDraftResume').onclick=async()=>{
   const d=await mgLoadDraft();
