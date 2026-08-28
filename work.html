@@ -10228,17 +10228,17 @@ function renderCsShare() {
         // 포토마그넷 접수: 번호+체크박스를 사진마다 크게 붙여서 제작 시 확인하기 쉽게 표시
         var pchecks = it.photoChecks||[];
         var mgrid = document.createElement('div');
-        mgrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:8px';
+        mgrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:8px';
         imgs.forEach(function(src,i){
           var cell = document.createElement('div');
-          cell.style.cssText = 'width:calc(33.33% - 8px);min-width:84px';
+          cell.style.cssText = 'width:calc(13.33% - 5px);min-width:50px';
           var head = document.createElement('div');
-          head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px';
+          head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;padding:0 1px';
           var numEl = document.createElement('span');
           numEl.textContent = (i+1);
-          numEl.style.cssText = 'font-weight:900;font-size:1.15rem;color:#1a1a2e';
+          numEl.style.cssText = 'font-weight:900;font-size:.7rem;color:#1a1a2e';
           var chk = document.createElement('input'); chk.type='checkbox';
-          chk.style.cssText = 'width:20px;height:20px;accent-color:#2c8dc2;cursor:pointer;flex-shrink:0';
+          chk.style.cssText = 'width:12px;height:12px;accent-color:#2c8dc2;cursor:pointer;flex-shrink:0';
           chk.checked = !!pchecks[i];
           chk.onclick = function(e){ e.stopPropagation(); };
           chk.onchange = (function(itemId, idx){ return function(){
