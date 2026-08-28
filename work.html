@@ -10224,8 +10224,38 @@ function renderCsShare() {
     // 이미지 (메모 아래)
     var imgs = (it.imgs&&it.imgs.length)?it.imgs:(it.img?[it.img]:[]);
     if (imgs.length) {
-      if (it.author==='📷') {
-        // 사진접수 자동글: 확인용이라 한 줄에 4개씩 작은 썸네일 그리드로 표시
+      if (it.author==='📷' && it.productType==='magnet') {
+        // 포토마그넷 접수: 번호+체크박스를 사진마다 크게 붙여서 제작 시 확인하기 쉽게 표시
+        var pchecks = it.photoChecks||[];
+        var mgrid = document.createElement('div');
+        mgrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:8px';
+        imgs.forEach(function(src,i){
+          var cell = document.createElement('div');
+          cell.style.cssText = 'width:calc(33.33% - 8px);min-width:84px';
+          var head = document.createElement('div');
+          head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px';
+          var numEl = document.createElement('span');
+          numEl.textContent = (i+1);
+          numEl.style.cssText = 'font-weight:900;font-size:1.15rem;color:#1a1a2e';
+          var chk = document.createElement('input'); chk.type='checkbox';
+          chk.style.cssText = 'width:20px;height:20px;accent-color:#2c8dc2;cursor:pointer;flex-shrink:0';
+          chk.checked = !!pchecks[i];
+          chk.onclick = function(e){ e.stopPropagation(); };
+          chk.onchange = (function(itemId, idx){ return function(){
+            var isChecked = this.checked;
+            csUpdateItem(itemId, function(item){ item.photoChecks = item.photoChecks||[]; item.photoChecks[idx] = isChecked; });
+          }; })(it.id, i);
+          head.appendChild(numEl); head.appendChild(chk);
+          var gi = document.createElement('img');
+          gi.src = src; gi.loading = 'lazy';
+          gi.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;border-radius:9px;border:1.5px solid #e8eef8;background:#f8f9ff';
+          gi.onclick = (function(a,idx){ return function(){ _csGallery=a; _csGalleryIdx=idx; csShowGallery(); }; })(imgs,i);
+          cell.appendChild(head); cell.appendChild(gi);
+          mgrid.appendChild(cell);
+        });
+        body.appendChild(mgrid);
+      } else if (it.author==='📷') {
+        // 그 외(군인토퍼 등) 사진접수 자동글: 확인용이라 한 줄에 4개씩 작은 썸네일 그리드로 표시
         var grid = document.createElement('div');
         grid.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:8px';
         // 장수 적으면 조금 더 크게(1장 46% · 2장 38%), 3장 이상은 한 줄 4개(25%)

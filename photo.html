@@ -555,18 +555,22 @@ function csMakeThumb(file){
 async function postToCsBoard(ctx){
   const now=Date.now();
   const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
+  const isMagnet = ctx.productType==='magnet';
+  const titleTag = isMagnet ? `📷 포토마그넷 접수${ctx.quick?'(간편)':''} · ${mallLabel}` : `📷 사진접수${ctx.quick?'(간편)':''} · ${mallLabel}`;
   const lines = ctx.quick ? [
-    `📷 사진접수(간편) · ${ctx.name}`,
-    `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
+    titleTag,
+    `${ctx.name}`,
+    isMagnet ? `접수번호 ${ctx.receiptNo} · ${ctx.setSize}개입 · 사진 ${ctx.count}장` : `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
   ] : [
-    `📷 사진접수 · ${mallLabel}`,
+    titleTag,
     `${ctx.name} / 뒷번호 ${ctx.phone}`,
     `${ctx.addr}`,
-    `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
+    isMagnet ? `접수번호 ${ctx.receiptNo} · ${ctx.setSize}개입 · 사진 ${ctx.count}장` : `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
   ];
   if(ctx.editRequest) lines.push(`요청: ${ctx.editRequest}`);
   const item={
     id: now, type:'', category:'CS', author:'📷',
+    productType: isMagnet ? 'magnet' : 'topper',
     text: lines.join('\n'),
     imgs: [], img: '',
     vendorOrder:null, done:false, createdAt: now, replies:[], confirmed:[]
@@ -1093,6 +1097,15 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
     const fin=await api('submit-magnet',{action:'finalize', receiptId});
     if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
 
+    // work.html CS 게시판에 자동 등록(백그라운드 · 실패해도 접수엔 영향 없음)
+    postToCsBoard({
+      name, addr, phone, mall:mgSelectedMall,
+      editRequest: extra,
+      receiptNo: fin.body.receiptNo, count: mgSlotsData.length,
+      productType:'magnet', setSize: mgSetSize,
+      files: mgSlotsData.map(s=>s.blob)
+    });
+
     showMgDone(fin.body, {name, addr, setSize:mgSetSize});
   }catch(err){
     toast(err.message||'접수 중 오류가 발생했습니다.');
@@ -1490,6 +1503,12 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
         await uploadOne(up, qaMgSlotsData[i].blob, ()=>{});
       }
       await api('quick-submit',{action:'finalize', receiptId:cr.body.receiptId});
+      // work.html CS 게시판에도 자동 등록(간편 표시, 실패해도 등록엔 영향 없음)
+      postToCsBoard({
+        name, mall:'etc', receiptNo:cr.body.receiptNo, count:qaMgSlotsData.length,
+        productType:'magnet', setSize:qaMgSetSize,
+        files: qaMgSlotsData.map(s=>s.blob), quick:true
+      });
       document.getElementById('qaForm').style.display='none';
       const done2=document.getElementById('qaDone'); done2.style.display='block';
       done2.innerHTML=`<div style="text-align:center;padding:8px 0">
