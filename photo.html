@@ -119,6 +119,7 @@
   .filemeta{display:flex; justify-content:space-between; font-size:12px; color:var(--gray); margin-top:10px}
   .bar{height:7px; background:var(--line); border-radius:5px; overflow:hidden; margin-top:10px; display:none}
   .bar.show{display:block} .bar>i{display:block; height:100%; width:0; background:var(--pink); transition:width .2s}
+  .bar.sky>i{background:var(--sky)}
   .agree{display:flex; align-items:flex-start; gap:9px; margin-top:14px; font-size:13px}
   .agree input{margin-top:2px; width:18px; height:18px; accent-color:var(--pink)}
   /* complete */
@@ -336,6 +337,7 @@
       <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
       <div class="slots" id="mgSlots"></div>
       <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
+      <div class="bar sky" id="mgBar"><i></i></div>
 
       <label>기타 요청사항 <span class="opt">(선택)</span></label>
       <textarea id="mgExtra" maxlength="1000"></textarea>
@@ -1159,10 +1161,19 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
     const {receiptId, uploads}=create.body;
 
     let mgUploaded=0;
+    const mgBar=document.getElementById('mgBar'), mgBarI=mgBar.querySelector('i');
+    const mgTotalBytes=mgSlotsData.reduce((s,it)=>s+it.blob.size,0);
+    const mgLoadedArr=new Array(mgSlotsData.length).fill(0);
+    mgBar.classList.add('show');
     btn.innerHTML=`<span class="spin"></span> 업로드 중 (0/${mgSlotsData.length})`;
     await uploadPool(mgSlotsData.length, 4, async i=>{
       const up=uploads.find(u=>u.sortOrder===i);
-      await uploadOne(up, mgSlotsData[i].blob, ()=>{});
+      await uploadOne(up, mgSlotsData[i].blob, (loaded)=>{
+        mgLoadedArr[i]=loaded;
+        const sum=mgLoadedArr.reduce((a,b)=>a+b,0);
+        mgBarI.style.width=Math.round(sum/mgTotalBytes*100)+'%';
+      });
+      mgLoadedArr[i]=mgSlotsData[i].blob.size;
       mgUploaded++;
       btn.innerHTML=`<span class="spin"></span> 업로드 중 (${mgUploaded}/${mgSlotsData.length})`;
     });
@@ -1183,6 +1194,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
     toast(err.message||'접수 중 오류가 발생했습니다.');
   }finally{
     mgSubmitting=false; btn.disabled=false; btn.textContent='포토마그넷 접수하기';
+    const mgBarEl=document.getElementById('mgBar'); mgBarEl.classList.remove('show'); mgBarEl.querySelector('i').style.width='0';
   }
 });
 function mgErrMsg(code){
