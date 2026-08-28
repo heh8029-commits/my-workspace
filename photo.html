@@ -285,7 +285,7 @@
       <b>🧲 포토마그넷 안내</b>
       <ul>
         <li>포토마그넷은 63.5×63.5mm 정사각형입니다.</li>
-        <li>구매하신 세트(6개입 · 9개입)를 선택하면 칸이 생겨요.</li>
+        <li>구매하신 세트(6개입 · 9개입 · 직접 입력)를 선택하면 칸이 생겨요.</li>
         <li>칸마다 사진을 올리고 화면에서 위치·확대를 맞춰 주세요.</li>
         <li>맞춘 화면 그대로 잘려서 제작되니 신중하게 맞춰 주세요.</li>
         <li>같은 사진을 여러 칸에 넣으면 그만큼 여러 장 제작됩니다.</li>
@@ -311,14 +311,16 @@
       <div class="hint">동명이인 구분을 위해 배송지 주소를 <b>동까지만</b> 입력해 주세요.
         아파트명, 동·호수 등 상세주소는 입력하지 마세요.</div>
 
-      <label>전화번호 뒷자리 4자리 <span class="req">*</span></label>
-      <input type="tel" id="mgPhone" placeholder="1234" maxlength="4" inputmode="numeric" />
+      <label>연락처 <span class="req">*</span></label>
+      <input type="tel" id="mgPhone" placeholder="01012345678" maxlength="11" inputmode="numeric" />
 
       <label>세트 선택 <span class="req">*</span></label>
       <div class="malls" id="mgSet">
         <button type="button" data-set="6">6개입</button>
         <button type="button" data-set="9">9개입</button>
+        <button type="button" data-set="custom">직접 입력</button>
       </div>
+      <input type="number" id="mgCustomCount" placeholder="원하는 장수 입력" min="1" max="99" style="display:none;margin-top:8px" />
 
       <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
       <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
@@ -338,7 +340,7 @@
 
       <label class="agree">
         <input type="checkbox" id="mgAgree" />
-        <span>개인정보(주문자명·전화 뒷자리) 및 첨부 사진을 <b>제작·조회 목적</b>으로 이용하고,
+        <span>개인정보(주문자명·연락처) 및 첨부 사진을 <b>제작·조회 목적</b>으로 이용하고,
           접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span></span>
       </label>
 
@@ -563,7 +565,7 @@ async function postToCsBoard(ctx){
     isMagnet ? `접수번호 ${ctx.receiptNo} · ${ctx.setSize}개입 · 사진 ${ctx.count}장` : `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
   ] : [
     titleTag,
-    `${ctx.name} / 뒷번호 ${ctx.phone}`,
+    isMagnet ? `${ctx.name} / 연락처 ${ctx.phone}` : `${ctx.name} / 뒷번호 ${ctx.phone}`,
     `${ctx.addr}`,
     isMagnet ? `접수번호 ${ctx.receiptNo} · ${ctx.setSize}개입 · 사진 ${ctx.count}장` : `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
   ];
@@ -836,17 +838,27 @@ document.getElementById('mgMalls').addEventListener('click',e=>{
   document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
 });
-document.getElementById('mgSet').addEventListener('click',e=>{
-  const b=e.target.closest('button[data-set]'); if(!b) return;
-  const n=Number(b.dataset.set);
+function applyMgSetSize(n){
+  n=Math.max(1, Math.min(99, Math.round(n)));
   if(mgSetSize && mgSetSize!==n && mgSlotsData.some(Boolean)){
     if(!confirm('세트를 바꾸면 이미 넣은 사진이 초기화돼요. 계속할까요?')) return;
   }
   mgSetSize=n;
-  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
   mgSlotsData=new Array(n).fill(null);
   renderMgSlots();
+}
+document.getElementById('mgSet').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-set]'); if(!b) return;
+  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  const cc=document.getElementById('mgCustomCount');
+  if(b.dataset.set==='custom'){ cc.style.display='block'; cc.focus(); return; }
+  cc.style.display='none'; cc.value='';
+  applyMgSetSize(Number(b.dataset.set));
+});
+document.getElementById('mgCustomCount').addEventListener('input', e=>{
+  const n=Number(e.target.value);
+  if(n>=1) applyMgSetSize(n);
 });
 document.getElementById('mgPhone').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
 function checkMgPw(){
@@ -1072,7 +1084,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   if(!mgSelectedMall) return toast('주문한 쇼핑몰을 선택해 주세요.');
   if(!name) return toast('주문자 이름을 입력해 주세요.');
   if(!addr) return toast('배송지 주소(동)를 입력해 주세요.');
-  if(!/^[0-9]{4}$/.test(phone)) return toast('전화번호 뒷자리 4자리를 입력해 주세요.');
+  if(!/^[0-9]{9,11}$/.test(phone)) return toast('연락처를 정확히 입력해 주세요.');
   if(!mgSetSize) return toast('세트를 선택해 주세요.');
   if(mgSlotsData.some(x=>!x)) return toast(`${mgSetSize}칸 모두에 사진을 넣어 주세요.`);
   if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
@@ -1115,7 +1127,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
 });
 function mgErrMsg(code){
   return ({invalid_mall:'쇼핑몰을 선택해 주세요.', invalid_name:'이름을 확인해 주세요.',
-    invalid_address:'배송지 주소를 확인해 주세요.', invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.',
+    invalid_address:'배송지 주소를 확인해 주세요.', invalid_phone:'연락처를 확인해 주세요.',
     invalid_set_size:'세트를 선택해 주세요.',
     invalid_password:'비밀번호는 숫자 4 또는 6자리입니다.', password_mismatch:'비밀번호가 일치하지 않습니다.',
     invalid_file_count:'세트 칸 수만큼 사진을 모두 넣어 주세요.', file_too_large:'사진 용량이 너무 큽니다.',
@@ -1136,6 +1148,7 @@ function showMgDone(fin, info){
   mgSelectedMall=null; mgSetSize=0; mgSlotsData=[];
   document.querySelectorAll('#mgMalls button, #mgSet button').forEach(x=>x.classList.remove('on'));
   document.getElementById('mgSlots').innerHTML='';
+  const mgCC=document.getElementById('mgCustomCount'); mgCC.style.display='none'; mgCC.value='';
   document.getElementById('mgPwMsg').textContent='';
   go('done');
 }
@@ -1162,7 +1175,7 @@ async function doSearch(){
       return `
     <div class="rescard" onclick='pickReceipt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <div class="nm">${esc(r.ordererName)} <span style="font-size:12px;color:var(--gray)">/ ${MALL_LABEL[r.mall]||r.mall}</span> ${tag}</div>
-      <div class="row">전화번호 뒷자리 <b>${esc(r.phoneLast4)}</b></div>
+      <div class="row">${isMg?'연락처':'전화번호 뒷자리'} <b>${esc(r.phoneLast4)}</b></div>
       <div class="row">${esc(r.addressDong||'')}</div>
       <div class="row">${fmtDate(r.createdAt)} 접수 · <span class="del">${fmtDate(r.deleteAt)} 자동 삭제</span></div>
       <span class="arw">›</span>
@@ -1210,7 +1223,7 @@ function renderDetail(data){
   document.getElementById('detailInfo').innerHTML=`
     <h2 style="margin-bottom:12px">접수 상세 조회 ${tag}</h2>
     <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
-    <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
+    <div class="kv"><b>${isMg?'연락처':'전화번호 뒷자리'}</b><span>${esc(d.phoneLast4)}</span></div>
     ${idRow}
     <div class="kv"><b>주문 쇼핑몰</b><span>${MALL_LABEL[d.mall]||d.mall}</span></div>
     ${mgRows}

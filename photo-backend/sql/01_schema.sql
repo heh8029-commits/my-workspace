@@ -15,7 +15,7 @@ create table if not exists public.photo_receipts (
   mall            text not null check (mall in ('coupang','naver','etc')),
   orderer_name    text not null,                     -- 주문자 이름
   address_dong    text not null,                     -- 배송지 주소(동까지)
-  phone_last4     text not null check (phone_last4 ~ '^[0-9]{4}$'),  -- 전화번호 뒷 4자리(전체번호는 저장 안 함)
+  phone_last4     text not null check (phone_last4 ~ '^([0-9]{4}|[0-9]{9,11})$'),  -- 군인토퍼: 뒷 4자리 / 포토마그넷: 연락처 전체
   edit_request    text,                              -- 사진 편집 요청사항
   password_hash   text not null,                     -- pbkdf2$iter$salt$hash (평문 저장 금지)
   photo_count     integer not null default 0,
