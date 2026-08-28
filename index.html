@@ -989,6 +989,7 @@ let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcNa
 
 // arr/renderFn 은 이 크롭 결과를 저장할 슬롯 배열과 그걸 다시 그릴 함수(고객 화면/관리자 화면이 공용으로 씀)
 function openCropModal(file, slotIndex, arr, renderFn){
+  const saved=arr[slotIndex], hasSaved=!!(saved && saved.scale!=null);
   const url=URL.createObjectURL(file);
   cropImgEl.src='';
   cropWrap.classList.add('show'); // 먼저 보이게 해야 실제 폭을 잴 수 있음
@@ -996,10 +997,13 @@ function openCropModal(file, slotIndex, arr, renderFn){
   img.onload=()=>{
     const stageSize=cropStage.getBoundingClientRect().width || 300;
     const baseScale=stageSize/Math.min(img.naturalWidth, img.naturalHeight);
-    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn, bri:100, con:100, sat:100, warm:0};
+    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale,
+      scale: hasSaved?saved.scale:1, tx: hasSaved?saved.tx:0, ty: hasSaved?saved.ty:0,
+      stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn,
+      bri: hasSaved?saved.bri:100, con: hasSaved?saved.con:100, sat: hasSaved?saved.sat:100, warm: hasSaved?saved.warm:0};
     cropImgEl.src=url;
-    cropZoom.value=100;
-    cropBri.value=100; cropCon.value=100; cropSat.value=100; cropWarm.value=0;
+    cropZoom.value=Math.round(cropState.scale*100);
+    cropBri.value=cropState.bri; cropCon.value=cropState.con; cropSat.value=cropState.sat; cropWarm.value=cropState.warm;
     applyCropTransform();
     applyCropFilter();
   };
@@ -1104,11 +1108,13 @@ function confirmCrop(){
   ctx.filter=buildFilterStr(cropState);
   ctx.drawImage(cropState.img, dx, dy, dw, dh);
   const slot=cropState.slot, srcName=cropState.srcName, srcFile=cropState.srcFile, arr=cropState.arr, renderFn=cropState.renderFn;
+  const {scale, tx, ty, bri, con, sat, warm}=cropState;
   cv.toBlob(blob=>{
     if(!blob) return toast('사진 처리에 실패했습니다.');
     const url=URL.createObjectURL(blob);
     if(arr[slot]) URL.revokeObjectURL(arr[slot].url);
-    arr[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false };
+    arr[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false,
+      scale, tx, ty, bri, con, sat, warm };
     closeCropModal();
     renderFn();
   }, 'image/jpeg', 0.92);
