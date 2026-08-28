@@ -1246,6 +1246,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
   if(p1!==p2) return toast('비밀번호가 일치하지 않습니다.');
   if(!document.getElementById('mgAgree').checked) return toast('개인정보 및 사진 이용에 동의해 주세요.');
+  if(!confirm('지금 칸에 보이는 사진 그대로 제작돼요.\n접수 후에는 수정이 어려울 수 있어요.\n\n이대로 최종 접수할까요?')) return;
 
   mgSubmitting=true;
   const btn=document.getElementById('mgSubmitBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 접수 중...';
