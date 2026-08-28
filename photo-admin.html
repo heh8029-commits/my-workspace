@@ -81,10 +81,8 @@
   .lightbox.show{display:flex}.lightbox img{max-width:94%;max-height:92%}.lightbox .x{position:absolute;top:16px;right:20px;color:#fff;font-size:30px;background:none;border:none}
   .lightbox .lbsave{position:absolute;top:20px;right:64px;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:7px 16px;font-size:14px;cursor:pointer}
   .empty{padding:50px;text-align:center;color:var(--gray)}
-  /* 상세를 새 창으로 열었을 때: 목록/사이드바 숨기고 드로어를 페이지처럼 표시 */
-  body.standalone aside{display:none}
-  body.standalone .app{grid-template-columns:1fr}
-  body.standalone #tab-list,body.standalone .head{display:none !important}
+  /* 상세를 새 창으로 열었을 때: 목록 전체(.app)는 숨기고 드로어만 페이지처럼 표시 */
+  body.standalone .app{display:none !important}
   body.standalone .drawer{position:static;transform:none;box-shadow:none;width:100%;max-width:640px;
     margin:24px auto;height:auto;padding:26px;border-radius:16px;background:#fff}
   body.standalone .drawer .close{display:none}
@@ -378,7 +376,7 @@ function magnetSlots(){
 }
 function drawOctagonGuide(doc,boxX,boxY){
   const c=MAG_CHAMFER, sSide=MAG_BOX-2*c;
-  doc.setDrawColor(190); doc.setLineWidth(0.25);
+  doc.setDrawColor(230); doc.setLineWidth(0.15);
   doc.lines([[sSide,0],[c,c],[0,sSide],[-c,c],[-sSide,0],[-c,-c],[0,-sSide],[c,-c]],
     boxX+c, boxY, [1,1], 'S', true);
 }
@@ -451,23 +449,32 @@ async function generatePackingPdf(){
     ctx.strokeStyle='#000'; ctx.lineWidth=mm(0.3);
     ctx.beginPath(); ctx.moveTo(mm(10),y); ctx.lineTo(mm(138),y); ctx.stroke(); y+=mm(6);
 
-    const rowH=mm(16), thumbSz=mm(13), maxY=mm(200);
+    /* 큰 썸네일을 2열로 옆으로 나열 — 번호+체크박스는 사진 위 라벨 바에 크게 표시 */
+    const cols=2, marginX=8, gap=6;
+    const cellW=(PW-2*marginX-gap*(cols-1))/cols, labelH=11, rowGap=7;
+    const rowH=mm(labelH+cellW+rowGap), maxY=mm(202);
     let placed=0;
     while(idx<sorted.length && y+rowH<=maxY){
-      const p=sorted[idx];
-      ctx.strokeRect(mm(10),y,mm(5),mm(5));
-      ctx.font=`${mm(4)}px sans-serif`;
-      ctx.fillText(String(p.order+1), mm(19), y+mm(4));
-      try{
-        const res=await fetch(p.url); const blob=await res.blob();
-        const bmp=await createImageBitmap(blob);
-        const s=Math.min(bmp.width,bmp.height);
-        ctx.drawImage(bmp,(bmp.width-s)/2,(bmp.height-s)/2,s,s, mm(27), y-mm(1), thumbSz, thumbSz);
-      }catch(e){}
-      y+=rowH; idx++; placed++;
+      for(let c=0;c<cols && idx<sorted.length;c++){
+        const p=sorted[idx];
+        const x=mm(marginX+c*(cellW+gap));
+        ctx.font=`bold ${mm(5.5)}px sans-serif`;
+        ctx.fillStyle='#111';
+        ctx.fillText(String(p.order+1), x, y+mm(6));
+        ctx.strokeStyle='#000'; ctx.lineWidth=mm(0.35);
+        ctx.strokeRect(x+mm(cellW-9), y, mm(9), mm(9));
+        try{
+          const res=await fetch(p.url); const blob=await res.blob();
+          const bmp=await createImageBitmap(blob);
+          const s=Math.min(bmp.width,bmp.height);
+          ctx.drawImage(bmp,(bmp.width-s)/2,(bmp.height-s)/2,s,s, x, y+mm(labelH), mm(cellW), mm(cellW));
+        }catch(e){}
+        idx++; placed++;
+      }
+      y+=rowH;
     }
     if(!first) doc.addPage();
-    doc.addImage(canvas.toDataURL('image/png'),'PNG',0,0,PW,PH);
+    doc.addImage(canvas.toDataURL('image/jpeg',0.85),'JPEG',0,0,PW,PH);
     first=false;
     if(placed===0) break;
   }while(idx<sorted.length);
