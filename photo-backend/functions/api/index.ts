@@ -212,8 +212,8 @@ Deno.serve(async (req) => {
     if (!ALLOWED_MALLS.includes(mall)) return json({ error: "invalid_mall" }, 400, origin);
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
     if (!dong || dong.length > 60) return json({ error: "invalid_address" }, 400, origin);
-    if (!/^[0-9]{4}$/.test(phone)) return json({ error: "invalid_phone" }, 400, origin);
-    if (setSize !== 6 && setSize !== 9) return json({ error: "invalid_set_size" }, 400, origin);
+    if (!/^[0-9]{9,11}$/.test(phone)) return json({ error: "invalid_phone" }, 400, origin);
+    if (!Number.isFinite(setSize) || setSize < 1 || setSize > 99) return json({ error: "invalid_set_size" }, 400, origin);
     if (phraseEnabled && !phraseText) return json({ error: "invalid_phrase" }, 400, origin);
     if (!/^([0-9]{4}|[0-9]{6})$/.test(pw)) return json({ error: "invalid_password" }, 400, origin);
     if (pw !== pw2) return json({ error: "password_mismatch" }, 400, origin);
