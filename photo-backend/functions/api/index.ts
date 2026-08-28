@@ -256,7 +256,7 @@ Deno.serve(async (req) => {
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
     const { data, error } = await sb.from("photo_receipts")
       .select("id, mall, orderer_name, address_dong, phone_last4, status, created_at, delete_at, photos_deleted, product_type, order_no")
-      .eq("orderer_name", name).eq("finalized", true).order("created_at", { ascending: false }).limit(50);
+      .eq("orderer_name", name).eq("finalized", true).eq("photos_deleted", false).order("created_at", { ascending: false }).limit(50);
     if (error) return json({ error: "db_error" }, 500, origin);
     return json({ ok: true, results: (data ?? []).map((r) => ({ id: r.id, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null })) }, 200, origin);
   }
