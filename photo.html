@@ -120,6 +120,14 @@
   .bar{height:7px; background:var(--line); border-radius:5px; overflow:hidden; margin-top:10px; display:none}
   .bar.show{display:block} .bar>i{display:block; height:100%; width:0; background:var(--pink); transition:width .2s}
   .bar.sky>i{background:var(--sky)}
+  .draftBanner{display:none; position:fixed; left:0; right:0; top:0; z-index:150; background:var(--sky-d);
+    color:#fff; padding:10px 14px; font-size:12.5px; align-items:center; justify-content:center;
+    gap:10px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .draftBanner.show{display:flex}
+  .draftBannerBtns{display:flex; gap:6px}
+  .draftBanner button{border:none; border-radius:8px; padding:6px 11px; font-size:12px; font-weight:800; cursor:pointer}
+  .draftBanner #mgDraftResume{background:#fff; color:var(--sky-d)}
+  .draftBanner #mgDraftDiscard{background:rgba(255,255,255,.25); color:#fff}
   .agree{display:flex; align-items:flex-start; gap:9px; margin-top:14px; font-size:13px}
   .agree input{margin-top:2px; width:18px; height:18px; accent-color:var(--pink)}
   /* complete */
@@ -506,6 +514,13 @@
 
 <div class="toast" id="toast"></div>
 <div class="lightbox" id="lightbox"><button class="close" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
+<div class="draftBanner" id="mgDraftBanner">
+  <span>작성 중이던 포토마그넷 접수가 있어요.</span>
+  <div class="draftBannerBtns">
+    <button type="button" id="mgDraftResume">이어서 작성</button>
+    <button type="button" id="mgDraftDiscard">새로 시작</button>
+  </div>
+</div>
 
 <!-- 포토마그넷 정사각형 크롭 모달 -->
 <div class="cropWrap" id="cropWrap">
@@ -861,11 +876,92 @@ document.getElementById('doneViewBtn').onclick=()=>{
 ================================================================== */
 let mgSelectedMall=null, mgSetSize=0, mgSlotsData=[]; // mgSlotsData[i] = {blob,url,name} | null
 
+/* ---- 임시저장(자동, IndexedDB) : 새로고침/탭꺼짐 대비 ---- */
+const MG_DRAFT_DB='miritopper_mg_draft', MG_DRAFT_STORE='drafts', MG_DRAFT_KEY='mg';
+function mgIdbOpen(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(MG_DRAFT_DB,1);
+    req.onupgradeneeded=()=>{ req.result.createObjectStore(MG_DRAFT_STORE); };
+    req.onsuccess=()=>res(req.result);
+    req.onerror=()=>rej(req.error);
+  });
+}
+async function mgSaveDraft(){
+  try{
+    const db=await mgIdbOpen();
+    const data={
+      savedAt:Date.now(), mall:mgSelectedMall, setSize:mgSetSize,
+      name:document.getElementById('mgName').value,
+      addr:document.getElementById('mgAddressDong').value,
+      phone:document.getElementById('mgPhone').value,
+      extra:document.getElementById('mgExtra').value,
+      slots: mgSlotsData.map(s=> s? {blob:s.blob, srcFile:s.srcFile, name:s.name, needsCheck:s.needsCheck,
+        scale:s.scale, tx:s.tx, ty:s.ty, bri:s.bri, con:s.con, sat:s.sat, warm:s.warm} : null)
+    };
+    db.transaction(MG_DRAFT_STORE,'readwrite').objectStore(MG_DRAFT_STORE).put(data, MG_DRAFT_KEY);
+  }catch(e){ /* 임시저장 실패는 조용히 무시(접수 자체엔 영향 없음) */ }
+}
+let mgDraftTimer=null;
+function mgScheduleSaveDraft(){ clearTimeout(mgDraftTimer); mgDraftTimer=setTimeout(mgSaveDraft, 400); }
+async function mgLoadDraft(){
+  try{
+    const db=await mgIdbOpen();
+    return await new Promise((res,rej)=>{
+      const req=db.transaction(MG_DRAFT_STORE,'readonly').objectStore(MG_DRAFT_STORE).get(MG_DRAFT_KEY);
+      req.onsuccess=()=>res(req.result||null);
+      req.onerror=()=>rej(req.error);
+    });
+  }catch(e){ return null; }
+}
+async function mgClearDraft(){
+  try{ const db=await mgIdbOpen(); db.transaction(MG_DRAFT_STORE,'readwrite').objectStore(MG_DRAFT_STORE).delete(MG_DRAFT_KEY); }catch(e){}
+}
+function mgApplyDraft(d){
+  mgSelectedMall=d.mall||null;
+  document.getElementById('mgName').value=d.name||'';
+  document.getElementById('mgAddressDong').value=d.addr||'';
+  document.getElementById('mgPhone').value=d.phone||'';
+  document.getElementById('mgExtra').value=d.extra||'';
+  document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.toggle('on', x.dataset.mall===mgSelectedMall));
+  const cc=document.getElementById('mgCustomCount'), ccHint=document.getElementById('mgCustomCountHint');
+  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
+  if(d.setSize===6||d.setSize===9){
+    const b=document.querySelector(`#mgSet button[data-set="${d.setSize}"]`); if(b) b.classList.add('on');
+    cc.style.display='none'; ccHint.style.display='none';
+  }else if(d.setSize){
+    document.querySelector('#mgSet button[data-set="custom"]').classList.add('on');
+    cc.style.display='block'; cc.value=d.setSize; ccHint.style.display='block';
+  }
+  mgSetSize=d.setSize||0;
+  mgSlotsData=(d.slots||[]).map(s=> s? {...s, url:URL.createObjectURL(s.blob)} : null);
+  renderMgSlots();
+  go('v-mg');
+}
+document.getElementById('mgDraftResume').onclick=async()=>{
+  const d=await mgLoadDraft();
+  if(d) mgApplyDraft(d);
+  document.getElementById('mgDraftBanner').classList.remove('show');
+};
+document.getElementById('mgDraftDiscard').onclick=async()=>{
+  await mgClearDraft();
+  document.getElementById('mgDraftBanner').classList.remove('show');
+};
+(async()=>{
+  const d=await mgLoadDraft();
+  if(d && (Date.now()-d.savedAt < 24*3600*1000) && (d.name || d.addr || d.phone || (d.slots||[]).some(Boolean))){
+    document.getElementById('mgDraftBanner').classList.add('show');
+  }
+})();
+['mgName','mgAddressDong','mgPhone','mgExtra'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', mgScheduleSaveDraft);
+});
+
 document.getElementById('mgMalls').addEventListener('click',e=>{
   const b=e.target.closest('button[data-mall]'); if(!b) return;
   mgSelectedMall=b.dataset.mall;
   document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
+  mgSaveDraft();
 });
 function applyMgSetSize(n){
   n=Math.max(1, Math.min(99, Math.round(n)));
@@ -916,6 +1012,7 @@ function renderMgSlots(){
     }
     box.appendChild(d);
   }
+  mgSaveDraft();
 }
 
 const mgPickInput=document.createElement('input');
@@ -1189,6 +1286,7 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
       files: mgSlotsData.map(s=>s.blob)
     });
 
+    mgClearDraft();
     showMgDone(fin.body, {name, addr, setSize:mgSetSize});
   }catch(err){
     toast(err.message||'접수 중 오류가 발생했습니다.');
