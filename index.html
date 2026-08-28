@@ -141,7 +141,8 @@
   .kv:last-child{border:none} .kv b{color:var(--gray); font-weight:600}
   .rno{background:var(--pink-l); border-radius:12px; text-align:center; padding:12px; margin:14px 0}
   .rno .n{font-size:20px; font-weight:800; color:var(--pink-d); letter-spacing:.5px}
-  .doneGalleryLabel{font-size:12px; font-weight:700; color:var(--gray); margin:14px 0 8px}
+  .doneGalleryLabel{font-size:14px; font-weight:800; color:var(--pink-d); text-align:center;
+    background:var(--pink-l); border-radius:10px; padding:9px 10px; margin:14px 0 10px}
   .doneGallery{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
   .doneGallery img{width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; border:1px solid var(--line); display:block}
   /* results */
@@ -1315,7 +1316,7 @@ function showMgDone(fin, info){
     <div class="kv"><b>세트</b><span>${info.setSize}개입</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
     <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>
-    <div class="doneGalleryLabel">📷 이대로 제작돼요</div>
+    <div class="doneGalleryLabel">📷 위치·보정까지 지금 이 모습 그대로 제작돼요</div>
     <div class="doneGallery">${gallery}</div>`;
   // 초기화(단, 갤러리에 쓰는 URL은 위에서 이미 mgDoneGalleryUrls로 넘겨받았으니 여기선 revoke하지 않음)
   document.getElementById('mgForm').reset();
