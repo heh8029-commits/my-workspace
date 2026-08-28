@@ -81,6 +81,13 @@
   .lightbox.show{display:flex}.lightbox img{max-width:94%;max-height:92%}.lightbox .x{position:absolute;top:16px;right:20px;color:#fff;font-size:30px;background:none;border:none}
   .lightbox .lbsave{position:absolute;top:20px;right:64px;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:7px 16px;font-size:14px;cursor:pointer}
   .empty{padding:50px;text-align:center;color:var(--gray)}
+  /* 상세를 새 창으로 열었을 때: 목록/사이드바 숨기고 드로어를 페이지처럼 표시 */
+  body.standalone aside{display:none}
+  body.standalone .app{grid-template-columns:1fr}
+  body.standalone #tab-list,body.standalone .head{display:none !important}
+  body.standalone .drawer{position:static;transform:none;box-shadow:none;width:100%;max-width:640px;
+    margin:24px auto;height:auto;padding:26px;border-radius:16px;background:#fff}
+  body.standalone .drawer .close{display:none}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   code{background:#f0f0f3;padding:1px 5px;border-radius:4px;font-size:12px}
@@ -173,6 +180,7 @@
 <div class="lightbox" id="lightbox"><button class="x" onclick="closeLB()">×</button><button class="lbsave" onclick="dlFromLB(event)">⬇ 저장</button><img id="lbImg" src="" alt=""></div>
 
 <script src="./photo-config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const CFG=window.MIRITOPPER_CONFIG;
 const MALL={coupang:'쿠팡',naver:'네이버',etc:'기타'};
@@ -213,7 +221,15 @@ async function doLogin(){
   if(r.status!==200){ document.getElementById('loginErr').textContent='아이디 또는 비밀번호가 올바르지 않습니다.'; return; }
   TOKEN=r.body.token; sessionStorage.setItem('mt_admin_token',TOKEN); enterApp();
 }
-function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').style.display='grid'; loadList(); loadDefHold(); }
+function enterApp(){
+  document.getElementById('login').style.display='none'; document.getElementById('app').style.display='grid';
+  const standaloneId=new URLSearchParams(location.search).get('detail');
+  if(standaloneId){ document.body.classList.add('standalone'); openDetail(standaloneId); return; }
+  loadList(); loadDefHold();
+}
+function openDetailWindow(id){
+  window.open(location.pathname+'?detail='+encodeURIComponent(id), '_blank', 'width=560,height=920');
+}
 function logout(){ TOKEN=null; sessionStorage.removeItem('mt_admin_token'); location.reload(); }
 
 function switchTab(t){
@@ -252,7 +268,7 @@ async function loadList(){
       <td>${badge(r.status)}</td>
       <td>${r.edited?`<span class="badge" style="background:#fff0f4;color:#e5487d" title="${esc(r.lastEditSummary||'')}\n${r.editedAt?fmtDT(r.editedAt):''}">✏️ ${esc(r.lastEditSummary||'수정됨')}</span>`:'<span style="color:#ccc">-</span>'}</td>
       <td style="font-size:12px;color:#c23">${fmtDT(r.deleteAt)}</td>
-      <td><button class="mini p" onclick='openDetail("${r.id}")'>보기 · 수정</button></td>
+      <td><button class="mini p" onclick='openDetailWindow("${r.id}")'>보기 · 수정</button></td>
     </tr>`).join('');
   updateSel();
 }
@@ -269,10 +285,12 @@ async function bulkDelete(){
 }
 
 /* 상세 드로어 */
+let CUR=null; /* 현재 열려있는 상세 { d, photos } — 마그넷 인쇄 PDF/포장 체크리스트 생성에 사용 */
 async function openDetail(id){
   const r=await api('detail',{receiptId:id});
   if(r.status!==200) return toast('상세 조회 실패');
   const d=r.body.detail, photos=r.body.photos||[], logs=r.body.editLogs||[];
+  CUR={d,photos};
   const opts=STATUS_OPTS.map(([v,l])=>`<option value="${v}" ${v===d.status?'selected':''}>${l}</option>`).join('');
   const dayOpts=[3,5,6,7,10,14,21,30].map(n=>`<option value="${n}">${n}일</option>`).join('');
   const logHtml = logs.length ? `<h4 style="margin:16px 0 6px;font-size:14px">📝 수정 이력</h4>`+logs.map(l=>`
@@ -301,8 +319,19 @@ async function openDetail(id){
     <div class="kv"><b>삭제 예정일</b><span style="color:#c23">${fmtDT(d.deleteAt)}</span></div>
     ${d.edited?`<div class="kv"><b>고객 수정</b><span style="color:#e5487d;text-align:right;max-width:60%">✏️ ${esc(d.lastEditSummary||'수정됨')}<br><span style="color:var(--gray);font-size:11px">${d.editedAt?fmtDT(d.editedAt):''}</span></span></div>`:''}
     ${d.photosDeleted?'<div style="margin-top:12px;color:#c23;text-align:center">🗑️ 사진이 삭제되었습니다.</div>':
-      `<div class="dgal">${photos.map(p=>`<div class="c"><span class="ord">${p.order+1}</span><img src="${p.url}" onclick="openLB('${d.id}','${p.id}')"><a class="dl" href="#" onclick="return dlPhoto(event,'${d.id}','${p.id}')">저장</a></div>`).join('')}</div>`}
+      `<div class="dgal">${photos.map(p=>`<div class="c"><span class="ord">${p.order+1}</span><img src="${p.url}" onclick="openLB('${d.id}','${p.id}')"><a class="dl" href="#" onclick="return dlPhoto(event,'${d.id}','${p.id}')">저장</a>
+        <label style="position:absolute;left:4px;bottom:4px;background:rgba(255,255,255,.9);border-radius:5px;padding:1px 4px;font-size:11px;display:flex;align-items:center;gap:2px;cursor:pointer">
+          <input type="checkbox" class="pchk" data-pid="${p.id}" checked style="width:13px;height:13px;margin:0">선택</label>
+        </div>`).join('')}</div>
+      ${isMg?`<div style="display:flex;gap:8px;margin:2px 0 10px;font-size:12px">
+        <span style="color:var(--pink-d);text-decoration:underline;cursor:pointer" onclick="setAllPhotoChk(true)">전체선택</span>
+        <span style="color:var(--pink-d);text-decoration:underline;cursor:pointer" onclick="setAllPhotoChk(false)">전체해제</span>
+      </div>`:''}`}
     <div class="actions">
+      ${isMg&&!d.photosDeleted?`<div class="row">
+        <button class="btn pk" style="flex:1" onclick="generateMagnetPdf()">🧲 마그넷 인쇄 PDF (선택분)</button>
+        <button class="btn nv" style="flex:1" onclick="generatePackingPdf()">📋 포장 체크리스트</button>
+      </div>`:''}
       <div class="row"><select id="dStatus">${opts}</select><button class="btn nv" onclick="setStatus('${d.id}')">상태 변경</button></div>
       <div class="row"><select id="dDays">${dayOpts}</select><button class="warnbtn" style="flex:1" onclick="setDays('${d.id}')">📅 보관기간 설정(접수일+N)</button></div>
       <div class="row">
@@ -330,6 +359,121 @@ async function saveDefHold(){
   if(r.status===200) toast(`신규접수 기본 보관기간을 ${days}일로 저장했습니다.`); else toast('저장 실패');
 }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
+function setAllPhotoChk(v){ document.querySelectorAll('.pchk').forEach(c=>c.checked=v); }
+
+/* ===== 마그넷 세트 인쇄 PDF / 포장 체크리스트 PDF =====
+   옥타곤 슬롯 좌표는 실제 손으로 배치해본 참고 PDF(수정씨1/2.pdf, 87mm 기준)에서 실측 후
+   박스 크기를 89.33mm로 조정 — 슬롯 중심은 그대로 두고 박스만 중심 기준으로 키움.
+   6개세트: A4 한 장 2열×3행. 9개세트: 2번째 장에 2×2 중 3칸만 사용. */
+const MAG_BOX=89.33, MAG_CHAMFER=22.39, MAG_PHOTO=69, MAG_POFF=(MAG_BOX-MAG_PHOTO)/2;
+const MAG_HALF_GROW=(MAG_BOX-87)/2; // 87mm 실측 좌표 대비 박스가 커진 만큼 중심 기준 보정
+const MAG_COL_X=[10.92-MAG_HALF_GROW,106.80-MAG_HALF_GROW];
+const MAG_ROW_Y=[11.64-MAG_HALF_GROW,106.16-MAG_HALF_GROW,201.63-MAG_HALF_GROW];
+
+function magnetSlots(){
+  const s=[];
+  for(let r=0;r<3;r++) for(let c=0;c<2;c++) s.push({page:0,x:MAG_COL_X[c],y:MAG_ROW_Y[r]});
+  for(const [c,r] of [[0,0],[1,0],[0,1]]) s.push({page:1,x:MAG_COL_X[c],y:MAG_ROW_Y[r]});
+  return s;
+}
+function drawOctagonGuide(doc,boxX,boxY){
+  const c=MAG_CHAMFER, sSide=MAG_BOX-2*c;
+  doc.setDrawColor(190); doc.setLineWidth(0.25);
+  doc.lines([[sSide,0],[c,c],[0,sSide],[-c,c],[-sSide,0],[-c,-c],[0,-sSide],[c,-c]],
+    boxX+c, boxY, [1,1], 'S', true);
+}
+async function loadSquareDataUrl(url, sizePx){
+  const res=await fetch(url);
+  if(!res.ok) throw new Error('fetch failed');
+  const blob=await res.blob();
+  const bmp=await createImageBitmap(blob);
+  const canvas=document.createElement('canvas');
+  canvas.width=sizePx; canvas.height=sizePx;
+  const ctx=canvas.getContext('2d');
+  const s=Math.min(bmp.width,bmp.height);
+  ctx.drawImage(bmp,(bmp.width-s)/2,(bmp.height-s)/2,s,s,0,0,sizePx,sizePx);
+  return canvas.toDataURL('image/jpeg',0.92);
+}
+
+async function generateMagnetPdf(){
+  if(!CUR) return;
+  const {d,photos}=CUR;
+  const ids=[...document.querySelectorAll('.pchk:checked')].map(c=>c.dataset.pid);
+  const sel=photos.filter(p=>ids.includes(String(p.id))).sort((a,b)=>a.order-b.order);
+  if(!sel.length) return toast('선택된 사진이 없습니다.');
+  if(sel.length>9) return toast('한 번에 최대 9장까지 가능합니다. 나눠서 생성해 주세요.');
+  toast('마그넷 PDF 생성 중... 잠시만 기다려주세요');
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  const slots=magnetSlots();
+  let pageIdx=0;
+  for(let i=0;i<sel.length;i++){
+    const slot=slots[i];
+    if(slot.page!==pageIdx){ doc.addPage(); pageIdx=slot.page; }
+    try{
+      const dataUrl=await loadSquareDataUrl(sel[i].url,800);
+      doc.addImage(dataUrl,'JPEG',slot.x+MAG_POFF,slot.y+MAG_POFF,MAG_PHOTO,MAG_PHOTO);
+    }catch(e){ toast(`${i+1}번째 사진을 불러오지 못했습니다.`); }
+    drawOctagonGuide(doc,slot.x,slot.y);
+  }
+  doc.save(`마그넷_${d.receiptNo||d.id}_${sel.length}장.pdf`);
+  toast('마그넷 인쇄 PDF를 저장했습니다.');
+}
+
+/* jsPDF 기본폰트(helvetica)는 한글 글리프가 없어 doc.text()로 한글을 못 씀 —
+   그래서 이 PDF는 페이지를 캔버스에 그려서(브라우저 폰트로 한글 렌더링) 통째로 이미지로 넣는다. */
+async function generatePackingPdf(){
+  if(!CUR) return;
+  const {d,photos}=CUR;
+  if(!photos.length) return toast('사진이 없습니다.');
+  toast('포장 체크리스트 생성 중...');
+  const {jsPDF}=window.jspdf;
+  const DPI=200, PW=148, PH=210;
+  const mm=v=>Math.round(v*DPI/25.4);
+  const pxW=mm(PW), pxH=mm(PH);
+  const sorted=[...photos].sort((a,b)=>a.order-b.order);
+  const doc=new jsPDF({unit:'mm',format:[PW,PH],orientation:'portrait'});
+  let idx=0, first=true;
+  do{
+    const canvas=document.createElement('canvas');
+    canvas.width=pxW; canvas.height=pxH;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,pxW,pxH);
+    ctx.fillStyle='#111';
+    let y=mm(14);
+    ctx.font=`bold ${mm(5)}px sans-serif`;
+    ctx.fillText('포장 확인 체크리스트', mm(10), y); y+=mm(8);
+    ctx.font=`${mm(3.6)}px sans-serif`;
+    ctx.fillText(`접수번호: ${d.receiptNo||''}`, mm(10), y); y+=mm(6);
+    ctx.fillText(`주문자: ${d.ordererName||''}   전화뒷자리: ${d.phoneLast4||''}`, mm(10), y); y+=mm(6);
+    ctx.fillText(`배송지(동): ${d.addressDong||''}   쇼핑몰: ${MALL[d.mall]||d.mall||''}`, mm(10), y); y+=mm(6);
+    ctx.fillText(`사진 개수: ${photos.length}장 (${d.setSize||photos.length}개입)`, mm(10), y); y+=mm(8);
+    ctx.strokeStyle='#000'; ctx.lineWidth=mm(0.3);
+    ctx.beginPath(); ctx.moveTo(mm(10),y); ctx.lineTo(mm(138),y); ctx.stroke(); y+=mm(6);
+
+    const rowH=mm(16), thumbSz=mm(13), maxY=mm(200);
+    let placed=0;
+    while(idx<sorted.length && y+rowH<=maxY){
+      const p=sorted[idx];
+      ctx.strokeRect(mm(10),y,mm(5),mm(5));
+      ctx.font=`${mm(4)}px sans-serif`;
+      ctx.fillText(String(p.order+1), mm(19), y+mm(4));
+      try{
+        const res=await fetch(p.url); const blob=await res.blob();
+        const bmp=await createImageBitmap(blob);
+        const s=Math.min(bmp.width,bmp.height);
+        ctx.drawImage(bmp,(bmp.width-s)/2,(bmp.height-s)/2,s,s, mm(27), y-mm(1), thumbSz, thumbSz);
+      }catch(e){}
+      y+=rowH; idx++; placed++;
+    }
+    if(!first) doc.addPage();
+    doc.addImage(canvas.toDataURL('image/png'),'PNG',0,0,PW,PH);
+    first=false;
+    if(placed===0) break;
+  }while(idx<sorted.length);
+  doc.save(`포장체크_${d.receiptNo||d.id}.pdf`);
+  toast('포장 체크리스트를 저장했습니다.');
+}
 
 async function setStatus(id){
   const status=document.getElementById('dStatus').value;
