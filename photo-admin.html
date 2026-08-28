@@ -454,9 +454,10 @@ async function generatePackingPdf(){
     ctx.strokeStyle='#000'; ctx.lineWidth=mm(0.3);
     ctx.beginPath(); ctx.moveTo(mm(10),y); ctx.lineTo(mm(138),y); ctx.stroke(); y+=mm(6);
 
-    /* 큰 썸네일을 2열로 옆으로 나열 — 번호+체크박스는 사진 위 라벨 바에 크게 표시 */
-    const cols=2, marginX=8, gap=6;
-    const cellW=(PW-2*marginX-gap*(cols-1))/cols, labelH=11, rowGap=7;
+    /* 큰 썸네일을 옆으로 나열 — 항상 2줄에 맞춰 열 개수를 정함 (6장→3+3, 9장→5+4)
+       번호+체크박스는 사진 위 라벨 바에 크게 표시 */
+    const cols=Math.max(1,Math.ceil(sorted.length/2)), marginX=6, gap=4;
+    const cellW=Math.min(70,(PW-2*marginX-gap*(cols-1))/cols), labelH=11, rowGap=7;
     const rowH=mm(labelH+cellW+rowGap), maxY=mm(202);
     let placed=0;
     while(idx<sorted.length && y+rowH<=maxY){
