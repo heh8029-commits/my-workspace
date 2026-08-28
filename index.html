@@ -1315,7 +1315,7 @@ function showMgDone(fin, info){
     <div class="kv"><b>세트</b><span>${info.setSize}개입</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
     <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>
-    <div class="doneGalleryLabel">📷 이 사진 그대로 제작됩니다</div>
+    <div class="doneGalleryLabel">📷 이대로 제작돼요</div>
     <div class="doneGallery">${gallery}</div>`;
   // 초기화(단, 갤러리에 쓰는 URL은 위에서 이미 mgDoneGalleryUrls로 넘겨받았으니 여기선 revoke하지 않음)
   document.getElementById('mgForm').reset();
