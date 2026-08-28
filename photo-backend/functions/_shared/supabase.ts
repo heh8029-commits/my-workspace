@@ -15,16 +15,11 @@ export function admin(): SupabaseClient {
   return _client;
 }
 
-// 접수완료번호 생성: MRTO-MMDD-HHMM-XXXX (KST 기준, XXXX = 대문자/숫자 4자리)
-export function makeReceiptNo(now: Date): string {
-  const kst = new Date(now.getTime() + 9 * 3600 * 1000); // Deno 는 UTC 이므로 +9h
-  const mm = String(kst.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(kst.getUTCDate()).padStart(2, "0");
-  const hh = String(kst.getUTCHours()).padStart(2, "0");
-  const mi = String(kst.getUTCMinutes()).padStart(2, "0");
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 혼동되는 0,O,1,I 제외
-  const rnd = crypto.getRandomValues(new Uint8Array(4));
+// 접수완료번호 생성: XXX-XXX (고객이 외우기 쉽도록 짧게, 헷갈리는 0/O/1/I/L 제외)
+export function makeReceiptNo(_now: Date): string {
+  const alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  const rnd = crypto.getRandomValues(new Uint8Array(6));
   let suffix = "";
   for (const b of rnd) suffix += alphabet[b % alphabet.length];
-  return `MRTO-${mm}${dd}-${hh}${mi}-${suffix}`;
+  return `${suffix.slice(0, 3)}-${suffix.slice(3)}`;
 }

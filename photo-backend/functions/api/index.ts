@@ -73,13 +73,11 @@ async function verifyToken(token: string | null) {
   try { const pl = JSON.parse(new TextDecoder().decode(u64d(p))); if (typeof pl.exp !== "number" || pl.exp < Math.floor(Date.now() / 1000)) return null; return { u: pl.u }; } catch { return null; }
 }
 
-/* ---------------- 접수번호 (KST) ---------------- */
-function makeReceiptNo(now: Date) {
-  const k = new Date(now.getTime() + 9 * 3600 * 1000);
-  const p = (n: number) => String(n).padStart(2, "0");
-  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let sfx = ""; for (const b of crypto.getRandomValues(new Uint8Array(4))) sfx += A[b % A.length];
-  return `MRTO-${p(k.getUTCMonth() + 1)}${p(k.getUTCDate())}-${p(k.getUTCHours())}${p(k.getUTCMinutes())}-${sfx}`;
+/* ---------------- 접수번호: 고객이 외우기 쉽도록 짧게(6자, 헷갈리는 0/O/1/I/L 제외) ---------------- */
+function makeReceiptNo(_now: Date) {
+  const A = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  let sfx = ""; for (const b of crypto.getRandomValues(new Uint8Array(6))) sfx += A[b % A.length];
+  return `${sfx.slice(0, 3)}-${sfx.slice(3)}`;
 }
 
 /* ---------------- 상수 ---------------- */
