@@ -194,19 +194,16 @@
     </div>
 
     <div class="notice">
-      <b>📌 접수 안내</b>
+      <b onclick="window.open('./photo-admin.html','_blank')" style="cursor:default;user-select:none">📌 접수 안내</b>
       <ul>
         <li>접수한 사진은 접수 완료 시점으로부터 <b>6일 후 자동 삭제</b>됩니다.</li>
         <li>삭제 전까지 조회 페이지에서 사진을 확인할 수 있습니다.</li>
         <li>삭제된 사진은 다시 확인하거나 복구할 수 없습니다.</li>
       </ul>
     </div>
-    <!-- 관리자 입구 (배경과 동일하게 - 눈에 안 띔): 왼쪽=간편등록 모달, 오른쪽=관리자 페이지 새창 -->
-    <div style="text-align:center;margin-top:18px;display:flex;justify-content:center;gap:0">
+    <!-- 관리자 간편등록 입구 (배경과 동일하게 - 눈에 안 띔) -->
+    <div style="text-align:center;margin-top:18px">
       <div onclick="openQuickAdmin()" aria-hidden="true"
-        style="display:inline-block;width:90px;height:60px;background:var(--pink-bg);
-        cursor:default;user-select:none"></div>
-      <div onclick="window.open('./photo-admin.html','_blank')" aria-hidden="true"
         style="display:inline-block;width:90px;height:60px;background:var(--pink-bg);
         cursor:default;user-select:none"></div>
     </div>
