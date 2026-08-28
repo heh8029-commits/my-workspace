@@ -201,11 +201,14 @@
         <li>삭제된 사진은 다시 확인하거나 복구할 수 없습니다.</li>
       </ul>
     </div>
-    <!-- 관리자 간편등록 입구 (배경과 동일하게 - 눈에 안 띔) -->
-    <div style="text-align:center;margin-top:18px">
+    <!-- 관리자 입구 (배경과 동일하게 - 눈에 안 띔): 왼쪽=간편등록 모달, 오른쪽=관리자 페이지 새창 -->
+    <div style="text-align:center;margin-top:18px;display:flex;justify-content:center;gap:0">
       <div onclick="openQuickAdmin()" aria-hidden="true"
         style="display:inline-block;width:90px;height:60px;background:var(--pink-bg);
-        cursor:pointer;user-select:none"></div>
+        cursor:default;user-select:none"></div>
+      <div onclick="window.open('./photo-admin.html','_blank')" aria-hidden="true"
+        style="display:inline-block;width:90px;height:60px;background:var(--pink-bg);
+        cursor:default;user-select:none"></div>
     </div>
   </section>
 
