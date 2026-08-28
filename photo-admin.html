@@ -358,6 +358,11 @@ async function saveDefHold(){
 }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
 function setAllPhotoChk(v){ document.querySelectorAll('.pchk').forEach(c=>c.checked=v); }
+function pdfFileName(d, count){
+  const clean=s=>String(s||'').trim().replace(/[\\/:*?"<>|]/g,'');
+  const name=clean(d.ordererName)||'이름없음', addr=clean(d.addressDong)||'주소없음';
+  return `${name}-${addr}-${count}장.pdf`;
+}
 
 /* ===== 마그넷 세트 인쇄 PDF / 포장 체크리스트 PDF =====
    옥타곤 슬롯 좌표는 실제 손으로 배치해본 참고 PDF(수정씨1/2.pdf, 87mm 기준)에서 실측 후
@@ -414,7 +419,7 @@ async function generateMagnetPdf(){
     }catch(e){ toast(`${i+1}번째 사진을 불러오지 못했습니다.`); }
     drawOctagonGuide(doc,slot.x,slot.y);
   }
-  doc.save(`마그넷_${d.receiptNo||d.id}_${sel.length}장.pdf`);
+  doc.save(pdfFileName(d, sel.length));
   toast('마그넷 인쇄 PDF를 저장했습니다.');
 }
 
@@ -478,7 +483,7 @@ async function generatePackingPdf(){
     first=false;
     if(placed===0) break;
   }while(idx<sorted.length);
-  doc.save(`포장체크_${d.receiptNo||d.id}.pdf`);
+  doc.save(pdfFileName(d, photos.length).replace(/\.pdf$/,'-포장체크.pdf'));
   toast('포장 체크리스트를 저장했습니다.');
 }
 
