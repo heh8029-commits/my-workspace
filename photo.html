@@ -758,6 +758,15 @@ function uploadOne(up, file, onProg){
   });
 }
 
+// 인덱스 0..n-1 을 동시에 최대 concurrency개씩 처리(순서 보장 X, 완료는 Promise.all로 대기)
+async function uploadPool(n, concurrency, worker){
+  let idx=0;
+  const runners=Array.from({length:Math.min(concurrency,n)}, async()=>{
+    while(idx<n){ const i=idx++; await worker(i); }
+  });
+  await Promise.all(runners);
+}
+
 let submitting=false;
 document.getElementById('submitForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -1149,10 +1158,14 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
     if(create.status!==200) throw new Error(mgErrMsg(create.body.error));
     const {receiptId, uploads}=create.body;
 
-    for(let i=0;i<mgSlotsData.length;i++){
+    let mgUploaded=0;
+    btn.innerHTML=`<span class="spin"></span> 업로드 중 (0/${mgSlotsData.length})`;
+    await uploadPool(mgSlotsData.length, 4, async i=>{
       const up=uploads.find(u=>u.sortOrder===i);
       await uploadOne(up, mgSlotsData[i].blob, ()=>{});
-    }
+      mgUploaded++;
+      btn.innerHTML=`<span class="spin"></span> 업로드 중 (${mgUploaded}/${mgSlotsData.length})`;
+    });
     const fin=await api('submit-magnet',{action:'finalize', receiptId});
     if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
 
