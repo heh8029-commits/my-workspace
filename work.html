@@ -1814,8 +1814,8 @@ body.mobile-view .exp-td-amt { min-width: 72px; }
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
       <div style="display:flex;gap:5px">
         <button onclick="setCsFilter('전체',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #4a80d0;background:#4a80d0;color:white;font-size:.75rem;font-weight:700;cursor:pointer">전체</button>
-        <button onclick="setCsFilter('미완료',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료</button>
-        <button onclick="setCsFilter('완료',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료</button>
+        <button onclick="setCsFilter('미완료',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #e03c6e;background:white;color:#e03c6e;font-size:.75rem;font-weight:700;cursor:pointer">미완료 <span id="cs-count-미완료">0</span></button>
+        <button onclick="setCsFilter('완료',this)" class="cs-filter-btn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #3dbb8f;background:white;color:#3dbb8f;font-size:.75rem;font-weight:700;cursor:pointer">완료 <span id="cs-count-완료">0</span></button>
       </div>
       <input id="cs-share-search" type="text" placeholder="🔍 검색..." oninput="renderCsShare()"
         style="flex:1;min-width:100px;border:1.5px solid #d0dff8;border-radius:20px;padding:5px 14px;font-size:.82rem;font-family:Pretendard,sans-serif;outline:none">
@@ -9923,6 +9923,32 @@ function csEditOpen(id) {
   ttl.style.cssText = 'font-size:.95rem;font-weight:800;color:#1050a0;margin-bottom:2px';
   ttl.textContent = '✏️ CS 수정';
 
+  // 작성자 수정
+  var selAuthor = item.author;
+  var AUTH_BG_ON  = {'은':'#f7a8c0', '수':'#a0c8f8', '민':'#b0e8c0'};
+  var AUTH_TC_ON  = {'은':'white',   '수':'white',   '민':'white'};
+  var AUTH_TC_OFF = {'은':'#c04070', '수':'#4a80d0', '민':'#3dbb8f'};
+  var AUTH_BD     = {'은':'#f7a8c0', '수':'#a0c8f8', '민':'#b0e8c0'};
+  var authRow = document.createElement('div');
+  authRow.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-bottom:2px';
+  ['수','은','민'].forEach(function(a){
+    var ab = document.createElement('button');
+    ab.type = 'button';
+    ab.textContent = a;
+    ab.style.cssText = 'width:38px;height:38px;border-radius:50%;font-size:.9rem;font-weight:900;cursor:pointer;transition:all .15s;border:2.5px solid '+AUTH_BD[a];
+    var paint = function(){
+      var on = selAuthor === a;
+      ab.style.background = on ? AUTH_BG_ON[a] : 'white';
+      ab.style.color = on ? AUTH_TC_ON[a] : AUTH_TC_OFF[a];
+      ab.style.boxShadow = on ? '0 0 0 3px '+AUTH_BD[a]+'66' : 'none';
+    };
+    ab.onclick = function(){ selAuthor = a; paintAll(); };
+    ab._paint = paint;
+    authRow.appendChild(ab);
+  });
+  function paintAll(){ Array.prototype.forEach.call(authRow.children, function(btn){ btn._paint(); }); }
+  paintAll();
+
   // 메모 수정
   var ta = document.createElement('textarea');
   ta.value = item.text || '';
@@ -9944,6 +9970,7 @@ function csEditOpen(id) {
     var idx = list.findIndex(function(x){ return x.id===id; });
     if (idx!==-1) {
       list[idx].text = ta.value.trim();
+      list[idx].author = selAuthor;
       saveCsShare(list);
     }
     m.remove();
@@ -9952,7 +9979,7 @@ function csEditOpen(id) {
   };
 
   btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
-  box.appendChild(ttl); box.appendChild(ta); box.appendChild(btnRow);
+  box.appendChild(ttl); box.appendChild(authRow); box.appendChild(ta); box.appendChild(btnRow);
   m.appendChild(box);
   document.body.appendChild(m);
   setTimeout(function(){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 50);
@@ -9977,6 +10004,12 @@ function renderCsShare() {
   var el = document.getElementById('cs-share-list');
   if (!el) return;
   var list = loadCsShare();
+  var incompleteCnt = list.filter(function(it){ return !it.done; }).length;
+  var completeCnt = list.length - incompleteCnt;
+  var cntIncEl = document.getElementById('cs-count-미완료');
+  var cntCompEl = document.getElementById('cs-count-완료');
+  if (cntIncEl) cntIncEl.textContent = incompleteCnt;
+  if (cntCompEl) cntCompEl.textContent = completeCnt;
   var searchEl = document.getElementById('cs-share-search');
   var kw = searchEl ? searchEl.value.trim().toLowerCase() : '';
   if (kw) list = list.filter(function(it){ return (it.text||'').toLowerCase().indexOf(kw)!==-1; });
