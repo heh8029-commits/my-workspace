@@ -381,7 +381,7 @@ function magnetSlots(){
 }
 function drawOctagonGuide(doc,boxX,boxY){
   const c=MAG_CHAMFER, sSide=MAG_BOX-2*c;
-  doc.setDrawColor(230); doc.setLineWidth(0.15);
+  doc.setDrawColor(140); doc.setLineWidth(0.3);
   doc.lines([[sSide,0],[c,c],[0,sSide],[-c,c],[-sSide,0],[-c,-c],[0,-sSide],[c,-c]],
     boxX+c, boxY, [1,1], 'S', true);
 }
