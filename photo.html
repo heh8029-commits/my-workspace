@@ -76,9 +76,10 @@
     background:rgba(0,0,0,.55); color:#fff; border:none; font-size:12px; line-height:20px; cursor:pointer}
   .slot .chk{position:absolute; left:0; right:0; bottom:0; background:var(--warn); color:#fff;
     font-size:10.5px; font-weight:800; text-align:center; padding:3px 0}
+  .slot.needsCheck img{filter:brightness(.55)}
   /* 정사각형 크롭 모달 */
   .cropWrap{position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:200; display:none;
-    flex-direction:column; align-items:center; justify-content:center}
+    flex-direction:column; align-items:center; justify-content:center; overflow-y:auto; padding:16px 0}
   .cropWrap.show{display:flex}
   .cropStage{width:min(78vw,340px); aspect-ratio:1; position:relative; overflow:hidden; border-radius:12px;
     touch-action:none; background:#111}
@@ -90,6 +91,14 @@
   .cropBtns .ok{background:var(--sky); color:#fff}
   .cropBtns .cancel{background:#3a3a3a; color:#fff}
   .cropHint{color:#ddd; font-size:12px; margin-top:10px; text-align:center}
+  .cropTopHint{color:var(--warn); font-size:13.5px; font-weight:800; margin-bottom:10px; text-align:center;
+    width:min(78vw,340px)}
+  .cropAdjust{width:min(78vw,340px); margin-top:14px; display:flex; flex-direction:column; gap:7px}
+  .cropAdjRow{display:flex; align-items:center; gap:10px}
+  .cropAdjRow span{color:#ddd; font-size:12px; width:42px; flex-shrink:0}
+  .cropAdjRow input[type=range]{flex:1}
+  .cropAdjResetBtn{align-self:center; margin-top:4px; background:none; border:none; color:#9fd7f5;
+    font-size:12px; text-decoration:underline; cursor:pointer; padding:4px}
   .notice{background:var(--pink-l); border-radius:12px; padding:13px 14px; font-size:12.5px; color:#a03a52}
   .notice ul{margin:6px 0 0; padding-left:18px} .notice li{margin:3px 0}
   .pw-msg{font-size:12px; margin-top:6px; font-weight:700}
@@ -110,15 +119,32 @@
   .filemeta{display:flex; justify-content:space-between; font-size:12px; color:var(--gray); margin-top:10px}
   .bar{height:7px; background:var(--line); border-radius:5px; overflow:hidden; margin-top:10px; display:none}
   .bar.show{display:block} .bar>i{display:block; height:100%; width:0; background:var(--pink); transition:width .2s}
+  .bar.sky>i{background:var(--sky)}
+  .draftBanner{display:none; position:fixed; left:0; right:0; top:0; z-index:150; background:var(--sky-d);
+    color:#fff; padding:10px 14px; font-size:12.5px; align-items:center; justify-content:center;
+    gap:10px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .draftBanner.show{display:flex}
+  .draftBannerBtns{display:flex; gap:6px}
+  .draftBanner button{border:none; border-radius:8px; padding:6px 11px; font-size:12px; font-weight:800; cursor:pointer}
+  .draftBanner #mgDraftResume{background:#fff; color:var(--sky-d)}
+  .draftBanner #mgDraftDiscard{background:rgba(255,255,255,.25); color:#fff}
   .agree{display:flex; align-items:flex-start; gap:9px; margin-top:14px; font-size:13px}
   .agree input{margin-top:2px; width:18px; height:18px; accent-color:var(--pink)}
   /* complete */
   .done-ic{width:74px;height:74px;border-radius:50%;border:4px solid var(--pink);color:var(--pink);
     display:flex;align-items:center;justify-content:center;font-size:38px;margin:6px auto 12px}
+  .done-head{display:flex; align-items:center; justify-content:center; gap:8px}
+  .done-head h2{margin:0}
+  .done-ic-sm{width:30px;height:30px;flex-shrink:0;border-radius:50%;border:2.5px solid var(--pink);color:var(--pink);
+    display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800}
   .kv{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:14px}
   .kv:last-child{border:none} .kv b{color:var(--gray); font-weight:600}
   .rno{background:var(--pink-l); border-radius:12px; text-align:center; padding:12px; margin:14px 0}
   .rno .n{font-size:20px; font-weight:800; color:var(--pink-d); letter-spacing:.5px}
+  .doneGalleryLabel{font-size:14px; font-weight:800; color:var(--pink-d); text-align:center;
+    background:var(--pink-l); border-radius:10px; padding:9px 10px; margin:14px 0 10px}
+  .doneGallery{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  .doneGallery img{width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; border:1px solid var(--line); display:block}
   /* results */
   .rescard{border:1.5px solid var(--line); border-radius:13px; padding:14px; margin-bottom:10px;
     cursor:pointer; background:#fff; transition:.12s; position:relative}
@@ -285,7 +311,7 @@
       <b>🧲 포토마그넷 안내</b>
       <ul>
         <li>포토마그넷은 63.5×63.5mm 정사각형입니다.</li>
-        <li>구매하신 세트(6개입 · 9개입)를 선택하면 칸이 생겨요.</li>
+        <li>구매하신 세트(6개입 · 9개입 · 직접 입력)를 선택하면 칸이 생겨요.</li>
         <li>칸마다 사진을 올리고 화면에서 위치·확대를 맞춰 주세요.</li>
         <li>맞춘 화면 그대로 잘려서 제작되니 신중하게 맞춰 주세요.</li>
         <li>같은 사진을 여러 칸에 넣으면 그만큼 여러 장 제작됩니다.</li>
@@ -311,22 +337,23 @@
       <div class="hint">동명이인 구분을 위해 배송지 주소를 <b>동까지만</b> 입력해 주세요.
         아파트명, 동·호수 등 상세주소는 입력하지 마세요.</div>
 
-      <label>전화번호 뒷자리 4자리 <span class="req">*</span></label>
-      <input type="tel" id="mgPhone" placeholder="1234" maxlength="4" inputmode="numeric" />
+      <label>연락처 <span class="req">*</span></label>
+      <input type="tel" id="mgPhone" placeholder="01012345678" maxlength="11" inputmode="numeric" />
 
       <label>세트 선택 <span class="req">*</span></label>
       <div class="malls" id="mgSet">
         <button type="button" data-set="6">6개입</button>
         <button type="button" data-set="9">9개입</button>
+        <button type="button" data-set="custom">직접 입력</button>
       </div>
+      <input type="tel" id="mgCustomCount" placeholder="숫자만 입력 (예: 12)" inputmode="numeric" style="display:none;margin-top:8px" />
+      <div class="hint" id="mgCustomCountHint" style="display:none">원하시는 개입 수를 입력해 주세요. 입력한 숫자만큼 사진 칸이 생겨요.</div>
 
       <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
       <button type="button" class="btn ghost" id="mgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
       <div class="slots" id="mgSlots"></div>
       <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
-
-      <label>기타 요청사항 <span class="opt">(선택)</span></label>
-      <textarea id="mgExtra" maxlength="1000"></textarea>
+      <div class="bar sky" id="mgBar"><i></i></div>
 
       <label>조회 비밀번호 <span class="req">*</span> <span class="opt">(숫자 4자리 또는 6자리)</span></label>
       <input type="password" id="mgPw1" placeholder="숫자 4자리 또는 6자리" maxlength="6" inputmode="numeric" />
@@ -338,7 +365,7 @@
 
       <label class="agree">
         <input type="checkbox" id="mgAgree" />
-        <span>개인정보(주문자명·전화 뒷자리) 및 첨부 사진을 <b>제작·조회 목적</b>으로 이용하고,
+        <span>개인정보(주문자명·연락처) 및 첨부 사진을 <b>제작·조회 목적</b>으로 이용하고,
           접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span></span>
       </label>
 
@@ -391,13 +418,12 @@
 
   <!-- ===================== 접수 완료 ===================== -->
   <section class="view" id="v-done">
-    <div class="card" style="text-align:center">
-      <div class="done-ic">✓</div>
-      <h2 style="margin:0 0 4px">사진 접수가 완료되었습니다!</h2>
+    <div class="card" style="text-align:center; padding:14px 18px">
+      <div class="done-head"><span class="done-ic-sm">✓</span><h2>사진 접수가 완료되었습니다!</h2></div>
     </div>
-    <div class="card" id="doneInfo"></div>
     <div class="rno"><div style="font-size:12px;color:var(--gray)">접수 완료번호</div>
-      <div class="n" id="doneNo">MRTO-...</div></div>
+      <div class="n" id="doneNo">...</div></div>
+    <div class="card" id="doneInfo"></div>
     <div class="notice" style="margin-bottom:14px">
       접수된 사진은 개인정보 보호를 위해 접수 완료 시점으로부터 <b>6일 후 자동 삭제</b>됩니다.
       삭제 전까지 조회 페이지에서 첨부한 사진을 확인할 수 있습니다.
@@ -497,7 +523,7 @@
           <button type="button" data-qtype="magnet">마그넷등록</button>
         </div>
 
-        <label id="qaNameLabel">주문자 이름 <span class="req">*</span></label>
+        <label>주문자 이름 <span class="req">*</span></label>
         <input type="text" id="qaName" placeholder="예) 김미리" maxlength="40" />
 
         <div id="qaTopperSection">
@@ -535,12 +561,27 @@
 
 <div class="toast" id="toast"></div>
 <div class="lightbox" id="lightbox"><button class="close" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
+<div class="draftBanner" id="mgDraftBanner">
+  <span>작성 중이던 포토마그넷 접수가 있어요.</span>
+  <div class="draftBannerBtns">
+    <button type="button" id="mgDraftResume">이어서 작성</button>
+    <button type="button" id="mgDraftDiscard">새로 시작</button>
+  </div>
+</div>
 
 <!-- 포토마그넷 정사각형 크롭 모달 -->
 <div class="cropWrap" id="cropWrap">
+  <div class="cropTopHint">화면에 보이는 그대로 제작됩니다.<br>위치랑 크기 꼭 조절해 주세요!</div>
   <div class="cropStage" id="cropStage"><img id="cropImgEl" src="" alt="" draggable="false"></div>
   <div class="cropCtrl"><input type="range" id="cropZoom" min="100" max="400" value="100"></div>
-  <div class="cropHint">사진을 손가락으로 밀어서 위치를 맞추고, 아래 막대로 크게·작게 조절해 주세요</div>
+  <div class="cropHint">사진을 손가락으로 밀어서 위치를 맞추고, 위 막대로 크게·작게 조절해 주세요</div>
+  <div class="cropAdjust" id="cropAdjust">
+    <div class="cropAdjRow"><span>밝기</span><input type="range" id="cropBri" min="50" max="150" value="100"></div>
+    <div class="cropAdjRow"><span>대비</span><input type="range" id="cropCon" min="50" max="150" value="100"></div>
+    <div class="cropAdjRow"><span>채도</span><input type="range" id="cropSat" min="0" max="200" value="100"></div>
+    <div class="cropAdjRow"><span>따뜻함</span><input type="range" id="cropWarm" min="0" max="50" value="0"></div>
+    <button type="button" id="cropAdjReset" class="cropAdjResetBtn">보정 초기화</button>
+  </div>
   <div class="cropBtns">
     <button type="button" class="cancel" id="cropCancel">취소</button>
     <button type="button" class="ok" id="cropConfirm">완료</button>
@@ -606,7 +647,7 @@ async function postToCsBoard(ctx){
     isMagnet ? `접수번호 ${ctx.receiptNo} · ${ctx.setSize}개입 · 사진 ${ctx.count}장` : `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
   ] : [
     titleTag,
-    `${ctx.name} / 뒷번호 ${ctx.phone}`,
+    isMagnet ? `${ctx.name} / 연락처 ${ctx.phone}` : `${ctx.name} / 뒷번호 ${ctx.phone}`,
     `${ctx.addr}`,
     isMagnet ? `접수번호 ${ctx.receiptNo} · ${ctx.setSize}개입 · 사진 ${ctx.count}장` : `접수번호 ${ctx.receiptNo} · 사진 ${ctx.count}장`
   ];
@@ -781,6 +822,15 @@ function uploadOne(up, file, onProg){
   });
 }
 
+// 인덱스 0..n-1 을 동시에 최대 concurrency개씩 처리(순서 보장 X, 완료는 Promise.all로 대기)
+async function uploadPool(n, concurrency, worker){
+  let idx=0;
+  const runners=Array.from({length:Math.min(concurrency,n)}, async()=>{
+    while(idx<n){ const i=idx++; await worker(i); }
+  });
+  await Promise.all(runners);
+}
+
 let submitting=false;
 document.getElementById('submitForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -873,23 +923,113 @@ document.getElementById('doneViewBtn').onclick=()=>{
 ================================================================== */
 let mgSelectedMall=null, mgSetSize=0, mgSlotsData=[]; // mgSlotsData[i] = {blob,url,name} | null
 
+/* ---- 임시저장(자동, IndexedDB) : 새로고침/탭꺼짐 대비 ---- */
+const MG_DRAFT_DB='miritopper_mg_draft', MG_DRAFT_STORE='drafts', MG_DRAFT_KEY='mg';
+function mgIdbOpen(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(MG_DRAFT_DB,1);
+    req.onupgradeneeded=()=>{ req.result.createObjectStore(MG_DRAFT_STORE); };
+    req.onsuccess=()=>res(req.result);
+    req.onerror=()=>rej(req.error);
+  });
+}
+async function mgSaveDraft(){
+  try{
+    const db=await mgIdbOpen();
+    const data={
+      savedAt:Date.now(), mall:mgSelectedMall, setSize:mgSetSize,
+      name:document.getElementById('mgName').value,
+      addr:document.getElementById('mgAddressDong').value,
+      phone:document.getElementById('mgPhone').value,
+      slots: mgSlotsData.map(s=> s? {blob:s.blob, srcFile:s.srcFile, name:s.name, needsCheck:s.needsCheck,
+        scale:s.scale, tx:s.tx, ty:s.ty, bri:s.bri, con:s.con, sat:s.sat, warm:s.warm} : null)
+    };
+    db.transaction(MG_DRAFT_STORE,'readwrite').objectStore(MG_DRAFT_STORE).put(data, MG_DRAFT_KEY);
+  }catch(e){ /* 임시저장 실패는 조용히 무시(접수 자체엔 영향 없음) */ }
+}
+let mgDraftTimer=null;
+function mgScheduleSaveDraft(){ clearTimeout(mgDraftTimer); mgDraftTimer=setTimeout(mgSaveDraft, 400); }
+async function mgLoadDraft(){
+  try{
+    const db=await mgIdbOpen();
+    return await new Promise((res,rej)=>{
+      const req=db.transaction(MG_DRAFT_STORE,'readonly').objectStore(MG_DRAFT_STORE).get(MG_DRAFT_KEY);
+      req.onsuccess=()=>res(req.result||null);
+      req.onerror=()=>rej(req.error);
+    });
+  }catch(e){ return null; }
+}
+async function mgClearDraft(){
+  try{ const db=await mgIdbOpen(); db.transaction(MG_DRAFT_STORE,'readwrite').objectStore(MG_DRAFT_STORE).delete(MG_DRAFT_KEY); }catch(e){}
+}
+function mgApplyDraft(d){
+  mgSelectedMall=d.mall||null;
+  document.getElementById('mgName').value=d.name||'';
+  document.getElementById('mgAddressDong').value=d.addr||'';
+  document.getElementById('mgPhone').value=d.phone||'';
+  document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.toggle('on', x.dataset.mall===mgSelectedMall));
+  const cc=document.getElementById('mgCustomCount'), ccHint=document.getElementById('mgCustomCountHint');
+  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
+  if(d.setSize===6||d.setSize===9){
+    const b=document.querySelector(`#mgSet button[data-set="${d.setSize}"]`); if(b) b.classList.add('on');
+    cc.style.display='none'; ccHint.style.display='none';
+  }else if(d.setSize){
+    document.querySelector('#mgSet button[data-set="custom"]').classList.add('on');
+    cc.style.display='block'; cc.value=d.setSize; ccHint.style.display='block';
+  }
+  mgSetSize=d.setSize||0;
+  mgSlotsData=(d.slots||[]).map(s=> s? {...s, url:URL.createObjectURL(s.blob)} : null);
+  renderMgSlots();
+  go('mg');
+}
+document.getElementById('mgDraftResume').onclick=async()=>{
+  const d=await mgLoadDraft();
+  if(d) mgApplyDraft(d);
+  document.getElementById('mgDraftBanner').classList.remove('show');
+};
+document.getElementById('mgDraftDiscard').onclick=async()=>{
+  await mgClearDraft();
+  document.getElementById('mgDraftBanner').classList.remove('show');
+};
+(async()=>{
+  const d=await mgLoadDraft();
+  if(d && (Date.now()-d.savedAt < 24*3600*1000) && (d.name || d.addr || d.phone || (d.slots||[]).some(Boolean))){
+    document.getElementById('mgDraftBanner').classList.add('show');
+  }
+})();
+['mgName','mgAddressDong','mgPhone'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', mgScheduleSaveDraft);
+});
+
 document.getElementById('mgMalls').addEventListener('click',e=>{
   const b=e.target.closest('button[data-mall]'); if(!b) return;
   mgSelectedMall=b.dataset.mall;
   document.querySelectorAll('#mgMalls button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
+  mgSaveDraft();
 });
-document.getElementById('mgSet').addEventListener('click',e=>{
-  const b=e.target.closest('button[data-set]'); if(!b) return;
-  const n=Number(b.dataset.set);
+function applyMgSetSize(n){
+  n=Math.max(1, Math.min(99, Math.round(n)));
   if(mgSetSize && mgSetSize!==n && mgSlotsData.some(Boolean)){
     if(!confirm('세트를 바꾸면 이미 넣은 사진이 초기화돼요. 계속할까요?')) return;
   }
   mgSetSize=n;
-  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
   mgSlotsData=new Array(n).fill(null);
   renderMgSlots();
+}
+document.getElementById('mgSet').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-set]'); if(!b) return;
+  document.querySelectorAll('#mgSet button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  const cc=document.getElementById('mgCustomCount'), ccHint=document.getElementById('mgCustomCountHint');
+  if(b.dataset.set==='custom'){ cc.style.display='block'; ccHint.style.display='block'; cc.focus(); return; }
+  cc.style.display='none'; ccHint.style.display='none'; cc.value='';
+  applyMgSetSize(Number(b.dataset.set));
+});
+document.getElementById('mgCustomCount').addEventListener('input', e=>{
+  e.target.value=e.target.value.replace(/[^0-9]/g,'');
+  const n=Number(e.target.value);
+  if(n>=1) applyMgSetSize(n);
 });
 document.getElementById('mgPhone').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
 function checkMgPw(){
@@ -905,9 +1045,9 @@ function checkMgPw(){
 function renderMgSlots(){
   const box=document.getElementById('mgSlots'); box.innerHTML='';
   for(let i=0;i<mgSetSize;i++){
-    const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'');
+    const d=document.createElement('div'); d.className='slot'+(mgSlotsData[i]?' filled':'')+(mgSlotsData[i]&&mgSlotsData[i].needsCheck?' needsCheck':'');
     if(mgSlotsData[i]){
-      const chk=mgSlotsData[i].needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
+      const chk=mgSlotsData[i].needsCheck?`<span class="chk">👆 눌러서 위치·확대 조정하기</span>`:'';
       d.innerHTML=`<img src="${mgSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
       d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(mgSlotsData[i].url); mgSlotsData[i]=null; renderMgSlots(); };
       d.onclick=()=>openCropForExisting(i);
@@ -917,6 +1057,7 @@ function renderMgSlots(){
     }
     box.appendChild(d);
   }
+  mgSaveDraft();
 }
 
 const mgPickInput=document.createElement('input');
@@ -994,11 +1135,14 @@ mgBulkInput.addEventListener('change', async e=>{
 
 /* ---- 정사각형 크롭 모달 ---- */
 const cropWrap=document.getElementById('cropWrap'), cropStage=document.getElementById('cropStage'),
-      cropImgEl=document.getElementById('cropImgEl'), cropZoom=document.getElementById('cropZoom');
-let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName,arr,renderFn}
+      cropImgEl=document.getElementById('cropImgEl'), cropZoom=document.getElementById('cropZoom'),
+      cropBri=document.getElementById('cropBri'), cropCon=document.getElementById('cropCon'),
+      cropSat=document.getElementById('cropSat'), cropWarm=document.getElementById('cropWarm');
+let cropState=null; // {img,natW,natH,baseScale,scale,tx,ty,stageSize,slot,srcName,arr,renderFn,bri,con,sat,warm}
 
 // arr/renderFn 은 이 크롭 결과를 저장할 슬롯 배열과 그걸 다시 그릴 함수(고객 화면/관리자 화면이 공용으로 씀)
 function openCropModal(file, slotIndex, arr, renderFn){
+  const saved=arr[slotIndex], hasSaved=!!(saved && saved.scale!=null);
   const url=URL.createObjectURL(file);
   cropImgEl.src='';
   cropWrap.classList.add('show'); // 먼저 보이게 해야 실제 폭을 잴 수 있음
@@ -1006,14 +1150,36 @@ function openCropModal(file, slotIndex, arr, renderFn){
   img.onload=()=>{
     const stageSize=cropStage.getBoundingClientRect().width || 300;
     const baseScale=stageSize/Math.min(img.naturalWidth, img.naturalHeight);
-    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale, scale:1, tx:0, ty:0, stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn};
+    cropState={img, natW:img.naturalWidth, natH:img.naturalHeight, baseScale,
+      scale: hasSaved?saved.scale:1, tx: hasSaved?saved.tx:0, ty: hasSaved?saved.ty:0,
+      stageSize, slot:slotIndex, srcName:file.name, srcFile:file, arr, renderFn,
+      bri: hasSaved?saved.bri:100, con: hasSaved?saved.con:100, sat: hasSaved?saved.sat:100, warm: hasSaved?saved.warm:0};
     cropImgEl.src=url;
-    cropZoom.value=100;
+    cropZoom.value=Math.round(cropState.scale*100);
+    cropBri.value=cropState.bri; cropCon.value=cropState.con; cropSat.value=cropState.sat; cropWarm.value=cropState.warm;
     applyCropTransform();
+    applyCropFilter();
   };
   img.onerror=()=>{ toast('사진을 불러오지 못했습니다.'); URL.revokeObjectURL(url); cropWrap.classList.remove('show'); };
   img.src=url;
 }
+function buildFilterStr(s){
+  return `brightness(${s.bri}%) contrast(${s.con}%) saturate(${s.sat}%) sepia(${s.warm}%)`;
+}
+function applyCropFilter(){
+  if(!cropState) return;
+  cropImgEl.style.filter=buildFilterStr(cropState);
+}
+cropBri.addEventListener('input',e=>{ if(!cropState) return; cropState.bri=Number(e.target.value); applyCropFilter(); });
+cropCon.addEventListener('input',e=>{ if(!cropState) return; cropState.con=Number(e.target.value); applyCropFilter(); });
+cropSat.addEventListener('input',e=>{ if(!cropState) return; cropState.sat=Number(e.target.value); applyCropFilter(); });
+cropWarm.addEventListener('input',e=>{ if(!cropState) return; cropState.warm=Number(e.target.value); applyCropFilter(); });
+document.getElementById('cropAdjReset').onclick=()=>{
+  if(!cropState) return;
+  cropState.bri=100; cropState.con=100; cropState.sat=100; cropState.warm=0;
+  cropBri.value=100; cropCon.value=100; cropSat.value=100; cropWarm.value=0;
+  applyCropFilter();
+};
 function clampCrop(){
   const s=cropState; const eff=s.baseScale*s.scale;
   const dispW=s.natW*eff, dispH=s.natH*eff;
@@ -1092,13 +1258,16 @@ function confirmCrop(){
   const k=OUT/cropState.stageSize;
   const dw=cropState.natW*eff*k, dh=cropState.natH*eff*k;
   const dx=cropState.tx*k, dy=cropState.ty*k;
+  ctx.filter=buildFilterStr(cropState);
   ctx.drawImage(cropState.img, dx, dy, dw, dh);
   const slot=cropState.slot, srcName=cropState.srcName, srcFile=cropState.srcFile, arr=cropState.arr, renderFn=cropState.renderFn;
+  const {scale, tx, ty, bri, con, sat, warm}=cropState;
   cv.toBlob(blob=>{
     if(!blob) return toast('사진 처리에 실패했습니다.');
     const url=URL.createObjectURL(blob);
     if(arr[slot]) URL.revokeObjectURL(arr[slot].url);
-    arr[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false };
+    arr[slot]={ blob, url, name:(srcName||'photo').replace(/\.\w+$/,'')+'_crop.jpg', srcFile, needsCheck:false,
+      scale, tx, ty, bri, con, sat, warm };
     closeCropModal();
     renderFn();
   }, 'image/jpeg', 0.92);
@@ -1111,16 +1280,16 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   if(mgSubmitting) return;
   const name=mgName.value.trim(), addr=mgAddressDong.value.trim(), phone=mgPhone.value.trim();
   const p1=mgPw1.value, p2=mgPw2.value;
-  const extra=document.getElementById('mgExtra').value.trim();
   if(!mgSelectedMall) return toast('주문한 쇼핑몰을 선택해 주세요.');
   if(!name) return toast('주문자 이름을 입력해 주세요.');
   if(!addr) return toast('배송지 주소(동)를 입력해 주세요.');
-  if(!/^[0-9]{4}$/.test(phone)) return toast('전화번호 뒷자리 4자리를 입력해 주세요.');
+  if(!/^[0-9]{9,11}$/.test(phone)) return toast('연락처를 정확히 입력해 주세요.');
   if(!mgSetSize) return toast('세트를 선택해 주세요.');
   if(mgSlotsData.some(x=>!x)) return toast(`${mgSetSize}칸 모두에 사진을 넣어 주세요.`);
   if(!/^([0-9]{4}|[0-9]{6})$/.test(p1)) return toast('비밀번호는 숫자 4자리 또는 6자리입니다.');
   if(p1!==p2) return toast('비밀번호가 일치하지 않습니다.');
   if(!document.getElementById('mgAgree').checked) return toast('개인정보 및 사진 이용에 동의해 주세요.');
+  if(!confirm('지금 칸에 보이는 사진 그대로 제작됩니다.\n접수 후에는 수정이 어려울 수 있습니다.\n\n이대로 최종 접수할까요?')) return;
 
   mgSubmitting=true;
   const btn=document.getElementById('mgSubmitBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 접수 중...';
@@ -1128,57 +1297,78 @@ document.getElementById('mgForm').addEventListener('submit', async e=>{
   try{
     const filesMeta=mgSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
     const create=await api('submit-magnet',{ mall:mgSelectedMall, ordererName:name, addressDong:addr, phoneLast4:phone,
-      setSize:mgSetSize, extraRequest:extra,
+      setSize:mgSetSize,
       password:p1, passwordConfirm:p2, files:filesMeta });
     if(create.status!==200) throw new Error(mgErrMsg(create.body.error));
     const {receiptId, uploads}=create.body;
 
-    for(let i=0;i<mgSlotsData.length;i++){
+    let mgUploaded=0;
+    const mgBar=document.getElementById('mgBar'), mgBarI=mgBar.querySelector('i');
+    const mgTotalBytes=mgSlotsData.reduce((s,it)=>s+it.blob.size,0);
+    const mgLoadedArr=new Array(mgSlotsData.length).fill(0);
+    mgBar.classList.add('show');
+    btn.innerHTML=`<span class="spin"></span> 업로드 중 (0/${mgSlotsData.length})`;
+    await uploadPool(mgSlotsData.length, 4, async i=>{
       const up=uploads.find(u=>u.sortOrder===i);
-      await uploadOne(up, mgSlotsData[i].blob, ()=>{});
-    }
+      await uploadOne(up, mgSlotsData[i].blob, (loaded)=>{
+        mgLoadedArr[i]=loaded;
+        const sum=mgLoadedArr.reduce((a,b)=>a+b,0);
+        mgBarI.style.width=Math.round(sum/mgTotalBytes*100)+'%';
+      });
+      mgLoadedArr[i]=mgSlotsData[i].blob.size;
+      mgUploaded++;
+      btn.innerHTML=`<span class="spin"></span> 업로드 중 (${mgUploaded}/${mgSlotsData.length})`;
+    });
     const fin=await api('submit-magnet',{action:'finalize', receiptId});
     if(fin.status!==200) throw new Error('업로드 확정에 실패했습니다.');
 
     // work.html CS 게시판에 자동 등록(백그라운드 · 실패해도 접수엔 영향 없음)
     postToCsBoard({
       name, addr, phone, mall:mgSelectedMall,
-      editRequest: extra,
       receiptNo: fin.body.receiptNo, count: mgSlotsData.length,
       productType:'magnet', setSize: mgSetSize,
       files: mgSlotsData.map(s=>s.blob)
     });
 
+    mgClearDraft();
     showMgDone(fin.body, {name, addr, setSize:mgSetSize});
   }catch(err){
     toast(err.message||'접수 중 오류가 발생했습니다.');
   }finally{
     mgSubmitting=false; btn.disabled=false; btn.textContent='포토마그넷 접수하기';
+    const mgBarEl=document.getElementById('mgBar'); mgBarEl.classList.remove('show'); mgBarEl.querySelector('i').style.width='0';
   }
 });
 function mgErrMsg(code){
   return ({invalid_mall:'쇼핑몰을 선택해 주세요.', invalid_name:'이름을 확인해 주세요.',
-    invalid_address:'배송지 주소를 확인해 주세요.', invalid_phone:'전화 뒷자리 4자리를 확인해 주세요.',
+    invalid_address:'배송지 주소를 확인해 주세요.', invalid_phone:'연락처를 확인해 주세요.',
     invalid_set_size:'세트를 선택해 주세요.',
     invalid_password:'비밀번호는 숫자 4 또는 6자리입니다.', password_mismatch:'비밀번호가 일치하지 않습니다.',
     invalid_file_count:'세트 칸 수만큼 사진을 모두 넣어 주세요.', file_too_large:'사진 용량이 너무 큽니다.',
     invalid_file_type:'허용되지 않는 사진 형식입니다.'})[code] || '접수 정보를 확인해 주세요.';
 }
+let mgDoneGalleryUrls=[];
 function showMgDone(fin, info){
   doneCtx={receiptId:fin.receiptId, password:mgPw1.value};
   document.getElementById('doneNo').textContent=fin.receiptNo;
+  mgDoneGalleryUrls.forEach(u=>URL.revokeObjectURL(u)); // 이전 완료화면 갤러리 정리
+  mgDoneGalleryUrls=mgSlotsData.filter(Boolean).map(s=>s.url);
+  const gallery=mgDoneGalleryUrls.map(u=>`<img src="${u}" alt="">`).join('');
   document.getElementById('doneInfo').innerHTML=`
     <div class="kv"><b>주문자 이름</b><span>${esc(info.name)}</span></div>
     <div class="kv"><b>배송지 주소(동)</b><span>${esc(info.addr)}</span></div>
     <div class="kv"><b>세트</b><span>${info.setSize}개입</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
-    <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>`;
-  // 초기화
+    <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>
+    <div class="doneGalleryLabel">📷 위치·보정까지 지금 이 모습 그대로 제작돼요</div>
+    <div class="doneGallery">${gallery}</div>`;
+  // 초기화(단, 갤러리에 쓰는 URL은 위에서 이미 mgDoneGalleryUrls로 넘겨받았으니 여기선 revoke하지 않음)
   document.getElementById('mgForm').reset();
-  mgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); });
   mgSelectedMall=null; mgSetSize=0; mgSlotsData=[];
   document.querySelectorAll('#mgMalls button, #mgSet button').forEach(x=>x.classList.remove('on'));
   document.getElementById('mgSlots').innerHTML='';
+  const mgCC=document.getElementById('mgCustomCount'); mgCC.style.display='none'; mgCC.value='';
+  document.getElementById('mgCustomCountHint').style.display='none';
   document.getElementById('mgPwMsg').textContent='';
   go('done');
 }
@@ -1205,7 +1395,7 @@ async function doSearch(){
       return `
     <div class="rescard" onclick='pickReceipt(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <div class="nm">${esc(r.ordererName)} <span style="font-size:12px;color:var(--gray)">/ ${MALL_LABEL[r.mall]||r.mall}</span> ${tag}</div>
-      <div class="row">전화번호 뒷자리 <b>${esc(r.phoneLast4)}</b></div>
+      <div class="row">${isMg?'연락처':'전화번호 뒷자리'} <b>${esc(r.phoneLast4)}</b></div>
       <div class="row">${esc(r.addressDong||'')}</div>
       <div class="row">${fmtDate(r.createdAt)} 접수 · <span class="del">${fmtDate(r.deleteAt)} 자동 삭제</span></div>
       <span class="arw">›</span>
@@ -1253,7 +1443,7 @@ function renderDetail(data){
   document.getElementById('detailInfo').innerHTML=`
     <h2 style="margin-bottom:12px">접수 상세 조회 ${tag}</h2>
     <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
-    <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
+    <div class="kv"><b>${isMg?'연락처':'전화번호 뒷자리'}</b><span>${esc(d.phoneLast4)}</span></div>
     ${idRow}
     <div class="kv"><b>주문 쇼핑몰</b><span>${MALL_LABEL[d.mall]||d.mall}</span></div>
     ${mgRows}
@@ -1601,8 +1791,6 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
   finally{ qaBusy=false; btn.disabled=false; btn.textContent='등록하기'; bar.classList.remove('show'); barI.style.width='0'; }
 });
 
-function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
 /* ==================================================================
    지인용(선물) 포토마그넷 접수 - 관리자가 만든 링크(?gift=1&title=...&set=6|9)로 들어옴
    받는사람이 직접 이름·연락처·주소(전체)를 채우고 사진을 올린다. 세트 수는 관리자가 이미 정해서 고를 필요 없다.
@@ -1733,6 +1921,8 @@ function initGiftFromURL(){
   return true;
 }
 initGiftFromURL();
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* 설정 미입력 경고 */
 if(!CFG || CFG.SUPABASE_URL.includes('PROJECT_REF')){
