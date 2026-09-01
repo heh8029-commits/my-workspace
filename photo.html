@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>미리토퍼 · 사진 접수 &amp; 조회</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="미리토퍼 · 사진 접수 & 조회" />
+<meta property="og:description" content="여기를 눌러 사진을 등록하거나 조회하세요" />
+<meta property="og:image" content="http://xn--2y1by8dx2ag5db2id9o.kr/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="http://xn--2y1by8dx2ag5db2id9o.kr/" />
 <style>
   :root{
     --pink:#ff5a7a; --pink-d:#f43f66; --pink-l:#ffe6ec; --pink-bg:#fff5f7;
@@ -711,13 +718,22 @@ function fmtDate(iso){ if(!iso) return '-'; const k=kstParts(iso); return `${par
 function humanSize(b){ return (b/1048576).toFixed(1)+' MB'; }
 function statusBadge(s){ const [t,c]=STATUS[s]||['접수 완료','b-new']; return `<span class="badge ${c}">${t}</span>`; }
 
-/* ---------- 뷰 전환 ---------- */
-function go(name){
+/* ---------- 뷰 전환 (뒤로가기가 사이트 밖으로 안 나가고 이전 화면으로 오게: pushState/popstate) ---------- */
+const VIEW_MAP={home:'v-home',submit:'v-submit',mg:'v-mg',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin',gift:'v-gift'};
+function renderView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:'v-home',submit:'v-submit',mg:'v-mg',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin',gift:'v-gift'};
-  document.getElementById(map[name]).classList.add('active');
+  document.getElementById(VIEW_MAP[name]||VIEW_MAP.home).classList.add('active');
   window.scrollTo(0,0);
 }
+function go(name, replace){
+  renderView(name);
+  if(replace) history.replaceState({view:name}, '', location.href);
+  else history.pushState({view:name}, '', location.href);
+}
+history.replaceState({view:'home'}, '', location.href);
+window.addEventListener('popstate', e=>{
+  renderView((e.state && e.state.view) || 'home');
+});
 
 /* ==================================================================
    접수하기
@@ -1917,7 +1933,7 @@ function initGiftFromURL(){
     : '입력한 이름·연락처·주소 및 첨부 사진을 <b>제작·배송 목적</b>으로 이용하고, 접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span>';
   giftSlotsData=new Array(giftSetSize).fill(null);
   renderGiftSlots();
-  go('gift');
+  go('gift', true);
   return true;
 }
 initGiftFromURL();

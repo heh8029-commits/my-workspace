@@ -197,6 +197,14 @@
         <button class="btn nv" style="margin-top:8px" onclick="glCopy()">📋 링크 복사</button>
         <div id="glResultHint" style="font-size:12px;color:var(--gray);margin-top:8px">이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.</div>
       </div>
+
+      <div style="max-width:480px;margin-top:22px">
+        <label style="font-size:11px;color:var(--gray);font-weight:700;display:block;margin-bottom:6px">최근 만든 지인용 링크</label>
+        <div class="tablewrap"><table>
+          <thead><tr><th>타이틀</th><th>세트</th><th>만든날짜</th><th>관리</th></tr></thead>
+          <tbody id="glListBody"><tr><td colspan="4" class="empty">아직 만든 링크가 없어요</td></tr></tbody>
+        </table></div>
+      </div>
     </section>
   </main>
 </div>
@@ -270,6 +278,7 @@ function switchTab(t){
   document.getElementById('tab-expiring').style.display=t==='expiring'?'block':'none';
   document.getElementById('tab-giftlink').style.display=t==='giftlink'?'block':'none';
   if(t==='expiring') loadExpiring();
+  if(t==='giftlink') glRenderList();
 }
 
 /* 지인용(선물) 포토마그넷 링크 만들기 */
@@ -301,6 +310,11 @@ function glMakeLink(){
     ? '이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 사진만 올리면 돼요 (이름·연락처·주소는 안 물어봐요).'
     : '이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.';
   const input=document.getElementById('glUrl'); input.value=url; input.focus(); input.select();
+
+  const list=glLoadLinks();
+  list.unshift({title, url, setSize:glSetSize, noAddr, createdAt:Date.now()});
+  glSaveLinks(list.slice(0,50));
+  glRenderList();
 }
 async function glCopy(){
   const input=document.getElementById('glUrl');
@@ -309,6 +323,35 @@ async function glCopy(){
   try{ await navigator.clipboard.writeText(input.value); ok=true; }catch(e){}
   if(!ok){ try{ ok=document.execCommand('copy'); }catch(e){} }
   toast(ok ? '✓ 링크를 복사했어요' : '자동 복사가 안 돼요. 선택된 링크를 Ctrl+C로 복사해 주세요');
+}
+
+/* 지인용 링크 목록 (이 브라우저에 저장) */
+const GL_KEY='mt_gift_links';
+function glLoadLinks(){ try{ return JSON.parse(localStorage.getItem(GL_KEY)||'[]'); }catch(e){ return []; } }
+function glSaveLinks(list){ try{ localStorage.setItem(GL_KEY, JSON.stringify(list)); }catch(e){} }
+function glRenderList(){
+  const list=glLoadLinks();
+  const body=document.getElementById('glListBody');
+  if(!list.length){ body.innerHTML='<tr><td colspan="4" class="empty">아직 만든 링크가 없어요</td></tr>'; return; }
+  body.innerHTML=list.map((it,i)=>`<tr>
+    <td>${esc(it.title)}${it.noAddr?' <span class="badge" style="background:#fff4e0;color:#a06000">직접전달</span>':''}</td>
+    <td>${it.setSize}장</td>
+    <td>${fmtDT(it.createdAt)}</td>
+    <td><button class="mini" onclick="glCopyFrom(${i})">📋 복사</button> <button class="mini" onclick="glDeleteLink(${i})">삭제</button></td>
+  </tr>`).join('');
+}
+function glCopyFrom(i){
+  const it=glLoadLinks()[i]; if(!it) return;
+  const input=document.getElementById('glUrl');
+  document.getElementById('glResult').style.display='block';
+  document.getElementById('glResultHint').textContent = it.noAddr
+    ? '이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 사진만 올리면 돼요 (이름·연락처·주소는 안 물어봐요).'
+    : '이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.';
+  input.value=it.url; input.focus(); input.select();
+  navigator.clipboard.writeText(it.url).then(()=>toast('✓ 링크를 복사했어요')).catch(()=>toast('자동 복사가 안 돼요. 위 입력창에서 Ctrl+C로 복사해 주세요'));
+}
+function glDeleteLink(i){
+  const list=glLoadLinks(); list.splice(i,1); glSaveLinks(list); glRenderList();
 }
 
 /* 목록 */

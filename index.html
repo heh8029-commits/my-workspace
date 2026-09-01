@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>미리토퍼 · 사진 접수 &amp; 조회</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="미리토퍼 · 사진 접수 & 조회" />
+<meta property="og:description" content="여기를 눌러 사진을 등록하거나 조회하세요" />
+<meta property="og:image" content="http://xn--2y1by8dx2ag5db2id9o.kr/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="http://xn--2y1by8dx2ag5db2id9o.kr/" />
 <style>
   :root{
     --pink:#ff5a7a; --pink-d:#f43f66; --pink-l:#ffe6ec; --pink-bg:#fff5f7;
@@ -373,6 +380,49 @@
     </form>
   </section>
 
+  <!-- ===================== 지인용(선물) 포토마그넷 접수 - 관리자가 만든 링크로 들어옴 ===================== -->
+  <section class="view" id="v-gift">
+    <div class="notice" style="margin-bottom:14px">
+      <b id="giftTitleText">🎁 포토마그넷 접수</b>
+      <ul>
+        <li>포토마그넷은 63.5×63.5mm 정사각형입니다.</li>
+        <li>칸마다 사진을 올리고 화면에서 위치·확대를 맞춰 주세요.</li>
+        <li>맞춘 화면 그대로 잘려서 제작되니 신중하게 맞춰 주세요.</li>
+        <li>접수된 사진은 완료 시점부터 <b>6일 후 자동 삭제</b>됩니다.</li>
+      </ul>
+    </div>
+
+    <form id="giftForm" class="card" autocomplete="off">
+      <h2>받는 분 정보</h2>
+
+      <div id="giftContactFields">
+        <label>받는사람 이름 <span class="req">*</span></label>
+        <input type="text" id="giftName" placeholder="이름을 입력해 주세요" maxlength="40" />
+
+        <label>연락처 <span class="req">*</span></label>
+        <input type="tel" id="giftPhone" placeholder="숫자만 입력해 주세요" maxlength="11" inputmode="numeric" />
+
+        <label>배송지 주소 <span class="req">*</span> <span class="opt">(상세주소까지 전부)</span></label>
+        <input type="text" id="giftAddress" placeholder="상세주소까지 전부 입력해 주세요" maxlength="120" />
+      </div>
+
+      <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
+      <button type="button" class="btn ghost" id="giftBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
+      <div class="slots" id="giftSlots"></div>
+      <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
+
+      <label class="agree">
+        <input type="checkbox" id="giftAgree" />
+        <span id="giftAgreeText">입력한 이름·연락처·주소 및 첨부 사진을 <b>제작·배송 목적</b>으로 이용하고,
+          접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span></span>
+      </label>
+
+      <button type="submit" class="btn sky" id="giftSubmitBtn" style="margin-top:16px">포토마그넷 접수하기</button>
+    </form>
+
+    <div id="giftDone" style="display:none"></div>
+  </section>
+
   <!-- ===================== 접수 완료 ===================== -->
   <section class="view" id="v-done">
     <div class="card" style="text-align:center; padding:14px 18px">
@@ -668,13 +718,22 @@ function fmtDate(iso){ if(!iso) return '-'; const k=kstParts(iso); return `${par
 function humanSize(b){ return (b/1048576).toFixed(1)+' MB'; }
 function statusBadge(s){ const [t,c]=STATUS[s]||['접수 완료','b-new']; return `<span class="badge ${c}">${t}</span>`; }
 
-/* ---------- 뷰 전환 ---------- */
-function go(name){
+/* ---------- 뷰 전환 (뒤로가기가 사이트 밖으로 안 나가고 이전 화면으로 오게: pushState/popstate) ---------- */
+const VIEW_MAP={home:'v-home',submit:'v-submit',mg:'v-mg',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin',gift:'v-gift'};
+function renderView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:'v-home',submit:'v-submit',mg:'v-mg',done:'v-done',lookup:'v-lookup',pw:'v-pw',detail:'v-detail',edit:'v-edit',qadmin:'v-qadmin'};
-  document.getElementById(map[name]).classList.add('active');
+  document.getElementById(VIEW_MAP[name]||VIEW_MAP.home).classList.add('active');
   window.scrollTo(0,0);
 }
+function go(name, replace){
+  renderView(name);
+  if(replace) history.replaceState({view:name}, '', location.href);
+  else history.pushState({view:name}, '', location.href);
+}
+history.replaceState({view:'home'}, '', location.href);
+window.addEventListener('popstate', e=>{
+  renderView((e.state && e.state.view) || 'home');
+});
 
 /* ==================================================================
    접수하기
@@ -1747,6 +1806,137 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
   }catch(err){ toast(err.message||'등록 중 오류'); }
   finally{ qaBusy=false; btn.disabled=false; btn.textContent='등록하기'; bar.classList.remove('show'); barI.style.width='0'; }
 });
+
+/* ==================================================================
+   지인용(선물) 포토마그넷 접수 - 관리자가 만든 링크(?gift=1&title=...&set=6|9)로 들어옴
+   받는사람이 직접 이름·연락처·주소(전체)를 채우고 사진을 올린다. 세트 수는 관리자가 이미 정해서 고를 필요 없다.
+================================================================== */
+let giftTitle='', giftSetSize=0, giftSlotsData=[], giftNoAddr=false;
+function renderGiftSlots(){
+  const box=document.getElementById('giftSlots'); if(!box) return; box.innerHTML='';
+  for(let i=0;i<giftSetSize;i++){
+    const d=document.createElement('div'); d.className='slot'+(giftSlotsData[i]?' filled':'');
+    if(giftSlotsData[i]){
+      const chk=giftSlotsData[i].needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
+      d.innerHTML=`<img src="${giftSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
+      d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(giftSlotsData[i].url); giftSlotsData[i]=null; renderGiftSlots(); };
+      d.onclick=()=>giftOpenCropForExisting(i);
+    }else{
+      d.innerHTML=`<div>➕<br>${i+1}번</div>`;
+      d.onclick=()=>giftPickPhotoForSlot(i);
+    }
+    box.appendChild(d);
+  }
+}
+const giftPickInput=document.createElement('input');
+giftPickInput.type='file'; giftPickInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; giftPickInput.hidden=true;
+document.body.appendChild(giftPickInput);
+let giftPickSlot=-1;
+function giftPickPhotoForSlot(i){ giftPickSlot=i; giftPickInput.value=''; giftPickInput.click(); }
+giftPickInput.addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+  if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
+  openCropModal(f, giftPickSlot, giftSlotsData, renderGiftSlots);
+});
+function giftOpenCropForExisting(i){
+  const item=giftSlotsData[i];
+  if(!item || !item.srcFile) return giftPickPhotoForSlot(i);
+  openCropModal(item.srcFile, i, giftSlotsData, renderGiftSlots);
+}
+const giftBulkInput=document.createElement('input');
+giftBulkInput.type='file'; giftBulkInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; giftBulkInput.multiple=true; giftBulkInput.hidden=true;
+document.body.appendChild(giftBulkInput);
+document.getElementById('giftBulkPickBtn').onclick=()=>{ giftBulkInput.value=''; giftBulkInput.click(); };
+giftBulkInput.addEventListener('change', async e=>{
+  const picked=Array.from(e.target.files||[]);
+  if(!picked.length) return;
+  const emptyIdx=[]; for(let i=0;i<giftSetSize;i++) if(!giftSlotsData[i]) emptyIdx.push(i);
+  if(!emptyIdx.length) return toast('모든 칸이 이미 채워져 있어요. 칸을 눌러 사진을 바꿀 수 있어요.');
+  if(picked.length>emptyIdx.length) toast(`빈 칸이 ${emptyIdx.length}개라 앞의 ${emptyIdx.length}장만 채웠어요.`);
+  let filled=0;
+  for(let k=0;k<Math.min(picked.length, emptyIdx.length);k++){
+    const f=picked[k];
+    const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+    if(!okType) continue;
+    const result=await autoCropFile(f);
+    if(!result) continue;
+    const slot=emptyIdx[k];
+    if(giftSlotsData[slot]) URL.revokeObjectURL(giftSlotsData[slot].url);
+    giftSlotsData[slot]=result;
+    filled++;
+    renderGiftSlots();
+  }
+  if(filled) toast('네모 안에 보이는 그대로 제작돼요. "위치·확대 조정하기"가 표시된 칸을 눌러 조정해 주세요.', 4500);
+});
+
+let giftBusy=false;
+document.getElementById('giftForm').addEventListener('submit', async e=>{
+  e.preventDefault(); if(giftBusy) return;
+  const name = giftNoAddr ? (giftTitle || '지인용') : document.getElementById('giftName').value.trim();
+  const phone = giftNoAddr ? '' : document.getElementById('giftPhone').value.trim();
+  const addr = giftNoAddr ? '' : document.getElementById('giftAddress').value.trim();
+  if(!giftNoAddr){
+    if(!name) return toast('받는사람 이름을 입력해 주세요.');
+    if(!/^[0-9]{9,11}$/.test(phone)) return toast('연락처를 숫자만 정확히 입력해 주세요.');
+    if(!addr) return toast('배송지 주소를 입력해 주세요.');
+  }
+  if(giftSlotsData.some(x=>!x)) return toast(`${giftSetSize}칸 모두에 사진을 넣어 주세요.`);
+  if(!document.getElementById('giftAgree').checked) return toast('개인정보 이용 동의가 필요해요.');
+  giftBusy=true;
+  const btn=document.getElementById('giftSubmitBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 접수 중...';
+  try{
+    const filesMeta=giftSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
+    const cr=await api('quick-submit',{
+      productType:'magnet', ordererName:name, setSize:giftSetSize, files:filesMeta,
+      isGift:true, giftTitle, noAddr:giftNoAddr, receiverPhone:phone, receiverAddress:addr
+    });
+    if(cr.status!==200) throw new Error('접수에 실패했습니다.');
+    const uploads=cr.body.uploads||[];
+    for(let i=0;i<giftSlotsData.length;i++){
+      const up=uploads.find(u=>u.sortOrder===i);
+      await uploadOne(up, giftSlotsData[i].blob, ()=>{});
+    }
+    await api('quick-submit',{action:'finalize', receiptId:cr.body.receiptId});
+    postToCsBoard({
+      name: giftTitle ? `${name} (${giftTitle})` : name, mall:'etc', receiptNo:cr.body.receiptNo,
+      count:giftSlotsData.length, productType:'magnet', setSize:giftSetSize,
+      files: giftSlotsData.map(s=>s.blob), quick:true
+    });
+    document.getElementById('giftForm').style.display='none';
+    const doneBox=document.getElementById('giftDone'); doneBox.style.display='block';
+    doneBox.innerHTML=`<div class="card" style="text-align:center">
+      <div class="done-ic">✓</div>
+      <h3>접수 완료</h3>
+      <div class="rno"><div style="font-size:12px;color:var(--gray)">접수 완료번호</div><div class="n">${esc(cr.body.receiptNo)}</div></div>
+      ${giftNoAddr ? '' : `<div class="kv"><b>받는사람</b><span>${esc(name)}</span></div>`}
+      <div class="kv"><b>세트</b><span>${giftSetSize}장</span></div>
+      <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(cr.body.deleteAt)}</span></div>
+    </div>`;
+    toast('✓ 접수되었습니다');
+  }catch(err){ toast(err.message||'접수 중 오류'); }
+  finally{ giftBusy=false; btn.disabled=false; btn.textContent='포토마그넷 접수하기'; }
+});
+
+// 페이지 주소에 ?gift=1&title=...&set=6|9 가 있으면 지인용 접수 화면으로 바로 연다.
+function initGiftFromURL(){
+  const q=new URLSearchParams(location.search);
+  if(q.get('gift')!=='1') return false;
+  giftTitle=(q.get('title')||'').trim().slice(0,40);
+  const setN=Math.round(Number(q.get('set')));
+  giftSetSize=(Number.isFinite(setN) && setN>=1 && setN<=99) ? setN : 6;
+  giftNoAddr = q.get('noaddr')==='1';
+  document.getElementById('giftTitleText').textContent = giftTitle ? `🎁 ${giftTitle} 포토마그넷 접수` : '🎁 포토마그넷 접수';
+  document.getElementById('giftContactFields').style.display = giftNoAddr ? 'none' : '';
+  document.getElementById('giftAgreeText').innerHTML = giftNoAddr
+    ? '첨부 사진을 <b>제작 목적</b>으로 이용하고, 접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span>'
+    : '입력한 이름·연락처·주소 및 첨부 사진을 <b>제작·배송 목적</b>으로 이용하고, 접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span>';
+  giftSlotsData=new Array(giftSetSize).fill(null);
+  renderGiftSlots();
+  go('gift', true);
+  return true;
+}
+initGiftFromURL();
 
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
