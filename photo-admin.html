@@ -294,8 +294,11 @@ function glMakeLink(){
 }
 async function glCopy(){
   const input=document.getElementById('glUrl');
-  try{ await navigator.clipboard.writeText(input.value); toast('✓ 링크를 복사했어요'); }
-  catch(e){ input.focus(); input.select(); toast('선택된 링크를 직접 복사해 주세요 (Ctrl+C)'); }
+  input.focus(); input.select(); input.setSelectionRange(0, input.value.length);
+  let ok=false;
+  try{ await navigator.clipboard.writeText(input.value); ok=true; }catch(e){}
+  if(!ok){ try{ ok=document.execCommand('copy'); }catch(e){} }
+  toast(ok ? '✓ 링크를 복사했어요' : '자동 복사가 안 돼요. 선택된 링크를 Ctrl+C로 복사해 주세요');
 }
 
 /* 목록 */
