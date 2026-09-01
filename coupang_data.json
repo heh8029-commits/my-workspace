@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-02 00:45",
+  "last_updated": "2026-09-02 01:20",
   "accounts": {
     "미리토퍼": {
       "current_amount": 1061520,
@@ -7221,12 +7221,6 @@
   },
   "run_log": [
     {
-      "time": "2026-07-27 01:45",
-      "account": "몽몽토퍼",
-      "status": "fail",
-      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
-    },
-    {
       "time": "2026-07-27 02:45",
       "account": "몽몽토퍼",
       "status": "fail",
@@ -7819,6 +7813,12 @@
       "account": "미리토퍼",
       "status": "fail",
       "reason": "예외: Page.wait_for_timeout: Target page, context or browser has been closed"
+    },
+    {
+      "time": "2026-09-02 01:20",
+      "account": "미리토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
     }
   ],
   "ad_data": {
