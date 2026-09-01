@@ -1715,7 +1715,8 @@ function initGiftFromURL(){
   const q=new URLSearchParams(location.search);
   if(q.get('gift')!=='1') return false;
   giftTitle=(q.get('title')||'').trim().slice(0,40);
-  giftSetSize=[6,9].includes(Number(q.get('set')))?Number(q.get('set')):6;
+  const setN=Math.round(Number(q.get('set')));
+  giftSetSize=(Number.isFinite(setN) && setN>=1 && setN<=99) ? setN : 6;
   document.getElementById('giftTitleText').textContent = giftTitle ? `🎁 ${giftTitle} 포토마그넷 접수` : '🎁 포토마그넷 접수';
   giftSlotsData=new Array(giftSetSize).fill(null);
   renderGiftSlots();

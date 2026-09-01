@@ -179,7 +179,9 @@
           <div style="display:flex;gap:8px">
             <button type="button" class="mini p" data-set="6" onclick="glPickSet(6)">6세트</button>
             <button type="button" class="mini" data-set="9" onclick="glPickSet(9)">9세트</button>
+            <button type="button" class="mini" data-set="custom" onclick="glPickSet('custom')">직접입력</button>
           </div>
+          <input id="gl-custom" type="number" min="1" max="99" placeholder="원하는 장수 입력" style="display:none;margin-top:8px;width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;box-sizing:border-box">
         </div>
         <div><button class="go" style="width:auto;padding:9px 18px" onclick="glMakeLink()">🔗 링크 만들기</button></div>
       </div>
@@ -267,12 +269,25 @@ function switchTab(t){
 /* 지인용(선물) 포토마그넷 링크 만들기 */
 let glSetSize=6;
 function glPickSet(n){
+  const custom=document.getElementById('gl-custom');
+  if(n==='custom'){
+    document.querySelectorAll('#tab-giftlink [data-set]').forEach(b=>b.classList.toggle('p', b.dataset.set==='custom'));
+    custom.style.display='block'; custom.focus();
+    return;
+  }
   glSetSize=n;
+  custom.style.display='none'; custom.value='';
   document.querySelectorAll('#tab-giftlink [data-set]').forEach(b=>b.classList.toggle('p', +b.dataset.set===n));
 }
+document.getElementById('gl-custom').addEventListener('input', e=>{
+  const n=Math.max(1, Math.min(99, Math.round(Number(e.target.value)||0)));
+  if(n>=1) glSetSize=n;
+});
 function glMakeLink(){
   const title=document.getElementById('gl-title').value.trim();
   if(!title) return toast('타이틀을 입력해 주세요. (예: 도경이네)');
+  const custom=document.getElementById('gl-custom');
+  if(custom.style.display==='block' && !(Number(custom.value)>=1)) return toast('수량을 입력해 주세요.');
   const url=`${location.origin}${location.pathname.replace('photo-admin.html','photo.html')}?gift=1&title=${encodeURIComponent(title)}&set=${glSetSize}`;
   document.getElementById('glResult').style.display='block';
   const input=document.getElementById('glUrl'); input.value=url; input.focus(); input.select();
