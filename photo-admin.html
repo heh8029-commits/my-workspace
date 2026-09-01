@@ -439,10 +439,13 @@ const MAG_HALF_GROW=(MAG_BOX-87)/2; // 87mm 실측 좌표 대비 박스가 커�
 const MAG_COL_X=[10.92-MAG_HALF_GROW,106.80-MAG_HALF_GROW];
 const MAG_ROW_Y=[11.64-MAG_HALF_GROW,106.16-MAG_HALF_GROW,201.63-MAG_HALF_GROW];
 
-function magnetSlots(){
-  const s=[];
-  for(let r=0;r<3;r++) for(let c=0;c<2;c++) s.push({page:0,x:MAG_COL_X[c],y:MAG_ROW_Y[r]});
-  for(const [c,r] of [[0,0],[1,0],[0,1]]) s.push({page:1,x:MAG_COL_X[c],y:MAG_ROW_Y[r]});
+// 한 장(A4)에 2열x3행 = 6칸씩 채우고, 남으면 다음 장으로 넘어간다. 몇 장이든 대응.
+function magnetSlots(n){
+  const s=[], perPage=6;
+  for(let i=0;i<n;i++){
+    const page=Math.floor(i/perPage), idx=i%perPage;
+    s.push({page, x:MAG_COL_X[idx%2], y:MAG_ROW_Y[Math.floor(idx/2)]});
+  }
   return s;
 }
 function drawOctagonGuide(doc,boxX,boxY){
@@ -470,11 +473,10 @@ async function generateMagnetPdf(){
   const ids=[...document.querySelectorAll('.pchk:checked')].map(c=>c.dataset.pid);
   const sel=photos.filter(p=>ids.includes(String(p.id))).sort((a,b)=>a.order-b.order);
   if(!sel.length) return toast('선택된 사진이 없습니다.');
-  if(sel.length>9) return toast('한 번에 최대 9장까지 가능합니다. 나눠서 생성해 주세요.');
   toast('마그넷 PDF 생성 중... 잠시만 기다려주세요');
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-  const slots=magnetSlots();
+  const slots=magnetSlots(sel.length);
   let pageIdx=0;
   for(let i=0;i<sel.length;i++){
     const slot=slots[i];
