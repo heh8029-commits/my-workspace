@@ -259,7 +259,7 @@ async function loadList(){
       <td>${ptag(r.productType)}</td>
       <td>${fmtDT(r.createdAt)}</td>
       <td>${MALL[r.mall]||r.mall}</td>
-      <td><b>${esc(r.ordererName)}</b></td>
+      <td><b>${esc(r.ordererName)}</b>${r.isGift?` <span class="badge" style="background:#fff4e0;color:#a06000" title="지인용 접수">🎁${r.giftTitle?' '+esc(r.giftTitle):''}</span>`:''}</td>
       <td>${esc(r.phoneLast4)}</td>
       <td>${esc(r.addressDong||'')}</td>
       <td>${r.photosDeleted?'<span style="color:#c23;font-size:12px">삭제됨</span>':`<div class="tt">${r.thumb?`<img src="${r.thumb}">`:''}<span class="more">${r.photoCount}장</span></div>`}</td>
@@ -297,18 +297,23 @@ async function openDetail(id){
       <div style="color:var(--gray);font-size:11px">${fmtDT(l.created_at)}</div>
     </div>`).join('') : '';
   const isMg = d.productType==='magnet';
-  const idRow = isMg
-    ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
-    : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
+  const isGift = !!d.isGift;
+  const idRow = isGift
+    ? `<div class="kv"><b>배송지 주소</b><span style="max-width:60%;text-align:right">${esc(d.addressDong)}</span></div>`
+    : (isMg
+      ? `<div class="kv"><b>주문번호</b><span>${esc(d.orderNo||'-')}</span></div>`
+      : `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`);
   const mgRows = isMg ? `
     <div class="kv"><b>세트</b><span>${d.setSize||'-'}개입</span></div>` : '';
+  const giftRow = isGift ? `<div class="kv"><b>지인용</b><span style="color:#a06000">🎁 ${esc(d.giftTitle||'-')}</span></div>` : '';
   document.getElementById('drawerBody').innerHTML=`
     <div class="kv"><b>상품종류</b><span>${ptag(d.productType)}</span></div>
+    ${giftRow}
     <div class="kv"><b>접수번호</b><span>${esc(d.receiptNo)}</span></div>
     <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
     <div class="kv"><b>쇼핑몰</b><span>${MALL[d.mall]||d.mall}</span></div>
-    <div class="kv"><b>주문자 이름</b><span>${esc(d.ordererName)}</span></div>
-    <div class="kv"><b>전화번호 뒷자리</b><span>${esc(d.phoneLast4)}</span></div>
+    <div class="kv"><b>${isGift?'받는사람 이름':'주문자 이름'}</b><span>${esc(d.ordererName)}</span></div>
+    <div class="kv"><b>${isGift?'연락처':'전화번호 뒷자리'}</b><span>${esc(d.phoneLast4)}</span></div>
     ${idRow}
     ${mgRows}
     <div class="kv"><b>${isMg?'기타 요청사항':'편집 요청사항'}</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)||'-'}</span></div>
@@ -448,8 +453,8 @@ async function generatePackingPdf(){
     ctx.fillText('포장 확인 체크리스트', mm(10), y); y+=mm(8);
     ctx.font=`${mm(3.6)}px sans-serif`;
     ctx.fillText(`접수번호: ${d.receiptNo||''}`, mm(10), y); y+=mm(6);
-    ctx.fillText(`주문자: ${d.ordererName||''}   전화뒷자리: ${d.phoneLast4||''}`, mm(10), y); y+=mm(6);
-    ctx.fillText(`배송지(동): ${d.addressDong||''}   쇼핑몰: ${MALL[d.mall]||d.mall||''}`, mm(10), y); y+=mm(6);
+    ctx.fillText(`${d.isGift?'받는사람':'주문자'}: ${d.ordererName||''}   ${d.isGift?'연락처':'전화뒷자리'}: ${d.phoneLast4||''}`, mm(10), y); y+=mm(6);
+    ctx.fillText(`${d.isGift?'배송지':'배송지(동)'}: ${d.addressDong||''}   ${d.isGift?'지인용: 🎁 '+(d.giftTitle||''):'쇼핑몰: '+(MALL[d.mall]||d.mall||'')}`, mm(10), y); y+=mm(6);
     ctx.fillText(`사진 개수: ${photos.length}장 (${d.setSize||photos.length}개입)`, mm(10), y); y+=mm(8);
     ctx.strokeStyle='#000'; ctx.lineWidth=mm(0.3);
     ctx.beginPath(); ctx.moveTo(mm(10),y); ctx.lineTo(mm(138),y); ctx.stroke(); y+=mm(6);

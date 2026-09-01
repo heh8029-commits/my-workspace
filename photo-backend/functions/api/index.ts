@@ -73,10 +73,13 @@ async function verifyToken(token: string | null) {
   try { const pl = JSON.parse(new TextDecoder().decode(u64d(p))); if (typeof pl.exp !== "number" || pl.exp < Math.floor(Date.now() / 1000)) return null; return { u: pl.u }; } catch { return null; }
 }
 
-/* ---------------- 접수번호: 전화번호처럼 익숙하도록 숫자 6자리(3-3) ---------------- */
-function makeReceiptNo(_now: Date) {
-  let n = ""; for (const b of crypto.getRandomValues(new Uint8Array(6))) n += String(b % 10);
-  return `${n.slice(0, 3)}-${n.slice(3)}`;
+/* ---------------- 접수번호 (KST) ---------------- */
+function makeReceiptNo(now: Date) {
+  const k = new Date(now.getTime() + 9 * 3600 * 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let sfx = ""; for (const b of crypto.getRandomValues(new Uint8Array(4))) sfx += A[b % A.length];
+  return `MRTO-${p(k.getUTCMonth() + 1)}${p(k.getUTCDate())}-${p(k.getUTCHours())}${p(k.getUTCMinutes())}-${sfx}`;
 }
 
 /* ---------------- 상수 ---------------- */
@@ -209,8 +212,8 @@ Deno.serve(async (req) => {
     if (!ALLOWED_MALLS.includes(mall)) return json({ error: "invalid_mall" }, 400, origin);
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
     if (!dong || dong.length > 60) return json({ error: "invalid_address" }, 400, origin);
-    if (!/^[0-9]{9,11}$/.test(phone)) return json({ error: "invalid_phone" }, 400, origin);
-    if (!Number.isFinite(setSize) || setSize < 1 || setSize > 99) return json({ error: "invalid_set_size" }, 400, origin);
+    if (!/^[0-9]{4}$/.test(phone)) return json({ error: "invalid_phone" }, 400, origin);
+    if (setSize !== 6 && setSize !== 9) return json({ error: "invalid_set_size" }, 400, origin);
     if (phraseEnabled && !phraseText) return json({ error: "invalid_phrase" }, 400, origin);
     if (!/^([0-9]{4}|[0-9]{6})$/.test(pw)) return json({ error: "invalid_password" }, 400, origin);
     if (pw !== pw2) return json({ error: "password_mismatch" }, 400, origin);
@@ -253,7 +256,7 @@ Deno.serve(async (req) => {
     if (!name || name.length > 40) return json({ error: "invalid_name" }, 400, origin);
     const { data, error } = await sb.from("photo_receipts")
       .select("id, mall, orderer_name, address_dong, phone_last4, status, created_at, delete_at, photos_deleted, product_type, order_no")
-      .eq("orderer_name", name).eq("finalized", true).eq("photos_deleted", false).order("created_at", { ascending: false }).limit(50);
+      .eq("orderer_name", name).eq("finalized", true).order("created_at", { ascending: false }).limit(50);
     if (error) return json({ error: "db_error" }, 500, origin);
     return json({ ok: true, results: (data ?? []).map((r) => ({ id: r.id, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, status: r.status, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null })) }, 200, origin);
   }
@@ -401,15 +404,27 @@ Deno.serve(async (req) => {
       if (typeof f.size !== "number" || f.size <= 0 || f.size > MAX_SIZE) return json({ error: "file_too_large" }, 400, origin);
       if (!ALLOWED_TYPES.includes(String(f.contentType))) return json({ error: "invalid_file_type" }, 400, origin);
     }
+    // 지인용(선물) 접수: 관리자가 만든 링크로 받는사람이 직접 이름/연락처/주소를 채운다.
+    // 배송을 직접 보내야 해서 전화 뒷자리(4자리)가 아니라 전체 번호와 전체 주소를 받는다.
+    const isGift = !!body.isGift;
+    let receiverPhone = "0000", receiverAddress = "-", giftTitle: string | null = null;
+    if (isGift) {
+      receiverPhone = String(body.receiverPhone ?? "").replace(/\D/g, "");
+      receiverAddress = String(body.receiverAddress ?? "").trim();
+      giftTitle = String(body.giftTitle ?? "").trim().slice(0, 40) || null;
+      if (!/^[0-9]{9,11}$/.test(receiverPhone)) return json({ error: "invalid_phone" }, 400, origin);
+      if (!receiverAddress || receiverAddress.length > 120) return json({ error: "invalid_address" }, 400, origin);
+    }
     const holdDays = await getHoldDays();
     const now = new Date(), deleteAt = new Date(now.getTime() + holdDays * 86400000);
     let rec: any = null;
     for (let a = 0; a < 5; a++) {
       const { data, error } = await sb.from("photo_receipts").insert({
-        receipt_no: makeReceiptNo(now), mall: "etc", orderer_name: name, address_dong: "-",
-        phone_last4: "0000", password_hash: await hashPassword("0000"), photo_count: files.length,
+        receipt_no: makeReceiptNo(now), mall: "etc", orderer_name: name, address_dong: receiverAddress,
+        phone_last4: receiverPhone, password_hash: await hashPassword("0000"), photo_count: files.length,
         delete_at: deleteAt.toISOString(), finalized: false,
         product_type: isMagnet ? "magnet" : "topper", set_size: setSize,
+        is_gift: isGift, gift_title: giftTitle,
       }).select("id, receipt_no, created_at, delete_at").single();
       if (!error) { rec = data; break; }
       if (error.code !== "23505") return json({ error: "db_error", detail: error.message }, 500, origin);
@@ -461,7 +476,7 @@ Deno.serve(async (req) => {
 
     if (action === "list") {
       const f = body.filters ?? {};
-      let q = sb.from("photo_receipts").select("id, receipt_no, mall, orderer_name, address_dong, phone_last4, edit_request, status, photo_count, created_at, delete_at, photos_deleted, finalized, edited, edited_at, last_edit_summary, product_type, order_no, set_size, phrase_enabled, phrase_text").eq("finalized", true).order("created_at", { ascending: false }).limit(500);
+      let q = sb.from("photo_receipts").select("id, receipt_no, mall, orderer_name, address_dong, phone_last4, edit_request, status, photo_count, created_at, delete_at, photos_deleted, finalized, edited, edited_at, last_edit_summary, product_type, order_no, set_size, phrase_enabled, phrase_text, is_gift, gift_title").eq("finalized", true).order("created_at", { ascending: false }).limit(500);
       if (f.name) q = q.ilike("orderer_name", `%${String(f.name).trim()}%`);
       if (f.phone) q = q.eq("phone_last4", String(f.phone).trim());
       if (f.dong) q = q.ilike("address_dong", `%${String(f.dong).trim()}%`);
@@ -479,7 +494,7 @@ Deno.serve(async (req) => {
           const { data: first } = await sb.from("photo_files").select("storage_path").eq("receipt_id", r.id).eq("uploaded", true).order("sort_order", { ascending: true }).limit(1).maybeSingle();
           if (first) { const { data: s } = await sb.storage.from(BUCKET).createSignedUrl(first.storage_path, 120); thumb = s?.signedUrl ?? null; }
         }
-        rows.push({ id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, thumb, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null });
+        rows.push({ id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, thumb, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null, isGift: r.is_gift ?? false, giftTitle: r.gift_title ?? null });
       }
       return json({ ok: true, rows }, 200, origin);
     }
@@ -495,7 +510,7 @@ Deno.serve(async (req) => {
         photos.push({ id: fl.id, order: fl.sort_order, originalName: fl.original_name, sizeBytes: fl.size_bytes, url: v?.signedUrl ?? null, downloadUrl: dl?.signedUrl ?? null });
       }
       const { data: logs } = await sb.from("photo_edit_logs").select("actor, changed, summary, detail, created_at").eq("receipt_id", id).order("created_at", { ascending: false }).limit(50);
-      return json({ ok: true, detail: { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null }, photos, editLogs: logs ?? [] }, 200, origin);
+      return json({ ok: true, detail: { id: r.id, receiptNo: r.receipt_no, mall: r.mall, ordererName: r.orderer_name, addressDong: r.address_dong, phoneLast4: r.phone_last4, editRequest: r.edit_request, status: r.status, photoCount: r.photo_count, createdAt: r.created_at, deleteAt: r.delete_at, photosDeleted: r.photos_deleted, edited: r.edited ?? false, editedAt: r.edited_at ?? null, lastEditSummary: r.last_edit_summary ?? null, productType: r.product_type ?? "topper", orderNo: r.order_no ?? null, setSize: r.set_size ?? null, phraseEnabled: r.phrase_enabled ?? false, phraseText: r.phrase_text ?? null, isGift: r.is_gift ?? false, giftTitle: r.gift_title ?? null }, photos, editLogs: logs ?? [] }, 200, origin);
     }
     if (action === "setStatus") {
       const status = String(body.status ?? ""); if (!STATUSES.includes(status)) return json({ error: "invalid_status" }, 400, origin);
