@@ -493,27 +493,6 @@
         <div class="malls" id="qaType">
           <button type="button" class="on" data-qtype="topper">단순등록</button>
           <button type="button" data-qtype="magnet">마그넷등록</button>
-          <button type="button" data-qtype="giftlink">🎁 지인용 링크</button>
-        </div>
-
-        <div id="qaGiftLinkSection" style="display:none">
-          <label>타이틀 <span class="req">*</span> <span class="opt">(예: 도경이네)</span></label>
-          <input type="text" id="qaGiftTitle" placeholder="예) 도경이네" maxlength="40" />
-
-          <label>마그넷 수량 <span class="req">*</span></label>
-          <div class="malls" id="qaGiftSet">
-            <button type="button" data-set="6" class="on">6세트</button>
-            <button type="button" data-set="9">9세트</button>
-          </div>
-
-          <button type="button" class="btn" id="qaGiftMakeBtn" style="margin-top:16px">🔗 링크 만들기</button>
-
-          <div id="qaGiftLinkResult" style="display:none;margin-top:14px">
-            <label>지인에게 보낼 링크</label>
-            <input type="text" id="qaGiftLinkUrl" readonly style="font-size:12px" />
-            <button type="button" class="btn ghost" id="qaGiftCopyBtn" style="margin-top:8px">📋 링크 복사</button>
-            <div class="hint">이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.</div>
-          </div>
         </div>
 
         <label id="qaNameLabel">주문자 이름 <span class="req">*</span></label>
@@ -1414,17 +1393,10 @@ function qaReset(){
   document.querySelectorAll('#qaType button').forEach(x=>x.classList.toggle('on', x.dataset.qtype==='topper'));
   document.getElementById('qaTopperSection').style.display='block';
   document.getElementById('qaMagnetSection').style.display='none';
-  document.getElementById('qaGiftLinkSection').style.display='none';
-  document.getElementById('qaNameLabel').style.display='';
-  document.getElementById('qaName').style.display='';
-  document.getElementById('qaSaveBtn').style.display='';
   qaMgSetSize=0; qaMgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); }); qaMgSlotsData=[];
   document.querySelectorAll('#qaMgSet button').forEach(x=>x.classList.remove('on'));
   const cc=document.getElementById('qaMgCustomCount'); if(cc){ cc.value=''; cc.style.display='none'; }
   renderQaMgSlots();
-  document.getElementById('qaGiftTitle').value='';
-  document.querySelectorAll('#qaGiftSet button').forEach(x=>x.classList.toggle('on', x.dataset.set==='6'));
-  document.getElementById('qaGiftLinkResult').style.display='none';
 }
 
 /* ---- 관리자 간편등록: 마그넷등록 ---- */
@@ -1436,34 +1408,6 @@ document.getElementById('qaType').addEventListener('click', e=>{
   b.classList.add('on');
   document.getElementById('qaTopperSection').style.display = qaType==='topper' ? 'block' : 'none';
   document.getElementById('qaMagnetSection').style.display = qaType==='magnet' ? 'block' : 'none';
-  document.getElementById('qaGiftLinkSection').style.display = qaType==='giftlink' ? 'block' : 'none';
-  // 지인용 링크 만들기는 등록이 아니라 링크만 뽑는 것이라, 주문자 이름 칸과 등록 버튼을 숨긴다.
-  const isGiftLink = qaType==='giftlink';
-  document.getElementById('qaNameLabel').style.display = isGiftLink ? 'none' : '';
-  document.getElementById('qaName').style.display = isGiftLink ? 'none' : '';
-  document.getElementById('qaSaveBtn').style.display = isGiftLink ? 'none' : '';
-});
-
-/* ---- 관리자 간편등록: 지인용 링크 만들기 ---- */
-document.getElementById('qaGiftSet').addEventListener('click', e=>{
-  const b=e.target.closest('button[data-set]'); if(!b) return;
-  document.querySelectorAll('#qaGiftSet button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
-});
-document.getElementById('qaGiftMakeBtn').addEventListener('click', ()=>{
-  const title=document.getElementById('qaGiftTitle').value.trim();
-  if(!title) return toast('타이틀을 입력해 주세요. (예: 도경이네)');
-  const setBtn=document.querySelector('#qaGiftSet button.on');
-  const setSize=setBtn?setBtn.dataset.set:'6';
-  const url=`${location.origin}${location.pathname}?gift=1&title=${encodeURIComponent(title)}&set=${setSize}`;
-  const box=document.getElementById('qaGiftLinkResult'); box.style.display='block';
-  const input=document.getElementById('qaGiftLinkUrl'); input.value=url;
-  input.focus(); input.select();
-});
-document.getElementById('qaGiftCopyBtn').addEventListener('click', async ()=>{
-  const input=document.getElementById('qaGiftLinkUrl');
-  try{ await navigator.clipboard.writeText(input.value); toast('✓ 링크를 복사했어요'); }
-  catch(e){ input.focus(); input.select(); toast('선택된 링크를 직접 복사해 주세요 (Ctrl+C)'); }
 });
 function applyQaMgSetSize(n){
   n=Math.max(1, Math.min(99, Math.round(n)));

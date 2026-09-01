@@ -112,6 +112,7 @@
     <nav>
       <button data-tab="list" class="on" onclick="switchTab('list')">📋 접수 목록</button>
       <button data-tab="expiring" onclick="switchTab('expiring')">⏰ 삭제 예정</button>
+      <button data-tab="giftlink" onclick="switchTab('giftlink')">🎁 지인용 링크</button>
       <button onclick="logout()">🚪 로그아웃</button>
     </nav>
   </aside>
@@ -163,6 +164,31 @@
         <thead><tr><th>접수번호</th><th>주문자</th><th>전화뒷4</th><th>상태</th><th>삭제 예정일시</th><th>관리</th></tr></thead>
         <tbody id="expBody"><tr><td colspan="6" class="empty">불러오는 중...</td></tr></tbody>
       </table></div>
+    </section>
+
+    <!-- 지인용(선물) 포토마그넷 링크 만들기 -->
+    <section id="tab-giftlink" style="display:none">
+      <div class="head"><h2>🎁 지인용 링크 만들기</h2></div>
+      <div class="filters" style="grid-template-columns:1fr;max-width:480px">
+        <div>
+          <label>타이틀 (예: 도경이네)</label>
+          <input id="gl-title" placeholder="예) 도경이네" maxlength="40">
+        </div>
+        <div>
+          <label>마그넷 수량</label>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="mini p" data-set="6" onclick="glPickSet(6)">6세트</button>
+            <button type="button" class="mini" data-set="9" onclick="glPickSet(9)">9세트</button>
+          </div>
+        </div>
+        <div><button class="go" style="width:auto;padding:9px 18px" onclick="glMakeLink()">🔗 링크 만들기</button></div>
+      </div>
+      <div id="glResult" style="display:none;background:#fff;border-radius:12px;padding:16px;max-width:480px">
+        <label style="font-size:11px;color:var(--gray);font-weight:700;display:block;margin-bottom:4px">지인에게 보낼 링크</label>
+        <input id="glUrl" readonly style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
+        <button class="btn nv" style="margin-top:8px" onclick="glCopy()">📋 링크 복사</button>
+        <div style="font-size:12px;color:var(--gray);margin-top:8px">이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.</div>
+      </div>
     </section>
   </main>
 </div>
@@ -234,7 +260,27 @@ function switchTab(t){
   document.querySelectorAll('aside nav button[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   document.getElementById('tab-list').style.display=t==='list'?'block':'none';
   document.getElementById('tab-expiring').style.display=t==='expiring'?'block':'none';
+  document.getElementById('tab-giftlink').style.display=t==='giftlink'?'block':'none';
   if(t==='expiring') loadExpiring();
+}
+
+/* 지인용(선물) 포토마그넷 링크 만들기 */
+let glSetSize=6;
+function glPickSet(n){
+  glSetSize=n;
+  document.querySelectorAll('#tab-giftlink [data-set]').forEach(b=>b.classList.toggle('p', +b.dataset.set===n));
+}
+function glMakeLink(){
+  const title=document.getElementById('gl-title').value.trim();
+  if(!title) return toast('타이틀을 입력해 주세요. (예: 도경이네)');
+  const url=`${location.origin}${location.pathname.replace('photo-admin.html','photo.html')}?gift=1&title=${encodeURIComponent(title)}&set=${glSetSize}`;
+  document.getElementById('glResult').style.display='block';
+  const input=document.getElementById('glUrl'); input.value=url; input.focus(); input.select();
+}
+async function glCopy(){
+  const input=document.getElementById('glUrl');
+  try{ await navigator.clipboard.writeText(input.value); toast('✓ 링크를 복사했어요'); }
+  catch(e){ input.focus(); input.select(); toast('선택된 링크를 직접 복사해 주세요 (Ctrl+C)'); }
 }
 
 /* 목록 */
