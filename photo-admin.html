@@ -183,13 +183,19 @@
           </div>
           <input id="gl-custom" type="number" min="1" max="99" placeholder="원하는 장수 입력" style="display:none;margin-top:8px;width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;box-sizing:border-box">
         </div>
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400">
+            <input type="checkbox" id="gl-noaddr" style="width:auto">
+            직접 만나서 전달할 거예요 (받는사람 이름·연락처·주소 안 받음)
+          </label>
+        </div>
         <div><button class="go" style="width:auto;padding:9px 18px" onclick="glMakeLink()">🔗 링크 만들기</button></div>
       </div>
       <div id="glResult" style="display:none;background:#fff;border-radius:12px;padding:16px;max-width:480px">
         <label style="font-size:11px;color:var(--gray);font-weight:700;display:block;margin-bottom:4px">지인에게 보낼 링크</label>
         <input id="glUrl" readonly style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
         <button class="btn nv" style="margin-top:8px" onclick="glCopy()">📋 링크 복사</button>
-        <div style="font-size:12px;color:var(--gray);margin-top:8px">이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.</div>
+        <div id="glResultHint" style="font-size:12px;color:var(--gray);margin-top:8px">이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.</div>
       </div>
     </section>
   </main>
@@ -288,8 +294,12 @@ function glMakeLink(){
   if(!title) return toast('타이틀을 입력해 주세요. (예: 도경이네)');
   const custom=document.getElementById('gl-custom');
   if(custom.style.display==='block' && !(Number(custom.value)>=1)) return toast('수량을 입력해 주세요.');
-  const url=`${location.origin}${location.pathname.replace('photo-admin.html','photo.html')}?gift=1&title=${encodeURIComponent(title)}&set=${glSetSize}`;
+  const noAddr=document.getElementById('gl-noaddr').checked;
+  const url=`${location.origin}${location.pathname.replace('photo-admin.html','photo.html')}?gift=1&title=${encodeURIComponent(title)}&set=${glSetSize}`+(noAddr?'&noaddr=1':'');
   document.getElementById('glResult').style.display='block';
+  document.getElementById('glResultHint').textContent = noAddr
+    ? '이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 사진만 올리면 돼요 (이름·연락처·주소는 안 물어봐요).'
+    : '이 링크를 열면 세트 수·타이틀이 이미 정해진 채로, 받는사람 이름·연락처·주소만 입력하고 사진을 올리면 돼요.';
   const input=document.getElementById('glUrl'); input.value=url; input.focus(); input.select();
 }
 async function glCopy(){

@@ -407,13 +407,19 @@ Deno.serve(async (req) => {
     // 지인용(선물) 접수: 관리자가 만든 링크로 받는사람이 직접 이름/연락처/주소를 채운다.
     // 배송을 직접 보내야 해서 전화 뒷자리(4자리)가 아니라 전체 번호와 전체 주소를 받는다.
     const isGift = !!body.isGift;
+    const noAddr = isGift && !!body.noAddr;   // 직접 만나서 전달하는 경우 - 이름/연락처/주소를 안 받는다
     let receiverPhone = "0000", receiverAddress = "-", giftTitle: string | null = null;
     if (isGift) {
-      receiverPhone = String(body.receiverPhone ?? "").replace(/\D/g, "");
-      receiverAddress = String(body.receiverAddress ?? "").trim();
       giftTitle = String(body.giftTitle ?? "").trim().slice(0, 40) || null;
-      if (!/^[0-9]{9,11}$/.test(receiverPhone)) return json({ error: "invalid_phone" }, 400, origin);
-      if (!receiverAddress || receiverAddress.length > 120) return json({ error: "invalid_address" }, 400, origin);
+      if (noAddr) {
+        receiverPhone = "0000";
+        receiverAddress = "직접 전달";
+      } else {
+        receiverPhone = String(body.receiverPhone ?? "").replace(/\D/g, "");
+        receiverAddress = String(body.receiverAddress ?? "").trim();
+        if (!/^[0-9]{9,11}$/.test(receiverPhone)) return json({ error: "invalid_phone" }, 400, origin);
+        if (!receiverAddress || receiverAddress.length > 120) return json({ error: "invalid_address" }, 400, origin);
+      }
     }
     const holdDays = await getHoldDays();
     const now = new Date(), deleteAt = new Date(now.getTime() + holdDays * 86400000);

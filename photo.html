@@ -361,14 +361,16 @@
     <form id="giftForm" class="card" autocomplete="off">
       <h2>받는 분 정보</h2>
 
-      <label>받는사람 이름 <span class="req">*</span></label>
-      <input type="text" id="giftName" placeholder="이름을 입력해 주세요" maxlength="40" />
+      <div id="giftContactFields">
+        <label>받는사람 이름 <span class="req">*</span></label>
+        <input type="text" id="giftName" placeholder="이름을 입력해 주세요" maxlength="40" />
 
-      <label>연락처 <span class="req">*</span></label>
-      <input type="tel" id="giftPhone" placeholder="숫자만 입력해 주세요" maxlength="11" inputmode="numeric" />
+        <label>연락처 <span class="req">*</span></label>
+        <input type="tel" id="giftPhone" placeholder="숫자만 입력해 주세요" maxlength="11" inputmode="numeric" />
 
-      <label>배송지 주소 <span class="req">*</span> <span class="opt">(상세주소까지 전부)</span></label>
-      <input type="text" id="giftAddress" placeholder="상세주소까지 전부 입력해 주세요" maxlength="120" />
+        <label>배송지 주소 <span class="req">*</span> <span class="opt">(상세주소까지 전부)</span></label>
+        <input type="text" id="giftAddress" placeholder="상세주소까지 전부 입력해 주세요" maxlength="120" />
+      </div>
 
       <label>사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
       <button type="button" class="btn ghost" id="giftBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
@@ -377,7 +379,7 @@
 
       <label class="agree">
         <input type="checkbox" id="giftAgree" />
-        <span>입력한 이름·연락처·주소 및 첨부 사진을 <b>제작·배송 목적</b>으로 이용하고,
+        <span id="giftAgreeText">입력한 이름·연락처·주소 및 첨부 사진을 <b>제작·배송 목적</b>으로 이용하고,
           접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span></span>
       </label>
 
@@ -1605,7 +1607,7 @@ function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
    지인용(선물) 포토마그넷 접수 - 관리자가 만든 링크(?gift=1&title=...&set=6|9)로 들어옴
    받는사람이 직접 이름·연락처·주소(전체)를 채우고 사진을 올린다. 세트 수는 관리자가 이미 정해서 고를 필요 없다.
 ================================================================== */
-let giftTitle='', giftSetSize=0, giftSlotsData=[];
+let giftTitle='', giftSetSize=0, giftSlotsData=[], giftNoAddr=false;
 function renderGiftSlots(){
   const box=document.getElementById('giftSlots'); if(!box) return; box.innerHTML='';
   for(let i=0;i<giftSetSize;i++){
@@ -1667,12 +1669,14 @@ giftBulkInput.addEventListener('change', async e=>{
 let giftBusy=false;
 document.getElementById('giftForm').addEventListener('submit', async e=>{
   e.preventDefault(); if(giftBusy) return;
-  const name=document.getElementById('giftName').value.trim();
-  const phone=document.getElementById('giftPhone').value.trim();
-  const addr=document.getElementById('giftAddress').value.trim();
-  if(!name) return toast('받는사람 이름을 입력해 주세요.');
-  if(!/^[0-9]{9,11}$/.test(phone)) return toast('연락처를 숫자만 정확히 입력해 주세요.');
-  if(!addr) return toast('배송지 주소를 입력해 주세요.');
+  const name = giftNoAddr ? (giftTitle || '지인용') : document.getElementById('giftName').value.trim();
+  const phone = giftNoAddr ? '' : document.getElementById('giftPhone').value.trim();
+  const addr = giftNoAddr ? '' : document.getElementById('giftAddress').value.trim();
+  if(!giftNoAddr){
+    if(!name) return toast('받는사람 이름을 입력해 주세요.');
+    if(!/^[0-9]{9,11}$/.test(phone)) return toast('연락처를 숫자만 정확히 입력해 주세요.');
+    if(!addr) return toast('배송지 주소를 입력해 주세요.');
+  }
   if(giftSlotsData.some(x=>!x)) return toast(`${giftSetSize}칸 모두에 사진을 넣어 주세요.`);
   if(!document.getElementById('giftAgree').checked) return toast('개인정보 이용 동의가 필요해요.');
   giftBusy=true;
@@ -1681,7 +1685,7 @@ document.getElementById('giftForm').addEventListener('submit', async e=>{
     const filesMeta=giftSlotsData.map(s=>({ name:s.name, size:s.blob.size, contentType:'image/jpeg' }));
     const cr=await api('quick-submit',{
       productType:'magnet', ordererName:name, setSize:giftSetSize, files:filesMeta,
-      isGift:true, giftTitle, receiverPhone:phone, receiverAddress:addr
+      isGift:true, giftTitle, noAddr:giftNoAddr, receiverPhone:phone, receiverAddress:addr
     });
     if(cr.status!==200) throw new Error('접수에 실패했습니다.');
     const uploads=cr.body.uploads||[];
@@ -1701,7 +1705,7 @@ document.getElementById('giftForm').addEventListener('submit', async e=>{
       <div class="done-ic">✓</div>
       <h3>접수 완료</h3>
       <div class="rno"><div style="font-size:12px;color:var(--gray)">접수 완료번호</div><div class="n">${esc(cr.body.receiptNo)}</div></div>
-      <div class="kv"><b>받는사람</b><span>${esc(name)}</span></div>
+      ${giftNoAddr ? '' : `<div class="kv"><b>받는사람</b><span>${esc(name)}</span></div>`}
       <div class="kv"><b>세트</b><span>${giftSetSize}장</span></div>
       <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(cr.body.deleteAt)}</span></div>
     </div>`;
@@ -1717,7 +1721,12 @@ function initGiftFromURL(){
   giftTitle=(q.get('title')||'').trim().slice(0,40);
   const setN=Math.round(Number(q.get('set')));
   giftSetSize=(Number.isFinite(setN) && setN>=1 && setN<=99) ? setN : 6;
+  giftNoAddr = q.get('noaddr')==='1';
   document.getElementById('giftTitleText').textContent = giftTitle ? `🎁 ${giftTitle} 포토마그넷 접수` : '🎁 포토마그넷 접수';
+  document.getElementById('giftContactFields').style.display = giftNoAddr ? 'none' : '';
+  document.getElementById('giftAgreeText').innerHTML = giftNoAddr
+    ? '첨부 사진을 <b>제작 목적</b>으로 이용하고, 접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span>'
+    : '입력한 이름·연락처·주소 및 첨부 사진을 <b>제작·배송 목적</b>으로 이용하고, 접수 완료 후 6일 뒤 자동 삭제되는 것에 동의합니다. <span class="req">*</span>';
   giftSlotsData=new Array(giftSetSize).fill(null);
   renderGiftSlots();
   go('gift');
