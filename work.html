@@ -10225,13 +10225,41 @@ function renderCsShare() {
         var lines = it.text.split('\n');
         var memoIdx = -1;
         for (var _li=0; _li<lines.length; _li++){ if (/^메모\s*[:：]/.test(lines[_li])) { memoIdx = _li; break; } }
-        if (memoIdx >= 0) {
+        var personIdx = -1;
+        for (var _lp=0; _lp<lines.length; _lp++){ if (/^👤/.test(lines[_lp])) { personIdx = _lp; break; } }
+        if (memoIdx >= 0 || personIdx >= 0) {
+          // 메모가 여러 줄이면(줄바꿈 포함) '메모:' 다음 줄부터 빈 줄이나 '👤'(주문자정보) 줄
+          // 나오기 전까지 전부 메모로 보고 같이 굵은 자주색으로 보여준다.
+          // (전엔 '메모:'가 붙은 첫 줄만 굵어서 뒤에 이어지는 메모가 안 띄었다 — 2026-09-03 실제 지적받음)
+          var memoEnd = memoIdx >= 0 ? lines.length : -1;
+          if (memoIdx >= 0){
+            for (var _lj=memoIdx+1; _lj<lines.length; _lj++){
+              if (/^👤/.test(lines[_lj]) || lines[_lj].trim()===''){ memoEnd = _lj; break; }
+            }
+          }
+          // 👤 줄 다음 빈 줄부터 '송장' 줄(또는 끝) 전까지는 주문한 상품코드 줄이라
+          // 다른 색으로 눈에 띄게 보여준다. (2026-09-03 실제 지적받음)
+          var codeStart = -1, codeEnd = -1;
+          if (personIdx >= 0){
+            for (var _lm=personIdx+1; _lm<lines.length; _lm++){
+              if (lines[_lm].trim()===''){ codeStart = _lm+1; break; }
+            }
+            if (codeStart >= 0){
+              codeEnd = lines.length;
+              for (var _ln=codeStart; _ln<lines.length; _ln++){
+                if (/^송장/.test(lines[_ln])){ codeEnd = _ln; break; }
+              }
+            }
+          }
           lines.forEach(function(line, li){
             if (line.trim()===''){ var sp=document.createElement('div'); sp.style.cssText='height:6px'; memoEl.appendChild(sp); return; }
             var lineEl = document.createElement('div');
-            if (li===memoIdx){
+            if (memoIdx >= 0 && li>=memoIdx && li<memoEnd){
               lineEl.style.cssText = 'font-size:1.3rem;font-weight:900;color:#c0206a;line-height:1.6;white-space:pre-wrap;word-break:break-all;letter-spacing:.02em;margin:2px 0 4px';
-              lineEl.textContent = '📝 ' + line.replace(/^메모\s*[:：]\s*/, '');
+              lineEl.textContent = (li===memoIdx ? '📝 ' + line.replace(/^메모\s*[:：]\s*/, '') : line);
+            }else if (codeStart >= 0 && li>=codeStart && li<codeEnd){
+              lineEl.style.cssText = 'font-size:.92rem;font-weight:800;color:#2f6fd6;line-height:1.6;white-space:pre-wrap;word-break:break-all;margin:2px 0';
+              lineEl.textContent = line;
             }else{
               lineEl.style.cssText = 'font-size:.88rem;font-weight:700;color:#9096a3;line-height:1.6;white-space:pre-wrap;word-break:break-all';
               lineEl.textContent = line;
