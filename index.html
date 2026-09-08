@@ -1180,7 +1180,18 @@ function openCropModal(file, slotIndex, arr, renderFn){
   img.src=url;
 }
 function buildFilterStr(s){
-  return `brightness(${s.bri}%) contrast(${s.con}%) saturate(${s.sat}%) sepia(${s.warm}%)`;
+  // 밝기를 올릴 때 단순 brightness()는 하이라이트가 금방 흰색으로 날아가 '쨍'해 보임.
+  // invert→brightness→invert(화이트 스크린 블렌드)로 바꿔 하이라이트는 그대로 두고
+  // 그림자/중간톤을 고르게 들어올려 전체적으로 밝아지게 함.
+  let briFilter;
+  if(s.bri>100){
+    const t=Math.min(1,(s.bri-100)/50); // 0~1
+    const k=1-t*0.5; // 1~0.5
+    briFilter=`invert(1) brightness(${Math.round(k*100)}%) invert(1)`;
+  }else{
+    briFilter=`brightness(${s.bri}%)`;
+  }
+  return `${briFilter} contrast(${s.con}%) saturate(${s.sat}%) sepia(${s.warm}%)`;
 }
 function applyCropFilter(){
   if(!cropState) return;
