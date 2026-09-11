@@ -8720,35 +8720,43 @@
     },
     "09/03": {
       "cpAdCost": 202204,
-      "mongCpAdCost": 50008
+      "mongCpAdCost": 50008,
+      "naverSales": 171300
     },
     "09/04": {
       "cpAdCost": 181564,
-      "mongCpAdCost": 43381
+      "mongCpAdCost": 43381,
+      "naverSales": 153600
     },
     "09/05": {
       "cpAdCost": 128721,
-      "mongCpAdCost": 29951
+      "mongCpAdCost": 29951,
+      "naverSales": 167800
     },
     "09/06": {
       "cpAdCost": 141643,
-      "mongCpAdCost": 31500
+      "mongCpAdCost": 31500,
+      "naverSales": 169000
     },
     "09/07": {
       "cpAdCost": 189739,
-      "mongCpAdCost": 44626
+      "mongCpAdCost": 44626,
+      "naverSales": 287400
     },
     "09/08": {
       "cpAdCost": 202536,
-      "mongCpAdCost": 49892
+      "mongCpAdCost": 49892,
+      "naverSales": 221800
     },
     "09/09": {
       "cpAdCost": 185570,
-      "mongCpAdCost": 45263
+      "mongCpAdCost": 45263,
+      "naverSales": 200990
     },
     "09/10": {
       "cpAdCost": 233156,
-      "mongCpAdCost": 51076
+      "mongCpAdCost": 51076,
+      "naverSales": 212400
     }
   },
   "ad_performance": {
