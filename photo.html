@@ -1947,7 +1947,15 @@ function initGiftFromURL(){
   go('gift', true);
   return true;
 }
-initGiftFromURL();
+// 페이지 주소에 ?view=submit 처럼 지정하면 해당 화면으로 바로 연다. (고객에게 특정 화면 링크로 안내할 때 사용)
+function initViewFromURL(){
+  const q=new URLSearchParams(location.search);
+  const v=q.get('view');
+  if(!v || !VIEW_MAP[v]) return false;
+  go(v, true);
+  return true;
+}
+if(!initGiftFromURL()) initViewFromURL();
 
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
