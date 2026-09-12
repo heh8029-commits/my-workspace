@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌅 아침 브리핑 · 미리토퍼캐슬</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 20px 16px 60px;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    background: #f4f5f8; color: #1a1a2e;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  .sub { color: #888; font-size: .8rem; margin-bottom: 18px; }
+
+  /* ===== 디데이 ===== */
+  .dday-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .dday-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: #f0eeff; border-radius: 20px; padding: 6px 12px 6px 14px;
+    font-size: .8rem; font-weight: 700; color: #5b3fd6; white-space: nowrap;
+  }
+  .dday-chip .n { font-size: .95rem; }
+  .dday-chip .x {
+    cursor: pointer; color: #b0a8e0; font-weight: 400; padding: 0 2px;
+  }
+  .dday-chip .x:hover { color: #e03131; }
+  .dday-add {
+    border: 1.5px dashed #ccc; border-radius: 20px; padding: 6px 14px;
+    font-size: .8rem; color: #999; cursor: pointer; background: none;
+  }
+  .dday-add:hover { border-color: #999; color: #666; }
+
+  /* ===== 공통 섹션 ===== */
+  .section {
+    background: #fff; border-radius: 16px; padding: 18px 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .section-head h2 { font-size: 1rem; margin: 0; }
+  .section-head .tools { display: flex; gap: 6px; }
+  .brand-btn {
+    border: 1px solid #ddd; background: #fff; border-radius: 8px; padding: 4px 10px;
+    font-size: .75rem; cursor: pointer; color: #666;
+  }
+  .brand-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+  .loading { color: #aaa; font-size: .85rem; padding: 20px 0; text-align: center; }
+
+  /* ===== 그로스매출 ===== */
+  .gross-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gross-card { border-radius: 12px; padding: 14px 16px; background: #fafbfd; border: 1px solid #eee; }
+  .gross-card .name { font-size: .82rem; color: #888; font-weight: 700; margin-bottom: 4px; }
+  .gross-card .val { font-size: 1.4rem; font-weight: 800; }
+  .gross-card .rank {
+    display: inline-block; margin-top: 6px; font-size: .72rem; font-weight: 800;
+    padding: 2px 8px; border-radius: 10px; color: #fff;
+  }
+  .gross-card .note { font-size: .72rem; color: #aaa; margin-top: 4px; }
+
+  /* ===== 매출 요약 카드 (기존 coupang.html 요약 스타일과 동일 톤) ===== */
+  .sum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 10px; margin-top: 8px; }
+  .sum-card { background: #fafbfd; border: 1px solid #eee; border-radius: 10px; padding: 10px 12px; }
+  .sum-card .label { font-size: .7rem; color: #999; margin-bottom: 3px; }
+  .sum-card .v { font-size: .98rem; font-weight: 800; }
+  .sum-card .v.rev { color: #1c7ed6; }
+  .sum-card .v.cost { color: #e03131; }
+  .sum-card .v.grand { color: #2f9e44; }
+  .sum-card .avg { font-size: .68rem; color: #bbb; margin-top: 2px; }
+  .yoil-compare {
+    margin-top: 14px; display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .yoil-box {
+    flex: 1; min-width: 200px; background: #fafbfd; border: 1px solid #eee; border-radius: 10px; padding: 12px 14px;
+  }
+  .yoil-box .t { font-size: .78rem; color: #888; margin-bottom: 6px; }
+  .yoil-box .v { font-size: 1.15rem; font-weight: 800; }
+  .yoil-box .cmp { font-size: .8rem; font-weight: 700; margin-left: 6px; }
+  .cmp.up { color: #2f9e44; } .cmp.down { color: #e03131; } .cmp.flat { color: #999; }
+
+  /* ===== 광고관리 Top20 박스 ===== */
+  .ad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ad-box { border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+  .ad-box .hd { padding: 8px 12px; font-size: .8rem; font-weight: 800; color: #fff; }
+  .ad-box.bad .hd { background: #e03131; }
+  .ad-box.cost .hd { background: #f08c00; }
+  .ad-box.good .hd { background: #1c7ed6; }
+  .ad-list { max-height: 320px; overflow-y: auto; }
+  .ad-row {
+    display: flex; justify-content: space-between; gap: 8px; padding: 7px 12px;
+    border-bottom: 1px solid #f2f2f2; font-size: .76rem;
+  }
+  .ad-row:last-child { border-bottom: none; }
+  .ad-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #333; }
+  .ad-row .v { flex-shrink: 0; font-weight: 700; color: #555; text-align: right; }
+  .ad-empty { padding: 20px; text-align: center; color: #bbb; font-size: .8rem; }
+
+  /* ===== 주문관리 ===== */
+  .order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .order-col { border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+  .order-col .hd {
+    padding: 10px 14px; font-weight: 800; font-size: .88rem; display: flex; justify-content: space-between;
+  }
+  .order-col.cp .hd { background: #fff3e0; color: #e8590c; }
+  .order-col.nv .hd { background: #e7f5ff; color: #1c7ed6; }
+  .order-list { max-height: 280px; overflow-y: auto; }
+  .order-row {
+    display: flex; justify-content: space-between; gap: 8px; padding: 7px 14px;
+    border-bottom: 1px solid #f5f5f5; font-size: .78rem;
+  }
+  .order-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .order-row .q { flex-shrink: 0; font-weight: 700; color: #666; }
+
+  .updated-at { text-align: center; color: #bbb; font-size: .72rem; margin-top: 20px; }
+
+  @media (max-width: 700px) {
+    .gross-grid, .order-grid { grid-template-columns: 1fr; }
+    .ad-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🌅 아침 브리핑</h1>
+  <div class="sub" id="todayLabel"></div>
+
+  <div class="dday-bar" id="ddayBar">
+    <span class="loading">디데이 불러오는 중...</span>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>📦 그로스매출 (어제)</h2></div>
+    <div class="gross-grid" id="grossGrid"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>💰 매출</h2></div>
+    <div class="yoil-compare" id="yoilCompare"></div>
+    <div id="salesSummaryLabel" class="sub" style="margin:14px 0 0"></div>
+    <div class="sum-grid" id="sumGrid"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>📢 광고관리 (최근 5일)</h2>
+      <div class="tools">
+        <button class="brand-btn active" data-brand="miri" onclick="switchAdBrand('miri')">미리토퍼</button>
+        <button class="brand-btn" data-brand="mong" onclick="switchAdBrand('mong')">몽몽토퍼</button>
+      </div>
+    </div>
+    <div class="ad-grid" id="adGrid"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>🧾 주문관리 (어제)</h2></div>
+    <div class="order-grid" id="orderGrid"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="updated-at" id="updatedAt"></div>
+</div>
+
+<script>
+const FB_DDAY = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/dday_list.json';
+const LOCAL_BASE = 'http://100.99.181.104:5127';
+const ADS_JSON = { miri: '광고데이터.json', mong: '광고데이터_몽몽.json' };
+const ADS_PATH = '미리토퍼캐슬/광고분석/';
+
+const RANK_COLORS = ['#1B5E20','#66BB6A','#F57F17','#EF5350','#B71C1C'];
+const RANK_LABELS = ['1위(상위 20%)','2위','3위','4위','5위(하위 20%)'];
+const WD = ['일','월','화','수','목','금','토'];
+
+function fmtWon(n){ return Math.round(n||0).toLocaleString('ko-KR') + '원'; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function yesterdayMD(){
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return { mm: String(d.getMonth()+1).padStart(2,'0'), dd: String(d.getDate()).padStart(2,'0'),
+           md: `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`,
+           date: d };
+}
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${WD[d.getDay()]})`;
+}
+document.getElementById('todayLabel').textContent = todayStr() + ' 기준';
+
+/* ===================== 디데이 ===================== */
+let ddayList = [];
+async function loadDday(){
+  try{
+    const r = await fetch(FB_DDAY + '?t=' + Date.now());
+    const d = await r.json();
+    ddayList = Array.isArray(d) ? d : (d ? Object.values(d) : []);
+  }catch(e){ ddayList = []; }
+  renderDday();
+}
+function saveDday(){
+  fetch(FB_DDAY, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(ddayList) })
+    .catch(()=>{});
+}
+function renderDday(){
+  const box = document.getElementById('ddayBar');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const chips = ddayList.slice().sort((a,b)=> a.date.localeCompare(b.date)).map(item => {
+    const target = new Date(item.date + 'T00:00:00');
+    const diff = Math.round((target - today) / 86400000);
+    const n = diff === 0 ? 'D-DAY' : (diff > 0 ? `D-${diff}` : `D+${-diff}`);
+    return `<span class="dday-chip">${esc(item.title)} <span class="n">${n}</span>
+      <span class="x" onclick="removeDday('${item.id}')" title="삭제">✕</span></span>`;
+  }).join('');
+  box.innerHTML = chips + `<button class="dday-add" onclick="addDday()">+ 디데이 추가</button>`;
+}
+function addDday(){
+  const title = prompt('무슨 날인가요? (예: 졸업, 추석)');
+  if(!title || !title.trim()) return;
+  const dateStr = prompt('날짜를 입력해주세요 (예: 2026-12-25)');
+  if(!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())){ alert('날짜 형식이 올바르지 않아요 (YYYY-MM-DD)'); return; }
+  ddayList.push({ id: 'd'+Date.now(), title: title.trim(), date: dateStr.trim() });
+  saveDday(); renderDday();
+}
+function removeDday(id){
+  ddayList = ddayList.filter(x => x.id !== id);
+  saveDday(); renderDday();
+}
+
+/* ===================== 매출 / 그로스 (coupang_data.json) ===================== */
+let coupangData = null;
+async function loadCoupangData(){
+  try{
+    const r = await fetch('coupang_data.json?t=' + Date.now());
+    coupangData = await r.json();
+  }catch(e){ coupangData = null; }
+  renderGross();
+  renderSalesYoil();
+  renderSalesSummary();
+}
+
+function quintileRank(rows, dateStr){
+  const vals = rows.map(r => ({ d:r.date, v:r.total })).filter(x => x.v);
+  vals.sort((a,b)=>b.v-a.v);
+  const n = vals.length;
+  const idx = vals.findIndex(x => x.d === dateStr);
+  if(idx < 0 || n < 2) return null;
+  return Math.min(4, Math.floor(idx / n * 5));
+}
+
+function renderGross(){
+  const grid = document.getElementById('grossGrid');
+  if(!coupangData){ grid.innerHTML = '<div class="ad-empty">매출 데이터를 못 불러왔어요</div>'; return; }
+  const y = yesterdayMD();
+  const brands = [['미리토퍼','miri'], ['몽몽토퍼','mong']];
+  grid.innerHTML = brands.map(([label]) => {
+    const rows = (coupangData.sales_data && coupangData.sales_data[label]) || [];
+    const row = rows.find(r => r.date === y.md);
+    const val = row ? row.total : null;
+    const rank = row ? quintileRank(rows, y.md) : null;
+    const rankHtml = rank !== null
+      ? `<div class="rank" style="background:${RANK_COLORS[rank]}">${RANK_LABELS[rank]}</div>`
+      : `<div class="note">순위 계산 불가</div>`;
+    return `<div class="gross-card">
+      <div class="name">${label}</div>
+      <div class="val">${val !== null ? fmtWon(val) : '데이터 없음'}</div>
+      ${val !== null ? rankHtml : ''}
+    </div>`;
+  }).join('');
+}
+
+/* 전날 vs 같은 요일 과거 평균 */
+function renderSalesYoil(){
+  const box = document.getElementById('yoilCompare');
+  if(!coupangData){ box.innerHTML=''; return; }
+  const y = yesterdayMD();
+  const dow = WD[y.date.getDay()];
+  const brands = [['미리토퍼','miri'], ['몽몽토퍼','mong']];
+  box.innerHTML = brands.map(([label]) => {
+    const rows = (coupangData.sales_data && coupangData.sales_data[label]) || [];
+    const yesterdayRow = rows.find(r => r.date === y.md);
+    const yVal = yesterdayRow ? yesterdayRow.total : 0;
+    // 같은 요일 과거 데이터(어제 제외, 최근 8회)
+    const sameDow = rows.filter(r => {
+      if(r.date === y.md) return false;
+      const [mm,dd] = r.date.split('/').map(Number);
+      const dt = new Date(2026, mm-1, dd);
+      return WD[dt.getDay()] === dow;
+    }).sort((a,b)=> b.date.localeCompare(a.date)).slice(0,8);
+    const avg = sameDow.length ? sameDow.reduce((s,r)=>s+r.total,0)/sameDow.length : null;
+    let cmpHtml = '';
+    if(avg){
+      const pct = ((yVal-avg)/avg*100);
+      const cls = pct > 3 ? 'up' : (pct < -3 ? 'down' : 'flat');
+      const arrow = pct > 3 ? '▲' : (pct < -3 ? '▼' : '-');
+      cmpHtml = `<span class="cmp ${cls}">${arrow} ${Math.abs(pct).toFixed(0)}%</span>`;
+    }
+    return `<div class="yoil-box">
+      <div class="t">${label} · 어제(${dow}) vs 최근 ${sameDow.length}번의 ${dow}요일 평균</div>
+      <span class="v">${fmtWon(yVal)}</span>${cmpHtml}
+      ${avg ? `<div class="note" style="color:#aaa;font-size:.7rem;margin-top:4px">${dow}요일 평균 ${fmtWon(avg)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* 이번달 요약 (coupang.html 요약 카드와 동일 계산) */
+function renderSalesSummary(){
+  const grid = document.getElementById('sumGrid');
+  const labelEl = document.getElementById('salesSummaryLabel');
+  if(!coupangData){ grid.innerHTML = '<div class="ad-empty">데이터 없음</div>'; return; }
+  const nowMM = String(new Date().getMonth()+1).padStart(2,'0');
+  labelEl.textContent = parseInt(nowMM) + '월 요약 (미리토퍼 기준)';
+  const rows = (coupangData.sales_data && coupangData.sales_data['미리토퍼']) || [];
+  const adData = coupangData.ad_data || {};
+  const sumDates = rows.map(r=>r.date).filter(d => d.startsWith(nowMM));
+  const sum = { rg:0, sd:0, total:0, cpAdCost:0, naverSales:0, naverSearchAd:0, naverAiAd:0 };
+  const byDate = {}; rows.forEach(r=>byDate[r.date]=r);
+  sumDates.forEach(d => {
+    const r = byDate[d] || {}; const ad = adData[d] || {};
+    sum.rg += r.rocket_growth||0; sum.sd += r.seller_delivery||0; sum.total += (r.rocket_growth||0)+(r.seller_delivery||0);
+    sum.cpAdCost += ad.cpAdCost||0; sum.naverSales += ad.naverSales||0;
+    sum.naverSearchAd += ad.naverSearchAd||0; sum.naverAiAd += ad.naverAiAd||0;
+  });
+  const totalSales = sum.total + sum.naverSales;
+  const totalAdCost = sum.cpAdCost + sum.naverSearchAd + sum.naverAiAd;
+  const dayCount = sumDates.length;
+  const pctOf = v => totalSales ? ` <span style="font-size:.68rem;color:#999">(${(v/totalSales*100).toFixed(0)}%)</span>` : '';
+  const avgHtml = v => dayCount ? `<div class="avg">일평균 ${fmtWon(v/dayCount)}</div>` : '';
+  const card = (label, val, cls, pct) => `<div class="sum-card">
+      <div class="label">${label}</div>
+      <div class="v ${cls}">${fmtWon(val)}${pct||''}</div>
+      ${avgHtml(val)}
+    </div>`;
+  grid.innerHTML = [
+    card('쿠팡 그로스', sum.rg, 'rev', pctOf(sum.rg)),
+    card('쿠팡 판매자배송', sum.sd, 'rev', pctOf(sum.sd)),
+    card('쿠팡 총매출', sum.total, 'rev', pctOf(sum.total)),
+    card('쿠팡 광고비', sum.cpAdCost, 'cost', ''),
+    card('네이버 총매출', sum.naverSales, 'rev', pctOf(sum.naverSales)),
+    card('네이버 광고비', sum.naverSearchAd+sum.naverAiAd, 'cost', ''),
+    card('전체 총광고비', totalAdCost, 'cost', ''),
+    card('전체 총매출', totalSales, 'grand', ''),
+  ].join('');
+}
+
+/* ===================== 광고관리 Top20 (최근 5일, 옵션ID 기준) ===================== */
+let adBrand = 'miri';
+let adCache = {};
+async function loadAdData(brand){
+  if(adCache[brand]) return adCache[brand];
+  const r = await fetch(LOCAL_BASE + '/' + encodeURI(ADS_PATH + ADS_JSON[brand]) + '?t=' + Date.now());
+  const d = await r.json();
+  adCache[brand] = d;
+  return d;
+}
+function switchAdBrand(b){
+  adBrand = b;
+  document.querySelectorAll('.brand-btn').forEach(x => x.classList.toggle('active', x.dataset.brand===b));
+  renderAdTop20();
+}
+async function renderAdTop20(){
+  const grid = document.getElementById('adGrid');
+  grid.innerHTML = '<div class="loading">불러오는 중...</div>';
+  let data;
+  try{ data = await loadAdData(adBrand); }
+  catch(e){ grid.innerHTML = '<div class="ad-empty">광고데이터를 못 불러왔어요 (사무실 서버 연결 확인)</div>'; return; }
+
+  const allDates = (data.adDates||[]).slice().sort();
+  const last5 = allDates.slice(-5);
+  const byOpt = {};
+  last5.forEach(d => {
+    const camps = data.byDateCampProd[d] || {};
+    for(const c in camps){
+      const prods = camps[c];
+      for(const o in prods){
+        const v = prods[o];
+        if(!byOpt[o]) byOpt[o] = { cost:0, rev:0 };
+        byOpt[o].cost += v.cost||0; byOpt[o].rev += v.rev||0;
+      }
+    }
+  });
+  const list = Object.keys(byOpt).map(o => {
+    const t = byOpt[o];
+    return { opt:o, name: data.prodName[o]||o, cost:t.cost, rev:t.rev, roas: t.cost ? t.rev/t.cost*100 : null };
+  });
+
+  const withCost = list.filter(x => x.cost > 0);
+  const badRoas = withCost.slice().sort((a,b)=> (a.roas??0)-(b.roas??0)).slice(0,20);
+  const topCost = withCost.slice().sort((a,b)=> b.cost-a.cost).slice(0,20);
+  const goodRoas = withCost.slice().sort((a,b)=> (b.roas??0)-(a.roas??0)).slice(0,20);
+
+  const box = (title, cls, rows, valFn) => `
+    <div class="ad-box ${cls}">
+      <div class="hd">${title}</div>
+      <div class="ad-list">
+        ${rows.length ? rows.map(x => `<div class="ad-row"><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="v">${valFn(x)}</span></div>`).join('')
+                      : '<div class="ad-empty">데이터 없음</div>'}
+      </div>
+    </div>`;
+  grid.innerHTML =
+    box('🔴 수익률(ROAS) 낮은 순 Top20', 'bad', badRoas, x => x.roas!==null ? Math.round(x.roas)+'%' : '-') +
+    box('🟠 광고비 많이 쓴 순 Top20', 'cost', topCost, x => fmtWon(x.cost)) +
+    box('🔵 수익률(ROAS) 높은 순 Top20', 'good', goodRoas, x => x.roas!==null ? Math.round(x.roas)+'%' : '-');
+}
+
+/* ===================== 주문관리 (어제, 쿠팡/네이버) ===================== */
+async function renderOrders(){
+  const grid = document.getElementById('orderGrid');
+  let data;
+  try{
+    const r = await fetch(LOCAL_BASE + '/api/orders?t=' + Date.now());
+    data = await r.json();
+  }catch(e){
+    grid.innerHTML = '<div class="ad-empty">주문데이터를 못 불러왔어요 (사무실 서버 연결 확인)</div>';
+    return;
+  }
+  const y = yesterdayMD();
+  const yStr = `${y.date.getFullYear()}-${y.mm}-${y.dd}`;
+  const orders = (data.orders||[]).filter(o => (o.orderedAt||'').startsWith(yStr));
+
+  const bucket = (pred) => {
+    const map = {};
+    orders.filter(pred).forEach(o => {
+      const key = (o.code||o.productName||'-') + (o.optionName ? (' · '+o.optionName) : '');
+      if(!map[key]) map[key] = 0;
+      map[key] += o.qty || 1;
+    });
+    return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  };
+  const cp = bucket(o => o.mallType === 'COUPANG');
+  const nv = bucket(o => o.mallType === 'SMART_STORE');
+  const cpCnt = orders.filter(o=>o.mallType==='COUPANG').length;
+  const nvCnt = orders.filter(o=>o.mallType==='SMART_STORE').length;
+
+  const col = (label, cls, cnt, rows) => `
+    <div class="order-col ${cls}">
+      <div class="hd"><span>${label}</span><span>${cnt}건</span></div>
+      <div class="order-list">
+        ${rows.length ? rows.map(([nm,q]) => `<div class="order-row"><span class="nm" title="${esc(nm)}">${esc(nm)}</span><span class="q">${q}개</span></div>`).join('')
+                      : '<div class="ad-empty">주문 없음</div>'}
+      </div>
+    </div>`;
+  grid.innerHTML = col('🟠 쿠팡', 'cp', cpCnt, cp) + col('🟢 네이버', 'nv', nvCnt, nv);
+}
+
+/* ===================== 초기 로드 ===================== */
+(async function init(){
+  loadDday();
+  await loadCoupangData();
+  await renderAdTop20();
+  await renderOrders();
+  document.getElementById('updatedAt').textContent = '새로고침: ' + new Date().toLocaleString('ko-KR');
+})();
+</script>
+</body>
+</html>
