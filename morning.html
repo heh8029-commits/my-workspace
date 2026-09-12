@@ -136,15 +136,16 @@
   </div>
 
   <div class="section">
-    <div class="section-head"><h2>📦 그로스매출 (어제)</h2></div>
-    <div class="gross-grid" id="grossGrid"><div class="loading">불러오는 중...</div></div>
-  </div>
-
-  <div class="section">
     <div class="section-head"><h2>💰 매출</h2></div>
+    <div class="sum-grid" id="topSumGrid" style="margin-bottom:14px"><div class="loading">불러오는 중...</div></div>
     <div class="yoil-compare" id="yoilCompare"></div>
     <div id="salesSummaryLabel" class="sub" style="margin:14px 0 0"></div>
     <div class="sum-grid" id="sumGrid"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>📦 그로스매출 (어제)</h2></div>
+    <div class="gross-grid" id="grossGrid"><div class="loading">불러오는 중...</div></div>
   </div>
 
   <div class="section">
@@ -237,9 +238,33 @@ async function loadCoupangData(){
     const r = await fetch('coupang_data.json?t=' + Date.now());
     coupangData = await r.json();
   }catch(e){ coupangData = null; }
+  renderTopSummary();
   renderGross();
   renderSalesYoil();
   renderSalesSummary();
+}
+
+/* 매출 섹션 맨 위: 어제 총매출 · 광고비 · 광고비중 (쿠팡+네이버, 미리토퍼 기준) */
+function renderTopSummary(){
+  const grid = document.getElementById('topSumGrid');
+  if(!coupangData){ grid.innerHTML = '<div class="ad-empty">데이터 없음</div>'; return; }
+  const y = yesterdayMD();
+  const rows = (coupangData.sales_data && coupangData.sales_data['미리토퍼']) || [];
+  const row = rows.find(r => r.date === y.md) || {};
+  const ad = (coupangData.ad_data && coupangData.ad_data[y.md]) || {};
+  const cpTotal = (row.rocket_growth||0) + (row.seller_delivery||0);
+  const naverSales = ad.naverSales || 0;
+  const totalSales = cpTotal + naverSales;
+  const totalAdCost = (ad.cpAdCost||0) + (ad.naverSearchAd||0) + (ad.naverAiAd||0);
+  const adPct = totalSales ? (totalAdCost/totalSales*100) : null;
+  const card = (label, val, cls, extra) => `<div class="sum-card">
+      <div class="label">${label}</div>
+      <div class="v ${cls}">${fmtWon(val)}${extra||''}</div>
+    </div>`;
+  grid.innerHTML =
+    card('어제 총매출', totalSales, 'grand', '') +
+    card('어제 총광고비', totalAdCost, 'cost',
+      adPct !== null ? ` <span style="font-size:.72rem;color:#999">(광고비중 ${adPct.toFixed(1)}%)</span>` : '');
 }
 
 function quintileRank(rows, dateStr){
