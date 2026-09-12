@@ -290,24 +290,37 @@ function renderTopSummary(){
   const row = rows.find(r => r.date === y.md) || {};
   const ad = (coupangData.ad_data && coupangData.ad_data[y.md]) || {};
   const cpTotal = (row.rocket_growth||0) + (row.seller_delivery||0);
-  const naverMissing = ad.naverSales === undefined || ad.naverSales === null;
-  const cpAdMissing = ad.cpAdCost === undefined || ad.cpAdCost === null;
   const naverSales = ad.naverSales || 0;
+  const naverAdCost = (ad.naverSearchAd||0) + (ad.naverAiAd||0);
+  const cpAdCost = ad.cpAdCost || 0;
   const totalSales = cpTotal + naverSales;
-  const totalAdCost = (ad.cpAdCost||0) + (ad.naverSearchAd||0) + (ad.naverAiAd||0);
+  const totalAdCost = cpAdCost + naverAdCost;
   const adPct = totalSales ? (totalAdCost/totalSales*100) : null;
-  const warnHtml = (missing, label) => missing
-    ? `<div style="font-size:.68rem;color:#e8590c;font-weight:700;margin-top:4px">⚠️ ${label} 미수집 — 실제보다 적게 잡힘</div>` : '';
-  const card = (label, val, cls, extra, warn) => `<div class="sum-card">
+
+  const isMissing = v => v === undefined || v === null;
+  const salesMissing = [];
+  if(isMissing(ad.naverSales)) salesMissing.push('네이버 매출');
+  const adMissing = [];
+  if(isMissing(ad.cpAdCost)) adMissing.push('쿠팡 광고비');
+  if(isMissing(ad.naverSearchAd)) adMissing.push('네이버 검색광고');
+  if(isMissing(ad.naverAiAd)) adMissing.push('네이버 AI광고');
+  const warn = list => list.length
+    ? `<div style="font-size:.68rem;color:#e8590c;font-weight:700;margin-top:4px">⚠️ ${list.join(', ')} 미수집 — 실제보다 적게 잡힘</div>` : '';
+
+  const breakdown = (cp, nv) => `<div style="font-size:.78rem;color:#777;margin-top:5px">
+      🟠 쿠팡 ${fmtWon(cp)} <span style="color:#ccc">·</span> 🟢 네이버 ${fmtWon(nv)}
+    </div>`;
+
+  const card = (label, val, cls, extra, sub) => `<div class="sum-card">
       <div class="label">${label}</div>
       <div class="v ${cls}">${fmtWon(val)}${extra||''}</div>
-      ${warn||''}
+      ${sub||''}
     </div>`;
   grid.innerHTML =
-    card('어제 총매출', totalSales, 'grand', '', warnHtml(naverMissing, '네이버 매출')) +
+    card('어제 총매출', totalSales, 'grand', '', breakdown(cpTotal, naverSales) + warn(salesMissing)) +
     card('어제 총광고비', totalAdCost, 'cost',
       adPct !== null ? ` <span style="font-size:.72rem;color:#999">(광고비중 ${adPct.toFixed(1)}%)</span>` : '',
-      warnHtml(cpAdMissing, '쿠팡 광고비'));
+      breakdown(cpAdCost, naverAdCost) + warn(adMissing));
 }
 
 function quintileRank(rows, dateStr){
