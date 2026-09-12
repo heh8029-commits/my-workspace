@@ -185,9 +185,6 @@
 
 <script>
 const FB_DDAY = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/dday_list.json';
-const LOCAL_BASE = 'https://desktop-p9hgdb3.taildf7a5f.ts.net';
-const ADS_JSON = { miri: '광고데이터.json', mong: '광고데이터_몽몽.json' };
-const ADS_PATH = '미리토퍼캐슬/광고분석/';
 
 const RANK_COLORS = ['#1B5E20','#66BB6A','#F57F17','#EF5350','#B71C1C'];
 const RANK_LABELS = ['1위(상위 20%)','2위','3위','4위','5위(하위 20%)'];
@@ -427,113 +424,69 @@ function renderSalesSummary(){
   ].join('');
 }
 
-/* ===================== 광고관리 Top20 (최근 5일, 옵션ID 기준) ===================== */
+/* ===================== 광고관리 Top20 · 주문관리 (사무실 PC가 매일 Firebase에 미리 계산해서 올려둠) =====================
+   원래는 사무실 서버(사설망, http)를 브라우저에서 직접 불러왔는데, 대시보드가 GitHub Pages(https)라
+   브라우저가 보안 정책(Private Network Access)으로 막아버렸다 — 특히 폰에서.
+   그래서 morning_summary_push.py 가 매일 광고데이터 갱신 직후 요약을 Firebase에 올려두고,
+   여기서는 그 요약만 읽는다 (사무실 서버 접속 불필요, 커스텀 도메인 인증서 상태와도 무관). */
+const FB_SUMMARY = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/morning_summary.json';
+let summaryData = null;
 let adBrand = 'miri';
-let adCache = {};
-async function loadAdData(brand){
-  if(adCache[brand]) return adCache[brand];
-  const r = await fetch(LOCAL_BASE + '/' + encodeURI(ADS_PATH + ADS_JSON[brand]) + '?t=' + Date.now());
-  const d = await r.json();
-  adCache[brand] = d;
-  return d;
+
+async function loadSummary(){
+  try{
+    const r = await fetch(FB_SUMMARY + '?t=' + Date.now());
+    summaryData = await r.json();
+  }catch(e){ summaryData = null; }
 }
 function switchAdBrand(b){
   adBrand = b;
   document.querySelectorAll('.brand-btn').forEach(x => x.classList.toggle('active', x.dataset.brand===b));
   renderAdTop20();
 }
-async function renderAdTop20(){
+function renderAdTop20(){
   const grid = document.getElementById('adGrid');
-  grid.innerHTML = '<div class="loading">불러오는 중...</div>';
-  let data;
-  try{ data = await loadAdData(adBrand); }
-  catch(e){ grid.innerHTML = '<div class="ad-empty">광고데이터를 못 불러왔어요 (사무실 서버 연결 확인)</div>'; return; }
-
-  const allDates = (data.adDates||[]).slice().sort();
-  const last5 = allDates.slice(-5);
-  const byOpt = {};
-  last5.forEach(d => {
-    const camps = data.byDateCampProd[d] || {};
-    for(const c in camps){
-      const prods = camps[c];
-      for(const o in prods){
-        const v = prods[o];
-        if(!byOpt[o]) byOpt[o] = { cost:0, rev:0 };
-        byOpt[o].cost += v.cost||0; byOpt[o].rev += v.rev||0;
-      }
-    }
-  });
-  const list = Object.keys(byOpt).map(o => {
-    const t = byOpt[o];
-    return { opt:o, name: data.prodName[o]||o, cost:t.cost, rev:t.rev, roas: t.cost ? t.rev/t.cost*100 : null };
-  });
-
-  const withCost = list.filter(x => x.cost > 0);
-  const badRoas = withCost.slice().sort((a,b)=> (a.roas??0)-(b.roas??0)).slice(0,20);
-  const topCost = withCost.slice().sort((a,b)=> b.cost-a.cost).slice(0,20);
-  const goodRoas = withCost.slice().sort((a,b)=> (b.roas??0)-(a.roas??0)).slice(0,20);
-
+  const ad = summaryData && summaryData.ad && summaryData.ad[adBrand];
+  if(!ad){ grid.innerHTML = '<div class="ad-empty">광고 요약 데이터가 없어요</div>'; return; }
   const box = (title, cls, rows, valFn) => `
     <div class="ad-box ${cls}">
       <div class="hd">${title}</div>
       <div class="ad-list">
-        ${rows.length ? rows.map(x => `<div class="ad-row"><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="v">${valFn(x)}</span></div>`).join('')
+        ${rows && rows.length ? rows.map(x => `<div class="ad-row"><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="v">${valFn(x)}</span></div>`).join('')
                       : '<div class="ad-empty">데이터 없음</div>'}
       </div>
     </div>`;
   grid.innerHTML =
-    box('🔴 수익률(ROAS) 낮은 순 Top20', 'bad', badRoas, x => x.roas!==null ? Math.round(x.roas)+'%' : '-') +
-    box('🟠 광고비 많이 쓴 순 Top20', 'cost', topCost, x => fmtWon(x.cost)) +
-    box('🔵 수익률(ROAS) 높은 순 Top20', 'good', goodRoas, x => x.roas!==null ? Math.round(x.roas)+'%' : '-');
+    box('🔴 수익률(ROAS) 낮은 순 Top20', 'bad', ad.badRoas, x => x.roas!==null ? Math.round(x.roas)+'%' : '-') +
+    box('🟠 광고비 많이 쓴 순 Top20', 'cost', ad.topCost, x => fmtWon(x.cost)) +
+    box('🔵 수익률(ROAS) 높은 순 Top20', 'good', ad.goodRoas, x => x.roas!==null ? Math.round(x.roas)+'%' : '-');
 }
 
 /* ===================== 주문관리 (어제, 쿠팡/네이버) ===================== */
-async function renderOrders(){
+function renderOrders(){
   const grid = document.getElementById('orderGrid');
-  let data;
-  try{
-    const r = await fetch(LOCAL_BASE + '/api/orders?t=' + Date.now());
-    data = await r.json();
-  }catch(e){
-    grid.innerHTML = '<div class="ad-empty">주문데이터를 못 불러왔어요 (사무실 서버 연결 확인)</div>';
-    return;
-  }
-  const y = yesterdayMD();
-  const yStr = `${y.date.getFullYear()}-${y.mm}-${y.dd}`;
-  const orders = (data.orders||[]).filter(o => (o.orderedAt||'').startsWith(yStr));
-
-  const bucket = (pred) => {
-    const map = {};
-    orders.filter(pred).forEach(o => {
-      const key = (o.code||o.productName||'-') + (o.optionName ? (' · '+o.optionName) : '');
-      if(!map[key]) map[key] = 0;
-      map[key] += o.qty || 1;
-    });
-    return Object.entries(map).sort((a,b)=>b[1]-a[1]);
-  };
-  const cp = bucket(o => o.mallType === 'COUPANG');
-  const nv = bucket(o => o.mallType === 'SMART_STORE');
-  const cpCnt = orders.filter(o=>o.mallType==='COUPANG').length;
-  const nvCnt = orders.filter(o=>o.mallType==='SMART_STORE').length;
-
-  const col = (label, cls, cnt, rows) => `
+  const o = summaryData && summaryData.orders;
+  if(!o){ grid.innerHTML = '<div class="ad-empty">주문 요약 데이터가 없어요</div>'; return; }
+  const col = (label, cls, bucket) => `
     <div class="order-col ${cls}">
-      <div class="hd"><span>${label}</span><span>${cnt}건</span></div>
+      <div class="hd"><span>${label}</span><span>${(bucket&&bucket.count)||0}건</span></div>
       <div class="order-list">
-        ${rows.length ? rows.map(([nm,q]) => `<div class="order-row"><span class="nm" title="${esc(nm)}">${esc(nm)}</span><span class="q">${q}개</span></div>`).join('')
+        ${bucket && bucket.items && bucket.items.length ? bucket.items.map(x => `<div class="order-row"><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="q">${x.qty}개</span></div>`).join('')
                       : '<div class="ad-empty">주문 없음</div>'}
       </div>
     </div>`;
-  grid.innerHTML = col('🟠 쿠팡', 'cp', cpCnt, cp) + col('🟢 네이버', 'nv', nvCnt, nv);
+  grid.innerHTML = col('🟠 쿠팡', 'cp', o.cp) + col('🟢 네이버', 'nv', o.nv);
 }
 
 /* ===================== 초기 로드 ===================== */
 (async function init(){
   loadDday();
   await loadCoupangData();
-  await renderAdTop20();
-  await renderOrders();
-  document.getElementById('updatedAt').textContent = '새로고침: ' + new Date().toLocaleString('ko-KR');
+  await loadSummary();
+  renderAdTop20();
+  renderOrders();
+  document.getElementById('updatedAt').textContent = '새로고침: ' + new Date().toLocaleString('ko-KR')
+    + (summaryData && summaryData.updated ? ` · 광고/주문 요약: ${summaryData.updated}` : '');
 })();
 </script>
 </body>
