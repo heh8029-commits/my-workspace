@@ -447,20 +447,23 @@ function renderSalesSummary(){
   const totalAdCost = sum.cpAdCost + sum.naverSearchAd + sum.naverAiAd;
   const dayCount = sumDates.length;
   const pctOf = v => totalSales ? ` <span style="font-size:.68rem;color:#999">(${(v/totalSales*100).toFixed(0)}%)</span>` : '';
+  // 광고비 카드: 광고비중(그 채널 매출 대비 %) — 매출 카드의 pctOf(전체매출 대비)와는 기준이 다름
+  const pctCost = (cost, base) => base ? ` <span style="font-size:.68rem;color:#e8590c">(광고비중 ${(cost/base*100).toFixed(1)}%)</span>` : '';
   const avgHtml = v => dayCount ? `<div class="avg">일평균 ${fmtWon(v/dayCount)}</div>` : '';
   const card = (label, val, cls, pct) => `<div class="sum-card">
       <div class="label">${label}</div>
       <div class="v ${cls}">${fmtWon(val)}${pct||''}</div>
       ${avgHtml(val)}
     </div>`;
+  const naverAdCostSum = sum.naverSearchAd + sum.naverAiAd;
   grid.innerHTML = [
     card('쿠팡 그로스', sum.rg, 'rev', pctOf(sum.rg)),
     card('쿠팡 판매자배송', sum.sd, 'rev', pctOf(sum.sd)),
     card('쿠팡 총매출', sum.total, 'rev', pctOf(sum.total)),
-    card('쿠팡 광고비', sum.cpAdCost, 'cost', ''),
+    card('쿠팡 광고비', sum.cpAdCost, 'cost', pctCost(sum.cpAdCost, sum.total)),
     card('네이버 총매출', sum.naverSales, 'rev', pctOf(sum.naverSales)),
-    card('네이버 광고비', sum.naverSearchAd+sum.naverAiAd, 'cost', ''),
-    card('전체 총광고비', totalAdCost, 'cost', ''),
+    card('네이버 광고비', naverAdCostSum, 'cost', pctCost(naverAdCostSum, sum.naverSales)),
+    card('전체 총광고비', totalAdCost, 'cost', pctCost(totalAdCost, totalSales)),
     card('전체 총매출', totalSales, 'grand', ''),
   ].join('');
 }
