@@ -265,17 +265,60 @@ function removeDday(id){
   saveDday(); renderDday();
 }
 
-/* ===================== 매출 / 그로스 (coupang_data.json) ===================== */
+/* ===================== 매출 / 그로스 (coupang_data.json + 매출.html 수동보정) =====================
+   매출.html(coupang.html)에서 광고비/네이버매출/그로스매출을 수동으로 고치면 coupang_data.json이
+   아니라 Firebase(FB_MANUAL_AD)에 저장된다 — 여기서도 그걸 똑같이 읽어서 덮어써야
+   대시보드에 수동 보정이 반영된다 (2026-09-12 실제 지적받음). */
+const FB_MANUAL_AD = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/coupang_manual_ad.json';
 let coupangData = null;
+let mergedAdData = {};  // coupang.html 의 adData 와 동일한 병합 결과 (날짜 'MM/DD' 키)
+
 async function loadCoupangData(){
+  let manualAdData = {};
   try{
-    const r = await fetch('coupang_data.json?t=' + Date.now());
+    const [r, fbR] = await Promise.all([
+      fetch('coupang_data.json?t=' + Date.now()),
+      fetch(FB_MANUAL_AD + '?t=' + Date.now()).catch(()=>null),
+    ]);
     coupangData = await r.json();
+    if(fbR && fbR.ok){
+      const fb = await fbR.json();
+      if(fb && typeof fb === 'object'){
+        for(const [k,v] of Object.entries(fb)) manualAdData[k.replace(/_/g,'/')] = v;
+      }
+    }
   }catch(e){ coupangData = null; }
+
+  mergedAdData = {};
+  if(coupangData){
+    const jsonAdData = coupangData.ad_data || {};
+    for(const date of new Set([...Object.keys(jsonAdData), ...Object.keys(manualAdData)])){
+      const merged = Object.assign({}, jsonAdData[date] || {});
+      for(const [k,v] of Object.entries(manualAdData[date] || {})){
+        if(v !== 0 && v !== null && v !== undefined) merged[k] = v;
+      }
+      mergedAdData[date] = merged;
+    }
+  }
   renderTopSummary();
   renderGross();
   renderSalesYoil();
   renderSalesSummary();
+}
+
+/* 쿠팡 그로스매출(로켓+판매자배송), 매출.html 의 수동 보정(manualRg/manualSd, mong은 mongRg/mongSd)을
+   반영한 최종값. rows 원본은 안 건드리고 그때그때 계산한다. */
+function getRgSd(brandLabel, date){
+  const isMong = brandLabel === '몽몽토퍼';
+  const fRg = isMong ? 'mongRg' : 'manualRg';
+  const fSd = isMong ? 'mongSd' : 'manualSd';
+  const rows = (coupangData && coupangData.sales_data && coupangData.sales_data[brandLabel]) || [];
+  const m = rows.find(r => r.date === date) || {};
+  const ad = mergedAdData[date] || {};
+  const has = v => v !== undefined && v !== null && v !== '';
+  const rg = has(ad[fRg]) ? ad[fRg] : (m.rocket_growth || 0);
+  const sd = has(ad[fSd]) ? ad[fSd] : (m.seller_delivery || 0);
+  return { rg, sd, total: rg + sd, hasRow: !!rows.find(r => r.date === date) };
 }
 
 /* 매출 섹션 맨 위: 어제 총매출 · 광고비 · 광고비중 (쿠팡+네이버, 미리토퍼 기준) */
@@ -283,10 +326,8 @@ function renderTopSummary(){
   const grid = document.getElementById('topSumGrid');
   if(!coupangData){ grid.innerHTML = '<div class="ad-empty">데이터 없음</div>'; return; }
   const y = yesterdayMD();
-  const rows = (coupangData.sales_data && coupangData.sales_data['미리토퍼']) || [];
-  const row = rows.find(r => r.date === y.md) || {};
-  const ad = (coupangData.ad_data && coupangData.ad_data[y.md]) || {};
-  const cpTotal = (row.rocket_growth||0) + (row.seller_delivery||0);
+  const ad = mergedAdData[y.md] || {};
+  const cpTotal = getRgSd('미리토퍼', y.md).total;
   const naverSales = ad.naverSales || 0;
   const naverAdCost = (ad.naverSearchAd||0) + (ad.naverAiAd||0);
   const cpAdCost = ad.cpAdCost || 0;
@@ -336,9 +377,11 @@ function renderGross(){
   const brands = [['미리토퍼','miri'], ['몽몽토퍼','mong']];
   grid.innerHTML = brands.map(([label]) => {
     const rows = (coupangData.sales_data && coupangData.sales_data[label]) || [];
-    const row = rows.find(r => r.date === y.md);
-    const val = row ? row.total : null;
-    const rank = row ? quintileRank(rows, y.md) : null;
+    const cur = getRgSd(label, y.md);
+    const val = cur.hasRow ? cur.total : null;
+    // 순위 비교용: 원래 날짜들에 보정값을 반영한 total 목록
+    const corrected = rows.map(r => ({ date: r.date, total: getRgSd(label, r.date).total }));
+    const rank = cur.hasRow ? quintileRank(corrected, y.md) : null;
     const rankHtml = rank !== null
       ? `<div class="rank" style="background:${RANK_COLORS[rank]}">${RANK_LABELS[rank]}</div>`
       : `<div class="note">순위 계산 불가</div>`;
@@ -359,15 +402,15 @@ function renderSalesYoil(){
   const brands = [['미리토퍼','miri'], ['몽몽토퍼','mong']];
   box.innerHTML = brands.map(([label]) => {
     const rows = (coupangData.sales_data && coupangData.sales_data[label]) || [];
-    const yesterdayRow = rows.find(r => r.date === y.md);
-    const yVal = yesterdayRow ? yesterdayRow.total : 0;
-    // 같은 요일 과거 데이터(어제 제외, 최근 8회)
+    const yVal = getRgSd(label, y.md).total;
+    // 같은 요일 과거 데이터(어제 제외, 최근 8회) — 보정값 반영
     const sameDow = rows.filter(r => {
       if(r.date === y.md) return false;
       const [mm,dd] = r.date.split('/').map(Number);
       const dt = new Date(2026, mm-1, dd);
       return WD[dt.getDay()] === dow;
-    }).sort((a,b)=> b.date.localeCompare(a.date)).slice(0,8);
+    }).sort((a,b)=> b.date.localeCompare(a.date)).slice(0,8)
+      .map(r => ({ date: r.date, total: getRgSd(label, r.date).total }));
     const avg = sameDow.length ? sameDow.reduce((s,r)=>s+r.total,0)/sameDow.length : null;
     let cmpHtml = '';
     if(avg){
@@ -392,13 +435,11 @@ function renderSalesSummary(){
   const nowMM = String(new Date().getMonth()+1).padStart(2,'0');
   labelEl.textContent = parseInt(nowMM) + '월 요약 (미리토퍼 기준)';
   const rows = (coupangData.sales_data && coupangData.sales_data['미리토퍼']) || [];
-  const adData = coupangData.ad_data || {};
   const sumDates = rows.map(r=>r.date).filter(d => d.startsWith(nowMM));
   const sum = { rg:0, sd:0, total:0, cpAdCost:0, naverSales:0, naverSearchAd:0, naverAiAd:0 };
-  const byDate = {}; rows.forEach(r=>byDate[r.date]=r);
   sumDates.forEach(d => {
-    const r = byDate[d] || {}; const ad = adData[d] || {};
-    sum.rg += r.rocket_growth||0; sum.sd += r.seller_delivery||0; sum.total += (r.rocket_growth||0)+(r.seller_delivery||0);
+    const rs = getRgSd('미리토퍼', d); const ad = mergedAdData[d] || {};
+    sum.rg += rs.rg; sum.sd += rs.sd; sum.total += rs.total;
     sum.cpAdCost += ad.cpAdCost||0; sum.naverSales += ad.naverSales||0;
     sum.naverSearchAd += ad.naverSearchAd||0; sum.naverAiAd += ad.naverAiAd||0;
   });
@@ -452,7 +493,7 @@ function renderAdTop20(){
     <div class="ad-box ${cls}">
       <div class="hd">${title}</div>
       <div class="ad-list">
-        ${rows && rows.length ? rows.map(x => `<div class="ad-row"><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="v">${valFn(x)}</span></div>`).join('')
+        ${rows && rows.length ? rows.map(x => `<div class="ad-row"><span class="nm" title="${esc(x.fullName||x.name)}">${esc(x.name)}</span><span class="v">${valFn(x)}</span></div>`).join('')
                       : '<div class="ad-empty">데이터 없음</div>'}
       </div>
     </div>`;
