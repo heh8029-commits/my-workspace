@@ -8808,19 +8808,23 @@
     },
     "09/11": {
       "cpAdCost": 196170,
-      "mongCpAdCost": 50499
+      "mongCpAdCost": 50499,
+      "naverSales": 124700
     },
     "09/12": {
       "cpAdCost": 140064,
-      "mongCpAdCost": 34188
+      "mongCpAdCost": 34188,
+      "naverSales": 98700
     },
     "09/13": {
       "cpAdCost": 147648,
-      "mongCpAdCost": 27764
+      "mongCpAdCost": 27764,
+      "naverSales": 126700
     },
     "09/14": {
       "cpAdCost": 208949,
-      "mongCpAdCost": 40246
+      "mongCpAdCost": 40246,
+      "naverSales": 209200
     }
   },
   "ad_performance": {
