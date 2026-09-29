@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-30 01:20",
+  "last_updated": "2026-09-30 01:45",
   "accounts": {
     "미리토퍼": {
       "current_amount": 41820,
@@ -7557,12 +7557,6 @@
   },
   "run_log": [
     {
-      "time": "2026-08-19 18:45",
-      "account": "몽몽토퍼",
-      "status": "fail",
-      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
-    },
-    {
       "time": "2026-08-20 01:20",
       "account": "미리토퍼",
       "status": "fail",
@@ -8155,6 +8149,12 @@
       "account": "몽몽토퍼",
       "status": "fail",
       "reason": "예외: BrowserType.connect_over_cdp: connect ECONNREFUSED ::1:9302\nCall log:\n  - <ws preparing> retrieving websocket url from http://localhost:9302\n"
+    },
+    {
+      "time": "2026-09-30 01:45",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
     }
   ],
   "ad_data": {
