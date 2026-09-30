@@ -789,7 +789,10 @@ function renderSales() {
 
   // 요약: 선택된 월 또는 현재 월 기준
   const nowMM = String(new Date().getMonth()+1).padStart(2,'0');
-  const summaryMM = currentSalesMonth || nowMM;
+  // 월초(1일)엔 이번달 데이터가 아직 없어 요약이 통째로 사라지므로, 데이터 있는 가장 최근 달로 대신 보여준다
+  const lastDataMM = dataDates.map(d => d.split('/')[0]).sort().pop();
+  const summaryMM = currentSalesMonth
+    || (dataDates.some(d => d.startsWith(nowMM)) ? nowMM : (lastDataMM || nowMM));
   const summaryLabel = parseInt(summaryMM) + '월 요약';
   const sumDates = dataDates.filter(d => d.startsWith(summaryMM));
   const sumRow = { rocket_growth: 0, seller_delivery: 0, total: 0 };
