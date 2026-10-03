@@ -21735,10 +21735,12 @@
       "naverSales": 278100
     },
     "10/01": {
-      "cpAdCost": 235547
+      "cpAdCost": 235547,
+      "naverSales": 221200
     },
     "10/02": {
-      "cpAdCost": 207057
+      "cpAdCost": 207057,
+      "naverSales": 97700
     }
   },
   "ad_performance": {
