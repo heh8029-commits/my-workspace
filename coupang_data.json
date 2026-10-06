@@ -22335,15 +22335,18 @@
       "naverSales": 97700
     },
     "10/03": {
-      "cpAdCost": 149840
+      "cpAdCost": 149840,
+      "naverSales": 25200
     },
     "10/04": {
       "cpAdCost": 136395,
-      "mongCpAdCost": 30782
+      "mongCpAdCost": 30782,
+      "naverSales": 134200
     },
     "10/05": {
       "cpAdCost": 179648,
-      "mongCpAdCost": 40380
+      "mongCpAdCost": 40380,
+      "naverSales": 216400
     }
   },
   "ad_performance": {
