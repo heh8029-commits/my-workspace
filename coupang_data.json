@@ -22749,7 +22749,8 @@
     },
     "10/07": {
       "cpAdCost": 233345,
-      "mongCpAdCost": 63597
+      "mongCpAdCost": 63597,
+      "naverSales": 316000
     }
   },
   "ad_performance": {
