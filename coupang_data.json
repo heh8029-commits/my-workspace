@@ -21489,15 +21489,27 @@
       },
       {
         "date": "10/07",
-        "rocket_growth": 435390,
+        "rocket_growth": 445890,
         "seller_delivery": 0,
-        "total": 435390
+        "total": 445890
       },
       {
         "date": "10/08",
-        "rocket_growth": 41690,
+        "rocket_growth": 370580,
         "seller_delivery": 0,
-        "total": 41690
+        "total": 370580
+      },
+      {
+        "date": "10/09",
+        "rocket_growth": 206800,
+        "seller_delivery": 0,
+        "total": 206800
+      },
+      {
+        "date": "10/10",
+        "rocket_growth": 198490,
+        "seller_delivery": 0,
+        "total": 198490
       }
     ]
   },
@@ -23056,19 +23068,23 @@
     "10/07": {
       "cpAdCost": 233345,
       "mongCpAdCost": 63597,
-      "naverSales": 316000
+      "naverSales": 316000,
+      "naverSearchAd": 22437
     },
     "10/08": {
       "cpAdCost": 178088,
-      "naverSales": 134600
+      "naverSales": 134600,
+      "naverSearchAd": 15176
     },
     "10/09": {
       "cpAdCost": 188285,
-      "naverSales": 139400
+      "naverSales": 139400,
+      "naverSearchAd": 15889
     },
     "10/10": {
       "cpAdCost": 159571,
-      "naverSales": 142000
+      "naverSales": 142000,
+      "naverSearchAd": 11710
     }
   },
   "ad_performance": {
