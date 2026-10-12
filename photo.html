@@ -644,6 +644,7 @@ function csMakeThumb(file){
 }
 
 async function postToCsBoard(ctx){
+  if(ctx.productType==='magnet') return;   // 포토마그넷 접수는 CS실시간공유에 안 올린다 (2026-10-13 요청)
   const now=Date.now();
   const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
   const isMagnet = ctx.productType==='magnet';
