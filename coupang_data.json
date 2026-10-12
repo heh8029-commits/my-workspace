@@ -20818,6 +20818,12 @@
         "rocket_growth": 608750,
         "seller_delivery": 77000,
         "total": 685750
+      },
+      {
+        "date": "10/11",
+        "rocket_growth": 601210,
+        "seller_delivery": 191900,
+        "total": 793110
       }
     ],
     "몽몽토퍼": [
@@ -21585,9 +21591,9 @@
       },
       {
         "date": "10/11",
-        "rocket_growth": 296060,
+        "rocket_growth": 304960,
         "seller_delivery": 0,
-        "total": 296060
+        "total": 304960
       }
     ]
   },
