@@ -267,6 +267,14 @@
         <button type="button" data-mall="etc" class="etc">기타</button>
       </div>
 
+      <label>부대 <span class="req">*</span></label>
+      <div class="malls" id="units">
+        <button type="button" data-unit="육군">육군</button>
+        <button type="button" data-unit="해병대">해병대</button>
+        <button type="button" data-unit="공군">공군</button>
+        <button type="button" data-unit="해군">해군</button>
+      </div>
+
       <label>주문자 이름 <span class="req">*</span></label>
       <input type="text" id="ordererName" placeholder="예) 김미리" maxlength="40" />
 
@@ -644,10 +652,11 @@ function csMakeThumb(file){
 }
 
 async function postToCsBoard(ctx){
+  if(ctx.productType==='magnet') return;   // 포토마그넷 접수는 CS실시간공유에 안 올린다 (2026-10-13 요청)
   const now=Date.now();
   const mallLabel = MALL_LABEL[ctx.mall]||ctx.mall;
   const isMagnet = ctx.productType==='magnet';
-  const titleTag = isMagnet ? `📷 포토마그넷 접수${ctx.quick?'(간편)':''} · ${mallLabel}` : `📷 사진접수${ctx.quick?'(간편)':''} · ${mallLabel}`;
+  const titleTag = isMagnet ? `📷 포토마그넷 접수${ctx.quick?'(간편)':''} · ${mallLabel}` : `📷 사진접수${ctx.quick?'(간편)':''} · ${mallLabel}${ctx.unit?' · '+ctx.unit:''}`;
   const lines = ctx.quick ? [
     titleTag,
     `${ctx.name}`,
@@ -747,6 +756,18 @@ function ctypeOf(f){
   const ext=((f.name||'').match(/\.(\w+)$/)||[])[1];
   return ({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'})[(ext||'').toLowerCase()]||'image/jpeg';
 }
+
+// 부대(육군/해병대/공군/해군): 서버에 따로 칸이 없어서 요청사항 맨 앞줄에 [부대: 육군] 으로 붙여 저장한다
+let selectedUnit=null;
+const UNIT_RE=/^\[부대: ?([^\]]+)\]\n?/;
+function splitUnit(t){ t=t||''; const m=t.match(UNIT_RE); return m?{unit:m[1], rest:t.slice(m[0].length)}:{unit:'', rest:t}; }
+function joinUnit(u,t){ return u ? `[부대: ${u}]`+(t?'\n'+t:'') : (t||''); }
+document.getElementById('units').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-unit]'); if(!b) return;
+  selectedUnit=b.dataset.unit;
+  document.querySelectorAll('#units button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+});
 
 document.getElementById('malls').addEventListener('click',e=>{
   const b=e.target.closest('button[data-mall]'); if(!b) return;
@@ -854,6 +875,7 @@ document.getElementById('submitForm').addEventListener('submit', async e=>{
   const name=ordererName.value.trim(), addr=addressDong.value.trim(), phone=phoneLast4.value.trim();
   const p1=pw1.value, p2=pw2.value;
   if(!selectedMall) return toast('주문 쇼핑몰을 선택해 주세요.');
+  if(!selectedUnit) return toast('부대를 선택해 주세요.');
   if(!name) return toast('주문자 이름을 입력해 주세요.');
   if(!addr) return toast('배송지 주소(동)를 입력해 주세요.');
   if(!/^[0-9]{4}$/.test(phone)) return toast('전화번호 뒷자리 4자리를 입력해 주세요.');
@@ -868,7 +890,7 @@ document.getElementById('submitForm').addEventListener('submit', async e=>{
 
   try{
     const create = await api('submit',{action:'create', mall:selectedMall, ordererName:name,
-      addressDong:addr, phoneLast4:phone, editRequest:editRequest.value.trim(),
+      addressDong:addr, phoneLast4:phone, editRequest:joinUnit(selectedUnit, editRequest.value.trim()),
       password:p1, passwordConfirm:p2,
       files: files.map(f=>({name:f.name, size:f.size, contentType: ctypeOf(f)}))});
     if(create.status!==200) throw new Error(errMsg(create.body.error));
@@ -888,13 +910,13 @@ document.getElementById('submitForm').addEventListener('submit', async e=>{
     // work.html CS 게시판에 자동 등록(백그라운드 · 실패해도 접수엔 영향 없음)
     // showDone 이 폼/파일을 초기화하므로 그 전에 값·파일을 넘겨준다.
     postToCsBoard({
-      name, addr, phone, mall:selectedMall,
+      name, addr, phone, mall:selectedMall, unit:selectedUnit,
       editRequest: editRequest.value.trim(),
       receiptNo: fin.body.receiptNo, count: files.length,
       files: files.slice()
     });
 
-    showDone(fin.body, {name, addr, phone, count:files.length}, p1);
+    showDone(fin.body, {name, addr, phone, unit:selectedUnit, count:files.length}, p1);
   }catch(err){
     toast(err.message||'접수 중 오류가 발생했습니다.');
   }finally{
@@ -916,6 +938,7 @@ function showDone(fin, info, password){
   doneCtx={receiptId:fin.receiptId, password};
   document.getElementById('doneNo').textContent=fin.receiptNo;
   document.getElementById('doneInfo').innerHTML=`
+    ${info.unit?`<div class="kv"><b>부대</b><span>${esc(info.unit)}</span></div>`:''}
     <div class="kv"><b>주문자 이름</b><span>${esc(info.name)}</span></div>
     <div class="kv"><b>배송지 주소(동)</b><span>${esc(info.addr)}</span></div>
     <div class="kv"><b>전화번호 뒷자리</b><span>${esc(info.phone)}</span></div>
@@ -923,8 +946,8 @@ function showDone(fin, info, password){
     <div class="kv"><b>접수일시</b><span>${fmtDT(fin.createdAt)}</span></div>
     <div class="kv"><b>사진 삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(fin.deleteAt)}</span></div>`;
   // 초기화
-  document.getElementById('submitForm').reset(); files=[]; selectedMall=null; renderThumbs();
-  document.querySelectorAll('#malls button').forEach(x=>x.classList.remove('on'));
+  document.getElementById('submitForm').reset(); files=[]; selectedMall=null; selectedUnit=null; renderThumbs();
+  document.querySelectorAll('#malls button, #units button').forEach(x=>x.classList.remove('on'));
   document.getElementById('pwMsg').textContent='';
   go('done');
 }
@@ -1477,7 +1500,9 @@ function renderDetail(data){
     <div class="kv"><b>접수일시</b><span>${fmtDT(d.createdAt)}</span></div>
     <div class="kv"><b>삭제 예정</b><span style="color:var(--pink-d)">${fmtDT(d.deleteAt)}</span></div>
     <div class="kv"><b>접수 상태</b><span>${statusBadge(d.status)}</span></div>
-    ${d.editRequest?`<div class="kv"><b>${isMg?'기타 요청사항':'편집 요청'}</b><span style="max-width:60%;text-align:right">${esc(d.editRequest)}</span></div>`:''}`;
+    ${(()=>{ const su=splitUnit(d.editRequest);
+      return (su.unit?`<div class="kv"><b>부대</b><span>${esc(su.unit)}</span></div>`:'')+
+        (su.rest?`<div class="kv"><b>${isMg?'기타 요청사항':'편집 요청'}</b><span style="max-width:60%;text-align:right">${esc(su.rest)}</span></div>`:''); })()}`;
 
   const photos=data.photos||[];
   document.getElementById('photoN').textContent = photos.length?`(${photos.length}장)`:'';
@@ -1532,7 +1557,8 @@ function openEdit(){
   if(!LK||!LK.detail) return;
   ES={ mall: LK.detail.mall, items: (LK.photos||[]).map(p=>({type:'ex', id:p.id, url:p.url})) };
   origExistingIds=(LK.photos||[]).map(p=>p.id);
-  document.getElementById('editReq').value=LK.detail.editRequest||'';
+  const su=splitUnit(LK.detail.editRequest); ES.unit=su.unit;
+  document.getElementById('editReq').value=su.rest;
   document.querySelectorAll('#editMalls button').forEach(b=>b.classList.toggle('on', b.dataset.mall===ES.mall));
   renderEditThumbs(); go('edit');
 }
@@ -1576,7 +1602,7 @@ document.getElementById('editForm').addEventListener('submit', async e=>{
     const deletePhotoIds=origExistingIds.filter(id=>!order.includes(id));
     const addFiles=newItems.map(i=>({name:i.file.name, size:i.file.size, contentType:ctypeOf(i.file)}));
     const payload={receiptId:LK.receiptId, password:LK.password, action:'apply',
-      editRequest:document.getElementById('editReq').value.trim(), mall:ES.mall, order, deletePhotoIds, addFiles};
+      editRequest:joinUnit(ES.unit, document.getElementById('editReq').value.trim()), mall:ES.mall, order, deletePhotoIds, addFiles};
     const res=await api('lookup-update', payload);
     if(res.status===429) throw new Error('시도가 많아 잠시 후 다시 시도해 주세요.');
     if(res.status!==200) throw new Error('수정 저장에 실패했습니다.');
