@@ -492,7 +492,11 @@ function pdfFileName(d, count){
    6개세트: A4 한 장 2열×3행. 9개세트: 2번째 장에 2×2 중 3칸만 사용. */
 const MAG_BOX=89.33, MAG_CHAMFER=22.39, MAG_PHOTO=69, MAG_POFF=(MAG_BOX-MAG_PHOTO)/2;
 const MAG_HALF_GROW=(MAG_BOX-87)/2; // 87mm 실측 좌표 대비 박스가 커진 만큼 중심 기준 보정
-const MAG_COL_X=[10.92-MAG_HALF_GROW,106.80-MAG_HALF_GROW];
+// 인쇄 후 가위/재단기로 10cm씩 나눠 자르기 편하도록, 한 칸을 100mm 폭으로 두고
+// 그 안에 박스를 가운데 정렬한다 (2026-09-08 실제 요청 — 자르는 점선 추가, bot_receiver.py 와 동일).
+const MAG_STRIP_W=100;
+const MAG_COL_X=[(MAG_STRIP_W-MAG_BOX)/2, MAG_STRIP_W+(MAG_STRIP_W-MAG_BOX)/2];
+const MAG_CUT_X=[MAG_STRIP_W, MAG_STRIP_W*2];   // 점선을 그을 위치(mm) — 10cm, 20cm 지점
 const MAG_ROW_Y=[11.64-MAG_HALF_GROW,106.16-MAG_HALF_GROW,201.63-MAG_HALF_GROW];
 
 // 한 장(A4)에 2열x3행 = 6칸씩 채우고, 남으면 다음 장으로 넘어간다. 몇 장이든 대응.
@@ -509,6 +513,14 @@ function drawOctagonGuide(doc,boxX,boxY){
   doc.setDrawColor(140); doc.setLineWidth(0.3);
   doc.lines([[sSide,0],[c,c],[0,sSide],[-c,c],[-sSide,0],[-c,-c],[0,-sSide],[c,-c]],
     boxX+c, boxY, [1,1], 'S', true);
+}
+function drawMagnetCutLines(doc){
+  // 가위질하기 전 큰 조각(10cm씩)으로 먼저 나눌 수 있게 점선을 긋는다.
+  // 옥타곤 재단선(회색 실선)과 헷갈리지 않게 점선으로 구분한다.
+  doc.setDrawColor(140); doc.setLineWidth(0.3);
+  doc.setLineDashPattern([3,2], 0);
+  MAG_CUT_X.forEach(x => doc.line(x, 0, x, 297));
+  doc.setLineDashPattern([], 0);
 }
 async function loadSquareDataUrl(url, sizePx){
   const res=await fetch(url);
@@ -532,11 +544,12 @@ async function generateMagnetPdf(){
   toast('마그넷 PDF 생성 중... 잠시만 기다려주세요');
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  drawMagnetCutLines(doc);
   const slots=magnetSlots(sel.length);
   let pageIdx=0;
   for(let i=0;i<sel.length;i++){
     const slot=slots[i];
-    if(slot.page!==pageIdx){ doc.addPage(); pageIdx=slot.page; }
+    if(slot.page!==pageIdx){ doc.addPage(); pageIdx=slot.page; drawMagnetCutLines(doc); }
     try{
       const dataUrl=await loadSquareDataUrl(sel[i].url,800);
       doc.addImage(dataUrl,'JPEG',slot.x+MAG_POFF,slot.y+MAG_POFF,MAG_PHOTO,MAG_PHOTO);
