@@ -482,6 +482,7 @@
       <div id="deletedBox"></div>
     </div>
     <button class="btn" id="editBtn" style="margin-bottom:10px">✏️ 접수 내용 수정하기</button>
+    <button class="btn ghost" id="cancelBtn" style="margin-bottom:10px;color:#d6336c;border-color:#f3b4c8">🗑️ 접수 취소 · 사진 삭제</button>
     <button class="btn ghost" onclick="go('lookup')">← 조회 목록으로</button>
   </section>
 
@@ -1486,6 +1487,7 @@ function renderDetail(data){
   if(LK){ LK.detail=d; LK.photos=data.photos||[]; }
   const isMg = d.productType==='magnet';
   document.getElementById('editBtn').style.display = (data.photosDeleted || isMg) ? 'none' : 'block';
+  document.getElementById('cancelBtn').style.display = data.photosDeleted ? 'none' : 'block';
   const tag=`<span class="ptag ${isMg?'magnet':'topper'}" style="margin-left:6px">${isMg?'포토마그넷':'군인토퍼'}</span>`;
   const idRow = `<div class="kv"><b>배송지 주소(동)</b><span>${esc(d.addressDong)}</span></div>`;
   const mgRows = isMg ? `
@@ -1510,7 +1512,9 @@ function renderDetail(data){
   gal.innerHTML=''; rb.innerHTML=''; db.innerHTML='';
 
   if(data.photosDeleted){
-    db.innerHTML=`<div class="deleted">🗑️ 보관기간이 지나 첨부한 사진이 자동 삭제되었습니다.<br>삭제된 사진은 복구할 수 없습니다.</div>`;
+    db.innerHTML = d.lastEditSummary==='고객이 직접 삭제'
+      ? `<div class="deleted">🗑️ 고객님 요청으로 접수가 취소되어 사진이 삭제되었습니다.<br>삭제된 사진은 복구할 수 없습니다.</div>`
+      : `<div class="deleted">🗑️ 보관기간이 지나 첨부한 사진이 자동 삭제되었습니다.<br>삭제된 사진은 복구할 수 없습니다.</div>`;
   }else{
     rb.innerHTML=`<div class="remain">⏳ ${remainText(d.deleteAt)}</div>`;
     photos.forEach(p=>{
@@ -1540,6 +1544,21 @@ document.getElementById('lightbox').addEventListener('click',e=>{ if(e.target.id
 ================================================================== */
 let ES=null, origExistingIds=[];
 document.getElementById('editBtn').onclick=openEdit;
+// 접수 취소: 주문을 취소한 고객이 올린 사진을 직접 지운다 (되돌릴 수 없어서 두 번 묻는다)
+document.getElementById('cancelBtn').onclick=async ()=>{
+  if(!LK||!LK.detail) return;
+  if(!confirm('접수를 취소하고 올린 사진을 모두 삭제할까요?\n삭제한 사진은 복구할 수 없습니다.')) return;
+  if(!confirm('정말 삭제할까요? 주문을 취소한 경우에만 진행해 주세요.')) return;
+  const btn=document.getElementById('cancelBtn'); btn.disabled=true;
+  try{
+    const res=await api('lookup-update',{receiptId:LK.receiptId, password:LK.password, action:'cancel'});
+    if(res.status===429) throw new Error('시도가 많아 잠시 후 다시 시도해 주세요.');
+    if(res.status!==200) throw new Error('삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    toast('✓ 접수가 취소되고 사진이 삭제되었습니다');
+    renderDetail({detail:{...LK.detail, lastEditSummary:'고객이 직접 삭제'}, photos:[], photosDeleted:true});
+  }catch(err){ toast(err.message||'삭제 중 오류'); }
+  finally{ btn.disabled=false; }
+};
 document.getElementById('editCancelBtn').onclick=()=>{ if(LK) openDetail(LK.receiptId, LK.password); };
 document.getElementById('editMalls').addEventListener('click',e=>{
   const b=e.target.closest('button[data-mall]'); if(!b||!ES) return;
