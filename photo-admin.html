@@ -145,8 +145,8 @@
         <table>
           <thead><tr>
             <th style="width:34px"><input type="checkbox" id="checkAll"></th>
-            <th>상품</th><th>접수일시</th><th>쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)</th>
-            <th>사진</th><th>상태</th><th>수정</th><th>삭제예정</th><th>관리</th>
+            <th>상품</th><th>관리</th><th>접수일시</th><th style="white-space:nowrap">쇼핑몰</th><th>주문자</th><th>전화뒷4</th><th>주소(동)</th>
+            <th>사진</th><th>상태</th><th>삭제예정</th>
           </tr></thead>
           <tbody id="listBody"><tr><td colspan="12" class="empty">검색을 눌러 접수 목록을 불러오세요.</td></tr></tbody>
         </table>
@@ -369,21 +369,20 @@ async function loadList(){
   if(r.status!==200){ body.innerHTML='<tr><td colspan="12" class="empty">불러오기 실패</td></tr>'; return; }
   rows=r.body.rows||[];
   document.getElementById('totalCount').textContent=rows.length;
-  if(!rows.length){ body.innerHTML='<tr><td colspan="12" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
+  if(!rows.length){ body.innerHTML='<tr><td colspan="11" class="empty">접수 내역이 없습니다.</td></tr>'; updateSel(); return; }
   body.innerHTML=rows.map(r=>`
     <tr>
       <td><input type="checkbox" class="rowck" value="${r.id}" onchange="updateSel()"></td>
       <td>${ptag(r.productType)}</td>
+      <td><button class="mini p" style="white-space:nowrap" onclick='openDetailWindow("${r.id}")'>보기 · 수정</button></td>
       <td>${fmtDT(r.createdAt)}</td>
-      <td>${MALL[r.mall]||r.mall}</td>
-      <td><b>${esc(r.ordererName)}</b>${r.isGift?` <span class="badge" style="background:#fff4e0;color:#a06000" title="지인용 접수">🎁${r.giftTitle?' '+esc(r.giftTitle):''}</span>`:''}</td>
+      <td style="white-space:nowrap">${MALL[r.mall]||r.mall}</td>
+      <td><b>${esc(r.ordererName)}</b>${r.edited?` <span title="고객 수정: ${esc(r.lastEditSummary||'수정됨')}\n${r.editedAt?fmtDT(r.editedAt):''}" style="cursor:help">✏️</span>`:''}${r.isGift?` <span class="badge" style="background:#fff4e0;color:#a06000" title="지인용 접수">🎁${r.giftTitle?' '+esc(r.giftTitle):''}</span>`:''}</td>
       <td>${esc(r.phoneLast4)}</td>
       <td>${esc(r.addressDong||'')}</td>
       <td>${r.photosDeleted?'<span style="color:#c23;font-size:12px">삭제됨</span>':`<div class="tt">${r.thumb?`<img src="${r.thumb}">`:''}<span class="more">${r.photoCount}장</span></div>`}</td>
       <td>${badge(r.status)}</td>
-      <td>${r.edited?`<span class="badge" style="background:#fff0f4;color:#e5487d" title="${esc(r.lastEditSummary||'')}\n${r.editedAt?fmtDT(r.editedAt):''}">✏️ ${esc(r.lastEditSummary||'수정됨')}</span>`:'<span style="color:#ccc">-</span>'}</td>
       <td style="font-size:12px;color:#c23">${fmtDT(r.deleteAt)}</td>
-      <td><button class="mini p" onclick='openDetailWindow("${r.id}")'>보기 · 수정</button></td>
     </tr>`).join('');
   updateSel();
 }
