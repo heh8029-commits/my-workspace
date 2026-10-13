@@ -592,6 +592,7 @@
             <label>네모 칸에 맞추기 <span class="opt" id="qaMgSlotCount"></span></label>
             <div class="slots" id="qaMgSlots"></div>
             <div class="hint">가운데를 기준으로 자동으로 잘라 채웠어요. 칸을 눌러 위치·확대를 맞춰 주세요. 칸의 번호는 1단계 사진 번호예요.</div>
+            <button type="button" class="btn dark" id="qaMgSendFinal" style="margin-top:10px">📤 완성본 고객에게 보내기 (번호 붙인 한 장)</button>
             <button type="button" class="btn ghost" id="qaMgBackPool" style="margin-top:10px">← 사진 목록으로 (추가·빼기)</button>
           </div>
         </div>
@@ -1785,20 +1786,22 @@ function renderQaPoolView(){
 document.getElementById('qaPoolViewBtn').onclick=()=>{ renderQaPoolView(); document.getElementById('qaPoolView').classList.add('show'); };
 document.getElementById('qpvClose').onclick=()=>document.getElementById('qaPoolView').classList.remove('show');
 function qaLoadImg(url){ return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; }); }
-document.getElementById('qpvSave').onclick=async()=>{
-  if(!qaMgPool.length) return;
-  const btn=document.getElementById('qpvSave'); btn.disabled=true; const label=btn.textContent; btn.textContent='만드는 중...';
+// 사진들을 번호 붙여 이미지 1장으로 만들어 공유(폰) 또는 저장(PC). items: [{no, url}]
+// 받은 사진 확인용(원본 비율 그대로)과 완성본 확인용(정사각형 칸 그대로)에 같이 쓴다.
+async function qaShareSheet(btn, items, title, fileName, okMsg){
+  if(!items.length) return;
+  btn.disabled=true; const label=btn.textContent; btn.textContent='만드는 중...';
   try{
-    const COLS=qaMgPool.length<=4?2:3, CELL=420, GAP=14, HEAD=90, PAD=20;
-    const rows=Math.ceil(qaMgPool.length/COLS);
+    const COLS=items.length<=4?2:3, CELL=420, GAP=14, HEAD=90, PAD=20;
+    const rows=Math.ceil(items.length/COLS);
     const cv=document.createElement('canvas');
     cv.width=PAD*2+COLS*CELL+(COLS-1)*GAP; cv.height=HEAD+PAD+rows*CELL+(rows-1)*GAP+PAD;
     const g=cv.getContext('2d');
     g.fillStyle='#fff'; g.fillRect(0,0,cv.width,cv.height);
     g.fillStyle='#222'; g.font='900 40px sans-serif'; g.textBaseline='middle';
-    g.fillText(`보내주신 사진 총 ${qaMgPool.length}장`, PAD, HEAD/2+6);
-    for(let i=0;i<qaMgPool.length;i++){
-      const p=qaMgPool[i], x=PAD+(i%COLS)*(CELL+GAP), y=HEAD+Math.floor(i/COLS)*(CELL+GAP);
+    g.fillText(title, PAD, HEAD/2+6);
+    for(let i=0;i<items.length;i++){
+      const p=items[i], x=PAD+(i%COLS)*(CELL+GAP), y=HEAD+Math.floor(i/COLS)*(CELL+GAP);
       g.fillStyle='#f2f2f5'; g.fillRect(x,y,CELL,CELL);
       try{
         const im=await qaLoadImg(p.url);
@@ -1811,16 +1814,29 @@ document.getElementById('qpvSave').onclick=async()=>{
       g.fillStyle='#fff'; g.textAlign='center'; g.fillText(txt, x+10+bw/2, y+44); g.textAlign='left';
     }
     const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.9));
-    const name=`마그넷_받은사진_${qaMgPool.length}장.jpg`;
-    const file=new File([blob], name, {type:'image/jpeg'});
+    const file=new File([blob], fileName, {type:'image/jpeg'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
       try{ await navigator.share({files:[file]}); return; }catch(err){ if(err && err.name==='AbortError') return; }
     }
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileName;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-    toast('번호 붙인 이미지를 저장했어요. 고객에게 보내 확인해 주세요.');
-  }catch(err){ toast('이미지 만들기에 실패했어요. 전체보기 화면을 캡처해 주세요.'); }
+    toast(okMsg);
+  }catch(err){ toast('이미지 만들기에 실패했어요. 화면을 캡처해 주세요.'); }
   finally{ btn.disabled=false; btn.textContent=label; }
+}
+document.getElementById('qpvSave').onclick=()=>qaShareSheet(document.getElementById('qpvSave'),
+  qaMgPool.map(p=>({no:p.no, url:p.url})), `보내주신 사진 총 ${qaMgPool.length}장`,
+  `마그넷_받은사진_${qaMgPool.length}장.jpg`, '번호 붙인 이미지를 저장했어요. 고객에게 보내 확인해 주세요.');
+// 2단계 완성본: 정사각형으로 맞춘 그대로 (이대로 제작된다는 확인용)
+document.getElementById('qaMgSendFinal').onclick=()=>{
+  const list=qaMgSlotsData.filter(Boolean);
+  if(!list.length) return toast('칸에 들어간 사진이 없어요.');
+  const left=list.filter(s=>s.needsCheck).length;
+  if(left && !confirm(`아직 위치·확대를 안 맞춘 칸이 ${left}개 있어요. 그래도 이미지로 만들까요?`)) return;
+  qaShareSheet(document.getElementById('qaMgSendFinal'),
+    list.map((s,i)=>({no:qaMgNoOf.get(s.srcFile)||(i+1), url:s.url})),
+    `이렇게 제작됩니다 · 총 ${list.length}장`,
+    `마그넷_완성본_${list.length}장.jpg`, '완성본 이미지를 저장했어요. 고객에게 보내 확인해 주세요.');
 };
 
 /* 2단계: 남은 사진을 정사각형 칸으로 (이미 맞춘 칸은 그대로 두고, 새로 추가된 것만 자동으로 잘라 넣음) */
