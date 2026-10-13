@@ -133,6 +133,27 @@
   .qaPool .thumb img{object-fit:contain}
   .qaPool .thumb .ord{left:5px; top:5px; bottom:auto; font-size:14px; padding:2px 8px; background:var(--sky)}
   .qaPool .thumb .x{width:26px; height:26px; line-height:26px; font-size:15px}
+  .qaPool.selMode .thumb{outline:3px solid transparent; outline-offset:-3px}
+  .qaPool.selMode .thumb:not(.sel) img{opacity:.35}
+  .qaPool.selMode .thumb.sel{outline-color:var(--sky)}
+  .qaPool.selMode .thumb.sel::after{content:'✓'; position:absolute; right:5px; bottom:5px; width:26px; height:26px; border-radius:50%;
+    background:var(--sky); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center}
+  .qaPool.selMode .thumb .x{display:none}
+  .qaSelPanel{border:1px solid var(--sky); background:#f3faff; border-radius:12px; padding:10px; margin-top:8px}
+  .qaSelRow{display:flex; gap:8px}
+  .qaSelRow input{flex:1; margin:0}
+  .qaSelRow .btn{margin:0}
+  .qaSelInfo{font-size:13px; color:var(--gray); margin:8px 0}
+  .qaSelInfo b{color:#222}
+  .qaDrafts{border:1px dashed var(--sky); border-radius:12px; padding:10px; margin-bottom:12px; background:#f7fbff}
+  .qaDrafts .t{font-weight:800; font-size:14px; margin-bottom:6px}
+  .qaDraftRow{display:flex; align-items:center; gap:8px; padding:7px 0; border-top:1px solid #e6eef6}
+  .qaDraftRow:first-of-type{border-top:none}
+  .qaDraftRow .info{flex:1; font-size:13.5px; cursor:pointer}
+  .qaDraftRow .info small{display:block; color:var(--gray); font-size:12px}
+  .qaDraftRow button{border:none; border-radius:8px; padding:7px 10px; font-weight:800; font-size:12.5px; cursor:pointer}
+  .qaDraftRow .go{background:var(--sky); color:#fff}
+  .qaDraftRow .del{background:#eee; color:#666}
   .qaPoolView{position:fixed; inset:0; background:#fff; z-index:210; display:none; flex-direction:column}
   .qaPoolView.show{display:flex}
   .qpvHead{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line)}
@@ -577,15 +598,30 @@
         <div id="qaMagnetSection" style="display:none">
           <!-- 1단계: 고객이 보낸 사진을 장수 상관없이 전부 올리고, 고객과 확인하면서 뺄 사진을 뺀다 -->
           <div id="qaMgPoolStep">
+            <div id="qaDraftBox"></div>
             <label>받은 사진 전부 올리기 <span class="req">*</span> <span class="opt">(장수 상관없이 고객이 보낸 사진 전부 · 여러 번 추가 가능)</span></label>
             <button type="button" class="btn ghost" id="qaMgBulkPickBtn" style="margin-bottom:6px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
             <div class="qaPoolHead" id="qaPoolHead" style="display:none">
               <b id="qaPoolCount">0장</b>
-              <button type="button" class="qaPoolViewBtn" id="qaPoolViewBtn">🔍 전체보기</button>
+              <span style="display:flex;gap:6px">
+                <button type="button" class="qaPoolViewBtn" id="qaSelToggle">☑️ 남길 번호 고르기</button>
+                <button type="button" class="qaPoolViewBtn" id="qaPoolViewBtn">🔍 전체보기</button>
+              </span>
+            </div>
+            <div class="qaSelPanel" id="qaSelPanel" style="display:none">
+              <div class="qaSelRow">
+                <input type="text" id="qaSelInput" placeholder="번호로 입력  예) 1,3,5-9" inputmode="text" autocomplete="off" />
+              </div>
+              <div class="qaSelInfo">사진을 눌러도 골라져요 · 선택 <b id="qaSelCount">0</b>장 / 뺄 사진 <b id="qaSelOut">0</b>장</div>
+              <div class="qaSelRow">
+                <button type="button" class="btn" id="qaSelApply" style="flex:2">선택한 것만 남기기</button>
+                <button type="button" class="btn ghost" id="qaSelCancel" style="flex:1">취소</button>
+              </div>
             </div>
             <div class="thumbs qaPool" id="qaMgPool"></div>
-            <div class="hint" id="qaPoolHint" style="display:none">번호는 올린 순서대로 고정돼요(빼도 번호가 안 바뀜). 고객이 "3번 빼주세요" 하면 3번의 ×를 누르세요.</div>
-            <button type="button" class="btn" id="qaMgToSlots" style="display:none;margin-top:12px">✅ 확인 끝 → 네모 칸에 맞추기</button>
+            <div class="hint" id="qaPoolHint" style="display:none">번호는 올린 순서대로 고정돼요(빼도 번호가 안 바뀜). 몇 장만 뺄 땐 ×, 많이 뺄 땐 "☑️ 남길 번호 고르기"를 쓰세요.</div>
+            <button type="button" class="btn ghost" id="qaDraftSave" style="display:none;margin-top:12px">💾 임시저장 (고객 답 기다리기)</button>
+            <button type="button" class="btn" id="qaMgToSlots" style="display:none;margin-top:8px">✅ 확인 끝 → 네모 칸에 맞추기</button>
           </div>
           <!-- 2단계: 남은 사진을 정사각형 칸에 맞추고 등록 -->
           <div id="qaMgSlotStep" style="display:none">
@@ -1701,7 +1737,8 @@ function qaReset(){
   document.getElementById('qaMagnetSection').style.display='none';
   qaMgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); }); qaMgSlotsData=[]; qaMgSetSize=0;
   qaMgPool.forEach(p=>URL.revokeObjectURL(p.url)); qaMgPool=[]; qaMgNextNo=1;
-  qaMgShowStep('pool'); renderQaPool(); renderQaMgSlots(); qaSyncSaveBtn();
+  qaDraftId=null; qaSelMode=false; qaSel.clear();
+  qaMgShowStep('pool'); renderQaPool(); renderQaMgSlots(); qaSyncSaveBtn(); renderQaDrafts();
 }
 
 /* ---- 관리자 간편등록: 마그넷등록 ----
@@ -1718,7 +1755,7 @@ document.getElementById('qaType').addEventListener('click', e=>{
   b.classList.add('on');
   document.getElementById('qaTopperSection').style.display = qaType==='topper' ? 'block' : 'none';
   document.getElementById('qaMagnetSection').style.display = qaType==='magnet' ? 'block' : 'none';
-  qaSyncSaveBtn();
+  qaSyncSaveBtn(); if(qaType==='magnet') renderQaDrafts();
 });
 // 마그넷은 2단계(칸 맞추기)에서만 등록 버튼을 보여준다
 function qaSyncSaveBtn(){
@@ -1733,30 +1770,147 @@ function qaMgShowStep(step){
 }
 
 /* 1단계: 받은 사진 목록 */
+let qaSelMode=false; const qaSel=new Set();   // 남길 번호 고르기 모드에서 고른 번호
 function renderQaPool(){
   const box=document.getElementById('qaMgPool'); if(!box) return; box.innerHTML='';
+  box.classList.toggle('selMode', qaSelMode);
   qaMgPool.forEach(p=>{
-    const d=document.createElement('div'); d.className='thumb';
+    const d=document.createElement('div'); d.className='thumb'+(qaSelMode && qaSel.has(p.no)?' sel':'');
     d.innerHTML=`<img src="${p.url}" alt=""><span class="ord">${p.no}</span><button type="button" class="x" title="${p.no}번 빼기">×</button>`;
     d.querySelector('.x').onclick=ev=>{ ev.stopPropagation(); qaMgRemove(p.no); };
-    d.onclick=()=>openLB(p.url);
+    d.onclick=()=>{
+      if(!qaSelMode) return openLB(p.url);
+      if(qaSel.has(p.no)) qaSel.delete(p.no); else qaSel.add(p.no);
+      document.getElementById('qaSelInput').value=qaSelToText();
+      renderQaPool();
+    };
     box.appendChild(d);
   });
   const n=qaMgPool.length;
   document.getElementById('qaPoolCount').textContent=`총 ${n}장`;
-  ['qaPoolHead','qaPoolHint','qaMgToSlots'].forEach(id=>{ document.getElementById(id).style.display = n ? '' : 'none'; });
+  ['qaPoolHint','qaMgToSlots','qaDraftSave'].forEach(id=>{ document.getElementById(id).style.display = (n && !qaSelMode) ? '' : 'none'; });
   document.getElementById('qaPoolHead').style.display = n ? 'flex' : 'none';
+  document.getElementById('qaSelPanel').style.display = qaSelMode ? 'block' : 'none';
+  document.getElementById('qaSelToggle').textContent = qaSelMode ? '☑️ 고르는 중' : '☑️ 남길 번호 고르기';
+  if(qaSelMode){
+    const keep=qaMgPool.filter(p=>qaSel.has(p.no)).length;
+    document.getElementById('qaSelCount').textContent=keep;
+    document.getElementById('qaSelOut').textContent=n-keep;
+  }
   if(document.getElementById('qaPoolView').classList.contains('show')) renderQaPoolView();
 }
-function qaMgRemove(no){
+function qaMgRemove(no, quiet){
   const i=qaMgPool.findIndex(p=>p.no===no); if(i<0) return;
   const p=qaMgPool[i];
   URL.revokeObjectURL(p.url); qaMgPool.splice(i,1);
   // 이미 칸에 들어가 있던 것도 같이 뺀다
   const si=qaMgSlotsData.findIndex(s=>s && s.srcFile===p.file);
   if(si>=0){ URL.revokeObjectURL(qaMgSlotsData[si].url); qaMgSlotsData.splice(si,1); qaMgSetSize=qaMgSlotsData.length; }
-  renderQaPool(); renderQaMgSlots();
+  if(quiet) return;
+  renderQaPool(); renderQaMgSlots(); qaDraftAutoSave();
   toast(`${no}번을 뺐어요. 남은 사진 ${qaMgPool.length}장`);
+}
+
+/* 남길 번호 고르기: 20장 중 9장만 쓸 때, 9장을 골라서 나머지를 한 번에 뺀다 */
+function qaSelToText(){
+  const a=[...qaSel].sort((x,y)=>x-y), out=[];
+  for(let i=0;i<a.length;i++){ let j=i; while(j+1<a.length && a[j+1]===a[j]+1) j++; out.push(j-i>=2 ? `${a[i]}-${a[j]}` : (j>i ? `${a[i]},${a[j]}` : `${a[i]}`)); i=j; }
+  return out.join(',');
+}
+document.getElementById('qaSelToggle').onclick=()=>{
+  qaSelMode=!qaSelMode; qaSel.clear(); document.getElementById('qaSelInput').value='';
+  renderQaPool();
+  if(qaSelMode) toast('고객이 고른 번호를 눌러 주세요. (번호를 직접 입력해도 돼요)', 3000);
+};
+document.getElementById('qaSelInput').addEventListener('input', e=>{
+  // "1,3,5-9" / "1 3 5~9" / "1번 3번" 다 받아준다
+  qaSel.clear();
+  const have=new Set(qaMgPool.map(p=>p.no));
+  String(e.target.value).replace(/[~〜]/g,'-').split(/[^0-9-]+/).forEach(part=>{
+    const m=part.match(/^(\d+)-(\d+)$/);
+    if(m){ let a=+m[1], b=+m[2]; if(a>b) [a,b]=[b,a]; for(let k=a;k<=b && k-a<500;k++) if(have.has(k)) qaSel.add(k); }
+    else if(/^\d+$/.test(part) && have.has(+part)) qaSel.add(+part);
+  });
+  renderQaPool();
+});
+document.getElementById('qaSelCancel').onclick=()=>{ qaSelMode=false; qaSel.clear(); renderQaPool(); };
+document.getElementById('qaSelApply').onclick=()=>{
+  const keep=qaMgPool.filter(p=>qaSel.has(p.no));
+  if(!keep.length) return toast('남길 사진을 하나 이상 골라 주세요.');
+  const out=qaMgPool.filter(p=>!qaSel.has(p.no));
+  if(!out.length){ qaSelMode=false; renderQaPool(); return toast('뺄 사진이 없어요.'); }
+  if(!confirm(`${keep.map(p=>p.no).join(', ')}번 ${keep.length}장만 남기고\n나머지 ${out.length}장을 뺄까요?`)) return;
+  out.forEach(p=>qaMgRemove(p.no, true));
+  qaSelMode=false; qaSel.clear();
+  renderQaPool(); renderQaMgSlots(); qaDraftAutoSave();
+  toast(`${keep.length}장만 남겼어요.`);
+};
+
+/* 임시저장: 고객 답을 기다리는 동안 이 기기(브라우저)에 사진째 저장 → 나중에 목록에서 이어서 */
+let qaDraftId=null, qaDraftTimer=null;
+async function qaDraftAll(){
+  try{
+    const db=await mgIdbOpen();
+    return await new Promise(res=>{
+      const out=[]; const req=db.transaction(MG_DRAFT_STORE,'readonly').objectStore(MG_DRAFT_STORE).openCursor();
+      req.onsuccess=()=>{ const c=req.result; if(!c) return res(out); if(String(c.key).startsWith('qa:')) out.push(c.value); c.continue(); };
+      req.onerror=()=>res(out);
+    });
+  }catch(e){ return []; }
+}
+async function qaDraftPut(d){ const db=await mgIdbOpen(); await new Promise((res,rej)=>{ const tx=db.transaction(MG_DRAFT_STORE,'readwrite'); tx.objectStore(MG_DRAFT_STORE).put(d,'qa:'+d.id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function qaDraftDel(id){ try{ const db=await mgIdbOpen(); await new Promise(res=>{ const tx=db.transaction(MG_DRAFT_STORE,'readwrite'); tx.objectStore(MG_DRAFT_STORE).delete('qa:'+id); tx.oncomplete=res; tx.onerror=res; }); }catch(e){} }
+async function qaDraftSaveNow(){
+  const name=document.getElementById('qaName').value.trim();
+  if(!qaDraftId) qaDraftId=Date.now().toString(36);
+  await qaDraftPut({ id:qaDraftId, name, savedAt:Date.now(), nextNo:qaMgNextNo,
+    pool:qaMgPool.map(p=>({ no:p.no, file:p.file })) });
+}
+// 한 번 임시저장했거나 불러온 건은, 이후 빼기/추가할 때마다 자동으로 덮어쓴다
+function qaDraftAutoSave(){
+  if(!qaDraftId) return;
+  clearTimeout(qaDraftTimer);
+  qaDraftTimer=setTimeout(()=>{ (qaMgPool.length ? qaDraftSaveNow() : qaDraftDel(qaDraftId)).catch(()=>{}); }, 500);
+}
+document.getElementById('qaName').addEventListener('input', ()=>{ if(qaType==='magnet') qaDraftAutoSave(); });
+document.getElementById('qaDraftSave').onclick=async()=>{
+  const name=document.getElementById('qaName').value.trim();
+  if(!name) return toast('주문자 이름을 먼저 적어 주세요. (임시저장 목록에서 찾을 때 써요)');
+  try{
+    await qaDraftSaveNow();
+    toast(`💾 "${name}" ${qaMgPool.length}장 임시저장했어요. 고객 답이 오면 위 목록에서 이어서 하세요.`, 4000);
+    qaReset(); qaShowForm();
+    document.querySelector('#qaType button[data-qtype="magnet"]').click();
+  }catch(e){ toast('임시저장에 실패했어요. (저장공간 부족일 수 있어요)'); }
+};
+async function renderQaDrafts(){
+  const box=document.getElementById('qaDraftBox'); if(!box) return;
+  const list=(await qaDraftAll()).filter(d=>d.id!==qaDraftId).sort((a,b)=>b.savedAt-a.savedAt);
+  if(!list.length){ box.innerHTML=''; return; }
+  box.innerHTML=`<div class="qaDrafts"><div class="t">💾 임시저장 ${list.length}건 (고객 답 기다리는 중)</div>`
+    + list.map(d=>`<div class="qaDraftRow" data-id="${esc(d.id)}"><div class="info">${esc(d.name||'(이름 없음)')} · ${d.pool.length}장<small>${fmtDT(new Date(d.savedAt).toISOString())} 저장</small></div>`
+      + `<button type="button" class="go">이어서</button><button type="button" class="del">삭제</button></div>`).join('')
+    + `</div>`;
+  box.querySelectorAll('.qaDraftRow').forEach(row=>{
+    const d=list.find(x=>x.id===row.dataset.id);
+    const load=()=>qaDraftLoad(d);
+    row.querySelector('.info').onclick=load; row.querySelector('.go').onclick=load;
+    row.querySelector('.del').onclick=async()=>{
+      if(!confirm(`"${d.name||'(이름 없음)'}" 임시저장(${d.pool.length}장)을 지울까요?`)) return;
+      await qaDraftDel(d.id); renderQaDrafts();
+    };
+  });
+}
+function qaDraftLoad(d){
+  if(qaMgPool.length && !confirm('지금 올린 사진은 사라지고 임시저장한 걸 불러와요. 계속할까요?')) return;
+  qaMgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); }); qaMgSlotsData=[]; qaMgSetSize=0;
+  qaMgPool.forEach(p=>URL.revokeObjectURL(p.url));
+  qaMgPool=d.pool.map(p=>{ qaMgNoOf.set(p.file, p.no); return { no:p.no, file:p.file, url:URL.createObjectURL(p.file) }; });
+  qaMgNextNo=d.nextNo || (Math.max(0,...d.pool.map(p=>p.no))+1);
+  qaDraftId=d.id; qaSelMode=false; qaSel.clear();
+  document.getElementById('qaName').value=d.name||'';
+  qaMgShowStep('pool'); renderQaPool(); renderQaDrafts();
+  toast(`"${d.name}" ${qaMgPool.length}장을 불러왔어요. 고객이 고른 번호만 남겨 주세요.`, 3500);
 }
 const qaMgBulkInput=document.createElement('input');
 qaMgBulkInput.type='file'; qaMgBulkInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; qaMgBulkInput.multiple=true; qaMgBulkInput.hidden=true;
@@ -1773,7 +1927,7 @@ qaMgBulkInput.addEventListener('change', e=>{
     qaMgPool.push({ no, file:f, url:URL.createObjectURL(f) });
     added++;
   });
-  renderQaPool();
+  renderQaPool(); qaDraftAutoSave();
   if(added) toast(`${added}장 추가 · 총 ${qaMgPool.length}장. 🔍 전체보기로 고객에게 확인해 주세요.`, 3500);
   if(bad) toast(`${bad}장은 JPG·PNG·WEBP·HEIC가 아니라 뺐어요.`);
 });
@@ -1935,6 +2089,7 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
         await uploadOne(up, qaMgSlotsData[i].blob, ()=>{});
       }
       await api('quick-submit',{action:'finalize', receiptId:cr.body.receiptId});
+      if(qaDraftId){ qaDraftDel(qaDraftId); qaDraftId=null; }
       // work.html CS 게시판에도 자동 등록(간편 표시, 실패해도 등록엔 영향 없음)
       postToCsBoard({
         name, mall:'etc', receiptNo:cr.body.receiptNo, count:qaMgSlotsData.length,
