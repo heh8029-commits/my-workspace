@@ -513,13 +513,23 @@ function drawOctagonGuide(doc,boxX,boxY){
   doc.lines([[sSide,0],[c,c],[0,sSide],[-c,c],[-sSide,0],[-c,-c],[0,-sSide],[c,-c]],
     boxX+c, boxY, [1,1], 'S', true);
 }
-function drawMagnetCutLines(doc){
+// rowsUsed: 이 장에서 사진이 들어간 줄 수(1~3). 마지막 줄 밑으로는 점선을 안 그어서
+// 남은 부분을 잘라 짜투리 용지로 다시 쓸 수 있게 한다 (2026-10-13 요청). 줄이 덜 찼으면 밑에 가로 점선 하나로 자를 곳 표시.
+function magnetCutBottom(rowsUsed){
+  return rowsUsed>=3 ? 297 : MAG_ROW_Y[rowsUsed-1]+MAG_BOX+(MAG_ROW_Y[1]-MAG_ROW_Y[0]-MAG_BOX)/2;
+}
+function drawMagnetCutLines(doc, rowsUsed){
   // 가위질하기 전 큰 조각(10cm씩)으로 먼저 나눌 수 있게 점선을 긋는다.
   // 옥타곤 재단선(회색 실선)과 헷갈리지 않게 점선으로 구분한다.
+  const bottom=magnetCutBottom(rowsUsed||3);
   doc.setDrawColor(140); doc.setLineWidth(0.3);
   doc.setLineDashPattern([3,2], 0);
-  MAG_CUT_X.forEach(x => doc.line(x, 0, x, 297));
+  MAG_CUT_X.forEach(x => doc.line(x, 0, x, bottom));
+  if(bottom<297) doc.line(0, bottom, 210, bottom);
   doc.setLineDashPattern([], 0);
+}
+function magnetRowsOnPage(slots, page){
+  return Math.ceil(slots.filter(s=>s.page===page).length/2);
 }
 async function loadSquareDataUrl(url, sizePx){
   const res=await fetch(url);
@@ -543,12 +553,12 @@ async function generateMagnetPdf(){
   toast('마그넷 PDF 생성 중... 잠시만 기다려주세요');
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-  drawMagnetCutLines(doc);
   const slots=magnetSlots(sel.length);
+  drawMagnetCutLines(doc, magnetRowsOnPage(slots, 0));
   let pageIdx=0;
   for(let i=0;i<sel.length;i++){
     const slot=slots[i];
-    if(slot.page!==pageIdx){ doc.addPage(); pageIdx=slot.page; drawMagnetCutLines(doc); }
+    if(slot.page!==pageIdx){ doc.addPage(); pageIdx=slot.page; drawMagnetCutLines(doc, magnetRowsOnPage(slots, pageIdx)); }
     try{
       const dataUrl=await loadSquareDataUrl(sel[i].url,800);
       doc.addImage(dataUrl,'JPEG',slot.x+MAG_POFF,slot.y+MAG_POFF,MAG_PHOTO,MAG_PHOTO);
