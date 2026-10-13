@@ -88,6 +88,9 @@
   .cropWrap{position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:200; display:none;
     flex-direction:column; align-items:center; justify-content:center; overflow-y:auto; padding:16px 0}
   .cropWrap.show{display:flex}
+  /* 화면 세로가 짧은 폰(폴드 등)에서 네모가 납작해지지 않게: 줄어들지 말고 넘치면 스크롤 */
+  .cropWrap>*{flex-shrink:0}
+  .cropWrap{justify-content:safe center}
   .cropStage{width:min(78vw,340px); aspect-ratio:1; position:relative; overflow:hidden; border-radius:12px;
     touch-action:none; background:#111}
   .cropStage img{position:absolute; left:0; top:0; transform-origin:0 0; user-select:none; -webkit-user-drag:none; pointer-events:none}
