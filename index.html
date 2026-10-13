@@ -125,6 +125,26 @@
     background:rgba(0,0,0,.55); color:#fff; border:none; font-size:13px; cursor:pointer; line-height:22px}
   .thumb .ord{position:absolute; left:4px; bottom:4px; background:var(--pink); color:#fff;
     font-size:11px; font-weight:800; border-radius:6px; padding:1px 6px}
+  /* 간편등록 마그넷: 받은 사진 목록(번호 고정) + 전체보기 */
+  .qaPoolHead{display:flex; align-items:center; justify-content:space-between; margin-top:8px}
+  .qaPoolHead b{font-size:15px}
+  .qaPoolViewBtn{border:1px solid var(--sky); color:var(--sky); background:#fff; border-radius:9px; padding:7px 12px; font-weight:800; font-size:13px; cursor:pointer}
+  .qaPool .thumb{cursor:zoom-in; background:#f2f2f5}
+  .qaPool .thumb img{object-fit:contain}
+  .qaPool .thumb .ord{left:5px; top:5px; bottom:auto; font-size:14px; padding:2px 8px; background:var(--sky)}
+  .qaPool .thumb .x{width:26px; height:26px; line-height:26px; font-size:15px}
+  .qaPoolView{position:fixed; inset:0; background:#fff; z-index:210; display:none; flex-direction:column}
+  .qaPoolView.show{display:flex}
+  .qpvHead{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line)}
+  .qpvHead b{font-size:18px; margin-right:8px}
+  .qpvHead span{font-size:13px; color:var(--gray)}
+  .qpvClose{width:36px; height:36px; border-radius:50%; border:none; background:#eee; font-size:20px; cursor:pointer; flex-shrink:0}
+  .qpvGrid{flex:1 1 0; min-height:0; overflow-y:auto; display:grid; grid-auto-rows:max-content; grid-template-columns:repeat(auto-fill,minmax(105px,1fr)); gap:8px; padding:12px 16px; align-content:start}
+  .qpvItem{position:relative; aspect-ratio:1; background:#f2f2f5; border-radius:10px; overflow:hidden}
+  .qpvItem img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block}
+  .qpvItem .n{position:absolute; left:6px; top:6px; min-width:34px; height:34px; border-radius:17px; background:#e8315b; color:#fff;
+    font-size:20px; font-weight:900; display:flex; align-items:center; justify-content:center; padding:0 8px; box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .qpvBtns{padding:10px 16px 16px; border-top:1px solid var(--line)}
   .thumb.dragging{opacity:.4}
   .filemeta{display:flex; justify-content:space-between; font-size:12px; color:var(--gray); margin-top:10px}
   .bar{height:7px; background:var(--line); border-radius:5px; overflow:hidden; margin-top:10px; display:none}
@@ -555,18 +575,25 @@
         </div>
 
         <div id="qaMagnetSection" style="display:none">
-          <label>세트 수 <span class="req">*</span></label>
-          <div class="malls" id="qaMgSet">
-            <button type="button" data-set="6">6세트</button>
-            <button type="button" data-set="9">9세트</button>
-            <button type="button" data-set="custom">임의등록</button>
+          <!-- 1단계: 고객이 보낸 사진을 장수 상관없이 전부 올리고, 고객과 확인하면서 뺄 사진을 뺀다 -->
+          <div id="qaMgPoolStep">
+            <label>받은 사진 전부 올리기 <span class="req">*</span> <span class="opt">(장수 상관없이 고객이 보낸 사진 전부 · 여러 번 추가 가능)</span></label>
+            <button type="button" class="btn ghost" id="qaMgBulkPickBtn" style="margin-bottom:6px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
+            <div class="qaPoolHead" id="qaPoolHead" style="display:none">
+              <b id="qaPoolCount">0장</b>
+              <button type="button" class="qaPoolViewBtn" id="qaPoolViewBtn">🔍 전체보기</button>
+            </div>
+            <div class="thumbs qaPool" id="qaMgPool"></div>
+            <div class="hint" id="qaPoolHint" style="display:none">번호는 올린 순서대로 고정돼요(빼도 번호가 안 바뀜). 고객이 "3번 빼주세요" 하면 3번의 ×를 누르세요.</div>
+            <button type="button" class="btn" id="qaMgToSlots" style="display:none;margin-top:12px">✅ 확인 끝 → 네모 칸에 맞추기</button>
           </div>
-          <input type="number" id="qaMgCustomCount" placeholder="원하는 장수 입력" min="1" max="99" style="display:none;margin-top:8px" />
-
-          <label style="margin-top:16px">사진 업로드 <span class="req">*</span> <span class="opt">(칸을 눌러 한 장씩 넣거나, 아래 버튼으로 여러 장을 한번에 채우세요)</span></label>
-          <button type="button" class="btn ghost" id="qaMgBulkPickBtn" style="margin-bottom:10px">🖼️ <span class="shineTxt">여러 장 한번에 선택해서 채우기</span></button>
-          <div class="slots" id="qaMgSlots"></div>
-          <div class="hint">여러 장을 한번에 넣으면 가운데를 기준으로 자동으로 잘라 채워져요. 칸을 눌러 위치·확대를 다시 맞출 수 있어요.</div>
+          <!-- 2단계: 남은 사진을 정사각형 칸에 맞추고 등록 -->
+          <div id="qaMgSlotStep" style="display:none">
+            <label>네모 칸에 맞추기 <span class="opt" id="qaMgSlotCount"></span></label>
+            <div class="slots" id="qaMgSlots"></div>
+            <div class="hint">가운데를 기준으로 자동으로 잘라 채웠어요. 칸을 눌러 위치·확대를 맞춰 주세요. 칸의 번호는 1단계 사진 번호예요.</div>
+            <button type="button" class="btn ghost" id="qaMgBackPool" style="margin-top:10px">← 사진 목록으로 (추가·빼기)</button>
+          </div>
         </div>
 
         <button type="submit" class="btn" id="qaSaveBtn" style="margin-top:14px">등록하기</button>
@@ -578,6 +605,17 @@
   </section>
 </div>
 
+<!-- 간편등록 마그넷: 받은 사진 전체보기 (번호 크게 → 캡처해서 고객에게 확인) -->
+<div class="qaPoolView" id="qaPoolView">
+  <div class="qpvHead">
+    <div><b id="qpvCount">총 0장</b><span>보내주신 사진 맞는지 확인해 주세요</span></div>
+    <button type="button" class="qpvClose" id="qpvClose">×</button>
+  </div>
+  <div class="qpvGrid" id="qpvGrid"></div>
+  <div class="qpvBtns">
+    <button type="button" class="btn" id="qpvSave">🖼️ 번호 붙여 한 장으로 저장</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="lightbox" id="lightbox"><button class="close" onclick="closeLB()">×</button><img id="lbImg" src="" alt=""></div>
 <div class="draftBanner" id="mgDraftBanner">
@@ -1660,14 +1698,18 @@ function qaReset(){
   document.querySelectorAll('#qaType button').forEach(x=>x.classList.toggle('on', x.dataset.qtype==='topper'));
   document.getElementById('qaTopperSection').style.display='block';
   document.getElementById('qaMagnetSection').style.display='none';
-  qaMgSetSize=0; qaMgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); }); qaMgSlotsData=[];
-  document.querySelectorAll('#qaMgSet button').forEach(x=>x.classList.remove('on'));
-  const cc=document.getElementById('qaMgCustomCount'); if(cc){ cc.value=''; cc.style.display='none'; }
-  renderQaMgSlots();
+  qaMgSlotsData.forEach(s=>{ if(s) URL.revokeObjectURL(s.url); }); qaMgSlotsData=[]; qaMgSetSize=0;
+  qaMgPool.forEach(p=>URL.revokeObjectURL(p.url)); qaMgPool=[]; qaMgNextNo=1;
+  qaMgShowStep('pool'); renderQaPool(); renderQaMgSlots(); qaSyncSaveBtn();
 }
 
-/* ---- 관리자 간편등록: 마그넷등록 ---- */
+/* ---- 관리자 간편등록: 마그넷등록 ----
+   1단계(pool): 고객이 문자로 보낸 사진을 장수 상관없이 전부 올린다. 번호는 올린 순서대로 고정(빼도 안 바뀜).
+                전체보기로 번호 붙은 화면/이미지를 고객에게 보내 "몇 번 빼드릴까요?" 확인 → ×로 뺀다.
+   2단계(slots): 남은 사진을 정사각형 칸에 자동으로 채우고, 칸을 눌러 위치·확대를 맞춘 뒤 등록. */
 let qaType='topper', qaMgSetSize=0, qaMgSlotsData=[];
+let qaMgPool=[], qaMgNextNo=1, qaMgStep='pool';   // qaMgPool: [{no, file, url}]
+const qaMgNoOf=new Map();                          // 원본 파일 -> 사진 번호 (크롭해도 번호 유지)
 document.getElementById('qaType').addEventListener('click', e=>{
   const b=e.target.closest('button[data-qtype]'); if(!b) return;
   qaType=b.dataset.qtype;
@@ -1675,89 +1717,152 @@ document.getElementById('qaType').addEventListener('click', e=>{
   b.classList.add('on');
   document.getElementById('qaTopperSection').style.display = qaType==='topper' ? 'block' : 'none';
   document.getElementById('qaMagnetSection').style.display = qaType==='magnet' ? 'block' : 'none';
+  qaSyncSaveBtn();
 });
-function applyQaMgSetSize(n){
-  n=Math.max(1, Math.min(99, Math.round(n)));
-  if(qaMgSetSize && qaMgSetSize!==n && qaMgSlotsData.some(Boolean)){
-    if(!confirm('장수를 바꾸면 이미 넣은 사진이 초기화돼요. 계속할까요?')) return;
-  }
-  qaMgSetSize=n;
-  qaMgSlotsData=new Array(n).fill(null);
-  renderQaMgSlots();
+// 마그넷은 2단계(칸 맞추기)에서만 등록 버튼을 보여준다
+function qaSyncSaveBtn(){
+  const btn=document.getElementById('qaSaveBtn'); if(!btn) return;
+  btn.style.display = (qaType==='magnet' && qaMgStep!=='slots') ? 'none' : '';
 }
-document.getElementById('qaMgSet').addEventListener('click', e=>{
-  const b=e.target.closest('button[data-set]'); if(!b) return;
-  document.querySelectorAll('#qaMgSet button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
-  const cc=document.getElementById('qaMgCustomCount');
-  if(b.dataset.set==='custom'){ cc.style.display='block'; cc.focus(); return; }
-  cc.style.display='none'; cc.value='';
-  applyQaMgSetSize(Number(b.dataset.set));
-});
-document.getElementById('qaMgCustomCount').addEventListener('input', e=>{
-  const n=Number(e.target.value);
-  if(n>=1) applyQaMgSetSize(n);
-});
-function renderQaMgSlots(){
-  const box=document.getElementById('qaMgSlots'); if(!box) return; box.innerHTML='';
-  for(let i=0;i<qaMgSetSize;i++){
-    const d=document.createElement('div'); d.className='slot'+(qaMgSlotsData[i]?' filled':'');
-    if(qaMgSlotsData[i]){
-      const chk=qaMgSlotsData[i].needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
-      d.innerHTML=`<img src="${qaMgSlotsData[i].url}" alt=""><span class="num">${i+1}</span>${chk}<button type="button" class="x">×</button>`;
-      d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); URL.revokeObjectURL(qaMgSlotsData[i].url); qaMgSlotsData[i]=null; renderQaMgSlots(); };
-      d.onclick=()=>qaOpenCropForExisting(i);
-    }else{
-      d.innerHTML=`<div>➕<br>${i+1}번</div>`;
-      d.onclick=()=>qaPickPhotoForSlot(i);
-    }
+function qaMgShowStep(step){
+  qaMgStep=step;
+  document.getElementById('qaMgPoolStep').style.display = step==='pool' ? 'block' : 'none';
+  document.getElementById('qaMgSlotStep').style.display = step==='slots' ? 'block' : 'none';
+  qaSyncSaveBtn();
+}
+
+/* 1단계: 받은 사진 목록 */
+function renderQaPool(){
+  const box=document.getElementById('qaMgPool'); if(!box) return; box.innerHTML='';
+  qaMgPool.forEach(p=>{
+    const d=document.createElement('div'); d.className='thumb';
+    d.innerHTML=`<img src="${p.url}" alt=""><span class="ord">${p.no}</span><button type="button" class="x" title="${p.no}번 빼기">×</button>`;
+    d.querySelector('.x').onclick=ev=>{ ev.stopPropagation(); qaMgRemove(p.no); };
+    d.onclick=()=>openLB(p.url);
     box.appendChild(d);
-  }
+  });
+  const n=qaMgPool.length;
+  document.getElementById('qaPoolCount').textContent=`총 ${n}장`;
+  ['qaPoolHead','qaPoolHint','qaMgToSlots'].forEach(id=>{ document.getElementById(id).style.display = n ? '' : 'none'; });
+  document.getElementById('qaPoolHead').style.display = n ? 'flex' : 'none';
+  if(document.getElementById('qaPoolView').classList.contains('show')) renderQaPoolView();
 }
-const qaMgPickInput=document.createElement('input');
-qaMgPickInput.type='file'; qaMgPickInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; qaMgPickInput.hidden=true;
-document.body.appendChild(qaMgPickInput);
-let qaMgPickSlot=-1;
-function qaPickPhotoForSlot(i){ qaMgPickSlot=i; qaMgPickInput.value=''; qaMgPickInput.click(); }
-qaMgPickInput.addEventListener('change', e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
-  if(!okType) return toast('JPG, PNG, WEBP, HEIC 형식만 가능해요.');
-  openCropModal(f, qaMgPickSlot, qaMgSlotsData, renderQaMgSlots);
-});
-function qaOpenCropForExisting(i){
-  const item=qaMgSlotsData[i];
-  if(!item || !item.srcFile) return qaPickPhotoForSlot(i);
-  openCropModal(item.srcFile, i, qaMgSlotsData, renderQaMgSlots);
+function qaMgRemove(no){
+  const i=qaMgPool.findIndex(p=>p.no===no); if(i<0) return;
+  const p=qaMgPool[i];
+  URL.revokeObjectURL(p.url); qaMgPool.splice(i,1);
+  // 이미 칸에 들어가 있던 것도 같이 뺀다
+  const si=qaMgSlotsData.findIndex(s=>s && s.srcFile===p.file);
+  if(si>=0){ URL.revokeObjectURL(qaMgSlotsData[si].url); qaMgSlotsData.splice(si,1); qaMgSetSize=qaMgSlotsData.length; }
+  renderQaPool(); renderQaMgSlots();
+  toast(`${no}번을 뺐어요. 남은 사진 ${qaMgPool.length}장`);
 }
 const qaMgBulkInput=document.createElement('input');
 qaMgBulkInput.type='file'; qaMgBulkInput.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif'; qaMgBulkInput.multiple=true; qaMgBulkInput.hidden=true;
 document.body.appendChild(qaMgBulkInput);
-document.getElementById('qaMgBulkPickBtn').onclick=()=>{
-  if(!qaMgSetSize) return toast('세트 수를 먼저 정해 주세요.');
-  qaMgBulkInput.value=''; qaMgBulkInput.click();
-};
-qaMgBulkInput.addEventListener('change', async e=>{
+document.getElementById('qaMgBulkPickBtn').onclick=()=>{ qaMgBulkInput.value=''; qaMgBulkInput.click(); };
+qaMgBulkInput.addEventListener('change', e=>{
   const picked=Array.from(e.target.files||[]);
-  if(!picked.length) return;
-  const emptyIdx=[]; for(let i=0;i<qaMgSetSize;i++) if(!qaMgSlotsData[i]) emptyIdx.push(i);
-  if(!emptyIdx.length) return toast('모든 칸이 이미 채워져 있어요. 칸을 눌러 사진을 바꿀 수 있어요.');
-  if(picked.length>emptyIdx.length) toast(`빈 칸이 ${emptyIdx.length}개라 앞의 ${emptyIdx.length}장만 채웠어요.`);
-  let filled=0;
-  for(let k=0;k<Math.min(picked.length, emptyIdx.length);k++){
-    const f=picked[k];
+  let added=0, bad=0;
+  picked.forEach(f=>{
     const okType=ALLOWED.includes(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
-    if(!okType) continue;
-    const result=await autoCropFile(f);
-    if(!result) continue;
-    const slot=emptyIdx[k];
-    if(qaMgSlotsData[slot]) URL.revokeObjectURL(qaMgSlotsData[slot].url);
-    qaMgSlotsData[slot]=result;
-    filled++;
-    renderQaMgSlots();
-  }
-  if(filled) toast('네모 안에 보이는 그대로 제작돼요. "위치·확대 조정하기"가 표시된 칸을 눌러 조정해 주세요.', 4500);
+    if(!okType){ bad++; return; }
+    const no=qaMgNextNo++;
+    qaMgNoOf.set(f, no);
+    qaMgPool.push({ no, file:f, url:URL.createObjectURL(f) });
+    added++;
+  });
+  renderQaPool();
+  if(added) toast(`${added}장 추가 · 총 ${qaMgPool.length}장. 🔍 전체보기로 고객에게 확인해 주세요.`, 3500);
+  if(bad) toast(`${bad}장은 JPG·PNG·WEBP·HEIC가 아니라 뺐어요.`);
 });
+
+/* 전체보기: 번호 크게 붙여서 한 화면에 (캡처하거나 한 장 이미지로 저장해서 고객에게 보냄) */
+function renderQaPoolView(){
+  document.getElementById('qpvCount').textContent=`총 ${qaMgPool.length}장`;
+  document.getElementById('qpvGrid').innerHTML=qaMgPool.map(p=>`<div class="qpvItem"><img src="${p.url}" alt=""><span class="n">${p.no}</span></div>`).join('');
+}
+document.getElementById('qaPoolViewBtn').onclick=()=>{ renderQaPoolView(); document.getElementById('qaPoolView').classList.add('show'); };
+document.getElementById('qpvClose').onclick=()=>document.getElementById('qaPoolView').classList.remove('show');
+function qaLoadImg(url){ return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; }); }
+document.getElementById('qpvSave').onclick=async()=>{
+  if(!qaMgPool.length) return;
+  const btn=document.getElementById('qpvSave'); btn.disabled=true; const label=btn.textContent; btn.textContent='만드는 중...';
+  try{
+    const COLS=qaMgPool.length<=4?2:3, CELL=420, GAP=14, HEAD=90, PAD=20;
+    const rows=Math.ceil(qaMgPool.length/COLS);
+    const cv=document.createElement('canvas');
+    cv.width=PAD*2+COLS*CELL+(COLS-1)*GAP; cv.height=HEAD+PAD+rows*CELL+(rows-1)*GAP+PAD;
+    const g=cv.getContext('2d');
+    g.fillStyle='#fff'; g.fillRect(0,0,cv.width,cv.height);
+    g.fillStyle='#222'; g.font='900 40px sans-serif'; g.textBaseline='middle';
+    g.fillText(`보내주신 사진 총 ${qaMgPool.length}장`, PAD, HEAD/2+6);
+    for(let i=0;i<qaMgPool.length;i++){
+      const p=qaMgPool[i], x=PAD+(i%COLS)*(CELL+GAP), y=HEAD+Math.floor(i/COLS)*(CELL+GAP);
+      g.fillStyle='#f2f2f5'; g.fillRect(x,y,CELL,CELL);
+      try{
+        const im=await qaLoadImg(p.url);
+        const s=Math.min(CELL/im.naturalWidth, CELL/im.naturalHeight), w=im.naturalWidth*s, h=im.naturalHeight*s;
+        g.drawImage(im, x+(CELL-w)/2, y+(CELL-h)/2, w, h);
+      }catch(_){ g.fillStyle='#999'; g.font='600 22px sans-serif'; g.fillText('미리보기 없음', x+20, y+CELL/2); }
+      const txt=String(p.no); g.font='900 44px sans-serif';
+      const bw=Math.max(64, g.measureText(txt).width+30);
+      g.fillStyle='#e8315b'; g.beginPath(); g.roundRect(x+10, y+10, bw, 64, 32); g.fill();
+      g.fillStyle='#fff'; g.textAlign='center'; g.fillText(txt, x+10+bw/2, y+44); g.textAlign='left';
+    }
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.9));
+    const name=`마그넷_받은사진_${qaMgPool.length}장.jpg`;
+    const file=new File([blob], name, {type:'image/jpeg'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file]}); return; }catch(err){ if(err && err.name==='AbortError') return; }
+    }
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast('번호 붙인 이미지를 저장했어요. 고객에게 보내 확인해 주세요.');
+  }catch(err){ toast('이미지 만들기에 실패했어요. 전체보기 화면을 캡처해 주세요.'); }
+  finally{ btn.disabled=false; btn.textContent=label; }
+};
+
+/* 2단계: 남은 사진을 정사각형 칸으로 (이미 맞춘 칸은 그대로 두고, 새로 추가된 것만 자동으로 잘라 넣음) */
+document.getElementById('qaMgToSlots').onclick=async()=>{
+  if(!qaMgPool.length) return toast('사진을 먼저 올려 주세요.');
+  const btn=document.getElementById('qaMgToSlots'); btn.disabled=true; const label=btn.textContent; btn.textContent='칸에 채우는 중...';
+  try{
+    const prev=new Map(qaMgSlotsData.filter(Boolean).map(s=>[s.srcFile, s]));
+    const next=[];
+    for(const p of qaMgPool){
+      let s=prev.get(p.file);
+      if(s) prev.delete(p.file);
+      else s=await autoCropFile(p.file);
+      if(s) next.push(s); else toast(`${p.no}번 사진을 처리하지 못했어요.`);
+    }
+    prev.forEach(s=>URL.revokeObjectURL(s.url));
+    qaMgSlotsData=next; qaMgSetSize=next.length;
+    renderQaMgSlots(); qaMgShowStep('slots');
+    toast('네모 안에 보이는 그대로 제작돼요. "위치·확대 조정하기"가 표시된 칸을 눌러 조정해 주세요.', 4500);
+  }finally{ btn.disabled=false; btn.textContent=label; }
+};
+document.getElementById('qaMgBackPool').onclick=()=>{ qaMgShowStep('pool'); renderQaPool(); };
+function renderQaMgSlots(){
+  const box=document.getElementById('qaMgSlots'); if(!box) return; box.innerHTML='';
+  for(let i=0;i<qaMgSlotsData.length;i++){
+    const s=qaMgSlotsData[i]; if(!s) continue;
+    const no=qaMgNoOf.get(s.srcFile) || (i+1);
+    const d=document.createElement('div'); d.className='slot filled';
+    const chk=s.needsCheck?`<span class="chk">위치·확대 조정하기</span>`:'';
+    d.innerHTML=`<img src="${s.url}" alt=""><span class="num">${no}</span>${chk}<button type="button" class="x" title="${no}번 빼기">×</button>`;
+    d.querySelector('.x').onclick=(ev)=>{ ev.stopPropagation(); qaMgRemove(no); };
+    d.onclick=()=>qaOpenCropForExisting(i);
+    box.appendChild(d);
+  }
+  const c=document.getElementById('qaMgSlotCount');
+  if(c) c.textContent=`(${qaMgSlotsData.length}장 · 남은 조정 ${qaMgSlotsData.filter(s=>s&&s.needsCheck).length}칸)`;
+}
+function qaOpenCropForExisting(i){
+  const item=qaMgSlotsData[i];
+  if(!item || !item.srcFile) return;
+  openCropModal(item.srcFile, i, qaMgSlotsData, renderQaMgSlots);
+}
 
 const qaDrop=document.getElementById('qaDrop'), qaFileInput=document.getElementById('qaFileInput');
 qaDrop.addEventListener('click',()=>qaFileInput.click());
@@ -1797,8 +1902,11 @@ document.getElementById('qaForm').addEventListener('submit', async e=>{
   if(!name) return toast('주문자 이름을 입력해 주세요.');
 
   if(qaType==='magnet'){
-    if(!qaMgSetSize) return toast('세트 수를 먼저 정해 주세요.');
-    if(qaMgSlotsData.some(x=>!x)) return toast(`${qaMgSetSize}칸 모두에 사진을 넣어 주세요.`);
+    if(qaMgStep!=='slots') return toast('사진 확인이 끝나면 "네모 칸에 맞추기"를 먼저 눌러 주세요.');
+    qaMgSlotsData=qaMgSlotsData.filter(Boolean); qaMgSetSize=qaMgSlotsData.length;
+    if(!qaMgSetSize) return toast('사진을 1장 이상 넣어 주세요.');
+    const left=qaMgSlotsData.filter(s=>s.needsCheck).length;
+    if(left && !confirm(`아직 위치·확대를 안 맞춘 칸이 ${left}개 있어요. 가운데 자동 자르기 그대로 등록할까요?`)) return;
     qaBusy=true;
     const btn=document.getElementById('qaSaveBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 등록 중...';
     try{
