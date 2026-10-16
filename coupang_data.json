@@ -23861,11 +23861,13 @@
     },
     "10/14": {
       "cpAdCost": 224779,
-      "mongCpAdCost": 51772
+      "mongCpAdCost": 51772,
+      "naverSearchAd": 11880
     },
     "10/15": {
       "cpAdCost": 208907,
-      "mongCpAdCost": 42724
+      "mongCpAdCost": 42724,
+      "naverSearchAd": 15056
     }
   },
   "ad_performance": {
