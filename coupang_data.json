@@ -24146,17 +24146,20 @@
     "10/14": {
       "cpAdCost": 224779,
       "mongCpAdCost": 51772,
-      "naverSearchAd": 11880
+      "naverSearchAd": 11880,
+      "naverSales": 259800
     },
     "10/15": {
       "cpAdCost": 208907,
       "mongCpAdCost": 42724,
-      "naverSearchAd": 15056
+      "naverSearchAd": 15056,
+      "naverSales": 164900
     },
     "10/16": {
       "cpAdCost": 211189,
       "mongCpAdCost": 48685,
-      "naverSearchAd": 12816
+      "naverSearchAd": 12816,
+      "naverSales": 167400
     }
   },
   "ad_performance": {
