@@ -24051,7 +24051,8 @@
     },
     "10/16": {
       "cpAdCost": 211189,
-      "mongCpAdCost": 48685
+      "mongCpAdCost": 48685,
+      "naverSearchAd": 12816
     }
   },
   "ad_performance": {
