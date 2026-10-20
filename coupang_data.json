@@ -24606,12 +24606,14 @@
     "10/18": {
       "cpAdCost": 172778,
       "mongCpAdCost": 31800,
-      "naverSearchAd": 11116
+      "naverSearchAd": 11116,
+      "naverSales": 106600
     },
     "10/19": {
       "mongCpAdCost": 41783,
       "naverSearchAd": 18518,
-      "cpAdCost": 205230
+      "cpAdCost": 205230,
+      "naverSales": 381900
     }
   },
   "ad_performance": {
