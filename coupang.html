@@ -917,6 +917,7 @@ function renderSales() {
     }, pcts);
 }
 
+let rankRefLabel = '';  // 순위 기준이 된 달 (예: 6월·7월)
 function getMergedData(brand) {
   const merged = {};
   const manual = MANUAL[brand] || {};
@@ -1025,6 +1026,10 @@ function render() {
       <div class="summary-label">기록 일수</div>
       <div class="summary-val">${dates.length}일</div>
     </div>
+    <div class="summary-card" id="rankRefCard">
+      <div class="summary-label">순위 기준</div>
+      <div class="summary-val" style="font-size:1rem" id="rankRefVal">—</div>
+    </div>
     <div class="summary-card">
       <div class="summary-label">조회 기간</div>
       <div class="summary-val" style="font-size:1rem">${currentMonth ? monthLabel(currentMonth) : '전체'}</div>
@@ -1047,22 +1052,44 @@ function render() {
   // 시간대별 5분위 계산 (1위그룹=최상위 20%)
   const RANK_COLORS = ['#1B5E20','#66BB6A','#F57F17','#EF5350','#B71C1C'];
   const RANK_LABELS = ['1위','2위','3위','4위','5위'];
+  // 순위 기준을 '잘 팔리던 때'로 고정한다 (2026-10-22 대표님).
+  // 예전엔 지금까지 기록 전체를 줄 세웠더니, 매출이 빠지면 기준도 같이 내려가서
+  // 같은 '3위'라도 예전 3위보다 금액이 작아졌다. 이제는 하루 평균이 가장 높았던 두 달
+  // (10일 넘게 기록된 달만)의 시간대별 금액으로 5단계 기준선을 만들고, 모든 날을 그 기준에 댄다.
+  const monDays = {};
+  for (const d of Object.keys(data)) {
+    const top = Math.max(0, ...Object.values(data[d]).map(Number).filter(x => isFinite(x)));
+    if (top > 0) (monDays[d.slice(0, 7)] = monDays[d.slice(0, 7)] || []).push(top);
+  }
+  const refMonths = Object.keys(monDays)
+    .filter(m => monDays[m].length >= 10)
+    .sort((x, y) => monDays[y].reduce((s, v) => s + v, 0) / monDays[y].length
+                  - monDays[x].reduce((s, v) => s + v, 0) / monDays[x].length)
+    .slice(0, 2).sort();
+  rankRefLabel = refMonths.length ? refMonths.map(m => parseInt(m.slice(5)) + '월').join('·') : '';
   const hourRankMap = {};  // h → Map(dateStr → rank 0~4)
   for (const h of HOURS) {
-    const vals = [];
+    const ref = [];
     for (const d of Object.keys(data)) {
       const v = data[d][h];
-      if (v) vals.push({ d, v });
+      if (v && refMonths.includes(d.slice(0, 7))) ref.push(v);
     }
-    vals.sort((a, b) => b.v - a.v);  // 내림차순
-    const n = vals.length;
+    ref.sort((a, b) => b - a);  // 내림차순
+    const n = ref.length;
+    // 기준선 4개: 잘 팔리던 때 상위 20%·40%·60%·80% 금액
+    const cuts = n >= 5 ? [1, 2, 3, 4].map(k => ref[Math.min(n - 1, Math.floor(n * k / 5) - 1)]) : null;
     const map = new Map();
-    vals.forEach(({ d, v }, i) => {
-      const rank = n < 2 ? 0 : Math.min(4, Math.floor(i / n * 5));
+    for (const d of Object.keys(data)) {
+      const v = data[d][h];
+      if (!v) continue;
+      let rank = 0;
+      if (cuts) { while (rank < 4 && v < cuts[rank]) rank++; }
       map.set(d, rank);
-    });
+    }
     hourRankMap[h] = map;
   }
+  const rrv = document.getElementById('rankRefVal');
+  if (rrv) { rrv.textContent = rankRefLabel ? rankRefLabel + ' 기준' : '전체 기준'; rrv.title = '잘 팔리던 두 달의 시간대별 매출로 1~5위 기준선을 고정했어요'; }
 
   // 바디
   const yesterdayStr = localDateStr(-1);
