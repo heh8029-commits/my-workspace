@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-25 23:45",
+  "last_updated": "2026-10-26 00:05",
   "accounts": {
     "미리토퍼": {
       "current_amount": 491570,
@@ -21697,7 +21697,7 @@
     }
   },
   "sales_data": {
-    "last_updated": "2026-10-24",
+    "last_updated": "2026-10-26",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -23782,6 +23782,12 @@
         "rocket_growth": 226400,
         "seller_delivery": 0,
         "total": 226400
+      },
+      {
+        "date": "10/25",
+        "rocket_growth": 133300,
+        "seller_delivery": 0,
+        "total": 133300
       }
     ]
   },
