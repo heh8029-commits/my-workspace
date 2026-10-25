@@ -25362,12 +25362,17 @@
     "10/22": {
       "cpAdCost": 213629,
       "mongCpAdCost": 56287,
-      "naverSearchAd": 13736
+      "naverSearchAd": 13736,
+      "naverSales": 326100
     },
     "10/23": {
       "cpAdCost": 207450,
       "mongCpAdCost": 59308,
-      "naverSearchAd": 14641
+      "naverSearchAd": 14641,
+      "naverSales": 134700
+    },
+    "10/24": {
+      "naverSales": 100800
     }
   },
   "ad_performance": {
