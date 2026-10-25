@@ -21645,7 +21645,7 @@
     }
   },
   "sales_data": {
-    "last_updated": "2026-10-24",
+    "last_updated": "2026-10-25",
     "미리토퍼": [
       {
         "date": "03/08",
@@ -22801,51 +22801,51 @@
       },
       {
         "date": "10/11",
-        "rocket_growth": 601210,
-        "seller_delivery": 191900,
-        "total": 793110
+        "rocket_growth": 304960,
+        "seller_delivery": 0,
+        "total": 304960
       },
       {
         "date": "10/12",
-        "rocket_growth": 1080860,
-        "seller_delivery": 149300,
-        "total": 1230160
+        "rocket_growth": 239200,
+        "seller_delivery": 0,
+        "total": 239200
       },
       {
         "date": "10/13",
-        "rocket_growth": 948650,
-        "seller_delivery": 278460,
-        "total": 1227110
+        "rocket_growth": 291040,
+        "seller_delivery": 0,
+        "total": 291040
       },
       {
         "date": "10/14",
-        "rocket_growth": 1129130,
-        "seller_delivery": 196400,
-        "total": 1325530
+        "rocket_growth": 215300,
+        "seller_delivery": 0,
+        "total": 215300
       },
       {
         "date": "10/15",
-        "rocket_growth": 1120900,
-        "seller_delivery": 330000,
-        "total": 1450900
+        "rocket_growth": 347810,
+        "seller_delivery": 0,
+        "total": 347810
       },
       {
         "date": "10/16",
-        "rocket_growth": 1415980,
-        "seller_delivery": 316900,
-        "total": 1732880
+        "rocket_growth": 382450,
+        "seller_delivery": 0,
+        "total": 382450
       },
       {
         "date": "10/17",
-        "rocket_growth": 519970,
-        "seller_delivery": 140100,
-        "total": 660070
+        "rocket_growth": 198800,
+        "seller_delivery": 0,
+        "total": 198800
       },
       {
         "date": "10/18",
-        "rocket_growth": 454140,
-        "seller_delivery": 159300,
-        "total": 613440
+        "rocket_growth": 249350,
+        "seller_delivery": 0,
+        "total": 249350
       },
       {
         "date": "10/19",
@@ -22855,27 +22855,33 @@
       },
       {
         "date": "10/20",
-        "rocket_growth": 1029420,
-        "seller_delivery": 201520,
-        "total": 1230940
+        "rocket_growth": 278030,
+        "seller_delivery": 0,
+        "total": 278030
       },
       {
         "date": "10/21",
-        "rocket_growth": 1065040,
-        "seller_delivery": 399100,
-        "total": 1464140
+        "rocket_growth": 324800,
+        "seller_delivery": 0,
+        "total": 324800
       },
       {
         "date": "10/22",
-        "rocket_growth": 1452150,
-        "seller_delivery": 196260,
-        "total": 1648410
+        "rocket_growth": 429800,
+        "seller_delivery": 0,
+        "total": 429800
       },
       {
         "date": "10/23",
-        "rocket_growth": 1233170,
-        "seller_delivery": 158900,
-        "total": 1392070
+        "rocket_growth": 532780,
+        "seller_delivery": 0,
+        "total": 532780
+      },
+      {
+        "date": "10/24",
+        "rocket_growth": 226400,
+        "seller_delivery": 0,
+        "total": 226400
       }
     ],
     "몽몽토퍼": [
@@ -23643,27 +23649,27 @@
       },
       {
         "date": "10/11",
-        "rocket_growth": 304960,
-        "seller_delivery": 0,
-        "total": 304960
+        "rocket_growth": 601210,
+        "seller_delivery": 191900,
+        "total": 793110
       },
       {
         "date": "10/12",
-        "rocket_growth": 239200,
-        "seller_delivery": 0,
-        "total": 239200
+        "rocket_growth": 1080860,
+        "seller_delivery": 149300,
+        "total": 1230160
       },
       {
         "date": "10/13",
-        "rocket_growth": 291040,
-        "seller_delivery": 0,
-        "total": 291040
+        "rocket_growth": 948650,
+        "seller_delivery": 278460,
+        "total": 1227110
       },
       {
         "date": "10/14",
-        "rocket_growth": 215300,
-        "seller_delivery": 0,
-        "total": 215300
+        "rocket_growth": 1129130,
+        "seller_delivery": 196400,
+        "total": 1325530
       },
       {
         "date": "10/15",
@@ -23673,51 +23679,57 @@
       },
       {
         "date": "10/16",
-        "rocket_growth": 382450,
-        "seller_delivery": 0,
-        "total": 382450
+        "rocket_growth": 1415980,
+        "seller_delivery": 316900,
+        "total": 1732880
       },
       {
         "date": "10/17",
-        "rocket_growth": 198800,
-        "seller_delivery": 0,
-        "total": 198800
+        "rocket_growth": 519970,
+        "seller_delivery": 140100,
+        "total": 660070
       },
       {
         "date": "10/18",
-        "rocket_growth": 249350,
-        "seller_delivery": 0,
-        "total": 249350
+        "rocket_growth": 454140,
+        "seller_delivery": 159300,
+        "total": 613440
       },
       {
         "date": "10/19",
-        "rocket_growth": 260090,
-        "seller_delivery": 0,
-        "total": 260090
+        "rocket_growth": 980730,
+        "seller_delivery": 276700,
+        "total": 1257430
       },
       {
         "date": "10/20",
-        "rocket_growth": 278030,
-        "seller_delivery": 0,
-        "total": 278030
+        "rocket_growth": 1029420,
+        "seller_delivery": 201520,
+        "total": 1230940
       },
       {
         "date": "10/21",
-        "rocket_growth": 324800,
-        "seller_delivery": 0,
-        "total": 324800
+        "rocket_growth": 1065040,
+        "seller_delivery": 399100,
+        "total": 1464140
       },
       {
         "date": "10/22",
-        "rocket_growth": 429800,
-        "seller_delivery": 0,
-        "total": 429800
+        "rocket_growth": 1452150,
+        "seller_delivery": 196260,
+        "total": 1648410
       },
       {
         "date": "10/23",
-        "rocket_growth": 523880,
-        "seller_delivery": 0,
-        "total": 523880
+        "rocket_growth": 1243970,
+        "seller_delivery": 165400,
+        "total": 1409370
+      },
+      {
+        "date": "10/24",
+        "rocket_growth": 689500,
+        "seller_delivery": 149800,
+        "total": 839300
       }
     ]
   },
@@ -25373,7 +25385,8 @@
     },
     "10/24": {
       "naverSales": 100800,
-      "naverSearchAd": 8906
+      "naverSearchAd": 8906,
+      "mongCpAdCost": 165563
     }
   },
   "ad_performance": {
@@ -25414,36 +25427,39 @@
       }
     },
     "몽몽토퍼": {
-      "updated": "2026-10-24 07:20",
+      "updated": "2026-10-25 11:50",
       "어제": {
-        "전체 집행 광고비": "59,308원",
-        "광고 전환 주문수": "27회",
-        "광고 전환 매출": "309,580원",
-        "집행 광고비": "59,308원",
-        "광고 수익률": "521.99%",
-        "전체 매출": "582,980원",
-        "클릭수": "382회",
-        "전환율": "7.07%"
+        "전체 집행 광고비": "165,563원",
+        "광고 전환 판매수": "64회",
+        "광고 전환 주문수": "59회",
+        "광고 전환 매출": "673,580원",
+        "집행 광고비": "165,563원",
+        "광고 수익률": "406.84%",
+        "전체 매출": "1,054,800원",
+        "클릭수": "867회",
+        "전환율": "6.81%"
       },
       "최근7일": {
-        "전체 집행 광고비": "313,463원",
-        "광고 전환 주문수": "147회",
-        "광고 전환 매출": "1,563,110원",
-        "집행 광고비": "313,463원",
-        "광고 수익률": "498.66%",
-        "전체 매출": "2,562,000원",
-        "클릭수": "2,393회",
-        "전환율": "6.14%"
+        "전체 집행 광고비": "1,449,213원",
+        "광고 전환 판매수": "569회",
+        "광고 전환 주문수": "554회",
+        "광고 전환 매출": "5,929,460원",
+        "집행 광고비": "1,449,213원",
+        "광고 수익률": "409.15%",
+        "전체 매출": "9,705,740원",
+        "클릭수": "7,744회",
+        "전환율": "7.15%"
       },
       "이번달": {
-        "전체 집행 광고비": "1,014,798원",
-        "광고 전환 주문수": "461회",
-        "광고 전환 매출": "4,856,290원",
-        "집행 광고비": "1,014,798원",
-        "광고 수익률": "478.55%",
-        "전체 매출": "7,833,630원",
-        "클릭수": "7,899회",
-        "전환율": "5.84%"
+        "전체 집행 광고비": "4,772,333원",
+        "광고 전환 판매수": "1,957회",
+        "광고 전환 주문수": "1,899회",
+        "광고 전환 매출": "20,435,950원",
+        "집행 광고비": "4,772,333원",
+        "광고 수익률": "428.22%",
+        "전체 매출": "33,646,500원",
+        "클릭수": "26,727회",
+        "전환율": "7.11%"
       }
     }
   }
