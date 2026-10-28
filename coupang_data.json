@@ -25894,12 +25894,14 @@
     "10/26": {
       "cpAdCost": 244466,
       "mongCpAdCost": 44889,
-      "naverSearchAd": 13993
+      "naverSearchAd": 13993,
+      "naverSales": 319100
     },
     "10/27": {
       "cpAdCost": 221965,
       "mongCpAdCost": 44870,
-      "naverSearchAd": 12935
+      "naverSearchAd": 12935,
+      "naverSales": 244500
     }
   },
   "ad_performance": {
