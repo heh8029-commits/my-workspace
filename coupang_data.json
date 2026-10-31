@@ -26540,12 +26540,14 @@
     "10/29": {
       "cpAdCost": 228498,
       "mongCpAdCost": 66061,
-      "naverSearchAd": 11731
+      "naverSearchAd": 11731,
+      "naverSales": 189100
     },
     "10/30": {
       "cpAdCost": 187281,
       "mongCpAdCost": 47079,
-      "naverSearchAd": 7048
+      "naverSearchAd": 7048,
+      "naverSales": 116000
     }
   },
   "ad_performance": {
