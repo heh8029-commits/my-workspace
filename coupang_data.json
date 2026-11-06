@@ -27660,11 +27660,13 @@
     "11/04": {
       "cpAdCost": 235787,
       "naverSearchAd": 9009,
-      "mongCpAdCost": 53635
+      "mongCpAdCost": 53635,
+      "naverSales": 346700
     },
     "11/05": {
       "cpAdCost": 227146,
-      "mongCpAdCost": 52692
+      "mongCpAdCost": 52692,
+      "naverSales": 163300
     }
   },
   "ad_performance": {
