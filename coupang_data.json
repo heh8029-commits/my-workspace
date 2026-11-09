@@ -28260,7 +28260,8 @@
     "11/08": {
       "cpAdCost": 163896,
       "mongCpAdCost": 24095,
-      "naverSales": 243000
+      "naverSales": 243000,
+      "naverSearchAd": 6153
     }
   },
   "ad_performance": {
