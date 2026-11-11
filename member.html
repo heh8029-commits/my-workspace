@@ -916,6 +916,16 @@ button{font-family:inherit;cursor:pointer}
       <label>시급 (원)</label>
       <input type="number" id="fWage" placeholder="10030" min="0" step="10">
     </div>
+    <div class="form-row" id="wageApplyRow">
+      <label>시급 적용일</label>
+      <input type="date" id="fWageFrom">
+      <div id="wageHistInfo" style="font-size:.75rem;color:var(--soft);margin-top:4px"></div>
+    </div>
+    <div class="form-row" id="wagePrevRow" style="display:none">
+      <label>바꾸기 전 시급</label>
+      <input type="number" id="fWagePrev" min="0" step="10">
+      <div style="font-size:.75rem;color:var(--soft);margin-top:4px">적용일 전날까지는 이 시급으로 계산돼요 (이미 시급을 바꿔버렸으면 원래 시급을 적어주세요)</div>
+    </div>
     <div class="form-row">
       <label>원천징수 3.3%</label>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0">
@@ -1343,6 +1353,22 @@ async function load(){
   try{const d=await fbGet(FB_MEMBERS);members=Array.isArray(d)?d:[];}catch(e){members=[];}
 }
 async function save(){await fbPut(FB_MEMBERS,members);}
+// 그날 시급: m.wageHist=[{from:'YYYY-MM-DD',wage}] (from '' = 처음부터) 중 from<=날짜 인 마지막. 이력 없으면 m.wage
+function wageOn(m,ds){
+  const h=(m&&Array.isArray(m.wageHist))?m.wageHist:[];
+  let w=null; for(const e of h){ if((e.from||'')<=ds) w=e.wage; }
+  if(w==null) w=h.length?h[0].wage:(m&&m.wage);
+  return Number(w)||0;
+}
+function wageHistText(m){
+  const h=(m&&Array.isArray(m.wageHist))?m.wageHist:[];
+  if(!h.length) return '';
+  return '시급 이력: '+h.map((e,i)=>{
+    const nx=h[i+1], d=s=>s.slice(2).replace(/-/g,'.');
+    const until=nx?(()=>{const t=new Date(nx.from+'T00:00:00');t.setDate(t.getDate()-1);return d(localISO(t));})():'';
+    return (e.from?d(e.from):'처음')+'~'+until+' '+Number(e.wage).toLocaleString()+'원';
+  }).join(' → ');
+}
 
 async function fbPost(url,data){
   await fetch(url+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
@@ -1421,6 +1447,10 @@ function openModal(id){
     document.getElementById('fStatus').value=m.status||'active';
     document.getElementById('fEmpType').value=m.empType||'alba';
     document.getElementById('fWage').value=m.wage||'';
+    document.getElementById('fWageFrom').value=localISO();
+    document.getElementById('fWagePrev').value=m.wage||'';
+    document.getElementById('wagePrevRow').style.display=(m.wageHist&&m.wageHist.length)?'none':'';
+    document.getElementById('wageHistInfo').textContent=wageHistText(m);
     document.getElementById('fTax').checked=!!m.tax;
     document.getElementById('fAccount').value=m.account||'';
     document.getElementById('fMemo').value=m.memo||'';
@@ -1436,6 +1466,10 @@ function openModal(id){
     document.getElementById('fStatus').value='active';
     document.getElementById('fEmpType').value='alba';
     document.getElementById('fWage').value='';
+    document.getElementById('fWageFrom').value=localISO();
+    document.getElementById('fWagePrev').value='';
+    document.getElementById('wagePrevRow').style.display='none';
+    document.getElementById('wageHistInfo').textContent='';
     document.getElementById('fTax').checked=false;
     document.getElementById('fAccount').value='';
     document.getElementById('fMemo').value='';
@@ -1488,6 +1522,19 @@ async function saveMember(){
     sidejobs:getSjFields(),
   };
   const idx=members.findIndex(x=>x.id===id);
+  // 시급 이력 (황 11/11: 시급 바꾸면 지난 급여까지 새 시급으로 계산되던 것) → 적용일부터만 새 시급
+  {
+    const old=idx>=0?members[idx]:null, nw=String(m.wage||'').trim();
+    let hist=old&&Array.isArray(old.wageHist)?old.wageHist.map(e=>({from:e.from,wage:String(e.wage)})):[];
+    const from=document.getElementById('fWageFrom').value||localISO();
+    if(!hist.length){
+      const prev=String(document.getElementById('fWagePrev').value||'').trim();
+      if(old&&prev&&nw&&prev!==nw) hist=[{from:'',wage:prev},{from,wage:nw}];
+    }else if(nw&&String(old.wage||'').trim()!==nw){ // 시급 칸을 실제로 바꿨을 때만
+      hist=hist.filter(e=>e.from<from); hist.push({from,wage:nw});
+    }
+    if(hist.length) m.wageHist=hist.sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0);
+  }
   if(idx>=0)members[idx]=m; else members.push(m);
   await save();renderCards();closeModal();if(currentTab==='admin')renderAdmin();
 }
@@ -1982,7 +2029,7 @@ async function renderLog(){
   const selDateEl=document.getElementById('logAttDate');
   const selectedDate=selDateEl?selDateEl.value:'';
 
-  let totalMin=0,offDays=0,workDays=0,mealTotal=0;
+  let totalMin=0,offDays=0,workDays=0,mealTotal=0,payRaw=0;
   const cur=new Date(calStart);
   while(cur<=calEnd){
     const ds=localISO(cur);
@@ -1996,7 +2043,7 @@ async function renderLog(){
     // 공동 휴무일 → 휴무로 표시하고, 적어둔 시간은 계산에서 뺀다
     if(gOff){skipMin=mins;mins=0;isOff=true;}
     const hasData=!!dd||gOff;
-    if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;mealTotal+=(dd.mealCost||0);}}
+    if(inP&&hasData){if(isOff)offDays++;else{workDays++;totalMin+=mins;payRaw+=mins/60*wageOn(m,ds);mealTotal+=(dd.mealCost||0);}}
     const h=Math.floor(mins/60),mn=mins%60;
     let lbl='';
     if(isOff){
@@ -2028,7 +2075,7 @@ async function renderLog(){
 
   const th=Math.floor(totalMin/60),tm=totalMin%60;
   const wage=Number(m.wage)||0;
-  const wageFinal=(wage?Math.round(totalMin/60*wage*(m.tax?0.967:1)):0)+mealTotal;
+  const wageFinal=(wage?Math.round(payRaw*(m.tax?0.967:1)):0)+mealTotal;
   const sjItems=sjMonthData&&sjMonthData.items?sjMonthData.items:[];
   const sjSummary=sjItems.filter(it=>it.qty>0).map(it=>
     `<div class="log-sum-item">${esc(it.sjName||it.sjId)} <span>${it.qty}개</span></div>`
@@ -2111,13 +2158,13 @@ async function renderPayslipWindow(){
     if(!dayMap[ds])dayMap[ds]={totalMin:0,isOff:true,mealCost:0};
     else dayMap[ds].isOff=true;
   }
-  let totalMin=0,workDays=0,offDays=0,mealTotal=0;
-  for(const k in dayMap){if(dayMap[k].isOff)offDays++;else{workDays++;totalMin+=dayMap[k].totalMin;mealTotal+=(dayMap[k].mealCost||0);}}
+  let totalMin=0,workDays=0,offDays=0,mealTotal=0,payRaw=0;
+  for(const k in dayMap){if(dayMap[k].isOff)offDays++;else{workDays++;totalMin+=dayMap[k].totalMin;payRaw+=dayMap[k].totalMin/60*wageOn(m,k);mealTotal+=(dayMap[k].mealCost||0);}}
   const sjItems=(sjMonth&&sjMonth.items)?sjMonth.items:[];
   const today=new Date();today.setHours(0,0,0,0);
   const settled=today>=end;
   const dedItems=(dedData&&dedData.items)?dedData.items:[];
-  const html=buildPayslipHtml({m,start,end,workDays,offDays,totalMin,mealTotal,sjItems,dedItems,settled});
+  const html=buildPayslipHtml({m,start,end,workDays,offDays,totalMin,mealTotal,sjItems,dedItems,settled,payRaw});
   if(w.closed)return;
   w.document.open();w.document.write(html);w.document.close();
 }
@@ -2130,7 +2177,8 @@ function buildPayslipHtml(d){
   const won=n=>Number(n).toLocaleString()+'원';
   const th=Math.floor(totalMin/60),tm=totalMin%60;
   const wage=Number(m.wage)||0;
-  const base=Math.round((totalMin/60)*wage);
+  const base=Math.round(d.payRaw!=null?d.payRaw:(totalMin/60)*wage);
+  const wageMixed=d.payRaw!=null&&Math.abs(d.payRaw-(totalMin/60)*wage)>1; // 이 기간 중에 시급이 바뀜
   const sjRows=(sjItems||[]).filter(i=>i.total>0);
   const sjTotal=sjRows.reduce((s,i)=>s+(i.total||0),0);
   const gross=base+sjTotal;
@@ -2167,7 +2215,7 @@ function buildPayslipHtml(d){
     <div class="sec">
       <div class="sec-t">지급 내역</div>
       <table>
-        <tr><td>기본급<small>${th}시간${tm?' '+tm+'분':''} × ${won(wage)}</small></td><td class="amt">${won(base)}</td></tr>
+        <tr><td>기본급<small>${th}시간${tm?' '+tm+'분':''} × ${wageMixed?'시급 변경 반영 (현재 '+won(wage)+')':won(wage)}</small></td><td class="amt">${won(base)}</td></tr>
         ${rowsHtml}
         <tr class="sub"><td>합계 (세전)</td><td class="amt">${won(gross)}</td></tr>
         ${m.tax?`<tr class="tax"><td>원천징수 3.3%</td><td class="amt">-${won(tax)}</td></tr>`:''}
@@ -2793,7 +2841,7 @@ async function renderAdmin(){
   ]);
 
   const memberStats={};
-  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0,sjTotal:0,mealTotal:0,dedTotal:0,dedItems:[]};
+  for(const m of activeMembers) memberStats[m.id]={totalMin:0,offDays:0,workDays:0,sjTotal:0,mealTotal:0,dedTotal:0,dedItems:[],payRaw:0,m};
 
   // 부업 집계
   for(const r of sjMonthResults){
@@ -2828,7 +2876,7 @@ async function renderAdmin(){
       if(l.offReason)cell.offReason=l.offReason;
     }else{
       const mins=parseInt(l.hour)*60+parseInt(l.min);
-      ms.totalMin+=mins; ms.workDays++;
+      ms.totalMin+=mins; ms.workDays++; ms.payRaw+=mins/60*wageOn(ms.m,l.date);
       ms.mealTotal+=parseInt(l.mealCost)||0;
       cell.totalMin+=mins;
       if(l.meal)cell.meal=true;
@@ -2865,7 +2913,7 @@ async function renderAdmin(){
     const st=memberStats[m.id]||{totalMin:0,offDays:0,sjTotal:0,mealTotal:0,dedTotal:0,dedItems:[]};
     const th=Math.floor(st.totalMin/60),tm=st.totalMin%60;
     const wage=Number(m.wage)||0;
-    const wageFinal=(wage?Math.round(st.totalMin/60*wage*(m.tax?0.967:1)):0)+(st.mealTotal||0);
+    const wageFinal=(wage?Math.round((st.payRaw||0)*(m.tax?0.967:1)):0)+(st.mealTotal||0);
     const rowTotal=wageFinal+(st.sjTotal||0)-(st.dedTotal||0);
     totalFinal+=wageFinal; totalSj+=st.sjTotal||0; totalDed+=st.dedTotal||0;
     if(m.name!=='유민호'){
