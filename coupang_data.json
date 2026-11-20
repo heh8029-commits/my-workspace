@@ -30468,7 +30468,8 @@
     },
     "11/19": {
       "cpAdCost": 193532,
-      "mongCpAdCost": 52118
+      "mongCpAdCost": 52118,
+      "naverSales": 239700
     }
   },
   "ad_performance": {
