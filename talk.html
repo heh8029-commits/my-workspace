@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex, nofollow">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>미리톡</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--pink:#ff5d8f;--pink2:#ffe3ec;--line:#efefef;--sub:#8e8e8e;--bg:#fafafa;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif;color:#222}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input,textarea{font-family:inherit;font-size:16px}
+.wrap{max-width:520px;margin:0 auto;background:#fff;min-height:100vh;padding-bottom:80px}
+/* top */
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top))}
+.logo{font-size:24px;font-weight:800;letter-spacing:-1px}
+.logo b{color:var(--pink)}
+.top .me{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--sub)}
+/* stories */
+.stories{display:flex;gap:14px;overflow-x:auto;padding:12px 16px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.st{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;font-size:12px}
+.st .ring{padding:3px;border-radius:50%;background:linear-gradient(45deg,#ffc36b,#ff5d8f,#c86bff)}
+.st.off .ring{background:#ddd}
+.st .av{border:3px solid #fff}
+.av{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff;flex-shrink:0}
+.av.s{width:34px;height:34px;font-size:14px;border:0}
+.av.xs{width:26px;height:26px;font-size:11px}
+/* post */
+.post{border-bottom:1px solid var(--line);padding-bottom:12px}
+.ph{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.ph .nm{font-weight:700;font-size:14px}
+.ph .tm{font-size:12px;color:var(--sub)}
+.ph .del{margin-left:auto;color:var(--sub);font-size:20px;padding:0 4px}
+.media{position:relative;background:#f2f2f2}
+.slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.slides::-webkit-scrollbar{display:none}
+.slides img{width:100%;flex-shrink:0;scroll-snap-align:center;aspect-ratio:1/1;object-fit:cover;display:block}
+.dots{display:flex;justify-content:center;gap:4px;padding-top:8px}
+.dots i{width:6px;height:6px;border-radius:50%;background:#d0d0d0}
+.dots i.on{background:var(--pink)}
+.cnt{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:3px 9px;border-radius:12px}
+.bigheart{position:absolute;left:50%;top:50%;font-size:96px;transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
+.bigheart.go{animation:hb .8s ease}
+@keyframes hb{0%{transform:translate(-50%,-50%) scale(0);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15);opacity:1}45%{transform:translate(-50%,-50%) scale(.95)}80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.acts{display:flex;gap:14px;padding:8px 14px 4px;font-size:26px}
+.acts .liked{color:var(--pink)}
+.likes{padding:0 14px;font-size:14px;font-weight:700}
+.txt{padding:4px 14px;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.txt b{margin-right:6px}
+.more{padding:2px 14px;font-size:14px;color:var(--sub)}
+.cm{padding:2px 14px;font-size:14px;line-height:1.45;word-break:break-word}
+.cm b{margin-right:6px}
+.cm .x{color:var(--sub);font-size:12px;margin-left:6px}
+.cin{display:flex;align-items:center;gap:8px;padding:8px 14px 0}
+.cin input{flex:1;border:0;outline:0;font-size:14px;padding:6px 0}
+.cin button{color:var(--pink);font-weight:700;font-size:14px}
+.cin button:disabled{opacity:.35}
+.empty{text-align:center;color:var(--sub);padding:80px 20px;line-height:1.7}
+/* bottom bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.bar .in{max-width:520px;margin:0 auto;display:flex;justify-content:space-around;padding:8px 0}
+.bar button{font-size:26px;padding:4px 24px}
+.bar .plus{background:var(--pink);color:#fff;border-radius:14px;font-size:24px;padding:4px 22px}
+/* sheet */
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.dim.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.sheet h3{font-size:17px;text-align:center;margin-bottom:12px}
+.pick{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.pick .add{width:92px;height:92px;border:2px dashed #ddd;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);font-size:12px;flex-shrink:0}
+.pick .add span{font-size:28px}
+.pv{position:relative;flex-shrink:0}
+.pv img{width:92px;height:92px;object-fit:cover;border-radius:12px;display:block}
+.pv button{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;width:22px;height:22px;border-radius:50%;font-size:13px}
+.sheet textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;outline:0;resize:vertical}
+.btn{width:100%;background:var(--pink);color:#fff;font-weight:800;font-size:16px;padding:14px;border-radius:12px;margin-top:12px}
+.btn:disabled{opacity:.5}
+.btn.gray{background:#f0f0f0;color:#555}
+.names{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px}
+.names button{padding:8px 16px;border-radius:20px;background:#f3f3f3;font-weight:700}
+.sheet input.txtin{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;outline:0}
+.hint{font-size:12.5px;color:var(--sub);text-align:center;margin-top:8px;line-height:1.5}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;z-index:99;display:none}
+/* lock */
+.lock{position:fixed;inset:0;background:#fff;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+.lock input{width:200px;text-align:center;font-size:22px;letter-spacing:6px;border:1px solid #ddd;border-radius:12px;padding:12px;outline:0}
+</style>
+</head>
+<body>
+<div class="lock" id="lock">
+  <div class="logo">미리<b>톡</b></div>
+  <div style="color:var(--sub);font-size:14px">우리끼리만 보는 공간이에요</div>
+  <input id="pin" type="password" inputmode="numeric" placeholder="비밀번호" autocomplete="off">
+  <button class="btn" style="width:200px" onclick="tryPin()">들어가기</button>
+</div>
+
+<div class="wrap">
+  <div class="top">
+    <div class="logo">미리<b>톡</b></div>
+    <button class="me" onclick="openName()"><span id="meName"></span><span id="meAv"></span></button>
+  </div>
+  <div class="stories" id="stories"></div>
+  <div id="feed"><div class="empty">불러오는 중…</div></div>
+</div>
+
+<div class="bar"><div class="in">
+  <button onclick="setFilter(null);window.scrollTo({top:0,behavior:'smooth'})">🏠</button>
+  <button class="plus" onclick="openNew()">＋</button>
+  <button onclick="load(true)">🔄</button>
+</div></div>
+
+<!-- 새 글 -->
+<div class="dim" id="newDim" onclick="if(event.target===this)closeNew()">
+  <div class="sheet">
+    <h3>새 게시물</h3>
+    <div class="pick" id="pick"><label class="add"><span>📷</span>사진 추가<input type="file" accept="image/*" multiple hidden onchange="addFiles(this)"></label></div>
+    <textarea id="newTxt" placeholder="무슨 일이 있었나요? 😊"></textarea>
+    <button class="btn" id="postBtn" onclick="submitPost()">올리기</button>
+    <button class="btn gray" onclick="closeNew()">취소</button>
+  </div>
+</div>
+
+<!-- 이름 -->
+<div class="dim" id="nameDim">
+  <div class="sheet">
+    <h3>나는 누구?</h3>
+    <div class="names" id="nameList"></div>
+    <input class="txtin" id="nameIn" placeholder="이름 직접 입력 (예: 진우)" maxlength="8">
+    <button class="btn" onclick="saveName()">확인</button>
+    <div class="hint">이 폰에서는 이 이름으로 글·댓글·좋아요가 남아요.</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 설정 ─────────────────────────────────────────────
+var FB = 'https://my-workspace-b1b7a-default-rtdb.firebaseio.com/ws5/talk';
+var CLOUD = 'dfc05tbbk', PRESET = 'hwx2iwfz';
+var PIN_HASH = 'cb38bd2d16032660758589e07913007b590b26e79441b7a5b140ef94c2c58b80';        // 비밀번호 SHA-256 (gen 시 교체)
+var MEMBERS = ['황','수','은','민','진우']; // 이름 버튼 (직접 입력도 가능)
+var PALETTE = ['#ff8fb8','#8fc1ff','#7fd6a8','#ffb86b','#b79bff','#ff9f8f','#6fd0d6'];
+// ────────────────────────────────────────────────────
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+var me = ls('talk_name') || '';
+var posts = {}, filter = null, pending = [], openCmts = {};
+
+function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;var j=MEMBERS.indexOf(n);return PALETTE[(j>=0?j:h)%PALETTE.length];}
+function av(n,c){return '<div class="av '+(c||'')+'" style="background:'+color(n)+'">'+esc(n.slice(0,2))+'</div>';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function key(n){return n.replace(/[.#$\[\]\/]/g,'_');}
+function ago(t){var s=(Date.now()-t)/1000;if(s<60)return '방금';if(s<3600)return Math.floor(s/60)+'분 전';if(s<86400)return Math.floor(s/3600)+'시간 전';if(s<86400*7)return Math.floor(s/86400)+'일 전';var d=new Date(t);return (d.getMonth()+1)+'월 '+d.getDate()+'일';}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},2000);}
+function img(u,w){return u.indexOf('/upload/')>0?u.replace('/upload/','/upload/f_auto,q_auto,w_'+(w||1080)+'/'):u;}
+function api(path,method,body){return fetch(FB+path+'.json',{method:method||'GET',headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});}
+
+// 잠금
+async function sha(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
+async function tryPin(){var v=document.getElementById('pin').value.trim();if(await sha('miritalk:'+v)===PIN_HASH){ls('talk_ok',PIN_HASH);unlock();}else{toast('비밀번호가 달라요');}}
+document.getElementById('pin').addEventListener('keydown',function(e){if(e.key==='Enter')tryPin();});
+function unlock(){document.getElementById('lock').style.display='none';if(!me)openName();renderMe();load(true);}
+if(ls('talk_ok')===PIN_HASH)unlock();
+
+// 이름
+function renderMe(){document.getElementById('meName').textContent=me?me+' ':'';document.getElementById('meAv').innerHTML=me?av(me,'xs'):'';}
+function openName(){document.getElementById('nameList').innerHTML=MEMBERS.map(function(n){return '<button onclick="pickName(\''+esc(n)+'\')" style="'+(n===me?'background:'+color(n)+';color:#fff':'')+'">'+esc(n)+'</button>';}).join('');document.getElementById('nameIn').value='';document.getElementById('nameDim').classList.add('on');}
+function pickName(n){me=n;ls('talk_name',n);document.getElementById('nameDim').classList.remove('on');renderMe();render();}
+function saveName(){var v=document.getElementById('nameIn').value.trim();if(v)return pickName(v);if(me)document.getElementById('nameDim').classList.remove('on');else toast('이름을 골라주세요');}
+
+// 불러오기
+var loading=false;
+function load(force){if(loading)return;loading=true;api('/posts').then(function(d){posts=d||{};render();}).catch(function(){if(force)toast('불러오기 실패 — 인터넷 확인');}).finally(function(){loading=false;});}
+setInterval(function(){if(!document.hidden&&!document.querySelector('.dim.on')&&!(document.activeElement&&document.activeElement.tagName==='INPUT'))load();},15000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&ls('talk_ok')===PIN_HASH)load();});
+
+function setFilter(n){filter=(filter===n?null:n);render();}
+function render(){
+  var ids=Object.keys(posts).sort().reverse();
+  var people={};ids.forEach(function(id){var p=posts[id];if(p&&p.name)people[p.name]=Math.max(people[p.name]||0,p.t||0);});
+  MEMBERS.forEach(function(n){if(!(n in people))people[n]=0;});
+  var day=Date.now()-86400000;
+  document.getElementById('stories').innerHTML=Object.keys(people).sort(function(a,b){return people[b]-people[a];}).map(function(n){
+    return '<button class="st'+(people[n]<day?' off':'')+'" onclick="setFilter(\''+esc(n)+'\')" style="'+(filter===n?'font-weight:800;color:var(--pink)':'')+'"><div class="ring">'+av(n)+'</div>'+esc(n)+'</button>';}).join('');
+  var list=ids.filter(function(id){return posts[id]&&(!filter||posts[id].name===filter);});
+  var f=document.getElementById('feed');
+  if(!list.length){f.innerHTML='<div class="empty">'+(filter?esc(filter)+'님 글이 아직 없어요':'아직 글이 없어요<br>아래 <b>＋</b> 눌러서 첫 글을 올려보세요 📸')+'</div>';return;}
+  f.innerHTML=list.map(function(id){return card(id,posts[id]);}).join('');
+}
+function card(id,p){
+  var imgs=p.imgs||[], likes=Object.keys(p.likes||{}), liked=!!(p.likes&&p.likes[key(me)]);
+  var cm=p.comments||{}, ck=Object.keys(cm).sort(), showAll=openCmts[id], shown=showAll?ck:ck.slice(-2);
+  var h='<div class="post" id="p_'+id+'"><div class="ph">'+av(p.name,'s')+'<div><div class="nm">'+esc(p.name)+'</div><div class="tm">'+ago(p.t)+'</div></div>'+(p.name===me?'<button class="del" onclick="delPost(\''+id+'\')">⋯</button>':'')+'</div>';
+  if(imgs.length){
+    h+='<div class="media" ondblclick="dbl(\''+id+'\')" ontouchend="tap(event,\''+id+'\')"><div class="slides" onscroll="dot(this)">'+imgs.map(function(u){return '<img loading="lazy" src="'+esc(img(u))+'" alt="">';}).join('')+'</div>'+(imgs.length>1?'<div class="cnt">1/'+imgs.length+'</div>':'')+'<div class="bigheart">💗</div></div>';
+    if(imgs.length>1)h+='<div class="dots">'+imgs.map(function(_,i){return '<i class="'+(i?'':'on')+'"></i>';}).join('')+'</div>';
+  }
+  h+='<div class="acts"><button class="'+(liked?'liked':'')+'" onclick="like(\''+id+'\')">'+(liked?'❤️':'🤍')+'</button><button onclick="focusC(\''+id+'\')">💬</button></div>';
+  if(likes.length)h+='<div class="likes">'+(likes.length<=3?esc(likes.map(function(k){return p.likes[k]===true?k:p.likes[k];}).join(', '))+'님이 좋아해요':'좋아요 '+likes.length+'개')+'</div>';
+  if(p.text)h+='<div class="txt"><b>'+esc(p.name)+'</b>'+esc(p.text)+'</div>';
+  if(ck.length>2&&!showAll)h+='<button class="more" onclick="openCmts[\''+id+'\']=1;render()">댓글 '+ck.length+'개 모두 보기</button>';
+  shown.forEach(function(k){var c=cm[k];h+='<div class="cm"><b>'+esc(c.name)+'</b>'+esc(c.text)+'<span class="x">'+ago(c.t)+'</span>'+(c.name===me?' <button class="x" onclick="delC(\''+id+'\',\''+k+'\')">삭제</button>':'')+'</div>';});
+  h+='<div class="cin">'+(me?av(me,'xs'):'')+'<input id="c_'+id+'" placeholder="댓글 달기…" onkeydown="if(event.key===\'Enter\')sendC(\''+id+'\')" oninput="this.nextSibling.disabled=!this.value.trim()"><button disabled onclick="sendC(\''+id+'\')">게시</button></div></div>';
+  return h;
+}
+function dot(el){var i=Math.round(el.scrollLeft/el.clientWidth),m=el.parentNode;var c=m.querySelector('.cnt');if(c)c.textContent=(i+1)+'/'+el.children.length;var d=m.nextSibling;if(d&&d.className==='dots')Array.from(d.children).forEach(function(x,j){x.className=j===i?'on':'';});}
+var lastTap=0;function tap(e,id){var n=Date.now();if(n-lastTap<300){e.preventDefault();dbl(id);}lastTap=n;}
+function dbl(id){var b=document.querySelector('#p_'+id+' .bigheart');if(b){b.classList.remove('go');void b.offsetWidth;b.classList.add('go');}if(!(posts[id].likes&&posts[id].likes[key(me)]))like(id);}
+function like(id){if(!me)return openName();var p=posts[id],k=key(me);p.likes=p.likes||{};var on=!p.likes[k];if(on)p.likes[k]=me;else delete p.likes[k];render();(on?api('/posts/'+id+'/likes/'+encodeURIComponent(k),'PUT',me):api('/posts/'+id+'/likes/'+encodeURIComponent(k),'DELETE')).catch(function(){toast('저장 실패');load();});}
+function focusC(id){var i=document.getElementById('c_'+id);if(i)i.focus();}
+function sendC(id){if(!me)return openName();var i=document.getElementById('c_'+id),v=i.value.trim();if(!v)return;var c={name:me,text:v,t:Date.now()};i.value='';api('/posts/'+id+'/comments','POST',c).then(function(r){var p=posts[id];p.comments=p.comments||{};p.comments[r.name]=c;openCmts[id]=1;render();}).catch(function(){i.value=v;toast('댓글 저장 실패');});}
+function delC(id,k){if(!confirm('댓글을 지울까요?'))return;api('/posts/'+id+'/comments/'+k,'DELETE').then(function(){delete posts[id].comments[k];render();});}
+function delPost(id){if(!confirm('이 게시물을 삭제할까요?'))return;api('/posts/'+id,'DELETE').then(function(){delete posts[id];render();toast('삭제했어요');});}
+
+// 새 글
+function openNew(){if(!me)return openName();document.getElementById('newDim').classList.add('on');}
+function closeNew(){document.getElementById('newDim').classList.remove('on');pending=[];document.getElementById('newTxt').value='';renderPick();}
+function addFiles(inp){Array.from(inp.files).slice(0,10-pending.length).forEach(function(f){pending.push({f:f,u:URL.createObjectURL(f)});});inp.value='';renderPick();}
+function renderPick(){var p=document.getElementById('pick');Array.from(p.querySelectorAll('.pv')).forEach(function(x){x.remove();});pending.forEach(function(x,i){var d=document.createElement('div');d.className='pv';d.innerHTML='<img src="'+x.u+'"><button onclick="pending.splice('+i+',1);renderPick()">✕</button>';p.appendChild(d);});}
+function shrink(file){return new Promise(function(res){var im=new Image();im.onload=function(){var s=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){res(b||file);},'image/jpeg',0.85);};im.onerror=function(){res(file);};im.src=URL.createObjectURL(file);});}
+function upload(blob){var fd=new FormData();fd.append('file',blob);fd.append('upload_preset',PRESET);return fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){if(!d.secure_url)throw new Error('up');return d.secure_url;});}
+async function submitPost(){
+  var text=document.getElementById('newTxt').value.trim();if(!text&&!pending.length)return toast('사진이나 글을 넣어주세요');
+  var b=document.getElementById('postBtn');b.disabled=true;
+  try{var urls=[];for(var i=0;i<pending.length;i++){b.textContent='사진 올리는 중 '+(i+1)+'/'+pending.length;urls.push(await upload(await shrink(pending[i].f)));}
+    b.textContent='저장 중…';var t=Date.now(),id=t+'_'+Math.random().toString(36).slice(2,6),p={name:me,text:text,imgs:urls,t:t};
+    await api('/posts/'+id,'PUT',p);posts[id]=p;closeNew();setFilter(null);window.scrollTo(0,0);toast('올렸어요 🎉');
+  }catch(e){toast('올리기 실패 — 다시 눌러주세요');}
+  b.disabled=false;b.textContent='올리기';
+}
+</script>
+</body>
+</html>
