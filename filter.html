@@ -214,6 +214,11 @@
   .sheet .pill{width:100%; justify-content:center; padding:14px; font-size:15px; border-radius:12px}
   .sheet .pill.main{background:var(--acc)}
   .sheet .x{background:none; color:var(--mute); box-shadow:none}
+  .dropHint{position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; background:rgba(255,107,87,.12); pointer-events:none}
+  .dropHint>div{border:3px dashed var(--acc); background:rgba(255,255,255,.92); border-radius:24px; padding:40px 56px; text-align:center}
+  .dropHint b{display:block; font-size:20px; color:var(--brown)} .dropHint span{display:block; margin-top:6px; font-size:13px; color:var(--sub)}
+  body.dragging .dropHint{display:flex}
+  .addBig small.pc{display:none} @media (hover:hover) and (pointer:fine){ .addBig small.pc{display:block} }
   .toast{position:fixed; left:50%; top:calc(60px + env(safe-area-inset-top)); transform:translateX(-50%); background:var(--brown); color:#fff; font-weight:600;
     padding:10px 16px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.2); display:none; z-index:30; font-size:13.5px; max-width:90vw; text-align:center}
 </style>
@@ -251,7 +256,7 @@
     <div class="spin"></div>
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
-      <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small></button>
+      <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small><small class="pc">PC는 사진을 끌어다 놓아도 돼요</small></button>
       <div class="promo" id="promo">
         <img class="pImg" src="mg-a.jpg" alt="" loading="lazy">
         <div class="pTxt"><b>보정한 사진을 포토마그넷으로</b><span>6.5cm 정사각형 · 1:1로 잘라 바로 주문</span><a class="pReg" href="https://xn--2y1by8dx2ag5db2id9o.kr/" target="_blank" rel="noopener">사진 등록하러 가기 →</a></div>
@@ -301,6 +306,7 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="dropHint" id="dropHint"><div><b>여기에 사진을 놓으세요</b><span>여러 장 한 번에 가능</span></div></div>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -824,6 +830,15 @@ $('fsBtn').onclick=()=>{
        else if(!on && document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){}
 };
 document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement && document.body.classList.contains('full')) setFull(false); });
+// PC: 사진 파일 끌어다 놓기 (화면 어디든)
+let dragN=0;
+const isFileDrag=e=>e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files');
+window.addEventListener('dragenter',e=>{ if(!isFileDrag(e)) return; e.preventDefault(); dragN++; document.body.classList.add('dragging'); });
+window.addEventListener('dragover',e=>{ if(!isFileDrag(e)) return; e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
+window.addEventListener('dragleave',e=>{ if(!isFileDrag(e)) return; dragN=Math.max(0,dragN-1); if(!dragN) document.body.classList.remove('dragging'); });
+window.addEventListener('drop',e=>{ if(!isFileDrag(e)) return; e.preventDefault(); dragN=0; document.body.classList.remove('dragging');
+  if(CROP.on) return toast('자르기를 끝낸 뒤 넣어 주세요');
+  const fs=[...e.dataTransfer.files]; if(fs.length) addFiles(fs); });
 $('btnUndo').onclick=()=>goHis(-1); $('btnRedo').onclick=()=>goHis(1);
 
 // ── 확대·축소·이동 ──
