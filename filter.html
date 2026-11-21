@@ -309,21 +309,50 @@ $('sampleBtn').addEventListener('click',async e=>{
 }); $('btnNew').onclick=pick;
 $('file').addEventListener('change',e=>{ addFiles(e.target.files); e.target.value=''; });
 
-async function addFiles(list){
+// ── 새로고침해도 사진·보정값 유지 (이 폰 브라우저 안 IndexedDB에만 저장) ──
+const DB={db:null};
+function dbOpen(){
+  if(DB.p) return DB.p;
+  DB.p=new Promise(res=>{ try{
+    const r=indexedDB.open('bbFilter',1);
+    r.onupgradeneeded=()=>{ r.result.createObjectStore('files'); r.result.createObjectStore('meta'); };
+    r.onsuccess=()=>{ DB.db=r.result; res(r.result); }; r.onerror=()=>res(null);
+  }catch(e){ res(null); } });
+  return DB.p;
+}
+async function dbDo(store,fn){ const db=await dbOpen(); if(!db) return null;
+  return new Promise(res=>{ try{ const tx=db.transaction(store,'readwrite'), st=tx.objectStore(store); const r=fn(st); tx.oncomplete=()=>res(r&&r.result); tx.onerror=()=>res(null); }catch(e){ res(null); } }); }
+let metaT;
+function persist(){ clearTimeout(metaT); metaT=setTimeout(()=>dbDo('meta',st=>st.put({cur, items:items.map(it=>({id:it.id,name:it.name,pre:it.pre,amt:it.amt,adj:it.adj}))},'state')),400); }
+async function restore(){
+  const st=await dbDo('meta',s=>s.get('state'));
+  if(!st || !st.items || !st.items.length) return false;
+  const files=[];
+  for(const m of st.items){ const b=await dbDo('files',s=>s.get(m.id)); if(b) files.push({file:new File([b],m.name+'.jpg',{type:b.type||'image/jpeg'}), meta:m}); }
+  if(!files.length) return false;
+  await addFiles(files.map(f=>f.file), files.map(f=>f.meta), Math.min(st.cur||0, files.length-1));
+  return true;
+}
+async function addFiles(list, metas, selectIdx){
   const fs=[...list].filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name));
   let added=0;
-  for(const f of fs){
+  for(let fi=0; fi<fs.length; fi++){
+    const f=fs[fi], m=metas&&metas[fi];
     const url=URL.createObjectURL(f), img=new Image();
     try{ img.src=url; await img.decode(); }
     catch(e){ URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요 🥲'); continue; }
     const prev=items[cur];
-    items.push({name:f.name.replace(/\.\w+$/,''), img, url, pre:prev?prev.pre:0, amt:prev?prev.amt:100, adj:prev?{...prev.adj}:{}, full:null, blob:null, thumbs:null});
+    const id=m?m.id:('p'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
+    items.push(m ? {id, name:m.name, img, url, pre:m.pre||0, amt:m.amt??100, adj:m.adj||{}, full:null, blob:null, thumbs:null}
+                 : {id, name:f.name.replace(/\.\w+$/,''), img, url, pre:prev?prev.pre:0, amt:prev?prev.amt:100, adj:prev?{...prev.adj}:{}, full:null, blob:null, thumbs:null});
+    if(!m) dbDo('files',st=>st.put(f,id));
     added++;
   }
   if(!added) return;
+  persist();
   $('empty').hidden=true; $('badge').hidden=false; $('cmpBtn').hidden=false; $('modes').hidden=false; $('btnSave').hidden=false;
   const h=$('hint'); if(!h._shown){ h._shown=1; h.hidden=false; setTimeout(()=>h.style.opacity=0,3200); }
-  select(items.length-added);
+  select(selectIdx!=null ? selectIdx : items.length-added);
 }
 function renderThumbs(){
   $('thumbs').innerHTML = !items.length ? '' : items.map((it,i)=>`<div class="t${i===cur?' on':''}" data-i="${i}"><img src="${it.url}" alt=""><button type="button" class="x" data-del="${i}" aria-label="사진 빼기">✕</button></div>`).join('')
@@ -334,7 +363,7 @@ function renderThumbs(){
 function removeItem(i){
   const it=items[i]; if(!it) return;
   if(!confirm('이 사진을 뺄까요?')) return;
-  items.splice(i,1);
+  items.splice(i,1); dbDo('files',st=>st.delete(it.id)); persist();
   [it.url,it.baseUrl].forEach(u=>u&&URL.revokeObjectURL(u));
   if(!items.length){ cur=-1; resetEmpty(); return; }
   select(Math.min(i,items.length-1));
@@ -441,6 +470,7 @@ function quick(it){
   drawTo(cv,it,Math.round(W*k),Math.round(H*k));
 }
 async function updateView(first){
+  persist();
   const it=items[cur], my=++tok; setBadge(it);
   const key=keyOf(it);
   if(it.full && it.full.key===key){ showFull(it.full.cv); if(it.blob&&it.blob.key===key) showOut(it); return; }
@@ -574,6 +604,7 @@ $('saveOne').onclick=()=>saveList([items[cur]],$('saveOne'));
 $('saveAll').onclick=()=>saveList(items,$('saveAll'));
 $('sheetX').onclick=closeSheet; $('sheet').addEventListener('click',e=>{ if(e.target.id==='sheet') closeSheet(); });
 showDemoChips();
+restore().catch(()=>{});
 </script>
 </body>
 </html>
