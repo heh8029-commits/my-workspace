@@ -867,14 +867,15 @@ async function blobOf(it){
 }
 let ready=null; // 여러 장은 먼저 만들어 두고 한 번 더 눌러 저장(휴대폰 공유창 제한 때문)
 async function doShare(files){
-  const mobile=/Android|iPhone|iPad|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document;
+  // 아이폰만 공유창(→이미지 저장). 갤럭시 공유창엔 갤러리 저장이 없어서 바로 다운로드(갤러리에 보임)
+  const mobile=/iPhone|iPad|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document;
   if(mobile && navigator.canShare && navigator.canShare({files})){
     try{ await navigator.share({files}); toast('저장했어요. 갤러리에서 확인해 주세요'); return true; }
     catch(e){ if(e.name==='AbortError') return true; }
   }
   for(const f of files){ const a=document.createElement('a'); a.href=URL.createObjectURL(f); a.download=f.name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),8000); await new Promise(r=>setTimeout(r,350)); }
-  toast('저장했어요'); return true;
+  toast(/Android/i.test(navigator.userAgent)?'저장했어요. 갤러리(다운로드)에서 확인해 주세요':'저장했어요'); return true;
 }
 async function saveList(list,btn){
   const t=btn.textContent;
