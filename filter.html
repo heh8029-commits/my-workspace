@@ -564,28 +564,37 @@ $('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!
 function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; return L.names.map((_,i)=>i).filter(i=> i===0 || !list || list.includes(L.names[i])); }
 // 필터 미리보기는 항상 예시 사진(탭별)으로 — sel 은 지금 고른 사진(선택 표시용)
 let chipTok=0;
+// 탭별 예시 사진. 전체·추천·즐겨찾기는 필터마다 어울리는 사진으로
+const CAT_SRC=[['인물','filter-sample5.jpg'],['카페','filter-sample6.jpg'],['음식','filter-sample6.jpg'],['풍경','filter-sample2.jpg']];
+function demoSrcFor(i){
+  const t=TABS[tab][0]; if(DEMO_SRC[t]) return DEMO_SRC[t];
+  const n=L.names[i];
+  for(const [cat,src] of CAT_SRC){ const tb=TABS.find(x=>x[0]===cat); if(tb && tb[1] && tb[1].includes(n)) return src; }
+  return DEMO_DEF;
+}
 async function buildChips(sel){
   if(!L) return; const my=++chipTok;
-  const it=await loadDemo(DEMO_SRC[TABS[tab][0]]||DEMO_DEF); if(!it || my!==chipTok) return;
-  sel=sel||it;
-  if(!it.thumbs){ it.thumbs=new Array(L.names.length).fill(null); it._base=thumbCanvas(srcOf(it)); }
-  const idx=visibleIdx();
-  $('chips').innerHTML=idx.map(i=>`<button type="button" class="chip${i===sel.pre?' on':''}" data-i="${i}">
-    <span class="th"><img alt="" ${it.thumbs[i]?`src="${it.thumbs[i]}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`).join('')
+  const idx=visibleIdx(), srcs=idx.map(demoSrcFor), uniq=[...new Set(srcs)];
+  for(const u of uniq){ const d=await loadDemo(u); if(d && !d.thumbs){ d.thumbs=new Array(L.names.length).fill(null); d._base=thumbCanvas(d.img); } }
+  if(my!==chipTok) return;
+  const sel0=sel||{pre:0};
+  $('chips').innerHTML=idx.map((i,k)=>{ const d=demoCache[srcs[k]], th=d&&d.thumbs[i];
+    return `<button type="button" class="chip${i===sel0.pre?' on':''}" data-i="${i}">
+    <span class="th"><img alt="" ${th?`src="${th}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`; }).join('')
     + (TABS[tab][1]==='FAV' && !FAV.size ? `<div class="favHint">필터를 고르고 별을 누르면<br>여기에 모아둘 수 있어요</div>` : '');
-  $('amtRow').classList.toggle('hide',!sel.pre || cur<0);
+  $('amtRow').classList.toggle('hide',!sel0.pre || cur<0);
   const chips=$('chips').querySelectorAll('.chip');
   for(let k=0;k<idx.length;k++){
-    const i=idx[k];
-    if(!it.thumbs[i]){
-      const cv=document.createElement('canvas'); cv.width=it._base.width; cv.height=it._base.height;
-      const c=cv.getContext('2d',{willReadFrequently:true}); c.drawImage(it._base,0,0);
+    const i=idx[k], d=demoCache[srcs[k]]; if(!d) continue;
+    if(!d.thumbs[i]){
+      const cv=document.createElement('canvas'); cv.width=d._base.width; cv.height=d._base.height;
+      const c=cv.getContext('2d',{willReadFrequently:true}); c.drawImage(d._base,0,0);
       if(L.bytes[i]) applyLut(c,cv.width,cv.height,L.bytes[i],L.n,1);
-      it.thumbs[i]=cv.toDataURL('image/jpeg',0.85);
+      d.thumbs[i]=cv.toDataURL('image/jpeg',0.85);
       if(k%4===3) await frame();
     }
     if(my!==chipTok || !chips[k].isConnected) return;
-    const im=chips[k].querySelector('img'); if(!im.getAttribute('src')) im.src=it.thumbs[i];
+    const im=chips[k].querySelector('img'); if(!im.getAttribute('src')) im.src=d.thumbs[i];
   }
 }
 $('chips').addEventListener('click',e=>{
