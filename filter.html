@@ -41,6 +41,9 @@
   .stage.cmp .wrap img.orig{opacity:1}
   .badge{position:absolute; left:12px; top:12px; background:rgba(255,255,255,.9); color:var(--pink-d); font-family:var(--cute); font-weight:400;
     font-size:14px; padding:5px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(240,98,146,.18); pointer-events:none}
+  .sharpBtn{position:absolute; left:12px; top:52px; border:none; border-radius:999px; background:rgba(255,255,255,.9); color:var(--pink-d); font-family:var(--cute); font-size:14px;
+    padding:7px 13px; box-shadow:0 2px 8px rgba(240,98,146,.18); cursor:pointer}
+  .sharpBtn.on{background:var(--pink-d); color:#fff}
   .badge small{font-family:var(--cute); font-weight:400; color:var(--soft); font-size:12px; margin-left:4px}
   .zoomTag{position:absolute; left:50%; top:12px; transform:translateX(-50%); background:rgba(74,58,66,.55); color:#fff; font-size:12px; padding:4px 10px; border-radius:999px; pointer-events:none; opacity:0; transition:opacity .3s}
   .zoomTag.show{opacity:1}
@@ -150,6 +153,7 @@
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
     <span class="badge" id="badge" hidden>원본</span>
+    <button class="sharpBtn" id="sharpBtn" type="button" hidden>🔍 선명도</button>
     <span class="zoomTag" id="zoomTag">100%</span>
     <div class="thumbs" id="thumbs"></div>
     <div class="spin">🎀</div>
@@ -249,11 +253,28 @@ function drawTo(cv,it,w,h){
   const amt=it.amt/100;
   if(it.pre>0 && amt>0 && L && L.bytes[it.pre]) applyLut(ctx,w,h,L.bytes[it.pre],L.n,amt);
   if(hasAdj(it.adj)) applyAdj(ctx,w,h,it.adj);
+  if(it.adj && it.adj.sharp>0) sharpen(ctx,w,h,it.adj.sharp/100);
+}
+// 선명도: 주변 평균과의 차이를 키움(언샤프). 큰 사진은 띠로 나눠 처리
+function sharpen(ctx,w,h,amt){
+  const k=amt*1.6, STEP=Math.max(1,Math.floor(3e6/w));
+  for(let y0=0;y0<h;y0+=STEP){
+    const hh=Math.min(STEP,h-y0), ys=Math.max(0,y0-1), ye=Math.min(h,y0+hh+1), H=ye-ys;
+    const id=ctx.getImageData(0,ys,w,H), d=id.data, src=new Uint8ClampedArray(d), W4=w*4;
+    for(let y=y0-ys; y<y0-ys+hh; y++){
+      const up=y>0?-W4:0, dn=y<H-1?W4:0;
+      for(let x=0;x<w;x++){
+        const i=y*W4+x*4, lf=x>0?-4:0, rt=x<w-1?4:0;
+        for(let c=0;c<3;c++){ const v=src[i+c]; d[i+c]=v+k*(v-(src[i+up+c]+src[i+dn+c]+src[i+lf+c]+src[i+rt+c])*0.25); }
+      }
+    }
+    ctx.putImageData(id,0,ys,0,y0-ys,w,hh);
+  }
 }
 
 // ── 세부 조정 ──
 const ADJ=[
-  {k:'bri',n:'밝기',ic:'☀️'},{k:'con',n:'대비',ic:'◐'},{k:'sat',n:'채도',ic:'🎨'},{k:'warm',n:'따뜻함',ic:'🌡️'},
+  {k:'sharp',n:'선명도',ic:'🔍',min:0},{k:'bri',n:'밝기',ic:'☀️'},{k:'con',n:'대비',ic:'◐'},{k:'sat',n:'채도',ic:'🎨'},{k:'warm',n:'따뜻함',ic:'🌡️'},
   {k:'tint',n:'색조',ic:'💜'},{k:'hi',n:'하이라이트',ic:'✨'},{k:'sh',n:'그림자',ic:'🌙'},{k:'fade',n:'바랜 느낌',ic:'🌫️',min:0},
   {k:'vig',n:'비네팅',ic:'⭕'},{k:'grain',n:'필름 입자',ic:'🎞️',min:0}];
 const hasAdj=a=>a && ADJ.some(t=>a[t.k]);
@@ -357,7 +378,7 @@ async function addFiles(list, metas, selectIdx){
   }
   if(!added) return;
   persist();
-  $('empty').hidden=true; $('badge').hidden=false; $('cmpBtn').hidden=false; $('modes').hidden=false; $('btnSave').hidden=false;
+  $('empty').hidden=true; $('badge').hidden=false; $('sharpBtn').hidden=false; $('cmpBtn').hidden=false; $('modes').hidden=false; $('btnSave').hidden=false;
   const h=$('hint'); if(!h._shown){ h._shown=1; h.hidden=false; setTimeout(()=>h.style.opacity=0,3200); }
   select(selectIdx!=null ? selectIdx : items.length-added);
 }
@@ -376,7 +397,7 @@ function removeItem(i){
   select(Math.min(i,items.length-1));
 }
 function resetEmpty(){
-  $('empty').hidden=false; ['badge','cmpBtn','modes','btnSave'].forEach(id=>$(id).hidden=true);
+  $('empty').hidden=false; ['badge','sharpBtn','cmpBtn','modes','btnSave'].forEach(id=>$(id).hidden=true);
   $('amtRow').classList.add('hide'); $('adjRow').hidden=true; hideOut(); cv.width=cv.height=0; $('orig').removeAttribute('src');
   mode='f'; [...$('modes').children].forEach(x=>x.classList.toggle('on',x.dataset.m==='f')); $('fMode').hidden=false; $('aMode').hidden=true;
   renderThumbs(); $('thumbs').innerHTML=''; showDemoChips();
@@ -447,7 +468,12 @@ function setBadge(it){ const k=L?L.names[it.pre]:'원본'; const ad=hasAdj(it.ad
 let mode='f', tool='bri';
 $('modes').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.m;
   [...$('modes').children].forEach(x=>x.classList.toggle('on',x===b)); syncMode(); });
+$('sharpBtn').onclick=()=>{
+  if(mode==='a' && tool==='sharp'){ mode='f'; } else { mode='a'; tool='sharp'; }
+  [...$('modes').children].forEach(x=>x.classList.toggle('on',x.dataset.m===mode)); syncMode();
+};
 function syncMode(){
+  $('sharpBtn').classList.toggle('on', mode==='a' && tool==='sharp');
   const it=items[cur]; const f=mode==='f';
   $('fMode').hidden=!f; $('aMode').hidden=f; $('adjRow').hidden=f;
   $('amtRow').style.display=f?'':'none';
@@ -462,7 +488,7 @@ function buildTools(it){
 }
 function paintAdj(){ const s=$('adj'), mn=+s.min, p=(s.value-mn)/(100-mn)*100, z=(0-mn)/(100-mn)*100;
   s.style.background=`linear-gradient(90deg, var(--pink-l) ${Math.min(p,z)}%, var(--pink) ${Math.min(p,z)}%, var(--pink) ${Math.max(p,z)}%, var(--pink-l) ${Math.max(p,z)}%)`; }
-$('tools').addEventListener('click',e=>{ const b=e.target.closest('.tool'); if(!b) return; tool=b.dataset.k; buildTools(items[cur]); });
+$('tools').addEventListener('click',e=>{ const b=e.target.closest('.tool'); if(!b) return; tool=b.dataset.k; buildTools(items[cur]); $('sharpBtn').classList.toggle('on', tool==='sharp'); });
 let adjT;
 $('adj').addEventListener('input',e=>{ const it=items[cur]; const val=+e.target.value; it.adj={...it.adj,[tool]:val}; if(!val) delete it.adj[tool];
   $('adjOut').textContent=val; paintAdj(); setBadge(it); quick(it); clearTimeout(adjT); adjT=setTimeout(()=>{ buildTools(it); updateView(); },400); });
@@ -540,7 +566,7 @@ function zoomAt(px,py,ns){
 }
 const P=new Map(); let pinch=null, lastTap=0, panStart=null;
 stage.addEventListener('pointerdown',e=>{
-  if(cur<0 || e.target.closest('.thumbs,.cmpBtn,.empty,.modes,.amt,.adjRow')) return;
+  if(cur<0 || e.target.closest('.thumbs,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
   stage.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), s:V.s}; panStart=null; }
   else if(P.size===1){
