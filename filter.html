@@ -31,12 +31,31 @@
   .logo b i{font-style:normal; color:var(--acc)}
   .logo small{font-size:10.5px; color:var(--mute); font-weight:600; align-self:flex-end; margin-bottom:3px}
   .top .sp{flex:1}
+  .mgTop{position:relative; margin-left:6px}
+  .mgTopBtn{position:relative; overflow:hidden}
+  .mgTopBtn::after{content:''; position:absolute; top:-50%; left:-60%; width:40%; height:200%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent); transform:rotate(20deg); animation:shine 5s ease-in-out infinite}
+  @keyframes shine{0%,80%{left:-60%} 100%{left:130%}}
+  .mgTopBtn .tw{position:absolute; right:3px; top:2px; width:6px; height:6px; background:#ffcc33; clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%); animation:tw 2.8s ease-in-out infinite}
+  @keyframes tw{0%,100%{transform:scale(.5); opacity:.25} 50%{transform:scale(1); opacity:.85}}
+  @media (prefers-reduced-motion:reduce){ .mgTopBtn::after,.mgTopBtn .tw{animation:none} }
+  .mgTopBtn{border:none; background:var(--cream); color:var(--brown); box-shadow:inset 0 0 0 1px #f1dfc8; border-radius:999px; font-size:12px; font-weight:700; padding:6px 10px; display:flex; align-items:center; gap:4px; cursor:pointer; white-space:nowrap}
+  .mgPop{position:fixed; left:50%; top:calc(54px + env(safe-area-inset-top)); z-index:40; width:min(310px,92vw); padding:12px; border-radius:14px; background:var(--cream); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 0 0 1px #f1dfc8;
+    opacity:0; visibility:hidden; transform:translate(-50%,-4px); transition:opacity .15s, transform .15s, visibility .15s}
+  .mgTop:hover .mgPop,.mgTop.open .mgPop{opacity:1; visibility:visible; transform:translate(-50%,0)}
+  .mgTop::after{content:''; position:absolute; left:0; right:0; top:100%; height:14px}
+  .mgImg{display:block; width:100%; height:150px; object-fit:cover; border-radius:10px; margin-bottom:10px}
+  .mgKicker{display:block; font-size:10px; letter-spacing:1.5px; color:var(--mute); font-weight:700}
+  .mgPop b{display:block; font-size:15px; line-height:1.35; color:var(--brown); margin-top:2px} .mgPop b em{font-style:normal; color:var(--acc)}
+  .mgTags{display:flex; flex-wrap:wrap; gap:4px; margin:8px 0}
+  .mgTags span{font-size:10.5px; font-weight:600; color:var(--brown); background:#fff; border-radius:6px; padding:3px 7px; box-shadow:inset 0 0 0 1px #f1dfc8}
+  .mgTip{margin:0 0 10px; font-size:11.5px; color:var(--sub)} .mgTip b{display:inline; font-size:inherit; color:var(--acc)}
+  .pBtns.row{flex-direction:row} .pBtns.row a{flex:1; padding:8px 0}
   .pill{border:none; border-radius:10px; padding:9px 13px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:5px}
   .pill.ghost{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
   .pill.main{background:var(--brown); color:#fff}
   .pill:active{opacity:.8}
   @media (max-width:420px){ .barBtn.ico span{display:none} .barBtn.ico{padding:0 8px} .bar{gap:5px; padding:6px 8px} }
-  @media (max-width:400px){ .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
+  @media (max-width:400px){ .logo small{display:none} .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
   .icoBtn{width:36px; height:36px; border:none; border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
   .icoBtn:disabled{color:#d4d4d8; cursor:default}
   .icoBtn:not(:disabled):active{background:var(--line)}
@@ -74,9 +93,13 @@
   .modes button.on{background:var(--surface); color:var(--brown); box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
   /* 자르기 */
-  .cropFrame{position:absolute; z-index:4; pointer-events:none; border:2px solid #fff; box-shadow:0 0 0 9999px rgba(20,16,14,.55);
+  .cropFrame{position:absolute; z-index:4; cursor:move; touch-action:none; border:2px solid #fff; box-shadow:0 0 0 9999px rgba(20,16,14,.55);
     background-image:linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.45)),linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.45)),linear-gradient(90deg,rgba(255,255,255,.45),rgba(255,255,255,.45)),linear-gradient(90deg,rgba(255,255,255,.45),rgba(255,255,255,.45));
     background-size:100% 1px,100% 1px,1px 100%,1px 100%; background-position:0 33.33%,0 66.66%,33.33% 0,66.66% 0; background-repeat:no-repeat}
+  .cropFrame i{position:absolute; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.35)}
+  .cropFrame i::before{content:''; position:absolute; inset:-12px}
+  .cropFrame i[data-h=tl]{left:-11px; top:-11px; cursor:nwse-resize} .cropFrame i[data-h=br]{right:-11px; bottom:-11px; cursor:nwse-resize}
+  .cropFrame i[data-h=tr]{right:-11px; top:-11px; cursor:nesw-resize} .cropFrame i[data-h=bl]{left:-11px; bottom:-11px; cursor:nesw-resize}
   .cropPanel{display:none; padding:8px 12px 4px}
   body.cropping .cropPanel{display:block}
   body.cropping #fMode, body.cropping #aMode, body.cropping .amt, body.cropping .adjRow, body.cropping .bar{display:none!important}
@@ -91,6 +114,11 @@
   .mgLine a{display:inline-block; margin-left:4px; padding:3px 8px; border-radius:6px; font-size:11.5px; font-weight:700; color:#fff; text-decoration:none}
   #mNv{background:#03c75a} #mCp{background:#e52528}
   .promo{margin-top:22px; width:min(320px,88%); padding:12px 14px; border-radius:14px; background:var(--cream); box-shadow:inset 0 0 0 1px #f3e3cf; display:flex; align-items:center; gap:10px; text-align:left; cursor:default}
+  .mgReg{display:block; margin-top:10px; text-align:center; font-size:12px; color:var(--sub); text-decoration:none}
+  .mgReg b{display:inline; font-size:inherit; color:var(--brown); text-decoration:underline; text-underline-offset:3px}
+  .pReg{display:inline-block; margin-top:4px; font-size:11.5px; font-weight:700; color:var(--brown); text-decoration:underline; text-underline-offset:3px}
+  .pTxt b{font-size:12.5px}
+  .pImg{width:46px; height:54px; object-fit:cover; border-radius:8px; flex:0 0 auto}
   .pTxt{flex:1; min-width:0}
   .pTxt b{display:block; font-size:13px; color:var(--brown); line-height:1.35}
   .pTxt span{display:block; font-size:11.5px; color:var(--sub); margin-top:3px}
@@ -171,6 +199,18 @@
 <div class="app">
   <div class="top">
     <div class="logo"><svg width="30" height="22" viewBox="0 0 30 22"><path d="M8 20h15a6 6 0 0 0 .6-12A7.5 7.5 0 0 0 9.4 6.2 6.9 6.9 0 0 0 8 20z" fill="#fff7ec" stroke="#ff6b57" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12.5" cy="13" r="1.1" fill="#5a3a22"/><circle cx="18.5" cy="13" r="1.1" fill="#5a3a22"/><path d="M14 15.2q1.5 1.3 3 0" fill="none" stroke="#5a3a22" stroke-width="1.1" stroke-linecap="round"/><circle cx="10.6" cy="15" r="1.2" fill="#ffb3a6"/><circle cx="20.4" cy="15" r="1.2" fill="#ffb3a6"/></svg><b>몽글<i>필터</i></b><small>by.미리토퍼</small></div>
+    <div class="mgTop" id="mgTop">
+      <button class="mgTopBtn" type="button" id="mgTopBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="12" cy="11" r="3"/><path d="M7 20l3-4h4l3 4"/></svg>포토마그넷<i class="tw"></i></button>
+      <div class="mgPop">
+        <img class="mgImg" src="mg-promo.jpg" alt="포토마그넷" loading="lazy">
+        <small class="mgKicker">PHOTO MAGNET</small>
+        <b>매일 마주하고 싶은 순간을<br><em>포토마그넷</em>으로 담아보세요</b>
+        <div class="mgTags"><span>6.5cm 정사각형</span><span>투명필름 마감</span><span>넓은 자석 뒷면</span></div>
+        <p class="mgTip">몽글필터에서 보정하고 <b>1:1로 자른 사진</b>이면 딱 맞아요</p>
+        <div class="pBtns row"><a class="nv" id="tNv" target="_blank" rel="noopener">네이버에서 주문</a><a class="cp" id="tCp" target="_blank" rel="noopener">쿠팡에서 주문</a></div>
+        <a class="mgReg" href="https://xn--2y1by8dx2ag5db2id9o.kr/" target="_blank" rel="noopener">주문하셨나요? <b>포토마그넷 사진 등록하러 가기 →</b></a>
+      </div>
+    </div>
     <div class="sp"></div>
     <button class="icoBtn" id="btnUndo" type="button" aria-label="되돌리기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
     <button class="icoBtn" id="btnRedo" type="button" aria-label="다시하기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
@@ -181,14 +221,15 @@
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
     <span class="badge" id="badge" hidden></span>
-    <div class="cropFrame" id="cropFrame" hidden></div>
+    <div class="cropFrame" id="cropFrame" hidden><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div>
     <span class="zoomTag glass" id="zoomTag">100%</span>
     <div class="spin"></div>
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
       <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small></button>
       <div class="promo" id="promo">
-        <div class="pTxt"><b>보정한 사진을 포토마그넷으로</b><span>정사각형(1:1)으로 잘라 바로 주문 · 미리토퍼</span></div>
+        <img class="pImg" src="mg-promo-s.jpg" alt="" loading="lazy">
+        <div class="pTxt"><b>보정한 사진을 포토마그넷으로</b><span>6.5cm 정사각형 · 1:1로 잘라 바로 주문</span><a class="pReg" href="https://xn--2y1by8dx2ag5db2id9o.kr/" target="_blank" rel="noopener">사진 등록하러 가기 →</a></div>
         <div class="pBtns"><a class="nv" id="pNv" target="_blank" rel="noopener">네이버</a><a class="cp" id="pCp" target="_blank" rel="noopener">쿠팡</a></div>
       </div>
     </div>
@@ -643,40 +684,75 @@ $('rotBtn').onclick=()=>{ const it=items[cur]; if(!it) return; setRot(it,(it.rot
 // ── 포토마그넷 주문 링크 (쿠팡은 주소 받으면 채우기) ──
 const MAGNET={naver:'https://smartstore.naver.com/miritopper/products/13746231367', coupang:'https://www.coupang.com/vp/products/9726866352?vendorItemId=96032639233'};
 (function(){
-  ['pNv','mNv'].forEach(id=>$(id).href=MAGNET.naver); ['pCp','mCp'].forEach(id=>$(id).href=MAGNET.coupang);
+  ['pNv','mNv','tNv'].forEach(id=>$(id).href=MAGNET.naver); ['pCp','mCp','tCp'].forEach(id=>$(id).href=MAGNET.coupang);
+  $('mgTopBtn').onclick=e=>{ e.stopPropagation(); $('mgTop').classList.toggle('open'); };
+  document.addEventListener('click',e=>{ if(!e.target.closest('#mgTop')) $('mgTop').classList.remove('open'); });
 })();
 function syncMgLine(){ $('mgLine').hidden = CROP.r!=='1:1'; }
 
 // ── 자르기 (가이드 보면서 사진을 밀고 키워서 맞춤) ──
-function cropFit(reset){
-  const it=items[cur]; const sr=stage.getBoundingClientRect(); const [W,H]=dims(it);
-  const a=RATIOS.find(x=>x[0]===CROP.r)[1] || W/H, pad=18;
-  let fw=sr.width-pad*2, fh=fw/a; if(fh>sr.height-pad*2){ fh=sr.height-pad*2; fw=fh*a; }
-  CROP.f={x:(sr.width-fw)/2, y:(sr.height-fh)/2, w:fw, h:fh};
-  Object.assign($('cropFrame').style,{left:CROP.f.x+'px',top:CROP.f.y+'px',width:fw+'px',height:fh+'px'});
-  V.fit=Math.min(sr.width/W, sr.height/H); V.w=W*V.fit; V.h=H*V.fit;
-  wrap.style.width=V.w+'px'; wrap.style.height=V.h+'px';
-  CROP.min=Math.max(fw/V.w, fh/V.h);
-  if(reset!==false || V.s<CROP.min){ V.s=CROP.min; V.x=CROP.f.x+(fw-V.w*V.s)/2; V.y=CROP.f.y+(fh-V.h*V.s)/2; }
-  applyV();
+// 화면에 보이는 사진 영역(자르기 모드에선 확대 없이 화면 맞춤)
+function imgRect(){ return {x:V.x, y:V.y, w:V.w*V.s, h:V.h*V.s}; }
+function ratioOf(){ const a=RATIOS.find(x=>x[0]===CROP.r)[1]; return a||0; }  // 0 = 자유
+function defaultFrame(){
+  const R=imgRect(), a=ratioOf()||R.w/R.h; let w=R.w, h=w/a; if(h>R.h){ h=R.h; w=h*a; }
+  w*=0.9; h*=0.9; return {x:(R.w-w)/2/R.w, y:(R.h-h)/2/R.h, w:w/R.w, h:h/R.h};
 }
+function drawFrame(){
+  const R=imgRect(), n=CROP.n; CROP.f={x:R.x+n.x*R.w, y:R.y+n.y*R.h, w:n.w*R.w, h:n.h*R.h};
+  Object.assign($('cropFrame').style,{left:CROP.f.x+'px',top:CROP.f.y+'px',width:CROP.f.w+'px',height:CROP.f.h+'px'});
+}
+function cropFit(reset){
+  const it=items[cur]; const sr=stage.getBoundingClientRect(); const [W,H]=dims(it), pad=16;
+  V.fit=Math.min((sr.width-pad*2)/W, (sr.height-pad*2)/H); V.w=W*V.fit; V.h=H*V.fit; V.s=1;
+  V.x=(sr.width-V.w)/2; V.y=(sr.height-V.h)/2;
+  wrap.style.width=V.w+'px'; wrap.style.height=V.h+'px'; wrap.style.transform=`translate(${V.x}px,${V.y}px) scale(1)`;
+  if(reset!==false || !CROP.n) CROP.n=defaultFrame();
+  drawFrame();
+}
+// 틀 끌기
+(function(){
+  const fr=$('cropFrame'); let drag=null;
+  fr.addEventListener('pointerdown',e=>{
+    if(!CROP.on) return; e.preventDefault(); e.stopPropagation(); fr.setPointerCapture(e.pointerId);
+    const h=e.target.closest('[data-h]'); drag={h:h?h.dataset.h:null, x:e.clientX, y:e.clientY, n:{...CROP.n}};
+  });
+  fr.addEventListener('pointermove',e=>{
+    if(!drag) return; const R=imgRect(), dx=(e.clientX-drag.x)/R.w, dy=(e.clientY-drag.y)/R.h, o=drag.n, MIN=50/R.w;
+    let n={...o};
+    if(!drag.h){ n.x=Math.min(1-o.w,Math.max(0,o.x+dx)); n.y=Math.min(1-o.h,Math.max(0,o.y+dy)); }
+    else{
+      const a=ratioOf(), ar=a? a*R.h/R.w : 0;      // 정규화 좌표에서의 가로/세로 비
+      const L=drag.h.includes('l'), T=drag.h.includes('t');
+      const ax=L? o.x+o.w : o.x, ay=T? o.y+o.h : o.y;  // 고정된 반대쪽 모서리
+      let w=L? o.w-dx : o.w+dx, h=T? o.h-dy : o.h+dy;
+      w=Math.max(MIN,w); h=Math.max(MIN*R.w/R.h,h);
+      if(ar){ if(w/h>ar) w=h*ar; else h=w/ar; }
+      const maxW=L? ax : 1-ax, maxH=T? ay : 1-ay;
+      if(w>maxW){ w=maxW; if(ar) h=w/ar; } if(h>maxH){ h=maxH; if(ar) w=h*ar; }
+      n={x:L? ax-w : ax, y:T? ay-h : ay, w, h};
+    }
+    CROP.n=n; drawFrame();
+  });
+  const end=()=>{ drag=null; }; fr.addEventListener('pointerup',end); fr.addEventListener('pointercancel',end);
+})();
 function ratioBox(n){ const a=RATIOS.find(x=>x[0]===n)[1]; if(!a) return 'width:16px;height:13px;border-style:dashed'; return a>=1?`width:16px;height:${16/a}px`:`height:18px;width:${18*a}px`; }
 function renderRatios(){ $('ratios').innerHTML=RATIOS.map(([n])=>`<button type="button" class="${n===CROP.r?'on':''}" data-r="${n}"><i class="rb" style="${ratioBox(n)}"></i>${n}${n==='1:1'?'<em>마그넷</em>':''}</button>`).join(''); }
-$('ratios').addEventListener('click',e=>{ const b=e.target.closest('[data-r]'); if(!b) return; CROP.r=b.dataset.r; renderRatios(); syncMgLine(); cropFit(true); });
+$('ratios').addEventListener('click',e=>{ const b=e.target.closest('[data-r]'); if(!b) return; CROP.r=b.dataset.r; renderRatios(); syncMgLine(); CROP.n=defaultFrame(); drawFrame(); });
 function enterCrop(){
   const it=items[cur]; if(!it || CROP.on) return;
   CROP.saved=it.crop||null; CROP.r=CROP.saved?CROP.saved.r:'1:1';
   setCrop(it,null); CROP.on=true;
   document.body.classList.add('cropping'); $('cropFrame').hidden=false; renderRatios(); syncMgLine();
-  setOrig(it); updateView(); cropFit(true);
-  if(CROP.saved){ const c=CROP.saved, s=CROP.f.w/c.w/V.w; V.s=Math.max(CROP.min,s); V.x=CROP.f.x-c.x*V.w*V.s; V.y=CROP.f.y-c.y*V.h*V.s; applyV(); }
+  setOrig(it); updateView(); CROP.n=null; cropFit(true);
+  if(CROP.saved){ const c=CROP.saved; CROP.n={x:c.x,y:c.y,w:c.w,h:c.h}; drawFrame(); }
 }
 function exitCrop(apply){
   const it=items[cur]; if(!CROP.on) return;
   let c=CROP.saved;
   if(apply){
-    const f=CROP.f, iw=V.w*V.s, ih=V.h*V.s;
-    c={r:CROP.r, x:Math.max(0,(f.x-V.x)/iw), y:Math.max(0,(f.y-V.y)/ih), w:Math.min(1,f.w/iw), h:Math.min(1,f.h/ih)};
+    const n=CROP.n;
+    c={r:CROP.r, x:Math.max(0,n.x), y:Math.max(0,n.y), w:Math.min(1,n.w), h:Math.min(1,n.h)};
     c.w=Math.min(c.w,1-c.x); c.h=Math.min(c.h,1-c.y);
     if(c.w>0.995 && c.h>0.995) c=null;
   }
@@ -704,7 +780,7 @@ function layoutFit(reset){
 }
 function clampV(){
   const r=stage.getBoundingClientRect(), sw=V.w*V.s, sh=V.h*V.s;
-  if(CROP.on){ const f=CROP.f; V.x=Math.min(f.x, Math.max(f.x+f.w-sw, V.x)); V.y=Math.min(f.y, Math.max(f.y+f.h-sh, V.y)); return; }
+  if(CROP.on) return;
   V.x = sw<=r.width ? (r.width-sw)/2 : Math.min(0,Math.max(r.width-sw,V.x));
   V.y = sh<=r.height ? (r.height-sh)/2 : Math.min(0,Math.max(r.height-sh,V.y));
 }
@@ -712,12 +788,12 @@ let ztT;
 function applyV(){ clampV(); wrap.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.s})`;
   const zt=$('zoomTag'); zt.textContent=Math.round(V.s*100)+'%'; zt.classList.toggle('show',V.s>1.01); clearTimeout(ztT); ztT=setTimeout(()=>zt.classList.remove('show'),900); }
 function zoomAt(px,py,ns){
-  ns=Math.max(CROP.on?CROP.min:1,Math.min(8,ns)); const r=stage.getBoundingClientRect(); px-=r.left; py-=r.top;
+  if(CROP.on) return; ns=Math.max(1,Math.min(8,ns)); const r=stage.getBoundingClientRect(); px-=r.left; py-=r.top;
   V.x=px-(px-V.x)*ns/V.s; V.y=py-(py-V.y)*ns/V.s; V.s=ns; applyV();
 }
 const P=new Map(); let pinch=null, lastTap=0, panStart=null;
 stage.addEventListener('pointerdown',e=>{
-  if(cur<0 || e.target.closest('.thumbs,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
+  if(cur<0 || CROP.on || e.target.closest('.thumbs,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
   stage.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), s:V.s}; panStart=null; }
   else if(P.size===1){
