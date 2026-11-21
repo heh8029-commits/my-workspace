@@ -37,7 +37,9 @@
   @keyframes shine{0%,80%{left:-60%} 100%{left:130%}}
   .mgTopBtn .tw{position:absolute; right:3px; top:2px; width:6px; height:6px; background:#ffcc33; clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%); animation:tw 2.8s ease-in-out infinite}
   @keyframes tw{0%,100%{transform:scale(.5); opacity:.25} 50%{transform:scale(1); opacity:.85}}
-  @media (prefers-reduced-motion:reduce){ .mgTopBtn::after,.mgTopBtn .tw{animation:none} }
+  .mgTopBtn{animation:mgGlow 3.2s ease-in-out infinite}
+  @keyframes mgGlow{0%,100%{box-shadow:inset 0 0 0 1px #f1dfc8,0 0 0 0 rgba(255,184,77,0)}50%{box-shadow:inset 0 0 0 1.5px #f6c97a,0 0 9px 1px rgba(255,184,77,.38)}}
+  @media (prefers-reduced-motion:reduce){ .mgTopBtn::after,.mgTopBtn .tw,.mgTopBtn{animation:none} }
   .mgTopBtn{border:none; background:var(--cream); color:var(--brown); box-shadow:inset 0 0 0 1px #f1dfc8; border-radius:999px; font-size:12px; font-weight:700; padding:6px 10px; display:flex; align-items:center; gap:4px; cursor:pointer; white-space:nowrap}
   .mgPop{position:fixed; left:50%; top:calc(54px + env(safe-area-inset-top)); z-index:40; width:min(310px,92vw); padding:12px; border-radius:14px; background:var(--cream); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 0 0 1px #f1dfc8;
     opacity:0; visibility:hidden; transform:translate(-50%,-4px); transition:opacity .15s, transform .15s, visibility .15s}
@@ -233,7 +235,7 @@
   <div class="top">
     <div class="logo"><img class="logoImg" src="mongle-logo.png" alt="몽글필터"><small>by.미리토퍼</small></div>
     <div class="mgTop" id="mgTop">
-      <button class="mgTopBtn" type="button" id="mgTopBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="12" cy="11" r="3"/><path d="M7 20l3-4h4l3 4"/></svg>포토마그넷<i class="tw"></i></button>
+      <button class="mgTopBtn" type="button" id="mgTopBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="12" cy="11" r="3"/><path d="M7 20l3-4h4l3 4"/></svg>포토마그넷 제작<i class="tw"></i></button>
       <div class="mgPop">
         <div class="mgImgs"><img src="mg-a.jpg" alt="포토마그넷" loading="lazy"><img src="mg-w.jpg" alt="" loading="lazy"><img src="mg-c.jpg" alt="" loading="lazy"><img src="mg-d.jpg" alt="" loading="lazy"></div>
         <small class="mgKicker">PHOTO MAGNET</small>
@@ -262,7 +264,7 @@
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
       <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small><small class="pc">PC는 끌어다 놓기 · Ctrl+V 붙여넣기도 돼요</small></button>
-      <div class="promo" id="promo">
+      <div class="promo" id="promo" style="display:none">
         <img class="pImg" src="mg-a.jpg" alt="" loading="lazy">
         <div class="pTxt"><b>보정한 사진을 포토마그넷으로</b><span>6.5cm 정사각형 · 1:1로 잘라 바로 주문</span><a class="pReg" href="https://xn--2y1by8dx2ag5db2id9o.kr/" target="_blank" rel="noopener">사진 등록하러 가기 →</a></div>
         <div class="pBtns"><a class="nv" id="pNv" target="_blank" rel="noopener">네이버</a><a class="cp" id="pCp" target="_blank" rel="noopener">쿠팡</a></div>
@@ -329,7 +331,7 @@ const NAMES={'원본':['원본',''],'자연스럽게':['보송','자연스럽게
   '린넨':['린넨','차분한 베이지'],'딸기우유':['딸기우유','연핑크'],'생크림':['생크림','화이트 클린'],'브런치':['브런치','음식 감성'],'살구':['살구','살구빛 햇살'],
   '뽀샤시':['뽀샤시','하얗고 뽀얗게'],'복숭아':['복숭아','혈색 도는 피치'],'청순':['청순','맑은 쿨톤'],'우유빛':['우유빛','몽글한 소프트'],'필름 인물':['필름 인물','필름카메라 감성'],'화보':['화보','선명한 화보톤']};
 const en=k=>(NAMES[k]||[k])[0], ko=k=>(NAMES[k]||[k,k])[1];
-const TABS=[['추천',['뽀샤시','미니멀','라떼','복숭아','생크림','청순','청량','필름']],['전체',null],['카페',['미니멀','라떼','오트','린넨','생크림','브런치','딸기우유']],['인물',['뽀샤시','복숭아','청순','우유빛','필름','화보','살구','자연스럽게']],
+const TABS=[['추천',['미니멀','복숭아','초록 싱그','쨍하게','어두운사진','뽀샤시','라떼','생크림','청순','필름']],['전체',null],['카페',['미니멀','라떼','오트','린넨','생크림','브런치','딸기우유']],['인물',['뽀샤시','복숭아','청순','우유빛','필름','화보','살구','자연스럽게']],
   ['풍경',['청량','바다','초록 싱그','흐린날','노을']],['무드',['미니멀','필름','흑백','쨍하게','파스텔','노을']],['음식',['음식','라떼','미니멀','생크림','쨍하게','햇살']],['살리기',['어두운사진','역광','너무밝을때','흐린날']]];
 // 즐겨찾기(이 폰에만 저장)
 let FAV=new Set(); try{ FAV=new Set(JSON.parse(localStorage.getItem('bbFav')||'[]')); }catch(e){}
@@ -588,7 +590,7 @@ $('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!
 
 // 비슷해서 숨긴 필터 (화이트≈우유빛, 뽀얀 톤업≈뽀샤시, 필름 인물≈필름, 브런치≈라떼)
 const HIDE=new Set(['화이트','뽀얀 톤업','필름 인물','브런치']);
-function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; return L.names.map((_,i)=>i).filter(i=> i===0 || (!HIDE.has(L.names[i]) && (!list || list.includes(L.names[i])))); }
+function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; const r=L.names.map((_,i)=>i).filter(i=> i===0 || (!HIDE.has(L.names[i]) && (!list || list.includes(L.names[i])))); if(TABS[tab][0]==='추천') r.sort((a,b)=> a===0?-1:b===0?1:list.indexOf(L.names[a])-list.indexOf(L.names[b])); return r; }
 // 필터 미리보기는 항상 예시 사진(탭별)으로 — sel 은 지금 고른 사진(선택 표시용)
 let chipTok=0;
 // 탭별 예시 사진. 전체·추천·즐겨찾기는 필터마다 어울리는 사진으로
