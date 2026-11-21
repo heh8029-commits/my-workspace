@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#f4f4f5">
-<title>TONE · 사진 필터</title>
+<title>몽글 · 사진 필터</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root{
@@ -132,7 +132,7 @@
 <body>
 <div class="app">
   <div class="top">
-    <div class="logo"><b>TONE<i>.</i></b><small>by 미리토퍼</small></div>
+    <div class="logo"><b>몽글<i>.</i></b><small>사진 필터</small></div>
     <div class="sp"></div>
     <button class="icoBtn" id="btnUndo" type="button" aria-label="되돌리기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
     <button class="icoBtn" id="btnRedo" type="button" aria-label="다시하기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
@@ -160,7 +160,6 @@
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
       <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small></button>
-      <button class="sample" id="sampleBtn" type="button">예시 사진으로 먼저 해보기</button>
     </div>
   </div>
 
@@ -325,15 +324,7 @@ let cur=-1;
 const keyOf=it=>it.pre+'_'+(it.pre?it.amt:0)+'_'+JSON.stringify(it.adj||{});
 const pick=()=>$('file').click();
 $('empty').addEventListener('click',pick);
-// 예시 사진(Pixabay 무료 사진)으로 체험
-$('sampleBtn').addEventListener('click',async e=>{
-  e.stopPropagation(); const b=e.currentTarget; b.textContent='불러오는 중...';
-  try{ const fs=[]; for(const [u,n] of [['filter-sample1.jpg','예시_카페'],['filter-sample2.jpg','예시_바다'],['filter-sample3.jpg','예시_꽃']]){
-      const bl=await (await fetch(u)).blob(); fs.push(new File([bl],n+'.jpg',{type:'image/jpeg'})); }
-    await addFiles(fs); select(0);
-  }catch(err){ toast('예시 사진을 불러오지 못했어요'); }
-  b.textContent='예시 사진으로 먼저 해보기';
-}); $('btnNew').onclick=pick;
+ $('btnNew').onclick=pick;
 $('file').addEventListener('change',e=>{ addFiles(e.target.files); e.target.value=''; });
 
 // ── 새로고침해도 사진·보정값 유지 (이 폰 브라우저 안 IndexedDB에만 저장) ──
