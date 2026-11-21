@@ -110,6 +110,7 @@
   .thumbs .t img{width:100%; height:100%; object-fit:cover; display:block; border-radius:7px}
   .thumbs .t .x{position:absolute; right:-6px; top:-6px; width:17px; height:17px; border-radius:50%; border:1.5px solid #fff; background:var(--ink); color:#fff; font-size:9px; line-height:13px; padding:0; cursor:pointer; display:none}
   .thumbs .t.on .x{display:block}
+  .thumbs .delAll{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; background:var(--bg); color:var(--mute); opacity:1; font-size:9px; font-weight:700; box-shadow:none}
   .thumbs .addT{display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--sub); opacity:1; font-size:18px; font-weight:500}
   .barBtn{flex:0 0 auto; height:32px; border:none; border-radius:8px; background:var(--bg); color:var(--sub); font-size:12.5px; font-weight:600; padding:0 9px; display:flex; align-items:center; gap:4px; cursor:pointer; touch-action:none}
   .barBtn.on{background:var(--acc-soft); color:var(--acc)}
@@ -558,7 +559,7 @@ async function addFiles(list, metas, selectIdx){
 }
 function renderThumbs(){
   $('thumbs').innerHTML = !items.length ? '' : items.map((it,i)=>`<div class="t${i===cur?' on':''}" data-i="${i}"><img src="${it.url}" alt="" style="transform:rotate(${it.rot||0}deg)"><button type="button" class="x" data-del="${i}" aria-label="사진 빼기">✕</button></div>`).join('')
-    + `<div class="t addT" data-add="1">＋</div>`;
+    + `<div class="t addT" data-add="1">＋</div>` + (items.length>1 ? `<div class="t delAll" data-delall="1" title="사진 모두 삭제"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>모두</span></div>` : '');
   $('applyAll').hidden = items.length<2;
 }
 // 사진 삭제
@@ -569,6 +570,11 @@ function removeItem(i){
   [it.url,it.baseUrl].forEach(u=>u&&URL.revokeObjectURL(u));
   if(!items.length){ cur=-1; resetEmpty(); return; }
   select(Math.min(i,items.length-1));
+}
+function removeAll(){
+  if(!items.length || !confirm('올린 사진 '+items.length+'장을 모두 뺄까요?')) return;
+  items.forEach(it=>{ dbDo('files',st=>st.delete(it.id)); [it.url,it.baseUrl].forEach(u=>u&&URL.revokeObjectURL(u)); });
+  items.length=0; cur=-1; persist(); HIS=[]; HI=-1; updUndo(); resetEmpty();
 }
 function resetEmpty(){
   $('empty').hidden=false; ['bar','btnSave','cmpBtn','fsBtn'].forEach(id=>$(id).hidden=true); document.body.classList.remove('full');
@@ -592,7 +598,7 @@ async function showDemoChips(){
 }
 $('thumbs').addEventListener('pointerdown',e=>e.stopPropagation());
 $('thumbs').addEventListener('click',e=>{ const d=e.target.closest('[data-del]'); if(d){ e.stopPropagation(); removeItem(+d.dataset.del); return; }
-  if(e.target.closest('[data-add]')){ pick(); return; } const t=e.target.closest('.t[data-i]'); if(t) select(+t.dataset.i); });
+  if(e.target.closest('[data-add]')){ pick(); return; } if(e.target.closest('[data-delall]')){ removeAll(); return; } const t=e.target.closest('.t[data-i]'); if(t) select(+t.dataset.i); });
 
 async function select(i){
   cur=i; renderThumbs();
