@@ -536,7 +536,7 @@ function resetEmpty(){
 // 사진 없을 때도 아래 필터 줄은 예시 사진으로 미리 보여줌
 let demo=null;
 // 사진 올리기 전 필터 미리보기: 인물 탭은 인물 사진, 나머지는 웨딩 사진
-const DEMO_SRC={'인물':'filter-sample5.jpg','카페':'filter-sample6.jpg','풍경':'filter-sample7.jpg','무드':'filter-sample8.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
+const DEMO_SRC={'인물':'filter-sample5.jpg','카페':'filter-sample6.jpg','풍경':'filter-sample7.jpg','무드':'filter-sample8.jpg','살리기':'filter-sample9.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
 async function loadDemo(src){
   if(demoCache[src]) return demoCache[src];
   const im=new Image(); im.src=src; try{ await im.decode(); }catch(e){ return null; }
@@ -566,7 +566,7 @@ function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; re
 // 필터 미리보기는 항상 예시 사진(탭별)으로 — sel 은 지금 고른 사진(선택 표시용)
 let chipTok=0;
 // 탭별 예시 사진. 전체·추천·즐겨찾기는 필터마다 어울리는 사진으로
-const CAT_SRC=[['인물','filter-sample5.jpg'],['카페','filter-sample6.jpg'],['음식','filter-sample6.jpg'],['풍경','filter-sample7.jpg'],['무드','filter-sample8.jpg']];
+const CAT_SRC=[['인물','filter-sample5.jpg'],['카페','filter-sample6.jpg'],['음식','filter-sample6.jpg'],['풍경','filter-sample7.jpg'],['무드','filter-sample8.jpg'],['살리기','filter-sample9.jpg']];
 function demoSrcFor(i){
   const t=TABS[tab][0]; if(DEMO_SRC[t]) return DEMO_SRC[t];
   const n=L.names[i];
