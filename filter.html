@@ -60,6 +60,11 @@
   .icoBtn:disabled{color:#d4d4d8; cursor:default}
   .cmpPh{position:absolute; right:10px; bottom:10px; z-index:3; height:34px; padding:0 11px; border:none; border-radius:10px; font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; touch-action:none; -webkit-user-select:none; user-select:none}
   .cmpPh:active{background:var(--acc)}
+  .fsBtn{position:absolute; right:10px; bottom:50px; z-index:3; height:34px; padding:0 11px; border:none; border-radius:10px; font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer}
+  body.full .top, body.full .bar, body.full .panel{display:none!important}
+  body.full .stage{background:#111}
+  body.full .fsBtn span{display:none}
+  body.cropping .fsBtn{display:none!important}
   body.cropping .cmpPh{display:none!important}
   .cmpTop{width:auto; padding:0 8px; gap:4px; font-size:12.5px; font-weight:600; touch-action:none; -webkit-user-select:none; user-select:none}
   .cmpTop:active{background:var(--ink); color:#fff}
@@ -234,6 +239,7 @@
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
     <span class="badge" id="badge" hidden></span>
+    <button class="fsBtn glass" id="fsBtn" type="button" aria-label="크게 보기" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>크게 보기</span></button>
     <button class="cmpPh glass" id="cmpBtn" type="button" aria-label="누르고 있으면 원본" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
     <div class="cropFrame" id="cropFrame" hidden><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div>
     <span class="zoomTag glass" id="zoomTag">100%</span>
@@ -510,7 +516,7 @@ async function addFiles(list, metas, selectIdx){
   }
   if(!added) return;
   persist();
-  $('empty').hidden=true; $('bar').hidden=false; $('btnSave').hidden=false; $('cmpBtn').hidden=false;
+  $('empty').hidden=true; $('bar').hidden=false; $('btnSave').hidden=false; $('cmpBtn').hidden=false; $('fsBtn').hidden=false;
   const h=$('hint'); if(!h._shown){ h._shown=1; h.hidden=false; setTimeout(()=>h.style.opacity=0,3200); }
   select(selectIdx!=null ? selectIdx : items.length-added);
 }
@@ -529,7 +535,7 @@ function removeItem(i){
   select(Math.min(i,items.length-1));
 }
 function resetEmpty(){
-  $('empty').hidden=false; ['bar','btnSave','cmpBtn'].forEach(id=>$(id).hidden=true);
+  $('empty').hidden=false; ['bar','btnSave','cmpBtn','fsBtn'].forEach(id=>$(id).hidden=true); document.body.classList.remove('full');
   $('amtRow').classList.add('hide'); $('adjRow').hidden=true; hideOut(); cv.width=cv.height=0; $('orig').removeAttribute('src');
   mode='f'; [...$('modes').children].forEach(x=>x.classList.toggle('on',x.dataset.m==='f')); $('fMode').hidden=false; $('aMode').hidden=true;
   renderThumbs(); $('thumbs').innerHTML=''; showDemoChips();
@@ -801,6 +807,18 @@ $('cropBtn').onclick=enterCrop;
 $('cropCancel').onclick=()=>exitCrop(false);
 $('cropDone').onclick=()=>exitCrop(true);
 
+// 크게 보기: 메뉴 숨기고 사진만 화면 가득(지원되는 폰은 주소창까지 숨김). 한 번 더 누르면 원래대로
+function setFull(on){
+  document.body.classList.toggle('full',on);
+  $('fsBtn').setAttribute('aria-label',on?'작게 보기':'크게 보기'); $('fsBtn').querySelector('span').textContent=on?'작게 보기':'크게 보기';
+  requestAnimationFrame(()=>layoutFit(true));
+}
+$('fsBtn').onclick=()=>{
+  const on=!document.body.classList.contains('full'); setFull(on);
+  try{ if(on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+       else if(!on && document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){}
+};
+document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement && document.body.classList.contains('full')) setFull(false); });
 $('btnUndo').onclick=()=>goHis(-1); $('btnRedo').onclick=()=>goHis(1);
 
 // ── 확대·축소·이동 ──
@@ -830,7 +848,7 @@ function zoomAt(px,py,ns){
 }
 const P=new Map(); let pinch=null, lastTap=0, panStart=null;
 stage.addEventListener('pointerdown',e=>{
-  if(cur<0 || CROP.on || e.target.closest('.thumbs,.cmpPh,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
+  if(cur<0 || CROP.on || e.target.closest('.thumbs,.fsBtn,.cmpPh,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
   stage.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), s:V.s}; panStart=null; }
   else if(P.size===1){
