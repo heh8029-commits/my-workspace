@@ -3,174 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#fff4f7">
-<title>뽀용 필터 · 미리토퍼</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jua&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#f4f4f5">
+<title>TONE · 사진 필터</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root{
-    --bg:#fff4f7; --pink:#ff8fb1; --pink-d:#f06292; --pink-l:#ffe1ea; --lav:#e6dcff; --ink:#4a3a42; --soft:#a78f99;
-    --cute:'Jua', -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    --en:'Quicksand', 'Jua', -apple-system, sans-serif;
+    --bg:#f4f4f5; --surface:#ffffff; --stage:#e7e7ea; --line:#e4e4e7;
+    --ink:#18181b; --sub:#52525b; --mute:#a1a1aa;
+    --acc:#ff4d79; --acc-soft:#ffe4ec;
+    --font:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   [hidden]{display:none!important}
-  html,body{margin:0; height:100%; background:var(--bg); color:var(--ink); overflow:hidden; overscroll-behavior:none;
-    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-  button{font-family:inherit}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--ink); overflow:hidden; overscroll-behavior:none; font-family:var(--font); letter-spacing:-.2px}
+  button{font-family:inherit; letter-spacing:inherit}
+  svg{display:block}
   .app{height:100dvh; display:flex; flex-direction:column; max-width:640px; margin:0 auto; position:relative}
 
   /* 상단 */
-  .top{flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:calc(4px + env(safe-area-inset-top)) 12px 4px; height:calc(46px + env(safe-area-inset-top))}
-  .logo{font-family:var(--cute); font-size:21px; color:var(--pink-d); display:flex; align-items:center; gap:3px; white-space:nowrap}
-  .logo small{font-size:11px; color:var(--soft); margin-left:4px}
+  .top{flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:calc(6px + env(safe-area-inset-top)) 14px 6px; height:calc(50px + env(safe-area-inset-top))}
+  .logo{display:flex; align-items:baseline; gap:6px; white-space:nowrap}
+  .logo b{font-size:19px; font-weight:800; letter-spacing:-.5px}
+  .logo b i{font-style:normal; color:var(--acc)}
+  .logo small{font-size:11px; color:var(--mute); font-weight:500}
   .top .sp{flex:1}
-  .pill{border:none; border-radius:999px; padding:8px 14px; font-family:var(--cute); font-size:15px; cursor:pointer; white-space:nowrap}
-  .pill.ghost{background:#fff; color:var(--pink-d)}
-  .pill.main{background:var(--pink-d); color:#fff; box-shadow:0 3px 0 #d84a7a}
-  .pill:active{transform:translateY(2px); box-shadow:none}
-  .pill[hidden]{display:none}
-  .pill:disabled{opacity:.6}
+  .pill{border:none; border-radius:10px; padding:9px 13px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:5px}
+  .pill.ghost{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
+  .pill.main{background:var(--ink); color:#fff}
+  .pill:active{opacity:.8}
+  @media (max-width:400px){ .logo small{display:none} .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
+  .icoBtn{width:36px; height:36px; border:none; border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
+  .icoBtn:disabled{color:#d4d4d8; cursor:default}
+  .icoBtn:not(:disabled):active{background:var(--line)}
+  .pill:disabled{opacity:.5}
 
-  /* 사진 영역 — 화면 끝까지 */
-  .stage{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:#f7eef1; touch-action:none; user-select:none; -webkit-user-select:none}
+  /* 사진 영역 */
+  .stage{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:var(--stage); touch-action:none; user-select:none; -webkit-user-select:none}
   .wrap{position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform}
   .wrap canvas,.wrap img{position:absolute; inset:0; width:100%; height:100%; display:block; -webkit-user-drag:none; pointer-events:none}
   .wrap img.orig{opacity:0}
   .stage.cmp .wrap img.orig{opacity:1}
-  .badge{position:absolute; left:12px; top:12px; background:rgba(255,255,255,.9); color:var(--pink-d); font-family:var(--cute); font-weight:400;
-    font-size:14px; padding:5px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(240,98,146,.18); pointer-events:none}
-  .sharpBtn{position:absolute; left:12px; top:52px; border:none; border-radius:999px; background:rgba(255,255,255,.9); color:var(--pink-d); font-family:var(--cute); font-size:14px;
-    padding:7px 13px; box-shadow:0 2px 8px rgba(240,98,146,.18); cursor:pointer}
-  .sharpBtn.on{background:var(--pink-d); color:#fff}
-  .badge small{font-family:var(--cute); font-weight:400; color:var(--soft); font-size:12px; margin-left:4px}
-  .zoomTag{position:absolute; left:50%; top:12px; transform:translateX(-50%); background:rgba(74,58,66,.55); color:#fff; font-size:12px; padding:4px 10px; border-radius:999px; pointer-events:none; opacity:0; transition:opacity .3s}
+  .glass{background:rgba(24,24,27,.55); color:#fff; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+  .badge{position:absolute; left:12px; top:12px; font-size:13px; font-weight:700; padding:6px 11px; border-radius:8px; pointer-events:none}
+  .badge small{font-weight:500; opacity:.75; font-size:12px; margin-left:5px}
+  .sharpBtn{position:absolute; left:12px; top:48px; border:none; border-radius:8px; font-size:12.5px; font-weight:600; padding:6px 10px; cursor:pointer; display:flex; align-items:center; gap:5px}
+  .sharpBtn.on{background:var(--acc); color:#fff}
+  .zoomTag{position:absolute; left:50%; top:12px; transform:translateX(-50%); font-size:12px; font-weight:600; padding:4px 9px; border-radius:7px; pointer-events:none; opacity:0; transition:opacity .3s}
   .zoomTag.show{opacity:1}
-  .cmpBtn{position:absolute; right:12px; bottom:12px; width:46px; height:46px; border-radius:50%; border:none; background:rgba(255,255,255,.92);
-    box-shadow:0 2px 10px rgba(0,0,0,.12); font-size:12px; font-family:var(--cute); color:var(--pink-d); cursor:pointer; touch-action:none}
-  .cmpBtn:active{background:var(--pink-d); color:#fff}
-  .hint{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); background:rgba(74,58,66,.6); color:#fff; font-size:12px;
-    padding:6px 12px; border-radius:999px; pointer-events:none; white-space:nowrap; transition:opacity .5s}
-  .spin{position:absolute; right:68px; bottom:62px; display:none; pointer-events:none; font-size:22px; animation:boing .6s ease-in-out infinite alternate}
+  .cmpBtn{position:absolute; right:12px; bottom:12px; height:38px; padding:0 12px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; touch-action:none; display:flex; align-items:center; gap:5px}
+  .cmpBtn:active{background:var(--acc)}
+  .hint{position:absolute; left:50%; bottom:60px; transform:translateX(-50%); font-size:12px; padding:6px 11px; border-radius:8px; pointer-events:none; white-space:nowrap; transition:opacity .5s}
+  .spin{position:absolute; right:14px; top:14px; width:22px; height:22px; border-radius:50%; border:2.5px solid rgba(255,255,255,.5); border-top-color:var(--acc); display:none; animation:rot .7s linear infinite; pointer-events:none}
   .busy .spin{display:block}
-  @keyframes boing{from{transform:translateY(0)} to{transform:translateY(-8px)}}
-  .thumbs{position:absolute; right:12px; top:14px; padding:6px 6px 0 0; display:flex; flex-direction:column; gap:6px; max-height:calc(100% - 80px); overflow-y:auto; scrollbar-width:none}
-  .thumbs .t{width:40px; height:52px; border-radius:12px; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.15); cursor:pointer; flex:0 0 auto; opacity:.7}
-  .thumbs .t.on{border-color:var(--pink-d); opacity:1}
-  .thumbs .t img{width:100%; height:100%; object-fit:cover; display:block}
-  .thumbs .t{position:relative; overflow:visible}
-  .thumbs .t img{border-radius:9px}
-  .thumbs .t .x{position:absolute; right:-8px; top:-8px; width:20px; height:20px; border-radius:50%; border:2px solid #fff; background:var(--ink); color:#fff; font-size:12px; line-height:15px; padding:0; cursor:pointer; display:none}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .thumbs{position:absolute; right:10px; top:12px; padding:6px 6px 0 0; display:flex; flex-direction:column; gap:6px; max-height:calc(100% - 70px); overflow-y:auto; scrollbar-width:none}
+  .thumbs .t{position:relative; width:38px; height:50px; border-radius:8px; box-shadow:0 0 0 2px rgba(255,255,255,.9), 0 2px 6px rgba(0,0,0,.15); cursor:pointer; flex:0 0 auto; opacity:.65}
+  .thumbs .t.on{box-shadow:0 0 0 2px var(--acc), 0 2px 6px rgba(0,0,0,.15); opacity:1}
+  .thumbs .t img{width:100%; height:100%; object-fit:cover; display:block; border-radius:8px}
+  .thumbs .t .x{position:absolute; right:-8px; top:-8px; width:20px; height:20px; border-radius:50%; border:2px solid #fff; background:var(--ink); color:#fff; font-size:11px; line-height:15px; padding:0; cursor:pointer; display:none}
   .thumbs .t.on .x{display:block}
-  .thumbs .addT{display:flex; align-items:center; justify-content:center; background:#fff; color:var(--pink-d); font-size:22px; font-weight:700; opacity:1; border:2px dashed var(--pink)}
+  .thumbs .addT{display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.85); color:var(--sub); opacity:1; box-shadow:inset 0 0 0 1.5px var(--line)}
 
   /* 시작 화면 */
-  .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; padding:20px; cursor:pointer}
-  .addBig{display:flex; flex-direction:column; align-items:center; gap:8px; border:3px dashed var(--pink); background:rgba(255,255,255,.85); color:var(--pink-d);
-    font-family:var(--cute); font-size:19px; padding:26px 34px; border-radius:28px; cursor:pointer}
-  .addBig span{width:58px; height:58px; border-radius:50%; background:var(--pink-d); color:#fff; font-size:34px; line-height:58px; animation:boing .8s ease-in-out infinite alternate}
-  .blob{width:150px; height:150px; border-radius:42% 58% 55% 45% / 50% 45% 55% 50%; background:linear-gradient(135deg,var(--pink-l),var(--lav));
-    display:flex; align-items:center; justify-content:center; font-size:64px; animation:wob 3s ease-in-out infinite; box-shadow:0 10px 30px rgba(240,98,146,.18)}
-  @keyframes wob{0%,100%{border-radius:42% 58% 55% 45% / 50% 45% 55% 50%; transform:rotate(-3deg)} 50%{border-radius:55% 45% 42% 58% / 45% 55% 50% 50%; transform:rotate(3deg)}}
-  .empty h2{margin:4px 0 0; font-family:var(--cute); font-weight:400; font-size:26px; color:var(--pink-d)}
-  .empty p{margin:0; color:var(--soft); font-size:13.5px; line-height:1.6}
-  .empty .pill{font-size:18px; padding:14px 28px}
+  .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:20px; cursor:pointer}
+  .addBig{display:flex; flex-direction:column; align-items:center; gap:12px; border:none; background:none; color:var(--ink); font-size:16px; font-weight:700; cursor:pointer}
+  .addBig span{width:64px; height:64px; border-radius:20px; background:var(--acc); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(255,77,121,.3)}
+  .addBig small{display:block; font-size:12.5px; font-weight:500; color:var(--mute); margin-top:-6px}
+  .sample{background:var(--surface); border:none; box-shadow:inset 0 0 0 1px var(--line); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; padding:9px 14px; border-radius:10px}
 
-  /* 하단 필터 패널 */
-  .panel{flex:0 0 auto; padding:4px 0 calc(4px + env(safe-area-inset-bottom)); background:var(--bg)}
-  .panel.off{display:none}
-  .amt,.adjRow{position:absolute; left:10px; right:10px; bottom:64px; z-index:3; display:flex; align-items:center; gap:8px; padding:0 8px 0 14px; height:40px; border-radius:999px; background:rgba(255,255,255,.9); box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  /* 슬라이더 (사진 위) */
+  .amt,.adjRow{position:absolute; left:12px; right:12px; bottom:60px; z-index:3; display:flex; align-items:center; gap:10px; padding:0 8px 0 14px; height:42px; border-radius:12px}
   .amt.hide{display:none}
-  .amt input{flex:1; -webkit-appearance:none; appearance:none; height:6px; border-radius:99px; background:linear-gradient(90deg,var(--pink) var(--p,100%), var(--pink-l) var(--p,100%)); outline:none}
-  .amt input::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:#fff; border:3px solid var(--pink-d); box-shadow:0 2px 6px rgba(240,98,146,.35)}
-  .amt input::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--pink-d)}
-  .amt output{font-family:var(--en); font-weight:700; color:var(--pink-d); width:34px; text-align:right}
-  .amt .all{border:none; background:var(--pink-l); color:var(--pink-d); border-radius:999px; font-family:var(--cute); font-size:13px; padding:6px 10px; cursor:pointer; white-space:nowrap}
-  .tabs{display:flex; gap:0; padding:0 8px 0; overflow-x:auto; scrollbar-width:none}
-  .tabs::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
-  .tabs button{flex:0 0 auto; border:none; background:transparent; font-family:var(--cute); font-size:13px; color:var(--soft); padding:3px 9px; border-radius:999px; cursor:pointer}
-  .tabs button.on{background:var(--ink); color:#fff}
-  .chips{display:flex; gap:9px; overflow-x:auto; padding:10px 12px 0; scrollbar-width:none}
-  .chip{flex:0 0 auto; width:50px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
-  .chip .th{position:relative; display:block; width:44px; height:56px; border-radius:13px; overflow:hidden; background:var(--pink-l); transition:transform .15s}
+  .amt input,.adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:3px; border-radius:99px; outline:none; background:rgba(255,255,255,.35)}
+  .amt input{background:linear-gradient(90deg,#fff var(--p,100%), rgba(255,255,255,.3) var(--p,100%))}
+  .amt input::-webkit-slider-thumb,.adjRow input::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.35)}
+  .amt input::-moz-range-thumb,.adjRow input::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%; background:#fff}
+  .amt output,.adjRow output{font-size:13px; font-weight:700; width:32px; text-align:right; font-variant-numeric:tabular-nums}
+  .adjRow b{font-size:13px; font-weight:600; min-width:52px}
+  .amt .all,.adjRow .all{border:none; background:rgba(255,255,255,.18); color:#fff; border-radius:8px; font-size:12px; font-weight:600; padding:6px 9px; cursor:pointer; white-space:nowrap}
+
+  .modes{position:absolute; left:12px; bottom:12px; display:flex; gap:2px; padding:3px; border-radius:11px}
+  .modes button{border:none; background:transparent; color:rgba(255,255,255,.75); font-size:13px; font-weight:600; padding:7px 12px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:5px}
+  .modes button.on{background:#fff; color:var(--ink)}
+
+  /* 하단 패널 */
+  .panel{flex:0 0 auto; padding:6px 0 calc(6px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--line)}
+  .tabs{display:flex; gap:2px; padding:0 10px; overflow-x:auto; scrollbar-width:none}
+  .tabs::-webkit-scrollbar,.chips::-webkit-scrollbar,.tools::-webkit-scrollbar{display:none}
+  .tabs button{flex:0 0 auto; border:none; background:transparent; font-size:13px; font-weight:600; color:var(--mute); padding:5px 9px; cursor:pointer; position:relative}
+  .tabs button.on{color:var(--ink)}
+  .tabs button.on::after{content:''; position:absolute; left:9px; right:9px; bottom:0; height:2px; border-radius:2px; background:var(--acc)}
+  .chips{display:flex; gap:8px; overflow-x:auto; padding:10px 12px 0; scrollbar-width:none}
+  .chip{position:relative; flex:0 0 auto; width:52px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
+  .chip .th{position:relative; display:block; width:52px; height:66px; border-radius:8px; overflow:hidden; background:var(--bg)}
   .chip .th img{width:100%; height:100%; object-fit:cover; display:block}
-  .chip .nm{display:block; margin-top:2px; font-family:var(--cute); font-weight:400; font-size:11.5px; color:var(--ink); white-space:nowrap; letter-spacing:-.2px}
-  .chip.on .th{box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--pink-d)}
-  .chip.on .nm{color:var(--pink-d)}
-  .chip{position:relative}
-  .chip .star{position:absolute; right:-6px; top:-7px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 5px rgba(240,98,146,.35);
+  .chip .nm{display:block; margin-top:4px; font-size:11px; font-weight:600; color:var(--sub); white-space:nowrap}
+  .chip.on .th{box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--acc)}
+  .chip.on .nm{color:var(--acc)}
+  .chip .star{position:absolute; right:-6px; top:-7px; width:24px; height:24px; border-radius:50%; background:var(--surface); box-shadow:0 1px 4px rgba(0,0,0,.18);
     display:none; align-items:center; justify-content:center; z-index:2}
   .chip .star::before{content:''; position:absolute; inset:-8px}
-  .chip .star svg{display:block; fill:#fff; stroke:var(--pink)}
+  .chip .star svg{fill:none; stroke:var(--mute)}
   .chip.on .star,.chip .star.fav{display:flex}
-  .chip .star.fav svg{fill:#ffcc33; stroke:#ffcc33}
-  .favHint{flex:0 0 auto; align-self:center; padding:0 10px; font-family:var(--cute); font-size:12.5px; color:var(--soft); line-height:1.4}
-  .chip.on .th::after{content:'♥'; position:absolute; right:4px; bottom:2px; color:#fff; font-size:11px; text-shadow:0 1px 3px rgba(240,98,146,.9)}
+  .chip .star.fav svg{fill:var(--acc); stroke:var(--acc)}
+  .favHint{flex:0 0 auto; align-self:center; padding:0 8px; font-size:12px; color:var(--mute); line-height:1.5}
+
+  .tools{display:flex; gap:4px; overflow-x:auto; padding:8px 10px 0; scrollbar-width:none}
+  .tool{flex:0 0 auto; width:56px; border:none; background:none; padding:0; cursor:pointer; text-align:center; color:var(--sub)}
+  .tool .ic{position:relative; width:42px; height:42px; margin:0 auto; border-radius:12px; background:var(--bg); display:flex; align-items:center; justify-content:center}
+  .tool .ic svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+  .tool .nm{display:block; margin-top:4px; font-size:11px; font-weight:600; white-space:nowrap}
+  .tool.on{color:var(--acc)} .tool.on .ic{background:var(--acc-soft)}
+  .tool .v{position:absolute; right:-5px; top:-5px; min-width:20px; height:16px; padding:0 4px; border-radius:8px; background:var(--acc); color:#fff; font-weight:700; font-size:9.5px; line-height:16px}
 
   /* 저장 시트 */
-  .sheetBg{position:fixed; inset:0; background:rgba(74,58,66,.35); display:none; z-index:20; align-items:flex-end; justify-content:center}
+  .sheetBg{position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; z-index:20; align-items:flex-end; justify-content:center}
   .sheetBg.show{display:flex}
-  .sheet{width:100%; max-width:640px; background:#fff; border-radius:26px 26px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px}
-  /* 조정 모드 */
-  
-  .adjRow b{font-family:var(--cute); font-weight:400; color:var(--pink-d); font-size:14px; min-width:58px}
-  .adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:6px; border-radius:99px; outline:none; background:var(--pink-l)}
-  .adjRow input::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:#fff; border:3px solid var(--pink-d); box-shadow:0 2px 6px rgba(240,98,146,.35)}
-  .adjRow input::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--pink-d)}
-  .adjRow output{font-family:var(--en); font-weight:700; color:var(--pink-d); width:38px; text-align:right}
-  .adjRow .all{border:none; background:var(--pink-l); color:var(--pink-d); border-radius:999px; font-family:var(--cute); font-size:13px; padding:6px 10px; cursor:pointer; white-space:nowrap}
-  .tools{display:flex; gap:2px; overflow-x:auto; padding:6px 10px 0; scrollbar-width:none}
-  .tools::-webkit-scrollbar{display:none}
-  .tool{flex:0 0 auto; width:56px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
-  .tool .ic{position:relative; width:40px; height:40px; margin:0 auto; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:21px;
-    box-shadow:0 2px 0 rgba(240,98,146,.12)}
-  .tool .nm{display:block; margin-top:3px; font-family:var(--cute); font-size:11.5px; color:var(--ink); white-space:nowrap}
-  .tool.on .ic{box-shadow:0 0 0 3px var(--pink-d)} .tool.on .nm{color:var(--pink-d)}
-  .tool .v{position:absolute; right:-4px; top:-4px; min-width:22px; height:18px; padding:0 4px; border-radius:9px; background:var(--pink-d); color:#fff; font-family:var(--en); font-weight:700; font-size:10px; line-height:18px}
-  .modes{position:absolute; left:12px; bottom:12px; display:flex; gap:3px; padding:4px; border-radius:999px; background:rgba(255,255,255,.9); box-shadow:0 2px 10px rgba(0,0,0,.12)}
-  .modes button{border:none; background:transparent; font-family:var(--cute); font-size:15px; color:var(--soft); padding:8px 14px; border-radius:999px; cursor:pointer}
-  .modes button.on{background:var(--pink-d); color:#fff}
-  .sample{background:none; border:none; color:var(--pink-d); font-family:var(--cute); font-size:15px; text-decoration:underline; text-underline-offset:4px; cursor:pointer; padding:6px}
-  .sheet h3{margin:0 0 2px; font-family:var(--cute); font-weight:400; font-size:20px; text-align:center; color:var(--pink-d)}
-  .sheet p{margin:0 0 4px; text-align:center; color:var(--soft); font-size:12.5px}
-  .sheet .pill{width:100%; padding:15px; font-size:17px}
-  .sheet .pill.ghost{background:var(--pink-l)}
-  .sheet .x{background:none; color:var(--soft); font-size:14px; box-shadow:none}
-  .toast{position:fixed; left:50%; top:calc(64px + env(safe-area-inset-top)); transform:translateX(-50%); background:#fff; color:var(--pink-d); font-family:var(--cute);
-    padding:10px 18px; border-radius:999px; box-shadow:0 6px 20px rgba(240,98,146,.25); display:none; z-index:30; font-size:15px; max-width:90vw; text-align:center}
+  .sheet{width:100%; max-width:640px; background:var(--surface); border-radius:18px 18px 0 0; padding:20px 18px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:8px}
+  .sheet h3{margin:0; font-size:17px; font-weight:700; text-align:center}
+  .sheet p{margin:0 0 6px; text-align:center; color:var(--mute); font-size:12.5px}
+  .sheet .pill{width:100%; justify-content:center; padding:14px; font-size:15px; border-radius:12px}
+  .sheet .pill.main{background:var(--acc)}
+  .sheet .x{background:none; color:var(--mute); box-shadow:none}
+  .toast{position:fixed; left:50%; top:calc(60px + env(safe-area-inset-top)); transform:translateX(-50%); background:var(--ink); color:#fff; font-weight:600;
+    padding:10px 16px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.2); display:none; z-index:30; font-size:13.5px; max-width:90vw; text-align:center}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <div class="logo">뽀용 필터 <span>🎀</span><small>by 미리토퍼</small></div>
+    <div class="logo"><b>TONE<i>.</i></b><small>by 미리토퍼</small></div>
     <div class="sp"></div>
-    <button class="pill ghost" id="btnNew">＋ 사진</button>
-    <button class="pill main" id="btnSave" hidden>저장하기 ↓</button>
+    <button class="icoBtn" id="btnUndo" type="button" aria-label="되돌리기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+    <button class="icoBtn" id="btnRedo" type="button" aria-label="다시하기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+    <button class="pill ghost" id="btnNew"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>사진</button>
+    <button class="pill main" id="btnSave" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>저장</button>
   </div>
 
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
-    <span class="badge" id="badge" hidden>원본</span>
-    <button class="sharpBtn" id="sharpBtn" type="button" hidden>🔍 선명도</button>
-    <span class="zoomTag" id="zoomTag">100%</span>
+    <span class="badge glass" id="badge" hidden>원본</span>
+    <button class="sharpBtn glass" id="sharpBtn" type="button" hidden><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 9-8 9-8-9z"/></svg>선명도</button>
+    <span class="zoomTag glass" id="zoomTag">100%</span>
     <div class="thumbs" id="thumbs"></div>
-    <div class="spin">🎀</div>
-    <button class="cmpBtn" id="cmpBtn" type="button" hidden>원본</button>
-    <div class="amt hide" id="amtRow">
+    <div class="spin"></div>
+    <button class="cmpBtn glass" id="cmpBtn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
+    <div class="amt glass hide" id="amtRow">
       <input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
-      <button class="all" id="applyAll" type="button" hidden>모든 사진에</button>
+      <button class="all" id="applyAll" type="button" hidden>전체 적용</button>
     </div>
-    <div class="adjRow" id="adjRow" hidden>
+    <div class="adjRow glass" id="adjRow" hidden>
       <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
       <button class="all" id="adjReset" type="button">초기화</button>
     </div>
-    <div class="modes" id="modes" hidden><button type="button" data-m="f" class="on">🎨 필터</button><button type="button" data-m="a">🎚️ 조정</button></div>
-    <div class="hint" id="hint" hidden>두 손가락으로 확대 · 두 번 톡 하면 확대/원래대로</div>
+    <div class="modes glass" id="modes" hidden><button type="button" data-m="f" class="on">필터</button><button type="button" data-m="a">조정</button></div>
+    <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
-      <button class="addBig" type="button"><span>＋</span>사진 추가해주세요</button>
-      <button class="sample" id="sampleBtn" type="button">☕ 예시 사진으로 먼저 해보기</button>
+      <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small></button>
+      <button class="sample" id="sampleBtn" type="button">예시 사진으로 먼저 해보기</button>
     </div>
   </div>
 
@@ -186,7 +176,7 @@
 
 <div class="sheetBg" id="sheet">
   <div class="sheet">
-    <h3 id="shTitle">어떻게 저장할까요? 💾</h3>
+    <h3 id="shTitle">저장하기</h3>
     <p id="shSub">원본 크기 그대로 JPG로 저장돼요</p>
     <button class="pill main" id="saveOne" type="button">이 사진만 저장</button>
     <button class="pill ghost" id="saveAll" type="button">전체 저장</button>
@@ -214,10 +204,10 @@ const TABS=[['추천',['미니멀','라떼','생크림','살구','자연스럽�
 // 즐겨찾기(이 폰에만 저장)
 let FAV=new Set(); try{ FAV=new Set(JSON.parse(localStorage.getItem('bbFav')||'[]')); }catch(e){}
 function saveFav(){ try{ localStorage.setItem('bbFav',JSON.stringify([...FAV])); }catch(e){} }
-TABS.unshift(['⭐ 즐겨찾기','FAV']);
+TABS.unshift(['즐겨찾기','FAV']);
 let tab=FAV.size?0:1;
 // 끝이 둥근 통통한 별
-const STAR='<svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 3.2l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.5l-5.2 2.7 1-5.8L3.6 9.3l5.8-.8z" stroke-linejoin="round" stroke-width="2.6"/></svg>';
+const STAR='<svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.5l-5.1 2.7 1-5.7-4.1-4 5.7-.8z" stroke-width="2" stroke-linejoin="round"/></svg>';
 
 // ── 필터(LUT) ──
 let L=null;
@@ -275,9 +265,17 @@ function sharpen(ctx,w,h,amt){
 
 // ── 세부 조정 ──
 const ADJ=[
-  {k:'sharp',n:'선명도',ic:'🔍',min:0},{k:'bri',n:'밝기',ic:'☀️'},{k:'con',n:'대비',ic:'◐'},{k:'sat',n:'채도',ic:'🎨'},{k:'warm',n:'따뜻함',ic:'🌡️'},
-  {k:'tint',n:'색조',ic:'💜'},{k:'hi',n:'하이라이트',ic:'✨'},{k:'sh',n:'그림자',ic:'🌙'},{k:'fade',n:'바랜 느낌',ic:'🌫️',min:0},
-  {k:'vig',n:'비네팅',ic:'⭕'},{k:'grain',n:'필름 입자',ic:'🎞️',min:0}];
+  {k:'sharp',n:'선명도',ic:'<svg viewBox="0 0 24 24"><path d="M12 3l8 9-8 9-8-9z"/></svg>',min:0},
+  {k:'bri',n:'밝기',ic:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'},
+  {k:'con',n:'대비',ic:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>'},
+  {k:'sat',n:'채도',ic:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>'},
+  {k:'warm',n:'따뜻함',ic:'<svg viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/></svg>'},
+  {k:'tint',n:'색조',ic:'<svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>'},
+  {k:'hi',n:'하이라이트',ic:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="2.5"/></svg>'},
+  {k:'sh',n:'그림자',ic:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>'},
+  {k:'fade',n:'바랜 느낌',ic:'<svg viewBox="0 0 24 24"><path d="M4 8h16M4 12h12M4 16h8"/></svg>',min:0},
+  {k:'vig',n:'비네팅',ic:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="5"/></svg>'},
+  {k:'grain',n:'필름 입자',ic:'<svg viewBox="0 0 24 24"><circle cx="7" cy="7" r=".8"/><circle cx="12" cy="9" r=".8"/><circle cx="17" cy="6" r=".8"/><circle cx="8" cy="13" r=".8"/><circle cx="15" cy="13" r=".8"/><circle cx="6" cy="18" r=".8"/><circle cx="12" cy="17" r=".8"/><circle cx="18" cy="18" r=".8"/></svg>',min:0}];
 const hasAdj=a=>a && ADJ.some(t=>a[t.k]);
 function applyAdj(ctx,w,h,a){
   const v=k=>(a[k]||0)/100;
@@ -329,12 +327,12 @@ const pick=()=>$('file').click();
 $('empty').addEventListener('click',pick);
 // 예시 사진(Pixabay 무료 사진)으로 체험
 $('sampleBtn').addEventListener('click',async e=>{
-  e.stopPropagation(); const b=e.currentTarget; b.textContent='불러오는 중... ☕';
+  e.stopPropagation(); const b=e.currentTarget; b.textContent='불러오는 중...';
   try{ const fs=[]; for(const [u,n] of [['filter-sample1.jpg','예시_카페'],['filter-sample2.jpg','예시_바다'],['filter-sample3.jpg','예시_꽃']]){
       const bl=await (await fetch(u)).blob(); fs.push(new File([bl],n+'.jpg',{type:'image/jpeg'})); }
     await addFiles(fs); select(0);
-  }catch(err){ toast('예시 사진을 못 불러왔어요 🥲'); }
-  b.textContent='☕ 예시 사진으로 먼저 해보기';
+  }catch(err){ toast('예시 사진을 불러오지 못했어요'); }
+  b.textContent='예시 사진으로 먼저 해보기';
 }); $('btnNew').onclick=pick;
 $('file').addEventListener('change',e=>{ addFiles(e.target.files); e.target.value=''; });
 
@@ -369,7 +367,7 @@ async function addFiles(list, metas, selectIdx){
     const f=fs[fi], m=metas&&metas[fi];
     const url=URL.createObjectURL(f), img=new Image();
     try{ img.src=url; await img.decode(); }
-    catch(e){ URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요 🥲'); continue; }
+    catch(e){ URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요'); continue; }
     const prev=items[cur];
     const id=m?m.id:('p'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
     items.push(m ? {id, name:m.name, img, url, pre:m.pre||0, amt:m.amt??100, adj:m.adj||{}, full:null, blob:null, thumbs:null}
@@ -432,7 +430,7 @@ async function buildChips(it){
   const idx=visibleIdx();
   $('chips').innerHTML=idx.map(i=>`<button type="button" class="chip${i===it.pre?' on':''}" data-i="${i}">
     <span class="th"><img alt="" ${it.thumbs[i]?`src="${it.thumbs[i]}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`).join('')
-    + (TABS[tab][1]==='FAV' && !FAV.size ? `<div class="favHint">필터를 고르고 ☆를 누르면<br>여기에 모여요 💕</div>` : '');
+    + (TABS[tab][1]==='FAV' && !FAV.size ? `<div class="favHint">필터를 고르고 별을 누르면<br>여기에 모아둘 수 있어요</div>` : '');
   $('amtRow').classList.toggle('hide',!it.pre || cur<0);
   const chips=$('chips').querySelectorAll('.chip');
   for(let k=0;k<idx.length;k++){
@@ -450,7 +448,7 @@ async function buildChips(it){
 }
 $('chips').addEventListener('click',e=>{
   const st=e.target.closest('[data-star]');
-  if(st){ const n=L.names[+st.dataset.star]; if(FAV.has(n)){ FAV.delete(n); toast('즐겨찾기에서 뺐어요'); } else { FAV.add(n); toast('⭐ 즐겨찾기에 담았어요'); } saveFav();
+  if(st){ const n=L.names[+st.dataset.star]; if(FAV.has(n)){ FAV.delete(n); toast('즐겨찾기에서 뺐어요'); } else { FAV.add(n); toast('즐겨찾기에 추가했어요'); } saveFav();
     const keep=$('chips').scrollLeft; buildChips(items[cur]||demo); $('chips').scrollLeft=keep; return; }
   const b=e.target.closest('.chip'); if(!b) return; if(cur<0){ pick(); return; } const it=items[cur]; const i=+b.dataset.i;
   if(i===it.pre) return;
@@ -504,7 +502,7 @@ function quick(it){
   drawTo(cv,it,Math.round(W*k),Math.round(H*k));
 }
 async function updateView(first){
-  persist();
+  persist(); record();
   const it=items[cur], my=++tok; setBadge(it);
   const key=keyOf(it);
   if(it.full && it.full.key===key){ showFull(it.full.cv); if(it.blob&&it.blob.key===key) showOut(it); return; }
@@ -541,6 +539,28 @@ function setOrig(it){
   c.getContext('2d').drawImage(it.img,0,0,W,H);
   c.toBlob(b=>{ if(!b) return; it.baseUrl=URL.createObjectURL(b); if(items[cur]===it) o.src=it.baseUrl; },'image/jpeg',0.95);
 }
+
+// ── 되돌리기 / 다시하기 (필터·강도·조정 변경 기록) ──
+let HIS=[], HI=-1, applyingHis=false;
+const snapStr=()=>JSON.stringify({cur:items[cur]&&items[cur].id, s:items.map(it=>({id:it.id,pre:it.pre,amt:it.amt,adj:it.adj||{}}))});
+function record(){
+  if(applyingHis || !items.length) return;
+  const st=snapStr(), prev=HIS[HI];
+  if(prev && JSON.parse(prev).s.map(x=>JSON.stringify(x)).join()===JSON.parse(st).s.map(x=>JSON.stringify(x)).join()) return;
+  HIS=HIS.slice(0,HI+1); HIS.push(st); if(HIS.length>80) HIS.shift(); HI=HIS.length-1; updUndo();
+}
+function updUndo(){ $('btnUndo').disabled=HI<=0; $('btnRedo').disabled=HI>=HIS.length-1; }
+function goHis(d){
+  const n=HI+d; if(n<0||n>=HIS.length) return; HI=n; updUndo();
+  const st=JSON.parse(HIS[HI]);
+  st.s.forEach(m=>{ const it=items.find(x=>x.id===m.id); if(it){ it.pre=m.pre; it.amt=m.amt; it.adj={...m.adj}; } });
+  const ci=items.findIndex(x=>x.id===st.cur);
+  applyingHis=true;
+  if(ci>=0 && ci!==cur){ select(ci).finally(()=>{ applyingHis=false; }); }
+  else { const it=items[cur]; setAmtUI(it.amt); buildChips(it); syncMode(); updateView().finally(()=>{ applyingHis=false; }); }
+  persist();
+}
+$('btnUndo').onclick=()=>goHis(-1); $('btnRedo').onclick=()=>goHis(1);
 
 // ── 확대·축소·이동 ──
 const stage=$('stage'), wrap=$('wrap');
@@ -588,11 +608,11 @@ new ResizeObserver(()=>{ if(cur>=0) layoutFit(V.s<1.02); }).observe(stage);
 
 // 원본 비교 버튼(누르고 있는 동안)
 const cmp=$('cmpBtn');
-cmp.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); stage.classList.add('cmp'); $('badge').innerHTML='원본<small>보는 중 👀</small>'; });
+cmp.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); stage.classList.add('cmp'); $('badge').innerHTML='원본'; });
 ['pointerup','pointerleave','pointercancel'].forEach(t=>cmp.addEventListener(t,()=>{ if(!stage.classList.contains('cmp')) return; stage.classList.remove('cmp'); setBadge(items[cur]); }));
 cmp.addEventListener('contextmenu',e=>e.preventDefault());
 
-$('applyAll').onclick=()=>{ const it=items[cur]; items.forEach(x=>{ if(x!==it){ x.pre=it.pre; x.amt=it.amt; x.adj={...it.adj}; } }); toast(`${items.length}장 모두 ${en(L.names[it.pre])} 💕`); };
+$('applyAll').onclick=()=>{ const it=items[cur]; items.forEach(x=>{ if(x!==it){ x.pre=it.pre; x.amt=it.amt; x.adj={...it.adj}; } }); record(); persist(); toast(`${items.length}장 모두 ${en(L.names[it.pre])} 적용`); };
 
 // ── 저장 (원본 크기 JPG) ──
 function outName(it){ return `${it.name}_${en(L?L.names[it.pre]:'원본').replace(/\s/g,'')}.jpg`; }
@@ -607,29 +627,29 @@ let ready=null; // 여러 장은 먼저 만들어 두고 한 번 더 눌러 저�
 async function doShare(files){
   const mobile=/Android|iPhone|iPad|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document;
   if(mobile && navigator.canShare && navigator.canShare({files})){
-    try{ await navigator.share({files}); toast('저장 완료! 갤러리를 확인해 주세요 💕'); return true; }
+    try{ await navigator.share({files}); toast('저장했어요. 갤러리에서 확인해 주세요'); return true; }
     catch(e){ if(e.name==='AbortError') return true; }
   }
   for(const f of files){ const a=document.createElement('a'); a.href=URL.createObjectURL(f); a.download=f.name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),8000); await new Promise(r=>setTimeout(r,350)); }
-  toast('저장 완료! 💕'); return true;
+  toast('저장했어요'); return true;
 }
 async function saveList(list,btn){
   const t=btn.textContent;
   if(ready && ready.btn===btn){ const f=ready.files; ready=null; closeSheet(); await doShare(f); btn.textContent=t; return; }
-  btn.disabled=true; btn.textContent='예쁘게 만드는 중... 🎀';
+  btn.disabled=true; btn.textContent='저장 준비 중...';
   try{
     const files=[]; for(const it of list){ files.push(new File([await blobOf(it)], outName(it), {type:'image/jpeg'})); await frame(); }
     btn.disabled=false;
     // 바로 공유 시도가 막힐 수 있어서, 준비 끝나면 한 번 더 누르게 함
     if(list.length===1 && list[0].blob){ closeSheet(); btn.textContent=t; await doShare(files); return; }
-    ready={btn,files}; btn.textContent='✓ 준비 완료! 눌러서 저장';
-    $('sheet').classList.add('show'); $('shTitle').textContent='저장 준비 완료! 💕';
-  }catch(e){ console.error(e); toast('저장에 실패했어요 🥲 다시 해볼까요?'); btn.disabled=false; btn.textContent=t; }
+    ready={btn,files}; btn.textContent='준비 완료 · 눌러서 저장';
+    $('sheet').classList.add('show'); $('shTitle').textContent='저장 준비 완료';
+  }catch(e){ console.error(e); toast('저장에 실패했어요. 다시 시도해 주세요'); btn.disabled=false; btn.textContent=t; }
 }
 function closeSheet(){ $('sheet').classList.remove('show'); }
 function openSheet(){
-  ready=null; $('shTitle').textContent='어떻게 저장할까요? 💾';
+  ready=null; $('shTitle').textContent='저장하기';
   $('saveOne').textContent='이 사진만 저장'; $('saveAll').textContent=`전체 ${items.length}장 저장`;
   $('saveAll').hidden=items.length<2; $('sheet').classList.add('show');
 }
