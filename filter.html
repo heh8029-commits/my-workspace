@@ -536,7 +536,7 @@ function resetEmpty(){
 // 사진 없을 때도 아래 필터 줄은 예시 사진으로 미리 보여줌
 let demo=null;
 // 사진 올리기 전 필터 미리보기: 인물 탭은 인물 사진, 나머지는 웨딩 사진
-const DEMO_SRC={'인물':'filter-sample5.jpg','카페':'filter-sample6.jpg','풍경':'filter-sample7.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
+const DEMO_SRC={'인물':'filter-sample5.jpg','카페':'filter-sample6.jpg','풍경':'filter-sample7.jpg','무드':'filter-sample8.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
 async function loadDemo(src){
   if(demoCache[src]) return demoCache[src];
   const im=new Image(); im.src=src; try{ await im.decode(); }catch(e){ return null; }
@@ -566,7 +566,7 @@ function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; re
 // 필터 미리보기는 항상 예시 사진(탭별)으로 — sel 은 지금 고른 사진(선택 표시용)
 let chipTok=0;
 // 탭별 예시 사진. 전체·추천·즐겨찾기는 필터마다 어울리는 사진으로
-const CAT_SRC=[['인물','filter-sample5.jpg'],['카페','filter-sample6.jpg'],['음식','filter-sample6.jpg'],['풍경','filter-sample7.jpg']];
+const CAT_SRC=[['인물','filter-sample5.jpg'],['카페','filter-sample6.jpg'],['음식','filter-sample6.jpg'],['풍경','filter-sample7.jpg'],['무드','filter-sample8.jpg']];
 function demoSrcFor(i){
   const t=TABS[tab][0]; if(DEMO_SRC[t]) return DEMO_SRC[t];
   const n=L.names[i];
@@ -579,14 +579,17 @@ async function buildChips(sel){
   for(const u of uniq){ const d=await loadDemo(u); if(d && !d.thumbs){ d.thumbs=new Array(L.names.length).fill(null); d._base=thumbCanvas(d.img); } }
   if(my!==chipTok) return;
   const sel0=sel||{pre:0};
-  $('chips').innerHTML=idx.map((i,k)=>{ const d=demoCache[srcs[k]], th=d&&d.thumbs[i];
+  // '원본' 칸은 올린 사진 그대로
+  let origTh=null; const ui=items[cur];
+  if(ui){ const k=(ui.rot||0)+JSON.stringify(ui.crop||0); if(ui._ot && ui._otK===k) origTh=ui._ot; else { origTh=thumbCanvas(srcOf(ui)).toDataURL('image/jpeg',0.85); ui._ot=origTh; ui._otK=k; } }
+  $('chips').innerHTML=idx.map((i,k)=>{ const d=demoCache[srcs[k]], th=(i===0&&origTh)||(d&&d.thumbs[i]);
     return `<button type="button" class="chip${i===sel0.pre?' on':''}" data-i="${i}">
     <span class="th"><img alt="" ${th?`src="${th}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`; }).join('')
     + (TABS[tab][1]==='FAV' && !FAV.size ? `<div class="favHint">필터를 고르고 별을 누르면<br>여기에 모아둘 수 있어요</div>` : '');
   $('amtRow').classList.toggle('hide',!sel0.pre || cur<0);
   const chips=$('chips').querySelectorAll('.chip');
   for(let k=0;k<idx.length;k++){
-    const i=idx[k], d=demoCache[srcs[k]]; if(!d) continue;
+    const i=idx[k], d=demoCache[srcs[k]]; if(!d || (i===0&&origTh)) continue;
     if(!d.thumbs[i]){
       const cv=document.createElement('canvas'); cv.width=d._base.width; cv.height=d._base.height;
       const c=cv.getContext('2d',{willReadFrequently:true}); c.drawImage(d._base,0,0);
