@@ -56,7 +56,7 @@
   .pill.ghost{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
   .pill.main{background:var(--brown); color:#fff}
   .pill:active{opacity:.8}
-  @media (max-width:420px){ .barBtn.ico span{display:none} .barBtn.ico{padding:0 8px} .bar{gap:5px; padding:6px 8px} }
+  @media (max-width:420px){ .barBtn.ico{flex-direction:column; justify-content:center; gap:1px; height:40px; padding:0 5px} .barBtn.ico span{font-size:9.5px; line-height:1} .bar{gap:5px; padding:6px 8px} }
   @media (max-width:400px){ .logo small{display:none} .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
   .icoBtn{width:36px; height:36px; border:none; border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
   .icoBtn:disabled{color:#d4d4d8; cursor:default}
@@ -285,6 +285,7 @@
     <div class="thumbs" id="thumbs"></div>
     <div class="modes" id="modes"><button type="button" data-m="f" class="on">필터</button><button type="button" data-m="a">조정</button></div>
     <button class="barBtn ico" id="rotBtn" type="button" aria-label="90도 회전"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span>회전</span></button>
+    <button class="barBtn ico" id="tiltBtn" type="button" aria-label="기울기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(-12 12 12)"/><path d="M3 21h18" stroke-dasharray="2 2.5"/></svg><span>기울기</span></button>
     <button class="barBtn ico" id="cropBtn" type="button" aria-label="자르기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg><span>자르기</span></button>
     <button class="barBtn" id="sharpBtn" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 9-8 9-8-9z"/></svg>선명도</button>
   </div>
@@ -860,7 +861,9 @@ function exitCrop(apply){
   setCrop(it,c); setOrig(it); layoutFit(true); renderThumbs(); buildChips(it); updateView();
   if(apply) toast(c?(c.r==='1:1'?'정사각형으로 잘랐어요 · 마그넷용 딱 맞아요':'잘랐어요'):'원래 크기로 돌렸어요');
 }
-$('cropBtn').onclick=enterCrop;
+$('cropBtn').onclick=()=>enterCrop();
+// 기울기만: 자르기 없이 사진 전체 틀로 시작
+$('tiltBtn').onclick=()=>{ const it=items[cur]; if(!it||CROP.on) return; const had=it.crop; enterCrop(); if(!had){ CROP.r='원본'; renderRatios(); syncMgLine(); CROP.n={x:0,y:0,w:1,h:1}; drawFrame(); } gridOn(); gridOff(); };
 $('cropCancel').onclick=()=>exitCrop(false);
 $('cropDone').onclick=()=>exitCrop(true);
 
