@@ -1315,7 +1315,7 @@ let mtLutPromise=null;
 function loadLuts(){
   if(window.MT_LUTS) return Promise.resolve(window.MT_LUTS);
   if(!mtLutPromise) mtLutPromise=new Promise((res,rej)=>{
-    const s=document.createElement('script'); s.src='photo-luts.js?v=1';
+    const s=document.createElement('script'); s.src='photo-luts.js?v=2';
     s.onload=()=>{ const L=window.MT_LUTS; L.bytes=L.data.map(b=>{ if(!b) return null;
       const bin=atob(b), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }); res(L); };
     s.onerror=()=>{ mtLutPromise=null; rej(new Error('lut')); };
