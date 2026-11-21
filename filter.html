@@ -58,6 +58,9 @@
   @media (max-width:400px){ .logo small{display:none} .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
   .icoBtn{width:36px; height:36px; border:none; border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
   .icoBtn:disabled{color:#d4d4d8; cursor:default}
+  .cmpPh{position:absolute; right:10px; bottom:10px; z-index:3; height:34px; padding:0 11px; border:none; border-radius:10px; font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; touch-action:none; -webkit-user-select:none; user-select:none}
+  .cmpPh:active{background:var(--acc)}
+  body.cropping .cmpPh{display:none!important}
   .cmpTop{width:auto; padding:0 8px; gap:4px; font-size:12.5px; font-weight:600; touch-action:none; -webkit-user-select:none; user-select:none}
   .cmpTop:active{background:var(--ink); color:#fff}
   @media (max-width:420px){ .cmpTop span{display:none} }
@@ -223,7 +226,6 @@
     <div class="sp"></div>
     <button class="icoBtn" id="btnUndo" type="button" aria-label="되돌리기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
     <button class="icoBtn" id="btnRedo" type="button" aria-label="다시하기" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
-    <button class="icoBtn cmpTop" id="cmpBtn" type="button" aria-label="원본 비교 (누르고 있기)" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg><span>원본</span></button>
     <button class="pill ghost" id="btnNew" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>사진</button>
     <button class="pill main" id="btnSave" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="lbl">저장</span></button>
   </div>
@@ -231,6 +233,7 @@
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
     <span class="badge" id="badge" hidden></span>
+    <button class="cmpPh glass" id="cmpBtn" type="button" aria-label="누르고 있으면 원본" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
     <div class="cropFrame" id="cropFrame" hidden><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div>
     <span class="zoomTag glass" id="zoomTag">100%</span>
     <div class="spin"></div>
@@ -813,7 +816,7 @@ function zoomAt(px,py,ns){
 }
 const P=new Map(); let pinch=null, lastTap=0, panStart=null;
 stage.addEventListener('pointerdown',e=>{
-  if(cur<0 || CROP.on || e.target.closest('.thumbs,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
+  if(cur<0 || CROP.on || e.target.closest('.thumbs,.cmpPh,.cmpBtn,.empty,.modes,.amt,.adjRow,.sharpBtn')) return;
   stage.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), s:V.s}; panStart=null; }
   else if(P.size===1){
