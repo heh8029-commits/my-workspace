@@ -187,6 +187,10 @@
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
       <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small></button>
+      <div class="promo" id="promo">
+        <div class="pTxt"><b>보정한 사진을 포토마그넷으로</b><span>정사각형(1:1)으로 잘라 바로 주문 · 미리토퍼</span></div>
+        <div class="pBtns"><a class="nv" id="pNv" target="_blank" rel="noopener">네이버</a><a class="cp" id="pCp" target="_blank" rel="noopener">쿠팡</a></div>
+      </div>
     </div>
   </div>
 
@@ -639,7 +643,7 @@ $('rotBtn').onclick=()=>{ const it=items[cur]; if(!it) return; setRot(it,(it.rot
 // ── 포토마그넷 주문 링크 (쿠팡은 주소 받으면 채우기) ──
 const MAGNET={naver:'https://smartstore.naver.com/miritopper/products/13746231367', coupang:'https://www.coupang.com/vp/products/9726866352?vendorItemId=96032639233'};
 (function(){
-  $('mNv').href=MAGNET.naver; $('mCp').href=MAGNET.coupang;
+  ['pNv','mNv'].forEach(id=>$(id).href=MAGNET.naver); ['pCp','mCp'].forEach(id=>$(id).href=MAGNET.coupang);
 })();
 function syncMgLine(){ $('mgLine').hidden = CROP.r!=='1:1'; }
 
