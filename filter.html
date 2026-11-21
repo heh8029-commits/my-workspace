@@ -52,13 +52,21 @@
   .spin{position:absolute; right:68px; bottom:62px; display:none; pointer-events:none; font-size:22px; animation:boing .6s ease-in-out infinite alternate}
   .busy .spin{display:block}
   @keyframes boing{from{transform:translateY(0)} to{transform:translateY(-8px)}}
-  .thumbs{position:absolute; right:10px; top:10px; display:flex; flex-direction:column; gap:6px; max-height:calc(100% - 80px); overflow-y:auto; scrollbar-width:none}
-  .thumbs .t{width:40px; height:52px; border-radius:12px; overflow:hidden; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.15); cursor:pointer; flex:0 0 auto; opacity:.7}
+  .thumbs{position:absolute; right:12px; top:14px; padding:6px 6px 0 0; display:flex; flex-direction:column; gap:6px; max-height:calc(100% - 80px); overflow-y:auto; scrollbar-width:none}
+  .thumbs .t{width:40px; height:52px; border-radius:12px; border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.15); cursor:pointer; flex:0 0 auto; opacity:.7}
   .thumbs .t.on{border-color:var(--pink-d); opacity:1}
   .thumbs .t img{width:100%; height:100%; object-fit:cover; display:block}
+  .thumbs .t{position:relative; overflow:visible}
+  .thumbs .t img{border-radius:9px}
+  .thumbs .t .x{position:absolute; right:-8px; top:-8px; width:20px; height:20px; border-radius:50%; border:2px solid #fff; background:var(--ink); color:#fff; font-size:12px; line-height:15px; padding:0; cursor:pointer; display:none}
+  .thumbs .t.on .x{display:block}
+  .thumbs .addT{display:flex; align-items:center; justify-content:center; background:#fff; color:var(--pink-d); font-size:22px; font-weight:700; opacity:1; border:2px dashed var(--pink)}
 
   /* 시작 화면 */
-  .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:20px; cursor:pointer; background:var(--bg)}
+  .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; padding:20px; cursor:pointer}
+  .addBig{display:flex; flex-direction:column; align-items:center; gap:8px; border:3px dashed var(--pink); background:rgba(255,255,255,.85); color:var(--pink-d);
+    font-family:var(--cute); font-size:19px; padding:26px 34px; border-radius:28px; cursor:pointer}
+  .addBig span{width:58px; height:58px; border-radius:50%; background:var(--pink-d); color:#fff; font-size:34px; line-height:58px; animation:boing .8s ease-in-out infinite alternate}
   .blob{width:150px; height:150px; border-radius:42% 58% 55% 45% / 50% 45% 55% 50%; background:linear-gradient(135deg,var(--pink-l),var(--lav));
     display:flex; align-items:center; justify-content:center; font-size:64px; animation:wob 3s ease-in-out infinite; box-shadow:0 10px 30px rgba(240,98,146,.18)}
   @keyframes wob{0%,100%{border-radius:42% 58% 55% 45% / 50% 45% 55% 50%; transform:rotate(-3deg)} 50%{border-radius:55% 45% 42% 58% / 45% 55% 50% 50%; transform:rotate(3deg)}}
@@ -127,7 +135,7 @@
   <div class="top">
     <div class="logo">뽀용 필터 <span>🎀</span><small>by 미리토퍼</small></div>
     <div class="sp"></div>
-    <button class="pill ghost" id="btnNew" hidden>＋ 사진</button>
+    <button class="pill ghost" id="btnNew">＋ 사진</button>
     <button class="pill main" id="btnSave" hidden>저장하기 ↓</button>
   </div>
 
@@ -149,15 +157,12 @@
     <div class="modes" id="modes" hidden><button type="button" data-m="f" class="on">🎨 필터</button><button type="button" data-m="a">🎚️ 조정</button></div>
     <div class="hint" id="hint" hidden>두 손가락으로 확대 · 두 번 톡 하면 확대/원래대로</div>
     <div class="empty" id="empty">
-      <div class="blob">📸</div>
-      <h2>사진을 골라주세요!</h2>
-      <p>필터 하나로 뽀용뽀용 ✨<br>원본 화질 그대로 저장돼요</p>
-      <button class="pill main" type="button">갤러리에서 고르기</button>
+      <button class="addBig" type="button"><span>＋</span>사진 추가해주세요</button>
       <button class="sample" id="sampleBtn" type="button">☕ 예시 사진으로 먼저 해보기</button>
     </div>
   </div>
 
-  <div class="panel off" id="panel">
+  <div class="panel" id="panel">
     <div id="fMode">
       <div class="tabs" id="tabs"></div>
       <div class="chips" id="chips"></div>
@@ -309,17 +314,40 @@ async function addFiles(list){
     added++;
   }
   if(!added) return;
-  $('empty').hidden=true; $('badge').hidden=false; $('cmpBtn').hidden=false; $('modes').hidden=false; $('panel').classList.remove('off');
-  $('btnNew').hidden=false; $('btnSave').hidden=false;
+  $('empty').hidden=true; $('badge').hidden=false; $('cmpBtn').hidden=false; $('modes').hidden=false; $('btnSave').hidden=false;
   const h=$('hint'); if(!h._shown){ h._shown=1; h.hidden=false; setTimeout(()=>h.style.opacity=0,3200); }
   select(items.length-added);
 }
 function renderThumbs(){
-  $('thumbs').innerHTML = items.length<2 ? '' : items.map((it,i)=>`<div class="t${i===cur?' on':''}" data-i="${i}"><img src="${it.url}" alt=""></div>`).join('');
+  $('thumbs').innerHTML = !items.length ? '' : items.map((it,i)=>`<div class="t${i===cur?' on':''}" data-i="${i}"><img src="${it.url}" alt=""><button type="button" class="x" data-del="${i}" aria-label="사진 빼기">✕</button></div>`).join('')
+    + `<div class="t addT" data-add="1">＋</div>`;
   $('applyAll').hidden = items.length<2;
 }
+// 사진 삭제
+function removeItem(i){
+  const it=items[i]; if(!it) return;
+  if(!confirm('이 사진을 뺄까요?')) return;
+  items.splice(i,1);
+  [it.url,it.baseUrl].forEach(u=>u&&URL.revokeObjectURL(u));
+  if(!items.length){ cur=-1; resetEmpty(); return; }
+  select(Math.min(i,items.length-1));
+}
+function resetEmpty(){
+  $('empty').hidden=false; ['badge','cmpBtn','modes','btnSave'].forEach(id=>$(id).hidden=true);
+  $('amtRow').classList.add('hide'); $('adjRow').hidden=true; hideOut(); cv.width=cv.height=0; $('orig').removeAttribute('src');
+  mode='f'; [...$('modes').children].forEach(x=>x.classList.toggle('on',x.dataset.m==='f')); $('fMode').hidden=false; $('aMode').hidden=true;
+  renderThumbs(); $('thumbs').innerHTML=''; showDemoChips();
+}
+// 사진 없을 때도 아래 필터 줄은 예시 사진으로 미리 보여줌
+let demo=null;
+async function showDemoChips(){
+  await lutReady.catch(()=>{});
+  if(!demo){ const im=new Image(); im.src='filter-sample1.jpg'; try{ await im.decode(); }catch(e){ return; } demo={img:im,pre:0,amt:100,adj:{},thumbs:null}; }
+  if(cur<0){ renderTabs(); buildChips(demo); }
+}
 $('thumbs').addEventListener('pointerdown',e=>e.stopPropagation());
-$('thumbs').addEventListener('click',e=>{ const t=e.target.closest('.t[data-i]'); if(t) select(+t.dataset.i); });
+$('thumbs').addEventListener('click',e=>{ const d=e.target.closest('[data-del]'); if(d){ e.stopPropagation(); removeItem(+d.dataset.del); return; }
+  if(e.target.closest('[data-add]')){ pick(); return; } const t=e.target.closest('.t[data-i]'); if(t) select(+t.dataset.i); });
 
 async function select(i){
   cur=i; renderThumbs();
@@ -330,7 +358,7 @@ async function select(i){
 }
 function setAmtUI(v){ $('amt').value=v; $('amtOut').textContent=v; $('amt').style.setProperty('--p',v+'%'); }
 function renderTabs(){ $('tabs').innerHTML=TABS.map((t,i)=>`<button type="button" class="${i===tab?'on':''}" data-i="${i}">${t[0]}</button>`).join(''); }
-$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); buildChips(items[cur]); $('chips').scrollLeft=0; });
+$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); buildChips(items[cur]||demo); $('chips').scrollLeft=0; });
 
 function visibleIdx(){ const list=TABS[tab][1]; return L.names.map((_,i)=>i).filter(i=> i===0 || !list || list.includes(L.names[i])); }
 async function buildChips(it){
@@ -339,7 +367,7 @@ async function buildChips(it){
   const idx=visibleIdx();
   $('chips').innerHTML=idx.map(i=>`<button type="button" class="chip${i===it.pre?' on':''}" data-i="${i}">
     <span class="th"><img alt="" ${it.thumbs[i]?`src="${it.thumbs[i]}"`:''}></span><span class="nm">${en(L.names[i])}</span></button>`).join('');
-  $('amtRow').classList.toggle('hide',!it.pre);
+  $('amtRow').classList.toggle('hide',!it.pre || cur<0);
   const chips=$('chips').querySelectorAll('.chip');
   for(let k=0;k<idx.length;k++){
     const i=idx[k];
@@ -350,12 +378,12 @@ async function buildChips(it){
       it.thumbs[i]=cv.toDataURL('image/jpeg',0.85);
       if(k%4===3) await frame();
     }
-    if(items[cur]!==it || !chips[k].isConnected) return;
+    if((items[cur]||demo)!==it || !chips[k].isConnected) return;
     const im=chips[k].querySelector('img'); if(!im.getAttribute('src')) im.src=it.thumbs[i];
   }
 }
 $('chips').addEventListener('click',e=>{
-  const b=e.target.closest('.chip'); if(!b) return; const it=items[cur]; const i=+b.dataset.i;
+  const b=e.target.closest('.chip'); if(!b) return; if(cur<0){ pick(); return; } const it=items[cur]; const i=+b.dataset.i;
   if(i===it.pre) return;
   it.pre=i; if(i && !it.amt) it.amt=100; setAmtUI(it.amt);
   [...$('chips').children].forEach(c=>c.classList.toggle('on',c===b));
@@ -534,6 +562,7 @@ $('btnSave').onclick=openSheet;
 $('saveOne').onclick=()=>saveList([items[cur]],$('saveOne'));
 $('saveAll').onclick=()=>saveList(items,$('saveAll'));
 $('sheetX').onclick=closeSheet; $('sheet').addEventListener('click',e=>{ if(e.target.id==='sheet') closeSheet(); });
+showDemoChips();
 </script>
 </body>
 </html>
