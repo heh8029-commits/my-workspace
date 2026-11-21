@@ -30671,7 +30671,8 @@
     "11/20": {
       "cpAdCost": 182785,
       "mongCpAdCost": 53336,
-      "naverSales": 146900
+      "naverSales": 146900,
+      "naverSearchAd": 7714
     }
   },
   "ad_performance": {
