@@ -533,7 +533,7 @@ function resetEmpty(){
 let demo=null;
 async function showDemoChips(){
   await lutReady.catch(()=>{});
-  if(!demo){ const im=new Image(); im.src='filter-sample1.jpg'; try{ await im.decode(); }catch(e){ return; } demo={img:im,pre:0,amt:100,adj:{},thumbs:null}; }
+  if(!demo){ const im=new Image(); im.src='filter-sample4.jpg'; try{ await im.decode(); }catch(e){ return; } demo={img:im,pre:0,amt:100,adj:{},thumbs:null}; }
   if(cur<0){ renderTabs(); buildChips(demo); }
 }
 $('thumbs').addEventListener('pointerdown',e=>e.stopPropagation());
