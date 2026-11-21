@@ -324,7 +324,7 @@ $('thumbs').addEventListener('click',e=>{ const t=e.target.closest('.t[data-i]')
 async function select(i){
   cur=i; renderThumbs();
   const it=items[i]; setAmtUI(it.amt);
-  $('orig').src=it.url; layoutFit(true);
+  setOrig(it); layoutFit(true);
   await lutReady.catch(()=>toast('필터를 못 불러왔어요. 새로고침 해주세요'));
   renderTabs(); buildChips(it); syncMode(); updateView(true);
 }
@@ -427,6 +427,17 @@ function showOut(it){
   }
 }
 function hideOut(){ $('out').hidden=true; cv.style.visibility=''; }
+
+// 원본 비교용 그림: 원본 파일을 그대로 띄우면 폰 HDR 사진은 더 밝게 보여서(웹 캔버스는 HDR 정보를 못 씀)
+// 보정본과 똑같은 방식(캔버스)으로 그린 원본을 씀 → 버튼 누르면 '필터 차이'만 보임
+function setOrig(it){
+  const o=$('orig');
+  if(it.baseUrl){ o.src=it.baseUrl; return; }
+  o.removeAttribute('src');
+  const [W,H]=fullSize(it.img), c=document.createElement('canvas'); c.width=W; c.height=H;
+  c.getContext('2d').drawImage(it.img,0,0,W,H);
+  c.toBlob(b=>{ if(!b) return; it.baseUrl=URL.createObjectURL(b); if(items[cur]===it) o.src=it.baseUrl; },'image/jpeg',0.95);
+}
 
 // ── 확대·축소·이동 ──
 const stage=$('stage'), wrap=$('wrap');
