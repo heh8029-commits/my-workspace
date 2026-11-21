@@ -170,6 +170,7 @@
   .amtTip.off,.amt.hide + .amtTip{display:none}
   @keyframes tipBob{0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)}}
   .amt .lb{display:flex; flex-direction:column; line-height:1.15} .amt .lb small{font-size:9px; font-weight:500; color:var(--mute); white-space:nowrap; margin-top:1px}
+  .adjRow .zero{min-width:32px; font-weight:800; color:var(--acc); background:var(--acc-soft)}
   .amt .lb,.adjRow b{font-size:12.5px; font-weight:600; color:var(--sub); min-width:28px}
   .adjRow b{min-width:56px}
   .amt input,.adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:3px; border-radius:99px; outline:none; background:var(--line)}
@@ -285,7 +286,7 @@
     <div class="amtTip" id="amtTip">👆 너무 진하면 강도를 살짝 낮춰보세요</div>
     <div class="adjRow" id="adjRow" hidden>
       <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
-      <button class="all" id="adjReset" type="button">초기화</button>
+      <button class="all zero" id="adjZero" type="button" title="이 항목만 0으로">0</button><button class="all" id="adjReset" type="button" title="조정 전체 되돌리기">전체 초기화</button>
     </div>
     <div class="cropPanel" id="cropPanel">
       <div class="ratios" id="ratios"></div>
@@ -675,6 +676,7 @@ let adjT;
 $('adj').addEventListener('input',e=>{ const it=items[cur]; const val=+e.target.value; it.adj={...it.adj,[tool]:val}; if(!val) delete it.adj[tool];
   $('adjOut').textContent=val; paintAdj(); setBadge(it); quick(it); clearTimeout(adjT); adjT=setTimeout(()=>{ buildTools(it); updateView(); },400); });
 $('adj').addEventListener('dblclick',()=>{ const it=items[cur]; delete it.adj[tool]; buildTools(it); updateView(); });
+$('adjZero').onclick=()=>{ const it=items[cur]; if(!it) return; delete it.adj[tool]; buildTools(it); updateView(); };
 $('adjReset').onclick=()=>{ const it=items[cur]; it.adj={}; buildTools(it); updateView(); toast('조정을 처음으로 돌렸어요'); };
 
 // 화면 표시: 먼저 빠른 저해상도 → 곧바로 원본 해상도로 교체 (확대해도 선명)
