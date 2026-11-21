@@ -44,25 +44,29 @@
   .wrap img.orig{opacity:0}
   .stage.cmp .wrap img.orig{opacity:1}
   .glass{background:rgba(24,24,27,.55); color:#fff; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
-  .badge{position:absolute; left:12px; top:12px; font-size:13px; font-weight:700; padding:6px 11px; border-radius:8px; pointer-events:none}
-  .badge small{font-weight:500; opacity:.75; font-size:12px; margin-left:5px}
-  .sharpBtn{position:absolute; left:12px; top:48px; border:none; border-radius:8px; font-size:12.5px; font-weight:600; padding:6px 10px; cursor:pointer; display:flex; align-items:center; gap:5px}
-  .sharpBtn.on{background:var(--acc); color:#fff}
+  .badge{display:none!important}
   .zoomTag{position:absolute; left:50%; top:12px; transform:translateX(-50%); font-size:12px; font-weight:600; padding:4px 9px; border-radius:7px; pointer-events:none; opacity:0; transition:opacity .3s}
   .zoomTag.show{opacity:1}
-  .cmpBtn{position:absolute; right:12px; bottom:12px; height:38px; padding:0 12px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; touch-action:none; display:flex; align-items:center; gap:5px}
-  .cmpBtn:active{background:var(--acc)}
-  .hint{position:absolute; left:50%; bottom:60px; transform:translateX(-50%); font-size:12px; padding:6px 11px; border-radius:8px; pointer-events:none; white-space:nowrap; transition:opacity .5s}
+  .hint{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); font-size:12px; padding:6px 11px; border-radius:8px; pointer-events:none; white-space:nowrap; transition:opacity .5s}
   .spin{position:absolute; right:14px; top:14px; width:22px; height:22px; border-radius:50%; border:2.5px solid rgba(255,255,255,.5); border-top-color:var(--acc); display:none; animation:rot .7s linear infinite; pointer-events:none}
   .busy .spin{display:block}
   @keyframes rot{to{transform:rotate(360deg)}}
-  .thumbs{position:absolute; right:10px; top:12px; padding:6px 6px 0 0; display:flex; flex-direction:column; gap:6px; max-height:calc(100% - 70px); overflow-y:auto; scrollbar-width:none}
-  .thumbs .t{position:relative; width:38px; height:50px; border-radius:8px; box-shadow:0 0 0 2px rgba(255,255,255,.9), 0 2px 6px rgba(0,0,0,.15); cursor:pointer; flex:0 0 auto; opacity:.65}
-  .thumbs .t.on{box-shadow:0 0 0 2px var(--acc), 0 2px 6px rgba(0,0,0,.15); opacity:1}
-  .thumbs .t img{width:100%; height:100%; object-fit:cover; display:block; border-radius:8px}
-  .thumbs .t .x{position:absolute; right:-8px; top:-8px; width:20px; height:20px; border-radius:50%; border:2px solid #fff; background:var(--ink); color:#fff; font-size:11px; line-height:15px; padding:0; cursor:pointer; display:none}
+  /* 도구 줄 (사진 아래) */
+  .bar{flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:6px 10px; background:var(--surface); border-bottom:1px solid var(--line)}
+  .thumbs{flex:1 1 auto; min-width:0; display:flex; gap:6px; overflow-x:auto; padding:5px 6px 2px 2px; scrollbar-width:none}
+  .thumbs::-webkit-scrollbar{display:none}
+  .thumbs .t{position:relative; flex:0 0 auto; width:32px; height:32px; border-radius:7px; cursor:pointer; opacity:.55; box-shadow:inset 0 0 0 1px var(--line)}
+  .thumbs .t.on{opacity:1; box-shadow:0 0 0 2px var(--acc)}
+  .thumbs .t img{width:100%; height:100%; object-fit:cover; display:block; border-radius:7px}
+  .thumbs .t .x{position:absolute; right:-6px; top:-6px; width:17px; height:17px; border-radius:50%; border:1.5px solid #fff; background:var(--ink); color:#fff; font-size:9px; line-height:13px; padding:0; cursor:pointer; display:none}
   .thumbs .t.on .x{display:block}
-  .thumbs .addT{display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.85); color:var(--sub); opacity:1; box-shadow:inset 0 0 0 1.5px var(--line)}
+  .thumbs .addT{display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--sub); opacity:1; font-size:18px; font-weight:500}
+  .barBtn{flex:0 0 auto; height:32px; border:none; border-radius:8px; background:var(--bg); color:var(--sub); font-size:12.5px; font-weight:600; padding:0 9px; display:flex; align-items:center; gap:4px; cursor:pointer; touch-action:none}
+  .barBtn.on{background:var(--acc-soft); color:var(--acc)}
+  #cmpBtn:active{background:var(--ink); color:#fff}
+  .modes{flex:0 0 auto; display:flex; gap:2px; padding:2px; border-radius:9px; background:var(--bg)}
+  .modes button{border:none; background:transparent; color:var(--mute); font-size:12.5px; font-weight:600; padding:6px 10px; border-radius:7px; cursor:pointer}
+  .modes button.on{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
   /* 시작 화면 */
   .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:20px; cursor:pointer}
@@ -71,20 +75,17 @@
   .addBig small{display:block; font-size:12.5px; font-weight:500; color:var(--mute); margin-top:-6px}
   .sample{background:var(--surface); border:none; box-shadow:inset 0 0 0 1px var(--line); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; padding:9px 14px; border-radius:10px}
 
-  /* 슬라이더 (사진 위) */
-  .amt,.adjRow{position:absolute; left:12px; right:12px; bottom:60px; z-index:3; display:flex; align-items:center; gap:10px; padding:0 8px 0 14px; height:42px; border-radius:12px}
+  /* 슬라이더 (패널 맨 위) */
+  .amt,.adjRow{display:flex; align-items:center; gap:10px; padding:4px 14px 6px; height:36px}
   .amt.hide{display:none}
-  .amt input,.adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:3px; border-radius:99px; outline:none; background:rgba(255,255,255,.35)}
-  .amt input{background:linear-gradient(90deg,#fff var(--p,100%), rgba(255,255,255,.3) var(--p,100%))}
-  .amt input::-webkit-slider-thumb,.adjRow input::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.35)}
-  .amt input::-moz-range-thumb,.adjRow input::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%; background:#fff}
-  .amt output,.adjRow output{font-size:13px; font-weight:700; width:32px; text-align:right; font-variant-numeric:tabular-nums}
-  .adjRow b{font-size:13px; font-weight:600; min-width:52px}
-  .amt .all,.adjRow .all{border:none; background:rgba(255,255,255,.18); color:#fff; border-radius:8px; font-size:12px; font-weight:600; padding:6px 9px; cursor:pointer; white-space:nowrap}
-
-  .modes{position:absolute; left:12px; bottom:12px; display:flex; gap:2px; padding:3px; border-radius:11px}
-  .modes button{border:none; background:transparent; color:rgba(255,255,255,.75); font-size:13px; font-weight:600; padding:7px 12px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:5px}
-  .modes button.on{background:#fff; color:var(--ink)}
+  .amt .lb,.adjRow b{font-size:12.5px; font-weight:600; color:var(--sub); min-width:28px}
+  .adjRow b{min-width:56px}
+  .amt input,.adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:3px; border-radius:99px; outline:none; background:var(--line)}
+  .amt input{background:linear-gradient(90deg,var(--ink) var(--p,100%), var(--line) var(--p,100%))}
+  .amt input::-webkit-slider-thumb,.adjRow input::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 0 0 1px var(--line), 0 1px 4px rgba(0,0,0,.2)}
+  .amt input::-moz-range-thumb,.adjRow input::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .amt output,.adjRow output{font-size:12.5px; font-weight:700; width:30px; text-align:right; font-variant-numeric:tabular-nums}
+  .amt .all,.adjRow .all{border:none; background:var(--bg); color:var(--sub); border-radius:7px; font-size:12px; font-weight:600; padding:6px 9px; cursor:pointer; white-space:nowrap}
 
   /* 하단 패널 */
   .panel{flex:0 0 auto; padding:6px 0 calc(6px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--line)}
@@ -142,28 +143,31 @@
 
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
-    <span class="badge glass" id="badge" hidden>원본</span>
-    <button class="sharpBtn glass" id="sharpBtn" type="button" hidden><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 9-8 9-8-9z"/></svg>선명도</button>
+    <span class="badge" id="badge" hidden></span>
     <span class="zoomTag glass" id="zoomTag">100%</span>
-    <div class="thumbs" id="thumbs"></div>
     <div class="spin"></div>
-    <button class="cmpBtn glass" id="cmpBtn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
-    <div class="amt glass hide" id="amtRow">
-      <input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
-      <button class="all" id="applyAll" type="button" hidden>전체 적용</button>
-    </div>
-    <div class="adjRow glass" id="adjRow" hidden>
-      <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
-      <button class="all" id="adjReset" type="button">초기화</button>
-    </div>
-    <div class="modes glass" id="modes" hidden><button type="button" data-m="f" class="on">필터</button><button type="button" data-m="a">조정</button></div>
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
       <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small></button>
     </div>
   </div>
 
+  <div class="bar" id="bar" hidden>
+    <div class="thumbs" id="thumbs"></div>
+    <button class="barBtn" id="sharpBtn" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 9-8 9-8-9z"/></svg>선명도</button>
+    <div class="modes" id="modes"><button type="button" data-m="f" class="on">필터</button><button type="button" data-m="a">조정</button></div>
+    <button class="barBtn ico" id="cmpBtn" type="button" aria-label="원본 비교"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
+  </div>
+
   <div class="panel" id="panel">
+    <div class="amt hide" id="amtRow">
+      <span class="lb">강도</span><input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
+      <button class="all" id="applyAll" type="button" hidden>전체 적용</button>
+    </div>
+    <div class="adjRow" id="adjRow" hidden>
+      <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
+      <button class="all" id="adjReset" type="button">초기화</button>
+    </div>
     <div id="fMode">
       <div class="tabs" id="tabs"></div>
       <div class="chips" id="chips"></div>
@@ -368,7 +372,7 @@ async function addFiles(list, metas, selectIdx){
   }
   if(!added) return;
   persist();
-  $('empty').hidden=true; $('badge').hidden=false; $('sharpBtn').hidden=false; $('cmpBtn').hidden=false; $('modes').hidden=false; $('btnSave').hidden=false;
+  $('empty').hidden=true; $('bar').hidden=false; $('btnSave').hidden=false;
   const h=$('hint'); if(!h._shown){ h._shown=1; h.hidden=false; setTimeout(()=>h.style.opacity=0,3200); }
   select(selectIdx!=null ? selectIdx : items.length-added);
 }
@@ -387,7 +391,7 @@ function removeItem(i){
   select(Math.min(i,items.length-1));
 }
 function resetEmpty(){
-  $('empty').hidden=false; ['badge','sharpBtn','cmpBtn','modes','btnSave'].forEach(id=>$(id).hidden=true);
+  $('empty').hidden=false; ['bar','btnSave'].forEach(id=>$(id).hidden=true);
   $('amtRow').classList.add('hide'); $('adjRow').hidden=true; hideOut(); cv.width=cv.height=0; $('orig').removeAttribute('src');
   mode='f'; [...$('modes').children].forEach(x=>x.classList.toggle('on',x.dataset.m==='f')); $('fMode').hidden=false; $('aMode').hidden=true;
   renderThumbs(); $('thumbs').innerHTML=''; showDemoChips();
@@ -477,7 +481,7 @@ function buildTools(it){
   paintAdj();
 }
 function paintAdj(){ const s=$('adj'), mn=+s.min, p=(s.value-mn)/(100-mn)*100, z=(0-mn)/(100-mn)*100;
-  s.style.background=`linear-gradient(90deg, var(--pink-l) ${Math.min(p,z)}%, var(--pink) ${Math.min(p,z)}%, var(--pink) ${Math.max(p,z)}%, var(--pink-l) ${Math.max(p,z)}%)`; }
+  s.style.background=`linear-gradient(90deg, var(--line) ${Math.min(p,z)}%, var(--ink) ${Math.min(p,z)}%, var(--ink) ${Math.max(p,z)}%, var(--line) ${Math.max(p,z)}%)`; }
 $('tools').addEventListener('click',e=>{ const b=e.target.closest('.tool'); if(!b) return; tool=b.dataset.k; buildTools(items[cur]); $('sharpBtn').classList.toggle('on', tool==='sharp'); });
 let adjT;
 $('adj').addEventListener('input',e=>{ const it=items[cur]; const val=+e.target.value; it.adj={...it.adj,[tool]:val}; if(!val) delete it.adj[tool];
