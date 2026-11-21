@@ -535,7 +535,7 @@ function resetEmpty(){
 // 사진 없을 때도 아래 필터 줄은 예시 사진으로 미리 보여줌
 let demo=null;
 // 사진 올리기 전 필터 미리보기: 인물 탭은 인물 사진, 나머지는 웨딩 사진
-const DEMO_SRC={'인물':'filter-sample5.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
+const DEMO_SRC={'인물':'filter-sample5.jpg','카페':'filter-sample6.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
 async function loadDemo(src){
   if(demoCache[src]) return demoCache[src];
   const im=new Image(); im.src=src; try{ await im.decode(); }catch(e){ return null; }
