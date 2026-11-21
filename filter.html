@@ -56,7 +56,8 @@
   .pill.ghost{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
   .pill.main{background:var(--brown); color:#fff}
   .pill:active{opacity:.8}
-  @media (max-width:420px){ .barBtn.ico{flex-direction:column; justify-content:center; gap:1px; height:40px; padding:0 5px} .barBtn.ico span{font-size:9.5px; line-height:1} .bar{gap:5px; padding:6px 8px} }
+  .barBtn.ico span{display:none} .barBtn.ico{padding:0 9px}
+  @media (max-width:420px){ .barBtn.ico{padding:0 8px} .bar{gap:5px; padding:6px 8px} }
   @media (max-width:400px){ .logo small{display:none} .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
   .icoBtn{width:36px; height:36px; border:none; border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
   .icoBtn:disabled{color:#d4d4d8; cursor:default}
