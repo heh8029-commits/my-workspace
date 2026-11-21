@@ -72,6 +72,21 @@
   .modes button{border:none; background:transparent; color:var(--mute); font-size:12.5px; font-weight:600; padding:6px 10px; border-radius:7px; cursor:pointer}
   .modes button.on{background:var(--surface); color:var(--brown); box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
+  /* 자르기 */
+  .cropFrame{position:absolute; z-index:4; pointer-events:none; border:2px solid #fff; box-shadow:0 0 0 9999px rgba(20,16,14,.55);
+    background-image:linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.45)),linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.45)),linear-gradient(90deg,rgba(255,255,255,.45),rgba(255,255,255,.45)),linear-gradient(90deg,rgba(255,255,255,.45),rgba(255,255,255,.45));
+    background-size:100% 1px,100% 1px,1px 100%,1px 100%; background-position:0 33.33%,0 66.66%,33.33% 0,66.66% 0; background-repeat:no-repeat}
+  .cropPanel{display:none; padding:8px 12px 4px}
+  body.cropping .cropPanel{display:block}
+  body.cropping #fMode, body.cropping #aMode, body.cropping .amt, body.cropping .adjRow, body.cropping .bar{display:none!important}
+  .ratios{display:flex; gap:6px}
+  .ratios button{flex:1; position:relative; border:none; background:var(--bg); border-radius:10px; padding:9px 0 7px; font-size:12px; font-weight:600; color:var(--sub); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; cursor:pointer; min-height:56px}
+  .ratios .rb{display:block; border:1.6px solid currentColor; border-radius:3px}
+  .ratios em{position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-style:normal; font-size:9.5px; font-weight:700; color:#fff; background:var(--acc); padding:2px 6px; border-radius:6px; white-space:nowrap}
+  .ratios button.on{background:var(--acc-soft); color:var(--acc)}
+  .cropAct{display:flex; gap:8px; margin-top:10px}
+  .cropAct .pill{flex:1; justify-content:center; padding:11px}
+
   /* 시작 화면 */
   .empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:20px; cursor:pointer}
   .addBig{display:flex; flex-direction:column; align-items:center; gap:12px; border:none; background:none; color:var(--brown); font-size:16px; font-weight:700; cursor:pointer}
@@ -148,6 +163,7 @@
   <div class="stage" id="stage">
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
     <span class="badge" id="badge" hidden></span>
+    <div class="cropFrame" id="cropFrame" hidden></div>
     <span class="zoomTag glass" id="zoomTag">100%</span>
     <div class="spin"></div>
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
@@ -159,6 +175,7 @@
   <div class="bar" id="bar" hidden>
     <div class="thumbs" id="thumbs"></div>
     <button class="barBtn ico" id="rotBtn" type="button" aria-label="90도 회전"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span>회전</span></button>
+    <button class="barBtn ico" id="cropBtn" type="button" aria-label="자르기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg><span>자르기</span></button>
     <button class="barBtn" id="sharpBtn" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 9-8 9-8-9z"/></svg>선명도</button>
     <div class="modes" id="modes"><button type="button" data-m="f" class="on">필터</button><button type="button" data-m="a">조정</button></div>
     <button class="barBtn ico" id="cmpBtn" type="button" aria-label="원본 비교"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg><span>원본</span></button>
@@ -172,6 +189,10 @@
     <div class="adjRow" id="adjRow" hidden>
       <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
       <button class="all" id="adjReset" type="button">초기화</button>
+    </div>
+    <div class="cropPanel" id="cropPanel">
+      <div class="ratios" id="ratios"></div>
+      <div class="cropAct"><button class="pill ghost" id="cropCancel" type="button">취소</button><button class="pill main" id="cropDone" type="button">완료</button></div>
     </div>
     <div id="fMode">
       <div class="tabs" id="tabs"></div>
@@ -244,22 +265,35 @@ function applyLut(ctx,w,h,lut,n,amt){
   }
 }
 // 원본 크기(최대 1,600만 화소) 계산
-// 회전(0/90/180/270) 반영한 가로·세로
-function dims(it){ const W=it.img.naturalWidth, H=it.img.naturalHeight; return (it.rot||0)%180 ? [H,W] : [W,H]; }
-function fullSize(it){ const [W,H]=dims(it), k=Math.min(1,Math.sqrt(MAX_PIX/(W*H))); return [Math.round(W*k),Math.round(H*k)]; }
-// 회전된 원본 그림(캐시)
-function srcOf(it){
+// 회전(0/90/180/270) 반영한 가로·세로 (자르기 전)
+function baseDims(it){ const W=it.img.naturalWidth, H=it.img.naturalHeight; return (it.rot||0)%180 ? [H,W] : [W,H]; }
+const cap=(W,H)=>{ const k=Math.min(1,Math.sqrt(MAX_PIX/(W*H))); return [Math.round(W*k),Math.round(H*k)]; };
+// 자르기까지 반영한 가로·세로
+function dims(it){ const [W,H]=baseDims(it), c=it.crop; return c ? [Math.max(1,W*c.w), Math.max(1,H*c.h)] : [W,H]; }
+function fullSize(it){ const [W,H]=dims(it); return cap(W,H); }
+// 회전된 원본(캐시)
+function rotSrc(it){
   const r=it.rot||0; if(!r) return it.img;
-  if(it._rc && it._rcRot===r) return it._rc;
-  const [W,H]=fullSize(it), c=document.createElement('canvas'); c.width=W; c.height=H;
+  if(it._rot && it._rotR===r) return it._rot;
+  const [W,H]=cap(...baseDims(it)), c=document.createElement('canvas'); c.width=W; c.height=H;
   const x=c.getContext('2d'); x.translate(W/2,H/2); x.rotate(r*Math.PI/180);
   const dw=r%180?H:W, dh=r%180?W:H; x.drawImage(it.img,-dw/2,-dh/2,dw,dh);
-  it._rc=c; it._rcRot=r; return c;
+  it._rot=c; it._rotR=r; return c;
 }
+// 회전 + 자르기 반영한 원본(캐시)
+function srcOf(it){
+  const rs=rotSrc(it), c=it.crop; if(!c) return rs;
+  const k=(it.rot||0)+JSON.stringify(c); if(it._rc && it._rcK===k) return it._rc;
+  const SW=rs.naturalWidth||rs.width, SH=rs.naturalHeight||rs.height, [W,H]=fullSize(it);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  cv.getContext('2d').drawImage(rs, c.x*SW, c.y*SH, c.w*SW, c.h*SH, 0,0,W,H);
+  it._rc=cv; it._rcK=k; return cv;
+}
+function dropCache(it){ it._rc=null; it.thumbs=null; it.full=null; it.blob=null; if(it.baseUrl){ URL.revokeObjectURL(it.baseUrl); it.baseUrl=null; } }
+function setCrop(it,c){ if(JSON.stringify(it.crop||null)===JSON.stringify(c||null)) return false; it.crop=c||null; dropCache(it); return true; }
 function setRot(it,r){
   r=((r%360)+360)%360; if((it.rot||0)===r) return false;
-  it.rot=r; it._rc=null; it.thumbs=null; it.full=null; it.blob=null;
-  if(it.baseUrl){ URL.revokeObjectURL(it.baseUrl); it.baseUrl=null; }
+  it.rot=r; it._rot=null; it.crop=null; dropCache(it);
   return true;
 }
 function drawTo(cv,it,w,h){
@@ -344,10 +378,14 @@ function thumbCanvas(img){ // 세로 3:4 가운데 자르기
   cv.getContext('2d').drawImage(img,(W-sw)/2,(H-sh)/2,sw,sh,0,0,tw,th); return cv;
 }
 
+// ── 자르기 상태 ──
+const CROP={on:false, r:'1:1', f:null, min:1, saved:null};
+const RATIOS=[['원본',0],['1:1',1],['4:5',4/5],['3:4',3/4],['9:16',9/16]];
+
 // ── 상태 ──
 const items=[]; // {name,img,url,pre,amt,full:{key,cv}|null,blob:{key,b}|null,thumbs[]}
 let cur=-1;
-const keyOf=it=>(it.rot||0)+'_'+it.pre+'_'+(it.pre?it.amt:0)+'_'+JSON.stringify(it.adj||{});
+const keyOf=it=>(it.rot||0)+'_'+JSON.stringify(it.crop||0)+'_'+it.pre+'_'+(it.pre?it.amt:0)+'_'+JSON.stringify(it.adj||{});
 const pick=()=>$('file').click();
 $('empty').addEventListener('click',pick);
  $('btnNew').onclick=pick;
@@ -367,7 +405,7 @@ function dbOpen(){
 async function dbDo(store,fn){ const db=await dbOpen(); if(!db) return null;
   return new Promise(res=>{ try{ const tx=db.transaction(store,'readwrite'), st=tx.objectStore(store); const r=fn(st); tx.oncomplete=()=>res(r&&r.result); tx.onerror=()=>res(null); }catch(e){ res(null); } }); }
 let metaT;
-function persist(){ clearTimeout(metaT); metaT=setTimeout(()=>dbDo('meta',st=>st.put({cur, items:items.map(it=>({id:it.id,name:it.name,pre:it.pre,amt:it.amt,adj:it.adj,rot:it.rot||0}))},'state')),400); }
+function persist(){ clearTimeout(metaT); metaT=setTimeout(()=>dbDo('meta',st=>st.put({cur, items:items.map(it=>({id:it.id,name:it.name,pre:it.pre,amt:it.amt,adj:it.adj,rot:it.rot||0,crop:it.crop||null}))},'state')),400); }
 async function restore(){
   const st=await dbDo('meta',s=>s.get('state'));
   if(!st || !st.items || !st.items.length) return false;
@@ -387,7 +425,7 @@ async function addFiles(list, metas, selectIdx){
     catch(e){ URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요'); continue; }
     const prev=items[cur];
     const id=m?m.id:('p'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
-    items.push(m ? {id, name:m.name, img, url, pre:m.pre||0, amt:m.amt??100, adj:m.adj||{}, rot:m.rot||0, full:null, blob:null, thumbs:null}
+    items.push(m ? {id, name:m.name, img, url, pre:m.pre||0, amt:m.amt??100, adj:m.adj||{}, rot:m.rot||0, crop:m.crop||null, full:null, blob:null, thumbs:null}
                  : {id, name:f.name.replace(/\.\w+$/,''), img, url, pre:prev?prev.pre:0, amt:prev?prev.amt:100, adj:prev?{...prev.adj}:{}, full:null, blob:null, thumbs:null});
     if(!m) dbDo('files',st=>st.put(f,id));
     added++;
@@ -559,7 +597,7 @@ function setOrig(it){
 
 // ── 되돌리기 / 다시하기 (필터·강도·조정 변경 기록) ──
 let HIS=[], HI=-1, applyingHis=false;
-const snapStr=()=>JSON.stringify({cur:items[cur]&&items[cur].id, s:items.map(it=>({id:it.id,pre:it.pre,amt:it.amt,adj:it.adj||{},rot:it.rot||0}))});
+const snapStr=()=>JSON.stringify({cur:items[cur]&&items[cur].id, s:items.map(it=>({id:it.id,pre:it.pre,amt:it.amt,adj:it.adj||{},rot:it.rot||0,crop:it.crop||null}))});
 function record(){
   if(applyingHis || !items.length) return;
   const st=snapStr(), prev=HIS[HI];
@@ -571,7 +609,7 @@ function goHis(d){
   const n=HI+d; if(n<0||n>=HIS.length) return; HI=n; updUndo();
   const st=JSON.parse(HIS[HI]);
   let rotChanged=false;
-  st.s.forEach(m=>{ const it=items.find(x=>x.id===m.id); if(it){ it.pre=m.pre; it.amt=m.amt; it.adj={...m.adj}; if(setRot(it,m.rot||0) && it===items[cur]) rotChanged=true; } });
+  st.s.forEach(m=>{ const it=items.find(x=>x.id===m.id); if(it){ it.pre=m.pre; it.amt=m.amt; it.adj={...m.adj}; if(setRot(it,m.rot||0) && it===items[cur]) rotChanged=true; if(setCrop(it,m.crop||null) && it===items[cur]) rotChanged=true; } });
   const ci=items.findIndex(x=>x.id===st.cur);
   applyingHis=true;
   if(ci>=0 && ci!==cur){ select(ci).finally(()=>{ applyingHis=false; }); }
@@ -579,6 +617,47 @@ function goHis(d){
   persist();
 }
 $('rotBtn').onclick=()=>{ const it=items[cur]; if(!it) return; setRot(it,(it.rot||0)+90); setOrig(it); layoutFit(true); renderThumbs(); buildChips(it); updateView(); };
+// ── 자르기 (가이드 보면서 사진을 밀고 키워서 맞춤) ──
+function cropFit(reset){
+  const it=items[cur]; const sr=stage.getBoundingClientRect(); const [W,H]=dims(it);
+  const a=RATIOS.find(x=>x[0]===CROP.r)[1] || W/H, pad=18;
+  let fw=sr.width-pad*2, fh=fw/a; if(fh>sr.height-pad*2){ fh=sr.height-pad*2; fw=fh*a; }
+  CROP.f={x:(sr.width-fw)/2, y:(sr.height-fh)/2, w:fw, h:fh};
+  Object.assign($('cropFrame').style,{left:CROP.f.x+'px',top:CROP.f.y+'px',width:fw+'px',height:fh+'px'});
+  V.fit=Math.min(sr.width/W, sr.height/H); V.w=W*V.fit; V.h=H*V.fit;
+  wrap.style.width=V.w+'px'; wrap.style.height=V.h+'px';
+  CROP.min=Math.max(fw/V.w, fh/V.h);
+  if(reset!==false || V.s<CROP.min){ V.s=CROP.min; V.x=CROP.f.x+(fw-V.w*V.s)/2; V.y=CROP.f.y+(fh-V.h*V.s)/2; }
+  applyV();
+}
+function ratioBox(n){ const a=RATIOS.find(x=>x[0]===n)[1]; if(!a) return 'width:16px;height:13px;border-style:dashed'; return a>=1?`width:16px;height:${16/a}px`:`height:18px;width:${18*a}px`; }
+function renderRatios(){ $('ratios').innerHTML=RATIOS.map(([n])=>`<button type="button" class="${n===CROP.r?'on':''}" data-r="${n}"><i class="rb" style="${ratioBox(n)}"></i>${n}${n==='1:1'?'<em>마그넷</em>':''}</button>`).join(''); }
+$('ratios').addEventListener('click',e=>{ const b=e.target.closest('[data-r]'); if(!b) return; CROP.r=b.dataset.r; renderRatios(); cropFit(true); });
+function enterCrop(){
+  const it=items[cur]; if(!it || CROP.on) return;
+  CROP.saved=it.crop||null; CROP.r=CROP.saved?CROP.saved.r:'1:1';
+  setCrop(it,null); CROP.on=true;
+  document.body.classList.add('cropping'); $('cropFrame').hidden=false; renderRatios();
+  setOrig(it); updateView(); cropFit(true);
+  if(CROP.saved){ const c=CROP.saved, s=CROP.f.w/c.w/V.w; V.s=Math.max(CROP.min,s); V.x=CROP.f.x-c.x*V.w*V.s; V.y=CROP.f.y-c.y*V.h*V.s; applyV(); }
+}
+function exitCrop(apply){
+  const it=items[cur]; if(!CROP.on) return;
+  let c=CROP.saved;
+  if(apply){
+    const f=CROP.f, iw=V.w*V.s, ih=V.h*V.s;
+    c={r:CROP.r, x:Math.max(0,(f.x-V.x)/iw), y:Math.max(0,(f.y-V.y)/ih), w:Math.min(1,f.w/iw), h:Math.min(1,f.h/ih)};
+    c.w=Math.min(c.w,1-c.x); c.h=Math.min(c.h,1-c.y);
+    if(c.w>0.995 && c.h>0.995) c=null;
+  }
+  CROP.on=false; document.body.classList.remove('cropping'); $('cropFrame').hidden=true;
+  setCrop(it,c); setOrig(it); layoutFit(true); renderThumbs(); buildChips(it); updateView();
+  if(apply) toast(c?(c.r==='1:1'?'정사각형으로 잘랐어요 · 마그넷용 딱 맞아요':'잘랐어요'):'원래 크기로 돌렸어요');
+}
+$('cropBtn').onclick=enterCrop;
+$('cropCancel').onclick=()=>exitCrop(false);
+$('cropDone').onclick=()=>exitCrop(true);
+
 $('btnUndo').onclick=()=>goHis(-1); $('btnRedo').onclick=()=>goHis(1);
 
 // ── 확대·축소·이동 ──
@@ -586,6 +665,7 @@ const stage=$('stage'), wrap=$('wrap');
 let V={fit:1,s:1,x:0,y:0,w:0,h:0};
 function layoutFit(reset){
   const it=items[cur]; if(!it) return;
+  if(CROP.on){ cropFit(false); return; }
   const r=stage.getBoundingClientRect(); const [W,H]=dims(it);
   V.fit=Math.min(r.width/W, r.height/H); V.w=W*V.fit; V.h=H*V.fit;
   wrap.style.width=V.w+'px'; wrap.style.height=V.h+'px';
@@ -594,6 +674,7 @@ function layoutFit(reset){
 }
 function clampV(){
   const r=stage.getBoundingClientRect(), sw=V.w*V.s, sh=V.h*V.s;
+  if(CROP.on){ const f=CROP.f; V.x=Math.min(f.x, Math.max(f.x+f.w-sw, V.x)); V.y=Math.min(f.y, Math.max(f.y+f.h-sh, V.y)); return; }
   V.x = sw<=r.width ? (r.width-sw)/2 : Math.min(0,Math.max(r.width-sw,V.x));
   V.y = sh<=r.height ? (r.height-sh)/2 : Math.min(0,Math.max(r.height-sh,V.y));
 }
@@ -601,7 +682,7 @@ let ztT;
 function applyV(){ clampV(); wrap.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.s})`;
   const zt=$('zoomTag'); zt.textContent=Math.round(V.s*100)+'%'; zt.classList.toggle('show',V.s>1.01); clearTimeout(ztT); ztT=setTimeout(()=>zt.classList.remove('show'),900); }
 function zoomAt(px,py,ns){
-  ns=Math.max(1,Math.min(8,ns)); const r=stage.getBoundingClientRect(); px-=r.left; py-=r.top;
+  ns=Math.max(CROP.on?CROP.min:1,Math.min(8,ns)); const r=stage.getBoundingClientRect(); px-=r.left; py-=r.top;
   V.x=px-(px-V.x)*ns/V.s; V.y=py-(py-V.y)*ns/V.s; V.s=ns; applyV();
 }
 const P=new Map(); let pinch=null, lastTap=0, panStart=null;
@@ -611,7 +692,7 @@ stage.addEventListener('pointerdown',e=>{
   if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), s:V.s}; panStart=null; }
   else if(P.size===1){
     panStart={x:e.clientX,y:e.clientY,vx:V.x,vy:V.y};
-    const now=Date.now(); if(now-lastTap<300){ zoomAt(e.clientX,e.clientY, V.s>1.05?1:2.5); lastTap=0; } else lastTap=now;
+    const now=Date.now(); if(!CROP.on && now-lastTap<300){ zoomAt(e.clientX,e.clientY, V.s>1.05?1:2.5); lastTap=0; } else lastTap=now;
   }
 });
 stage.addEventListener('pointermove',e=>{
