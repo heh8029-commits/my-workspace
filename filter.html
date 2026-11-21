@@ -260,7 +260,7 @@
     <div class="spin"></div>
     <div class="hint glass" id="hint" hidden>두 손가락으로 확대 · 두 번 탭하면 확대/원래대로</div>
     <div class="empty" id="empty">
-      <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small><small class="pc">PC는 사진을 끌어다 놓아도 돼요</small></button>
+      <button class="addBig" type="button"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>사진 추가하기<small>원본 화질 그대로 저장돼요</small><small class="pc">PC는 끌어다 놓기 · Ctrl+V 붙여넣기도 돼요</small></button>
       <div class="promo" id="promo">
         <img class="pImg" src="mg-a.jpg" alt="" loading="lazy">
         <div class="pTxt"><b>보정한 사진을 포토마그넷으로</b><span>6.5cm 정사각형 · 1:1로 잘라 바로 주문</span><a class="pReg" href="https://xn--2y1by8dx2ag5db2id9o.kr/" target="_blank" rel="noopener">사진 등록하러 가기 →</a></div>
@@ -849,6 +849,15 @@ window.addEventListener('dragleave',e=>{ if(!isFileDrag(e)) return; dragN=Math.m
 window.addEventListener('drop',e=>{ if(!isFileDrag(e)) return; e.preventDefault(); dragN=0; document.body.classList.remove('dragging');
   if(CROP.on) return toast('자르기를 끝낸 뒤 넣어 주세요');
   const fs=[...e.dataTransfer.files]; if(fs.length) addFiles(fs); });
+// 붙여넣기(Ctrl+V): 캡처·복사한 사진 바로 넣기
+window.addEventListener('paste',e=>{
+  if(e.target.closest && e.target.closest('input,textarea')) return;
+  const fs=[...((e.clipboardData&&e.clipboardData.items)||[])].filter(x=>x.kind==='file' && /^image\//.test(x.type)).map(x=>x.getAsFile()).filter(Boolean);
+  if(!fs.length) return;
+  e.preventDefault();
+  if(CROP.on) return toast('자르기를 끝낸 뒤 넣어 주세요');
+  const n=Date.now(); addFiles(fs.map((f,i)=>new File([f],'붙여넣기_'+n+(i?'_'+i:'')+'.png',{type:f.type||'image/png'}))); toast('붙여넣은 사진을 넣었어요');
+});
 $('btnUndo').onclick=()=>goHis(-1); $('btnRedo').onclick=()=>goHis(1);
 
 // ── 확대·축소·이동 ──
