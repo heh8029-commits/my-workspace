@@ -67,34 +67,34 @@
   .empty .pill{font-size:18px; padding:14px 28px}
 
   /* 하단 필터 패널 */
-  .panel{flex:0 0 auto; padding:4px 0 calc(6px + env(safe-area-inset-bottom)); background:var(--bg)}
+  .panel{flex:0 0 auto; padding:4px 0 calc(4px + env(safe-area-inset-bottom)); background:var(--bg)}
   .panel.off{display:none}
-  .amt{display:flex; align-items:center; gap:10px; padding:0 16px 2px; height:30px}
-  .amt.hide{visibility:hidden}
+  .amt,.adjRow{position:absolute; left:10px; right:10px; bottom:64px; z-index:3; display:flex; align-items:center; gap:8px; padding:0 8px 0 14px; height:40px; border-radius:999px; background:rgba(255,255,255,.9); box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .amt.hide{display:none}
   .amt input{flex:1; -webkit-appearance:none; appearance:none; height:6px; border-radius:99px; background:linear-gradient(90deg,var(--pink) var(--p,100%), var(--pink-l) var(--p,100%)); outline:none}
   .amt input::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:#fff; border:3px solid var(--pink-d); box-shadow:0 2px 6px rgba(240,98,146,.35)}
   .amt input::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--pink-d)}
   .amt output{font-family:var(--en); font-weight:700; color:var(--pink-d); width:34px; text-align:right}
   .amt .all{border:none; background:var(--pink-l); color:var(--pink-d); border-radius:999px; font-family:var(--cute); font-size:13px; padding:6px 10px; cursor:pointer; white-space:nowrap}
-  .tabs{display:flex; gap:2px; padding:0 10px 2px; overflow-x:auto; scrollbar-width:none}
+  .tabs{display:flex; gap:0; padding:0 8px 0; overflow-x:auto; scrollbar-width:none}
   .tabs::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
-  .tabs button{flex:0 0 auto; border:none; background:transparent; font-family:var(--cute); font-size:14px; color:var(--soft); padding:4px 10px; border-radius:999px; cursor:pointer}
+  .tabs button{flex:0 0 auto; border:none; background:transparent; font-family:var(--cute); font-size:13px; color:var(--soft); padding:3px 9px; border-radius:999px; cursor:pointer}
   .tabs button.on{background:var(--ink); color:#fff}
-  .chips{display:flex; gap:6px; overflow-x:auto; padding:6px 12px 0; scrollbar-width:none}
-  .chip{flex:0 0 auto; width:56px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
-  .chip .th{position:relative; display:block; width:50px; height:64px; border-radius:15px; overflow:hidden; background:var(--pink-l); transition:transform .15s}
+  .chips{display:flex; gap:5px; overflow-x:auto; padding:5px 10px 0; scrollbar-width:none}
+  .chip{flex:0 0 auto; width:50px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
+  .chip .th{position:relative; display:block; width:44px; height:56px; border-radius:13px; overflow:hidden; background:var(--pink-l); transition:transform .15s}
   .chip .th img{width:100%; height:100%; object-fit:cover; display:block}
-  .chip .nm{display:block; margin-top:3px; font-family:var(--cute); font-weight:400; font-size:13px; color:var(--ink); white-space:nowrap; letter-spacing:-.2px}
-  .chip.on .th{transform:scale(1.03); box-shadow:0 0 0 3px #fff, 0 0 0 5.5px var(--pink-d)}
+  .chip .nm{display:block; margin-top:2px; font-family:var(--cute); font-weight:400; font-size:11.5px; color:var(--ink); white-space:nowrap; letter-spacing:-.2px}
+  .chip.on .th{box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--pink-d)}
   .chip.on .nm{color:var(--pink-d)}
-  .chip.on .th::after{content:'♥'; position:absolute; right:6px; bottom:4px; color:#fff; font-size:14px; text-shadow:0 1px 3px rgba(240,98,146,.9)}
+  .chip.on .th::after{content:'♥'; position:absolute; right:4px; bottom:2px; color:#fff; font-size:11px; text-shadow:0 1px 3px rgba(240,98,146,.9)}
 
   /* 저장 시트 */
   .sheetBg{position:fixed; inset:0; background:rgba(74,58,66,.35); display:none; z-index:20; align-items:flex-end; justify-content:center}
   .sheetBg.show{display:flex}
   .sheet{width:100%; max-width:640px; background:#fff; border-radius:26px 26px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px}
   /* 조정 모드 */
-  .adjRow{display:flex; align-items:center; gap:10px; padding:0 16px 2px; height:30px}
+  
   .adjRow b{font-family:var(--cute); font-weight:400; color:var(--pink-d); font-size:14px; min-width:58px}
   .adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:6px; border-radius:99px; outline:none; background:var(--pink-l)}
   .adjRow input::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:#fff; border:3px solid var(--pink-d); box-shadow:0 2px 6px rgba(240,98,146,.35)}
@@ -103,10 +103,10 @@
   .adjRow .all{border:none; background:var(--pink-l); color:var(--pink-d); border-radius:999px; font-family:var(--cute); font-size:13px; padding:6px 10px; cursor:pointer; white-space:nowrap}
   .tools{display:flex; gap:2px; overflow-x:auto; padding:6px 10px 0; scrollbar-width:none}
   .tools::-webkit-scrollbar{display:none}
-  .tool{flex:0 0 auto; width:64px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
-  .tool .ic{position:relative; width:44px; height:44px; margin:0 auto; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:21px;
+  .tool{flex:0 0 auto; width:56px; border:none; background:none; padding:0; cursor:pointer; text-align:center}
+  .tool .ic{position:relative; width:40px; height:40px; margin:0 auto; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:21px;
     box-shadow:0 2px 0 rgba(240,98,146,.12)}
-  .tool .nm{display:block; margin-top:5px; font-family:var(--cute); font-size:12.5px; color:var(--ink); white-space:nowrap}
+  .tool .nm{display:block; margin-top:3px; font-family:var(--cute); font-size:11.5px; color:var(--ink); white-space:nowrap}
   .tool.on .ic{box-shadow:0 0 0 3px var(--pink-d)} .tool.on .nm{color:var(--pink-d)}
   .tool .v{position:absolute; right:-4px; top:-4px; min-width:22px; height:18px; padding:0 4px; border-radius:9px; background:var(--pink-d); color:#fff; font-family:var(--en); font-weight:700; font-size:10px; line-height:18px}
   .modes{position:absolute; left:12px; bottom:12px; display:flex; gap:3px; padding:4px; border-radius:999px; background:rgba(255,255,255,.9); box-shadow:0 2px 10px rgba(0,0,0,.12)}
@@ -138,6 +138,14 @@
     <div class="thumbs" id="thumbs"></div>
     <div class="spin">🎀</div>
     <button class="cmpBtn" id="cmpBtn" type="button" hidden>원본</button>
+    <div class="amt hide" id="amtRow">
+      <input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
+      <button class="all" id="applyAll" type="button" hidden>모든 사진에</button>
+    </div>
+    <div class="adjRow" id="adjRow" hidden>
+      <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
+      <button class="all" id="adjReset" type="button">초기화</button>
+    </div>
     <div class="modes" id="modes" hidden><button type="button" data-m="f" class="on">🎨 필터</button><button type="button" data-m="a">🎚️ 조정</button></div>
     <div class="hint" id="hint" hidden>두 손가락으로 확대 · 두 번 톡 하면 확대/원래대로</div>
     <div class="empty" id="empty">
@@ -150,14 +158,6 @@
   </div>
 
   <div class="panel off" id="panel">
-    <div class="amt hide" id="amtRow">
-      <input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
-      <button class="all" id="applyAll" type="button" hidden>모든 사진에</button>
-    </div>
-    <div class="adjRow" id="adjRow" hidden>
-      <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
-      <button class="all" id="adjReset" type="button">초기화</button>
-    </div>
     <div id="fMode">
       <div class="tabs" id="tabs"></div>
       <div class="chips" id="chips"></div>
@@ -464,7 +464,7 @@ function zoomAt(px,py,ns){
 }
 const P=new Map(); let pinch=null, lastTap=0, panStart=null;
 stage.addEventListener('pointerdown',e=>{
-  if(cur<0 || e.target.closest('.thumbs,.cmpBtn,.empty,.modes')) return;
+  if(cur<0 || e.target.closest('.thumbs,.cmpBtn,.empty,.modes,.amt,.adjRow')) return;
   stage.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), s:V.s}; panStart=null; }
   else if(P.size===1){
