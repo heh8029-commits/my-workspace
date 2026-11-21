@@ -257,14 +257,15 @@ function drawTo(cv,it,w,h){
 }
 // 선명도: 주변 평균과의 차이를 키움(언샤프). 큰 사진은 띠로 나눠 처리
 function sharpen(ctx,w,h,amt){
-  const k=amt*1.6, STEP=Math.max(1,Math.floor(3e6/w));
+  // 반경을 사진 크기에 맞춰서 미리보기(작은 그림)와 원본 저장 결과가 비슷하게 보이도록
+  const R=Math.max(1,Math.round(Math.max(w,h)/1400)), k=amt*2.6, STEP=Math.max(1,Math.floor(3e6/w));
   for(let y0=0;y0<h;y0+=STEP){
-    const hh=Math.min(STEP,h-y0), ys=Math.max(0,y0-1), ye=Math.min(h,y0+hh+1), H=ye-ys;
+    const hh=Math.min(STEP,h-y0), ys=Math.max(0,y0-R), ye=Math.min(h,y0+hh+R), H=ye-ys;
     const id=ctx.getImageData(0,ys,w,H), d=id.data, src=new Uint8ClampedArray(d), W4=w*4;
     for(let y=y0-ys; y<y0-ys+hh; y++){
-      const up=y>0?-W4:0, dn=y<H-1?W4:0;
+      const up=-Math.min(R,y)*W4, dn=Math.min(R,H-1-y)*W4;
       for(let x=0;x<w;x++){
-        const i=y*W4+x*4, lf=x>0?-4:0, rt=x<w-1?4:0;
+        const i=y*W4+x*4, lf=-Math.min(R,x)*4, rt=Math.min(R,w-1-x)*4;
         for(let c=0;c<3;c++){ const v=src[i+c]; d[i+c]=v+k*(v-(src[i+up+c]+src[i+dn+c]+src[i+lf+c]+src[i+rt+c])*0.25); }
       }
     }
@@ -284,15 +285,15 @@ function applyAdj(ctx,w,h,a){
   const T=new Uint8ClampedArray(256), bri=v('bri'), con=v('con'), hi=v('hi'), sh=v('sh'), fade=v('fade');
   for(let i=0;i<256;i++){
     let f=i/255;
-    f = bri>=0 ? 1-Math.pow(1-f,1+bri*0.55) : Math.pow(f,1-bri*0.55);
-    f = f + sh*f*(1-f)*(1-f)*0.9;
-    f = f + hi*f*f*(1-f)*0.9;
-    f = 0.5+(f-0.5)*(1+con*0.3);
-    f = fade*0.12 + f*(1-fade*0.12);
+    f = bri>=0 ? 1-Math.pow(1-f,1+bri*0.9) : Math.pow(f,1-bri*0.9);
+    f = f + sh*f*(1-f)*(1-f)*1.35;
+    f = f + hi*f*f*(1-f)*1.35;
+    f = 0.5+(f-0.5)*(1+con*0.5);
+    f = fade*0.16 + f*(1-fade*0.16);
     T[i]=f*255;
   }
-  const sat=1+v('sat')*0.5, warm=v('warm'), tint=v('tint'), vig=v('vig'), grain=v('grain')*22;
-  const kr=1+warm*0.06, kb=1-warm*0.06, kg=1-tint*0.05, kt=1+tint*0.02;
+  const sat=1+v('sat')*0.8, warm=v('warm'), tint=v('tint'), vig=v('vig'), grain=v('grain')*32;
+  const kr=1+warm*0.09, kb=1-warm*0.09, kg=1-tint*0.075, kt=1+tint*0.03;
   const cx=w/2, cy=h/2, STEP=Math.max(1,Math.floor(4e6/w));
   for(let y0=0;y0<h;y0+=STEP){
     const hh=Math.min(STEP,h-y0), id=ctx.getImageData(0,y0,w,hh), d=id.data;
@@ -305,7 +306,7 @@ function applyAdj(ctx,w,h,a){
         if(warm){ r*=kr; b*=kb; }
         if(tint){ g*=kg; r*=kt; b*=kt; }
         if(vig){ const dx=(x-cx)/cx; let e=(dx*dx+dy2)/2; e=e<0.15?0:(e-0.15)/0.85; e=e*e*(3-2*e);
-          if(vig>0){ const m=1-vig*0.4*e; r*=m; g*=m; b*=m; } else { const m=-vig*0.4*e; r+=(255-r)*m; g+=(255-g)*m; b+=(255-b)*m; } }
+          if(vig>0){ const m=1-vig*0.5*e; r*=m; g*=m; b*=m; } else { const m=-vig*0.5*e; r+=(255-r)*m; g+=(255-g)*m; b+=(255-b)*m; } }
         if(grain){ const n=(Math.random()-0.5)*grain; r+=n; g+=n; b+=n; }
         d[i]=r; d[i+1]=g; d[i+2]=b;
       }
