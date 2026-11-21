@@ -631,7 +631,7 @@ function goHis(d){
 }
 $('rotBtn').onclick=()=>{ const it=items[cur]; if(!it) return; setRot(it,(it.rot||0)+90); setOrig(it); layoutFit(true); renderThumbs(); buildChips(it); updateView(); };
 // ── 포토마그넷 주문 링크 (쿠팡은 주소 받으면 채우기) ──
-const MAGNET={naver:'https://smartstore.naver.com/miritopper/products/13746231367', coupang:''};
+const MAGNET={naver:'https://smartstore.naver.com/miritopper/products/13746231367', coupang:'https://www.coupang.com/vp/products/9726866352?vendorItemId=96032639233'};
 (function(){
   $('mgBtns').innerHTML=(MAGNET.naver?`<a class="nv" href="${MAGNET.naver}" target="_blank" rel="noopener">네이버에서 주문</a>`:'')
     +(MAGNET.coupang?`<a class="cp" href="${MAGNET.coupang}" target="_blank" rel="noopener">쿠팡에서 주문</a>`:'');
