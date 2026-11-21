@@ -155,6 +155,7 @@
   /* 슬라이더 (패널 맨 위) */
   .amt,.adjRow{display:flex; align-items:center; gap:10px; padding:4px 14px 6px; height:36px}
   .amt.hide{display:none}
+  .amt .lb{display:flex; flex-direction:column; line-height:1.15} .amt .lb small{font-size:9px; font-weight:500; color:var(--mute); white-space:nowrap; margin-top:1px}
   .amt .lb,.adjRow b{font-size:12.5px; font-weight:600; color:var(--sub); min-width:28px}
   .adjRow b{min-width:56px}
   .amt input,.adjRow input{flex:1; -webkit-appearance:none; appearance:none; height:3px; border-radius:99px; outline:none; background:var(--line)}
@@ -258,7 +259,7 @@
 
   <div class="panel" id="panel">
     <div class="amt hide" id="amtRow">
-      <span class="lb">강도</span><input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
+      <span class="lb">강도<small>취향껏 조절해 보세요</small></span><input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
       <button class="all" id="applyAll" type="button" hidden>전체 적용</button>
     </div>
     <div class="adjRow" id="adjRow" hidden>
