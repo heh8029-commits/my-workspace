@@ -34,6 +34,7 @@
   .pill.ghost{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
   .pill.main{background:var(--brown); color:#fff}
   .pill:active{opacity:.8}
+  @media (max-width:420px){ .barBtn.ico span{display:none} .barBtn.ico{padding:0 8px} .bar{gap:5px; padding:6px 8px} }
   @media (max-width:400px){ .top{gap:4px; padding-left:12px; padding-right:10px} .pill{padding:8px 10px} .icoBtn{width:32px} }
   .icoBtn{width:36px; height:36px; border:none; border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
   .icoBtn:disabled{color:#d4d4d8; cursor:default}
@@ -157,9 +158,10 @@
 
   <div class="bar" id="bar" hidden>
     <div class="thumbs" id="thumbs"></div>
+    <button class="barBtn ico" id="rotBtn" type="button" aria-label="90도 회전"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span>회전</span></button>
     <button class="barBtn" id="sharpBtn" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 9-8 9-8-9z"/></svg>선명도</button>
     <div class="modes" id="modes"><button type="button" data-m="f" class="on">필터</button><button type="button" data-m="a">조정</button></div>
-    <button class="barBtn ico" id="cmpBtn" type="button" aria-label="원본 비교"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
+    <button class="barBtn ico" id="cmpBtn" type="button" aria-label="원본 비교"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg><span>원본</span></button>
   </div>
 
   <div class="panel" id="panel">
@@ -242,10 +244,27 @@ function applyLut(ctx,w,h,lut,n,amt){
   }
 }
 // 원본 크기(최대 1,600만 화소) 계산
-function fullSize(img){ const W=img.naturalWidth, H=img.naturalHeight, k=Math.min(1,Math.sqrt(MAX_PIX/(W*H))); return [Math.round(W*k),Math.round(H*k)]; }
+// 회전(0/90/180/270) 반영한 가로·세로
+function dims(it){ const W=it.img.naturalWidth, H=it.img.naturalHeight; return (it.rot||0)%180 ? [H,W] : [W,H]; }
+function fullSize(it){ const [W,H]=dims(it), k=Math.min(1,Math.sqrt(MAX_PIX/(W*H))); return [Math.round(W*k),Math.round(H*k)]; }
+// 회전된 원본 그림(캐시)
+function srcOf(it){
+  const r=it.rot||0; if(!r) return it.img;
+  if(it._rc && it._rcRot===r) return it._rc;
+  const [W,H]=fullSize(it), c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'); x.translate(W/2,H/2); x.rotate(r*Math.PI/180);
+  const dw=r%180?H:W, dh=r%180?W:H; x.drawImage(it.img,-dw/2,-dh/2,dw,dh);
+  it._rc=c; it._rcRot=r; return c;
+}
+function setRot(it,r){
+  r=((r%360)+360)%360; if((it.rot||0)===r) return false;
+  it.rot=r; it._rc=null; it.thumbs=null; it.full=null; it.blob=null;
+  if(it.baseUrl){ URL.revokeObjectURL(it.baseUrl); it.baseUrl=null; }
+  return true;
+}
 function drawTo(cv,it,w,h){
   cv.width=w; cv.height=h; const ctx=cv.getContext('2d',{willReadFrequently:true});
-  ctx.drawImage(it.img,0,0,w,h);
+  ctx.drawImage(srcOf(it),0,0,w,h);
   const amt=it.amt/100;
   if(it.pre>0 && amt>0 && L && L.bytes[it.pre]) applyLut(ctx,w,h,L.bytes[it.pre],L.n,amt);
   if(hasAdj(it.adj)) applyAdj(ctx,w,h,it.adj);
@@ -319,7 +338,7 @@ function applyAdj(ctx,w,h,a){
   }
 }
 function thumbCanvas(img){ // 세로 3:4 가운데 자르기
-  const W=img.naturalWidth, H=img.naturalHeight, tw=120, th=160;
+  const W=img.naturalWidth||img.width, H=img.naturalHeight||img.height, tw=120, th=160;
   let sw=W, sh=W*th/tw; if(sh>H){ sh=H; sw=H*tw/th; }
   const cv=document.createElement('canvas'); cv.width=tw; cv.height=th;
   cv.getContext('2d').drawImage(img,(W-sw)/2,(H-sh)/2,sw,sh,0,0,tw,th); return cv;
@@ -328,7 +347,7 @@ function thumbCanvas(img){ // 세로 3:4 가운데 자르기
 // ── 상태 ──
 const items=[]; // {name,img,url,pre,amt,full:{key,cv}|null,blob:{key,b}|null,thumbs[]}
 let cur=-1;
-const keyOf=it=>it.pre+'_'+(it.pre?it.amt:0)+'_'+JSON.stringify(it.adj||{});
+const keyOf=it=>(it.rot||0)+'_'+it.pre+'_'+(it.pre?it.amt:0)+'_'+JSON.stringify(it.adj||{});
 const pick=()=>$('file').click();
 $('empty').addEventListener('click',pick);
  $('btnNew').onclick=pick;
@@ -348,7 +367,7 @@ function dbOpen(){
 async function dbDo(store,fn){ const db=await dbOpen(); if(!db) return null;
   return new Promise(res=>{ try{ const tx=db.transaction(store,'readwrite'), st=tx.objectStore(store); const r=fn(st); tx.oncomplete=()=>res(r&&r.result); tx.onerror=()=>res(null); }catch(e){ res(null); } }); }
 let metaT;
-function persist(){ clearTimeout(metaT); metaT=setTimeout(()=>dbDo('meta',st=>st.put({cur, items:items.map(it=>({id:it.id,name:it.name,pre:it.pre,amt:it.amt,adj:it.adj}))},'state')),400); }
+function persist(){ clearTimeout(metaT); metaT=setTimeout(()=>dbDo('meta',st=>st.put({cur, items:items.map(it=>({id:it.id,name:it.name,pre:it.pre,amt:it.amt,adj:it.adj,rot:it.rot||0}))},'state')),400); }
 async function restore(){
   const st=await dbDo('meta',s=>s.get('state'));
   if(!st || !st.items || !st.items.length) return false;
@@ -368,7 +387,7 @@ async function addFiles(list, metas, selectIdx){
     catch(e){ URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요'); continue; }
     const prev=items[cur];
     const id=m?m.id:('p'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
-    items.push(m ? {id, name:m.name, img, url, pre:m.pre||0, amt:m.amt??100, adj:m.adj||{}, full:null, blob:null, thumbs:null}
+    items.push(m ? {id, name:m.name, img, url, pre:m.pre||0, amt:m.amt??100, adj:m.adj||{}, rot:m.rot||0, full:null, blob:null, thumbs:null}
                  : {id, name:f.name.replace(/\.\w+$/,''), img, url, pre:prev?prev.pre:0, amt:prev?prev.amt:100, adj:prev?{...prev.adj}:{}, full:null, blob:null, thumbs:null});
     if(!m) dbDo('files',st=>st.put(f,id));
     added++;
@@ -380,7 +399,7 @@ async function addFiles(list, metas, selectIdx){
   select(selectIdx!=null ? selectIdx : items.length-added);
 }
 function renderThumbs(){
-  $('thumbs').innerHTML = !items.length ? '' : items.map((it,i)=>`<div class="t${i===cur?' on':''}" data-i="${i}"><img src="${it.url}" alt=""><button type="button" class="x" data-del="${i}" aria-label="사진 빼기">✕</button></div>`).join('')
+  $('thumbs').innerHTML = !items.length ? '' : items.map((it,i)=>`<div class="t${i===cur?' on':''}" data-i="${i}"><img src="${it.url}" alt="" style="transform:rotate(${it.rot||0}deg)"><button type="button" class="x" data-del="${i}" aria-label="사진 빼기">✕</button></div>`).join('')
     + `<div class="t addT" data-add="1">＋</div>`;
   $('applyAll').hidden = items.length<2;
 }
@@ -424,7 +443,7 @@ $('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!
 function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; return L.names.map((_,i)=>i).filter(i=> i===0 || !list || list.includes(L.names[i])); }
 async function buildChips(it){
   if(!L||!it) return;
-  if(!it.thumbs){ it.thumbs=new Array(L.names.length).fill(null); it._base=thumbCanvas(it.img); }
+  if(!it.thumbs){ it.thumbs=new Array(L.names.length).fill(null); it._base=thumbCanvas(srcOf(it)); }
   const idx=visibleIdx();
   $('chips').innerHTML=idx.map(i=>`<button type="button" class="chip${i===it.pre?' on':''}" data-i="${i}">
     <span class="th"><img alt="" ${it.thumbs[i]?`src="${it.thumbs[i]}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`).join('')
@@ -496,7 +515,7 @@ $('adjReset').onclick=()=>{ const it=items[cur]; it.adj={}; buildTools(it); upda
 const cv=$('cv'); let tok=0;
 function quick(it){
   hideOut();
-  const [W,H]=fullSize(it.img), k=Math.min(1,1100/Math.max(W,H));
+  const [W,H]=fullSize(it), k=Math.min(1,1100/Math.max(W,H));
   drawTo(cv,it,Math.round(W*k),Math.round(H*k));
 }
 async function updateView(first){
@@ -507,7 +526,7 @@ async function updateView(first){
   quick(it); $('stage').classList.add('busy');
   await frame(); await frame();
   if(my!==tok) return;
-  const [W,H]=fullSize(it.img); const off=document.createElement('canvas');
+  const [W,H]=fullSize(it); const off=document.createElement('canvas');
   drawTo(off,it,W,H);
   if(my!==tok) return;
   it.full={key,cv:off}; showFull(off); $('stage').classList.remove('busy');
@@ -533,14 +552,14 @@ function setOrig(it){
   const o=$('orig');
   if(it.baseUrl){ o.src=it.baseUrl; return; }
   o.removeAttribute('src');
-  const [W,H]=fullSize(it.img), c=document.createElement('canvas'); c.width=W; c.height=H;
-  c.getContext('2d').drawImage(it.img,0,0,W,H);
+  const [W,H]=fullSize(it), c=document.createElement('canvas'); c.width=W; c.height=H;
+  c.getContext('2d').drawImage(srcOf(it),0,0,W,H);
   c.toBlob(b=>{ if(!b) return; it.baseUrl=URL.createObjectURL(b); if(items[cur]===it) o.src=it.baseUrl; },'image/jpeg',0.95);
 }
 
 // ── 되돌리기 / 다시하기 (필터·강도·조정 변경 기록) ──
 let HIS=[], HI=-1, applyingHis=false;
-const snapStr=()=>JSON.stringify({cur:items[cur]&&items[cur].id, s:items.map(it=>({id:it.id,pre:it.pre,amt:it.amt,adj:it.adj||{}}))});
+const snapStr=()=>JSON.stringify({cur:items[cur]&&items[cur].id, s:items.map(it=>({id:it.id,pre:it.pre,amt:it.amt,adj:it.adj||{},rot:it.rot||0}))});
 function record(){
   if(applyingHis || !items.length) return;
   const st=snapStr(), prev=HIS[HI];
@@ -551,13 +570,15 @@ function updUndo(){ $('btnUndo').disabled=HI<=0; $('btnRedo').disabled=HI>=HIS.l
 function goHis(d){
   const n=HI+d; if(n<0||n>=HIS.length) return; HI=n; updUndo();
   const st=JSON.parse(HIS[HI]);
-  st.s.forEach(m=>{ const it=items.find(x=>x.id===m.id); if(it){ it.pre=m.pre; it.amt=m.amt; it.adj={...m.adj}; } });
+  let rotChanged=false;
+  st.s.forEach(m=>{ const it=items.find(x=>x.id===m.id); if(it){ it.pre=m.pre; it.amt=m.amt; it.adj={...m.adj}; if(setRot(it,m.rot||0) && it===items[cur]) rotChanged=true; } });
   const ci=items.findIndex(x=>x.id===st.cur);
   applyingHis=true;
   if(ci>=0 && ci!==cur){ select(ci).finally(()=>{ applyingHis=false; }); }
-  else { const it=items[cur]; setAmtUI(it.amt); buildChips(it); syncMode(); updateView().finally(()=>{ applyingHis=false; }); }
+  else { const it=items[cur]; if(rotChanged){ setOrig(it); layoutFit(true); renderThumbs(); } setAmtUI(it.amt); buildChips(it); syncMode(); updateView().finally(()=>{ applyingHis=false; }); }
   persist();
 }
+$('rotBtn').onclick=()=>{ const it=items[cur]; if(!it) return; setRot(it,(it.rot||0)+90); setOrig(it); layoutFit(true); renderThumbs(); buildChips(it); updateView(); };
 $('btnUndo').onclick=()=>goHis(-1); $('btnRedo').onclick=()=>goHis(1);
 
 // ── 확대·축소·이동 ──
@@ -565,7 +586,7 @@ const stage=$('stage'), wrap=$('wrap');
 let V={fit:1,s:1,x:0,y:0,w:0,h:0};
 function layoutFit(reset){
   const it=items[cur]; if(!it) return;
-  const r=stage.getBoundingClientRect(); const W=it.img.naturalWidth, H=it.img.naturalHeight;
+  const r=stage.getBoundingClientRect(); const [W,H]=dims(it);
   V.fit=Math.min(r.width/W, r.height/H); V.w=W*V.fit; V.h=H*V.fit;
   wrap.style.width=V.w+'px'; wrap.style.height=V.h+'px';
   if(reset){ V.s=1; V.x=(r.width-V.w)/2; V.y=(r.height-V.h)/2; }
@@ -618,7 +639,7 @@ async function blobOf(it){
   const key=keyOf(it);
   if(it.blob && it.blob.key===key) return it.blob.b;
   let src=it.full && it.full.key===key ? it.full.cv : null;
-  if(!src){ const [W,H]=fullSize(it.img); src=document.createElement('canvas'); drawTo(src,it,W,H); }
+  if(!src){ const [W,H]=fullSize(it); src=document.createElement('canvas'); drawTo(src,it,W,H); }
   const b=await new Promise(r=>src.toBlob(r,'image/jpeg',0.95)); return b;
 }
 let ready=null; // 여러 장은 먼저 만들어 두고 한 번 더 눌러 저장(휴대폰 공유창 제한 때문)
