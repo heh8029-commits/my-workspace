@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>/* http로 들어오면 https로 (다운로드 경고 방지) */ if(location.protocol==='http:' && !/^(localhost|127\.)/.test(location.hostname)) location.replace('https://'+location.host+location.pathname+location.search);</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#ffffff">
 <title>몽글 · 사진 필터</title>
@@ -87,6 +88,15 @@
   .cropAct{display:flex; gap:8px; margin-top:10px}
   .mgLine{display:block; margin-top:10px; text-align:center; font-size:12.5px; color:var(--sub); text-decoration:none}
   .mgLine b{color:var(--acc)}
+  .mgLine a{display:inline-block; margin-left:4px; padding:3px 8px; border-radius:6px; font-size:11.5px; font-weight:700; color:#fff; text-decoration:none}
+  #mNv{background:#03c75a} #mCp{background:#e52528}
+  .promo{margin-top:22px; width:min(320px,88%); padding:12px 14px; border-radius:14px; background:var(--cream); box-shadow:inset 0 0 0 1px #f3e3cf; display:flex; align-items:center; gap:10px; text-align:left; cursor:default}
+  .pTxt{flex:1; min-width:0}
+  .pTxt b{display:block; font-size:13px; color:var(--brown); line-height:1.35}
+  .pTxt span{display:block; font-size:11.5px; color:var(--sub); margin-top:3px}
+  .pBtns{display:flex; flex-direction:column; gap:5px}
+  .pBtns a{text-align:center; text-decoration:none; font-size:12px; font-weight:700; padding:6px 10px; border-radius:8px; color:#fff}
+  .pBtns .nv{background:#03c75a} .pBtns .cp{background:#e52528}
   .mgBox{margin-top:6px; padding:12px; border-radius:12px; background:var(--cream); display:flex; flex-direction:column; gap:10px}
   .mgTxt b{display:block; font-size:13.5px; color:var(--brown)}
   .mgTxt span{display:block; font-size:12px; color:var(--sub); margin-top:2px}
@@ -200,7 +210,7 @@
     </div>
     <div class="cropPanel" id="cropPanel">
       <div class="ratios" id="ratios"></div>
-      <a class="mgLine" id="mgLine" target="_blank" rel="noopener">정사각형 사진은 <b>포토마그넷</b>으로 딱 · 주문하기 →</a>
+      <div class="mgLine" id="mgLine">정사각형 사진은 <b>포토마그넷</b>으로 딱 · <a id="mNv" target="_blank" rel="noopener">네이버</a> <a id="mCp" target="_blank" rel="noopener">쿠팡</a></div>
       <div class="cropAct"><button class="pill ghost" id="cropCancel" type="button">취소</button><button class="pill main" id="cropDone" type="button">완료</button></div>
     </div>
     <div id="fMode">
@@ -218,10 +228,6 @@
     <p id="shSub">원본 크기 그대로 JPG로 저장돼요</p>
     <button class="pill main" id="saveOne" type="button">이 사진만 저장</button>
     <button class="pill ghost" id="saveAll" type="button">전체 저장</button>
-    <div class="mgBox">
-      <div class="mgTxt"><b>이 사진, 포토마그넷으로 만들어 볼까요?</b><span>정사각형(1:1)으로 자른 사진이면 딱 맞아요</span></div>
-      <div class="mgBtns" id="mgBtns"></div>
-    </div>
     <button class="pill x" id="sheetX" type="button">닫기</button>
   </div>
 </div>
@@ -400,7 +406,7 @@ const items=[]; // {name,img,url,pre,amt,full:{key,cv}|null,blob:{key,b}|null,th
 let cur=-1;
 const keyOf=it=>(it.rot||0)+'_'+JSON.stringify(it.crop||0)+'_'+it.pre+'_'+(it.pre?it.amt:0)+'_'+JSON.stringify(it.adj||{});
 const pick=()=>$('file').click();
-$('empty').addEventListener('click',pick);
+$('empty').addEventListener('click',e=>{ if(e.target.closest('.promo')) return; pick(); });
  $('btnNew').onclick=pick;
 $('file').addEventListener('change',e=>{ addFiles(e.target.files); e.target.value=''; });
 
@@ -633,9 +639,7 @@ $('rotBtn').onclick=()=>{ const it=items[cur]; if(!it) return; setRot(it,(it.rot
 // ── 포토마그넷 주문 링크 (쿠팡은 주소 받으면 채우기) ──
 const MAGNET={naver:'https://smartstore.naver.com/miritopper/products/13746231367', coupang:'https://www.coupang.com/vp/products/9726866352?vendorItemId=96032639233'};
 (function(){
-  $('mgBtns').innerHTML=(MAGNET.naver?`<a class="nv" href="${MAGNET.naver}" target="_blank" rel="noopener">네이버에서 주문</a>`:'')
-    +(MAGNET.coupang?`<a class="cp" href="${MAGNET.coupang}" target="_blank" rel="noopener">쿠팡에서 주문</a>`:'');
-  $('mgLine').href=MAGNET.naver||MAGNET.coupang||'#';
+  $('mNv').href=MAGNET.naver; $('mCp').href=MAGNET.coupang;
 })();
 function syncMgLine(){ $('mgLine').hidden = CROP.r!=='1:1'; }
 
