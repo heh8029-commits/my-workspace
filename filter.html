@@ -556,17 +556,21 @@ async function select(i){
 }
 function setAmtUI(v){ $('amt').value=v; $('amtOut').textContent=v; $('amt').style.setProperty('--p',v+'%'); }
 function renderTabs(){ $('tabs').innerHTML=TABS.map((t,i)=>`<button type="button" class="${i===tab?'on':''}" data-i="${i}">${t[0]}</button>`).join(''); }
-$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); if(cur<0) showDemoChips(); else buildChips(items[cur]); $('chips').scrollLeft=0; });
+$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); buildChips(items[cur]); $('chips').scrollLeft=0; });
 
 function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; return L.names.map((_,i)=>i).filter(i=> i===0 || !list || list.includes(L.names[i])); }
-async function buildChips(it){
-  if(!L||!it) return;
+// 필터 미리보기는 항상 예시 사진(탭별)으로 — sel 은 지금 고른 사진(선택 표시용)
+let chipTok=0;
+async function buildChips(sel){
+  if(!L) return; const my=++chipTok;
+  const it=await loadDemo(DEMO_SRC[TABS[tab][0]]||DEMO_DEF); if(!it || my!==chipTok) return;
+  sel=sel||it;
   if(!it.thumbs){ it.thumbs=new Array(L.names.length).fill(null); it._base=thumbCanvas(srcOf(it)); }
   const idx=visibleIdx();
-  $('chips').innerHTML=idx.map(i=>`<button type="button" class="chip${i===it.pre?' on':''}" data-i="${i}">
+  $('chips').innerHTML=idx.map(i=>`<button type="button" class="chip${i===sel.pre?' on':''}" data-i="${i}">
     <span class="th"><img alt="" ${it.thumbs[i]?`src="${it.thumbs[i]}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`).join('')
     + (TABS[tab][1]==='FAV' && !FAV.size ? `<div class="favHint">필터를 고르고 별을 누르면<br>여기에 모아둘 수 있어요</div>` : '');
-  $('amtRow').classList.toggle('hide',!it.pre || cur<0);
+  $('amtRow').classList.toggle('hide',!sel.pre || cur<0);
   const chips=$('chips').querySelectorAll('.chip');
   for(let k=0;k<idx.length;k++){
     const i=idx[k];
@@ -577,7 +581,7 @@ async function buildChips(it){
       it.thumbs[i]=cv.toDataURL('image/jpeg',0.85);
       if(k%4===3) await frame();
     }
-    if((items[cur]||demo)!==it || !chips[k].isConnected) return;
+    if(my!==chipTok || !chips[k].isConnected) return;
     const im=chips[k].querySelector('img'); if(!im.getAttribute('src')) im.src=it.thumbs[i];
   }
 }
