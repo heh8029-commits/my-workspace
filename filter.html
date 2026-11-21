@@ -63,7 +63,8 @@
   .fsBtn{position:absolute; right:10px; bottom:50px; z-index:3; height:34px; padding:0 11px; border:none; border-radius:10px; font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer}
   body.full .top, body.full .bar, body.full .panel{display:none!important}
   body.full .stage{background:#111}
-  body.full .fsBtn span{display:none}
+  body.full .fsBtn{top:calc(12px + env(safe-area-inset-top)); bottom:auto; right:12px; height:40px; padding:0 14px; font-size:14px; background:#fff; color:var(--ink); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  body.full .fsBtn svg{display:none} body.full .fsBtn span::before{content:"✕  "}
   body.cropping .fsBtn{display:none!important}
   body.cropping .cmpPh{display:none!important}
   .cmpTop{width:auto; padding:0 8px; gap:4px; font-size:12.5px; font-weight:600; touch-action:none; -webkit-user-select:none; user-select:none}
