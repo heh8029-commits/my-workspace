@@ -63,8 +63,12 @@
   .fsBtn{position:absolute; right:10px; bottom:50px; z-index:3; height:34px; padding:0 11px; border:none; border-radius:10px; font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer}
   body.full .top, body.full .bar, body.full .panel{display:none!important}
   body.full .stage{background:#111}
-  body.full .fsBtn{right:10px; bottom:52px; height:40px; padding:0 14px; font-size:14px; background:#fff; color:var(--ink); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:0 4px 14px rgba(0,0,0,.35)}
-  body.full .fsBtn svg{display:none} body.full .fsBtn span::before{content:"✕  "}
+  body.full .fsBtn{right:12px; bottom:76px; height:50px; padding:0 20px; font-size:16px; border-radius:14px; background:#fff; color:var(--ink); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  body.full .fsBtn svg{display:none}
+  body.full .cmpPh{right:12px; bottom:16px; height:50px; padding:0 20px; font-size:16px; border-radius:14px; background:#fff; color:var(--ink); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  body.full .cmpPh svg{width:18px; height:18px}
+  body.full .cmpPh .cl::after{content:' 비교'}
+  body.full .cmpPh:active{background:var(--acc); color:#fff} body.full .fsBtn span::before{content:"✕  "}
   body.cropping .fsBtn{display:none!important}
   body.cropping .cmpPh{display:none!important}
   .cmpTop{width:auto; padding:0 8px; gap:4px; font-size:12.5px; font-weight:600; touch-action:none; -webkit-user-select:none; user-select:none}
@@ -241,7 +245,7 @@
     <div class="wrap" id="wrap"><canvas id="cv"></canvas><img class="out" id="out" alt="" hidden><img class="orig" id="orig" alt=""></div>
     <span class="badge" id="badge" hidden></span>
     <button class="fsBtn glass" id="fsBtn" type="button" aria-label="크게 보기" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>크게 보기</span></button>
-    <button class="cmpPh glass" id="cmpBtn" type="button" aria-label="누르고 있으면 원본" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg>원본</button>
+    <button class="cmpPh glass" id="cmpBtn" type="button" aria-label="누르고 있으면 원본" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16"/></svg><span class="cl">원본</span></button>
     <div class="cropFrame" id="cropFrame" hidden><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div>
     <span class="zoomTag glass" id="zoomTag">100%</span>
     <div class="spin"></div>
