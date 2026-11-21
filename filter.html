@@ -124,7 +124,7 @@
   .cropFrame i[data-h=tr]{right:-11px; top:-11px; cursor:nesw-resize} .cropFrame i[data-h=bl]{left:-11px; bottom:-11px; cursor:nesw-resize}
   .cropPanel{display:none; padding:8px 12px 4px}
   body.cropping .cropPanel{display:block}
-  body.cropping #fMode, body.cropping #aMode, body.cropping .amt, body.cropping .adjRow, body.cropping .bar{display:none!important}
+  body.cropping #fMode, body.cropping #aMode, body.cropping .amt, body.cropping .amtTip, body.cropping .adjRow, body.cropping .bar{display:none!important}
   .ratios{display:flex; gap:6px}
   .ratios button{flex:1; position:relative; border:none; background:var(--bg); border-radius:10px; padding:9px 0 7px; font-size:12px; font-weight:600; color:var(--sub); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; cursor:pointer; min-height:56px}
   .ratios .rb{display:block; border:1.6px solid currentColor; border-radius:3px}
@@ -165,6 +165,10 @@
   /* 슬라이더 (패널 맨 위) */
   .amt,.adjRow{display:flex; align-items:center; gap:10px; padding:4px 14px 6px; height:36px}
   .amt.hide{display:none}
+  .amt{position:relative}
+  .amtTip{display:table; margin:-2px auto 4px; background:var(--acc); color:#fff; font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; box-shadow:0 3px 10px rgba(255,107,87,.3); animation:tipBob 1.6s ease-in-out infinite}
+  .amtTip.off,.amt.hide + .amtTip{display:none}
+  @keyframes tipBob{0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)}}
   .amt .lb{display:flex; flex-direction:column; line-height:1.15} .amt .lb small{font-size:9px; font-weight:500; color:var(--mute); white-space:nowrap; margin-top:1px}
   .amt .lb,.adjRow b{font-size:12.5px; font-weight:600; color:var(--sub); min-width:28px}
   .adjRow b{min-width:56px}
@@ -275,9 +279,10 @@
 
   <div class="panel" id="panel">
     <div class="amt hide" id="amtRow">
-      <span class="lb">강도<small>취향껏 조절해 보세요</small></span><input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
+      <span class="lb">강도</span><input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output>
       <button class="all" id="applyAll" type="button" hidden>전체 적용</button>
     </div>
+    <div class="amtTip" id="amtTip">👆 너무 진하면 강도를 살짝 낮춰보세요</div>
     <div class="adjRow" id="adjRow" hidden>
       <b id="adjName">밝기</b><input type="range" id="adj" min="-100" max="100" value="0" aria-label="조정"><output id="adjOut">0</output>
       <button class="all" id="adjReset" type="button">초기화</button>
@@ -632,6 +637,11 @@ $('chips').addEventListener('click',e=>{
   updateView();
 });
 let amtT;
+// 강도 말풍선: 강도를 한 번 만져보면 다음부터 안 보임
+let tipDone=false; try{ tipDone=localStorage.getItem('bbAmtTip')==='1'; }catch(e){}
+if(tipDone) $('amtTip').classList.add('off');
+function hideTip(){ if(tipDone) return; tipDone=true; $('amtTip').classList.add('off'); try{ localStorage.setItem('bbAmtTip','1'); }catch(e){} }
+$('amt').addEventListener('pointerdown',hideTip);
 $('amt').addEventListener('input',e=>{ const it=items[cur]; it.amt=+e.target.value; setAmtUI(it.amt); quick(it); clearTimeout(amtT); amtT=setTimeout(()=>updateView(),350); });
 
 function setBadge(it){ const k=L?L.names[it.pre]:'원본'; const ad=hasAdj(it.adj)?' · 조정됨':''; $('badge').innerHTML=`${en(k)}${(it.pre||ad)?`<small>${it.pre?ko(k):''}${it.pre&&it.amt<100?' · '+it.amt+'%':''}${ad}</small>`:''}`; }
@@ -648,7 +658,7 @@ function syncMode(){
   $('sharpBtn').classList.toggle('on', mode==='a' && tool==='sharp');
   const it=items[cur]; const f=mode==='f';
   $('fMode').hidden=!f; $('aMode').hidden=f; $('adjRow').hidden=f;
-  $('amtRow').style.display=f?'':'none';
+  $('amtRow').style.display=f?'':'none'; $('amtTip').style.display=f?'':'none';
   if(!f && it) buildTools(it);
 }
 function buildTools(it){
