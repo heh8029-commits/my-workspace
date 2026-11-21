@@ -531,10 +531,17 @@ function resetEmpty(){
 }
 // 사진 없을 때도 아래 필터 줄은 예시 사진으로 미리 보여줌
 let demo=null;
+// 사진 올리기 전 필터 미리보기: 인물 탭은 인물 사진, 나머지는 웨딩 사진
+const DEMO_SRC={'인물':'filter-sample5.jpg'}, DEMO_DEF='filter-sample4.jpg', demoCache={};
+async function loadDemo(src){
+  if(demoCache[src]) return demoCache[src];
+  const im=new Image(); im.src=src; try{ await im.decode(); }catch(e){ return null; }
+  return demoCache[src]={img:im,pre:0,amt:100,adj:{},thumbs:null};
+}
 async function showDemoChips(){
   await lutReady.catch(()=>{});
-  if(!demo){ const im=new Image(); im.src='filter-sample4.jpg'; try{ await im.decode(); }catch(e){ return; } demo={img:im,pre:0,amt:100,adj:{},thumbs:null}; }
-  if(cur<0){ renderTabs(); buildChips(demo); }
+  const d=await loadDemo(DEMO_SRC[TABS[tab][0]]||DEMO_DEF); if(!d) return;
+  demo=d; if(cur<0){ renderTabs(); buildChips(demo); }
 }
 $('thumbs').addEventListener('pointerdown',e=>e.stopPropagation());
 $('thumbs').addEventListener('click',e=>{ const d=e.target.closest('[data-del]'); if(d){ e.stopPropagation(); removeItem(+d.dataset.del); return; }
@@ -549,7 +556,7 @@ async function select(i){
 }
 function setAmtUI(v){ $('amt').value=v; $('amtOut').textContent=v; $('amt').style.setProperty('--p',v+'%'); }
 function renderTabs(){ $('tabs').innerHTML=TABS.map((t,i)=>`<button type="button" class="${i===tab?'on':''}" data-i="${i}">${t[0]}</button>`).join(''); }
-$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); buildChips(items[cur]||demo); $('chips').scrollLeft=0; });
+$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); if(cur<0) showDemoChips(); else buildChips(items[cur]); $('chips').scrollLeft=0; });
 
 function visibleIdx(){ let list=TABS[tab][1]; if(list==='FAV') list=[...FAV]; return L.names.map((_,i)=>i).filter(i=> i===0 || !list || list.includes(L.names[i])); }
 async function buildChips(it){
