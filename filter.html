@@ -590,14 +590,14 @@ async function buildChips(sel){
   // '원본' 칸은 올린 사진 그대로
   let origTh=null; const ui=items[cur];
   if(ui){ const k=(ui.rot||0)+JSON.stringify(ui.crop||0); if(ui._ot && ui._otK===k) origTh=ui._ot; else { origTh=thumbCanvas(srcOf(ui)).toDataURL('image/jpeg',0.85); ui._ot=origTh; ui._otK=k; } }
-  $('chips').innerHTML=idx.map((i,k)=>{ const d=demoCache[srcs[k]], th=(i===0&&origTh)||(d&&d.thumbs[i]);
+  $('chips').innerHTML=idx.map((i,k)=>{ const d=demoCache[srcs[k]], th=i===0 ? origTh : (d&&d.thumbs[i]);   // 사진 없을 땐 원본 칸 비움
     return `<button type="button" class="chip${i===sel0.pre?' on':''}" data-i="${i}">
     <span class="th"><img alt="" ${th?`src="${th}"`:''}></span>${i?`<span class="star${FAV.has(L.names[i])?' fav':''}" data-star="${i}">${STAR}</span>`:''}<span class="nm">${en(L.names[i])}</span></button>`; }).join('')
     + (TABS[tab][1]==='FAV' && !FAV.size ? `<div class="favHint">필터를 고르고 별을 누르면<br>여기에 모아둘 수 있어요</div>` : '');
   $('amtRow').classList.toggle('hide',!sel0.pre || cur<0);
   const chips=$('chips').querySelectorAll('.chip');
   for(let k=0;k<idx.length;k++){
-    const i=idx[k], d=demoCache[srcs[k]]; if(!d || (i===0&&origTh)) continue;
+    const i=idx[k], d=demoCache[srcs[k]]; if(!d || i===0) continue;
     if(!d.thumbs[i]){
       const cv=document.createElement('canvas'); cv.width=d._base.width; cv.height=d._base.height;
       const c=cv.getContext('2d',{willReadFrequently:true}); c.drawImage(d._base,0,0);
