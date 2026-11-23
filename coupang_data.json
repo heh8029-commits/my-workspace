@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-24 03:45",
+  "last_updated": "2026-11-24 04:20",
   "accounts": {
     "미리토퍼": {
       "current_amount": 8900,
@@ -29379,12 +29379,6 @@
   },
   "run_log": [
     {
-      "time": "2026-10-14 23:45",
-      "account": "몽몽토퍼",
-      "status": "fail",
-      "reason": "로그인 폼 없음"
-    },
-    {
       "time": "2026-10-15 01:45",
       "account": "몽몽토퍼",
       "status": "fail",
@@ -29974,6 +29968,12 @@
     },
     {
       "time": "2026-11-24 03:20",
+      "account": "미리토퍼",
+      "status": "fail",
+      "reason": "예외: BrowserType.connect_over_cdp: Timeout 180000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://localhost:9301\n  - <ws connecting> ws://localhost:9301/devtools/browser/92e8996d-b303-429c-997d-39d191809c73\n  - <ws connected> ws://localhost:9301/devtools/browser/92e8996d-b303-429c-997d-39d191809c73\n"
+    },
+    {
+      "time": "2026-11-24 04:20",
       "account": "미리토퍼",
       "status": "fail",
       "reason": "예외: BrowserType.connect_over_cdp: Timeout 180000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://localhost:9301\n  - <ws connecting> ws://localhost:9301/devtools/browser/92e8996d-b303-429c-997d-39d191809c73\n  - <ws connected> ws://localhost:9301/devtools/browser/92e8996d-b303-429c-997d-39d191809c73\n"
