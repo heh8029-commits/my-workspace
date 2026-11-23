@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-24 01:20",
+  "last_updated": "2026-11-24 01:45",
   "accounts": {
     "미리토퍼": {
       "current_amount": 8900,
@@ -29371,12 +29371,6 @@
   },
   "run_log": [
     {
-      "time": "2026-10-14 20:45",
-      "account": "몽몽토퍼",
-      "status": "fail",
-      "reason": "로그인 폼 없음"
-    },
-    {
       "time": "2026-10-14 21:45",
       "account": "몽몽토퍼",
       "status": "fail",
@@ -29969,6 +29963,12 @@
       "account": "미리토퍼",
       "status": "fail",
       "reason": "예외: BrowserType.connect_over_cdp: Timeout 180000ms exceeded.\nCall log:\n  - <ws preparing> retrieving websocket url from http://localhost:9301\n  - <ws connecting> ws://localhost:9301/devtools/browser/92e8996d-b303-429c-997d-39d191809c73\n  - <ws connected> ws://localhost:9301/devtools/browser/92e8996d-b303-429c-997d-39d191809c73\n"
+    },
+    {
+      "time": "2026-11-24 01:45",
+      "account": "몽몽토퍼",
+      "status": "fail",
+      "reason": "매출금액 못 찾음 (페이지 구조/로딩 문제 추정)"
     }
   ],
   "ad_data": {
