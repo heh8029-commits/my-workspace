@@ -10462,5 +10462,19 @@ function workSync() {
 })();
 </script>
 <div class="toast" id="toast"></div>
-</body>
+<script>
+/* 토퍼메이커 CS공유 창(iframe) 안에서 Esc → 메이커에 '닫아줘' 알림 (황 11/24). 입력 중이거나 이 페이지 팝업이 떠 있으면 그것 먼저 */
+(function(){
+  if (window.parent === window) return;
+  window.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape' || e.isComposing) return;
+    var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var W = innerWidth, H = innerHeight, modal = [].some.call(document.body.querySelectorAll('*'), function(el){
+      var s = getComputedStyle(el); if (s.position !== 'fixed' || s.display === 'none' || s.visibility === 'hidden') return false;
+      var r = el.getBoundingClientRect(); return r.width > W * .5 && r.height > H * .5;
+    });
+    if (!modal) parent.postMessage('csEsc', '*');
+  }, true);
+})();
+</script></body>
 </html>
