@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script>/* http로 들어오면 https로 */ if(location.protocol==='http:' && !/^(localhost|127\.)/.test(location.hostname)) location.replace('https://'+location.host+location.pathname+location.search);</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>몽글 · 영상 필터</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f4f2; --surface:#ffffff; --stage:#ebe8e4; --line:#e7e4e0;
+    --ink:#1c1917; --sub:#57534e; --mute:#a8a29e;
+    --acc:#ff6b57; --acc-soft:#ffebe6; --brown:#5a3a22; --cream:#fff7ec;
+    --font:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--ink); overflow:hidden; overscroll-behavior:none; font-family:var(--font); letter-spacing:-.2px}
+  button{font-family:inherit; letter-spacing:inherit}
+  .app{height:100dvh; display:flex; flex-direction:column; max-width:640px; margin:0 auto; position:relative}
+
+  .top{flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:calc(6px + env(safe-area-inset-top)) 14px 6px; height:calc(50px + env(safe-area-inset-top))}
+  .logo{display:flex; align-items:center; gap:5px; white-space:nowrap}
+  .logoImg{height:34px; width:auto; display:block}
+  .logo .vtag{font-family:'Jua',var(--font); font-size:15px; color:#fff; background:var(--acc); border-radius:7px; padding:2px 7px 1px; margin-left:2px}
+  .logo small{font-size:10.5px; color:var(--mute); font-weight:600; align-self:flex-end; margin-bottom:3px}
+  .sp{flex:1}
+  .pill{border:none; border-radius:10px; padding:9px 13px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:5px; text-decoration:none}
+  .pill.ghost{background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
+  .pill.main{background:var(--brown); color:#fff}
+  .pill.cream{background:var(--cream); color:var(--brown); box-shadow:inset 0 0 0 1px #f1dfc8; font-size:12.5px; padding:7px 11px}
+  .pill:active{opacity:.8}
+  .pill:disabled{opacity:.4; cursor:default}
+
+  .stage{flex:1 1 auto; min-height:0; background:var(--stage); position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden}
+  #cv{max-width:100%; max-height:100%; display:block; background:#000}
+  .empty{display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center; color:var(--sub); padding:20px}
+  .empty b{font-family:'Jua',var(--font); font-weight:400; font-size:24px; color:var(--brown)}
+  .empty p{margin:0; font-size:13.5px; line-height:1.55}
+  .empty .pill{font-size:16px; padding:13px 26px; border-radius:14px}
+  .ovBtn{position:absolute; z-index:3; height:34px; padding:0 11px; border:none; border-radius:10px; font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer;
+    background:rgba(255,255,255,.88); color:var(--ink); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); touch-action:none; -webkit-user-select:none; user-select:none}
+  #cmp{right:10px; bottom:10px}
+  #cmp:active{background:var(--acc); color:#fff}
+  #playBig{left:50%; top:50%; transform:translate(-50%,-50%); width:64px; height:64px; border-radius:50%; justify-content:center; padding:0; background:rgba(0,0,0,.45); color:#fff}
+
+  .ctl{flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:8px 14px 2px; background:var(--surface)}
+  .ctl .icoBtn{width:34px; height:34px; border:none; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink)}
+  .ctl output{font-size:12px; color:var(--sub); font-variant-numeric:tabular-nums; min-width:76px; text-align:right}
+  input[type=range]{-webkit-appearance:none; appearance:none; flex:1; height:22px; background:transparent; margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:4px; background:linear-gradient(90deg,var(--acc) var(--p,0%),#e7e4e0 var(--p,0%))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.3); margin-top:-7px}
+  input[type=range]::-moz-range-track{height:4px; border-radius:4px; background:#e7e4e0}
+  input[type=range]::-moz-range-progress{height:4px; border-radius:4px; background:var(--acc)}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+  .panel{flex:0 0 auto; background:var(--surface); padding:4px 0 calc(10px + env(safe-area-inset-bottom))}
+  .amtRow{display:flex; align-items:center; gap:10px; padding:6px 14px}
+  .amtRow b{font-size:13px; color:var(--sub); white-space:nowrap}
+  .amtRow output{font-size:13px; font-weight:700; width:38px; text-align:right}
+  .tabs{display:flex; gap:4px; padding:4px 12px 6px; overflow-x:auto; scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{border:none; background:none; font-size:13.5px; font-weight:700; color:var(--mute); padding:6px 8px; border-radius:8px; cursor:pointer; white-space:nowrap}
+  .tabs button.on{color:var(--ink); background:var(--bg)}
+  .chips{display:flex; gap:9px; padding:2px 14px 4px; overflow-x:auto; scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto; width:64px; border:none; background:none; padding:0; cursor:pointer; text-align:center; color:var(--sub)}
+  .chip canvas,.chip .ph{width:64px; height:80px; border-radius:12px; display:block; background:var(--stage); object-fit:cover}
+  .chip span{display:block; font-size:11.5px; font-weight:600; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .chip.on canvas,.chip.on .ph{box-shadow:0 0 0 2.5px var(--acc)}
+  .chip.on span{color:var(--acc)}
+  .bar{display:flex; gap:8px; padding:8px 14px 0}
+  .bar .pill{flex:1; padding:12px 0; font-size:15px; border-radius:12px}
+
+  .ovl{position:fixed; inset:0; z-index:50; background:rgba(28,25,23,.55); display:flex; align-items:center; justify-content:center; padding:20px}
+  .box{background:var(--surface); border-radius:18px; padding:22px 20px 18px; width:min(340px,100%); text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .box h3{margin:0 0 6px; font-size:18px}
+  .box p{margin:0 0 14px; font-size:13px; color:var(--sub); line-height:1.5}
+  .prog{height:8px; border-radius:8px; background:var(--bg); overflow:hidden; margin:4px 0 8px}
+  .prog i{display:block; height:100%; width:0; background:var(--acc); transition:width .2s}
+  .box .row{display:flex; gap:8px; margin-top:12px} .box .row .pill{flex:1}
+  .toast{position:fixed; left:50%; bottom:calc(110px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:60; background:rgba(28,25,23,.9); color:#fff; font-size:13.5px; padding:10px 16px; border-radius:12px; display:none; max-width:90vw; text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo"><img class="logoImg" src="mongle-logo.png" alt="몽글필터"><span class="vtag">영상</span><small>by.미리토퍼</small></div>
+    <div class="sp"></div>
+    <a class="pill cream" href="filter.html">📷 사진 필터</a>
+    <button class="pill ghost" id="pickTop" type="button" hidden>다른 영상</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="empty" id="empty">
+      <b>몽글필터영상</b>
+      <p>영상에도 몽글필터를 입혀 보세요<br><small style="color:var(--mute)">1분 이하 영상 추천 · 폰 안에서만 처리돼요(업로드 없음)</small></p>
+      <button class="pill main" id="pick" type="button">🎬 영상 고르기</button>
+    </div>
+    <canvas id="cv" hidden></canvas>
+    <button class="ovBtn" id="playBig" type="button" hidden aria-label="재생"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="ovBtn" id="cmp" type="button" hidden>꾹 눌러 원본 비교</button>
+  </div>
+
+  <div class="ctl" id="ctl" hidden>
+    <button class="icoBtn" id="play" type="button" aria-label="재생/정지"></button>
+    <input type="range" id="seek" min="0" max="1000" value="0" aria-label="재생 위치">
+    <output id="time">0:00 / 0:00</output>
+  </div>
+
+  <div class="panel" id="panel" hidden>
+    <div class="amtRow"><b>강도</b><input type="range" id="amt" min="0" max="100" value="100" aria-label="강도"><output id="amtOut">100</output></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="chips" id="chips"></div>
+    <div class="bar"><button class="pill main" id="save" type="button">⬇ 영상 저장</button></div>
+  </div>
+</div>
+<input type="file" id="file" accept="video/*" hidden>
+<video id="vid" playsinline webkit-playsinline preload="auto" style="display:none"></video>
+
+<div class="ovl" id="expOv" hidden>
+  <div class="box">
+    <h3 id="expT">영상 만드는 중…</h3>
+    <p id="expP">영상 길이만큼 걸려요. 화면을 끄거나 다른 앱으로 가면 멈춰요.</p>
+    <div class="prog"><i id="expBar"></i></div>
+    <div style="font-size:12px;color:var(--mute)" id="expN">0%</div>
+    <div class="row" id="expBtns"><button class="pill ghost" id="expX" type="button">취소</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+function toast(m,ms){ const t=$('toast'); t.textContent=m; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',ms||2600); }
+const fmt=s=>{ s=Math.max(0,s||0); return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); };
+const MAX_SIDE=1920;   // 긴 변 최대 (1080p)
+const PLAY='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', PAUSE='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+// ── 필터 이름·탭 (몽글필터 사진 페이지와 같게) ──
+const NAMES={'원본':['원본',''],'자연스럽게':['보송','자연스럽게'],'뽀얀 톤업':['뽀얀우유','뽀얀 톤업'],'화이트':['눈송이','하얗게'],
+  '파스텔':['마시멜로','파스텔'],'청량':['사이다','청량한 하늘'],'바다':['파도','바다'],'초록 싱그':['말차','싱그러운 초록'],
+  '햇살':['꿀햇살','따스한 햇살'],'노을':['노을빛','노을'],'쨍하게':['팝캔디','쨍하게'],'음식':['냠냠','맛있어 보이게'],
+  '흐린날':['맑음','흐린 날 살리기'],'어두운사진':['반짝','어두운 사진 밝게'],'역광':['후광','역광 살리기'],'너무밝을때':['그늘','너무 밝을 때'],
+  '필름':['필름98','필름 감성'],'흑백':['흑백',''],'미니멀':['구름','깔끔 미니멀'],'라떼':['라떼','브라운 무드'],'오트':['오트밀','뉴트럴 베이지'],
+  '린넨':['린넨','차분한 베이지'],'딸기우유':['딸기우유','연핑크'],'생크림':['생크림','화이트 클린'],'브런치':['브런치','음식 감성'],'살구':['살구','살구빛 햇살'],
+  '뽀샤시':['뽀샤시','하얗고 뽀얗게'],'복숭아':['복숭아','혈색 도는 피치'],'청순':['청순','맑은 쿨톤'],'우유빛':['우유빛','몽글한 소프트'],'필름 인물':['필름 인물','필름카메라 감성'],'화보':['화보','선명한 화보톤'],'시크':['시크','또렷한 카메라톤'],'뽀용':['뽀용','포근한 크림톤'],'청량돌':['청량','맑고 화사하게'],'무드돌':['무드','쨍한 쿨톤']};
+const en=k=>(NAMES[k]||[k])[0];
+const TABS=[['추천',['뽀용','미니멀','시크','복숭아','초록 싱그','쨍하게','어두운사진','뽀샤시','라떼','생크림','청순','필름']],['전체',null],['카페',['뽀용','미니멀','라떼','오트','린넨','생크림','브런치','딸기우유']],['인물',['자연스럽게','뽀용','살구','화보','필름','청량돌','시크','뽀샤시','복숭아','청순','우유빛']],
+  ['풍경',['뽀용','청량돌','청량','바다','초록 싱그','흐린날','노을']],['무드',['미니멀','시크','필름','흑백','쨍하게','파스텔','노을']],['음식',['음식','라떼','미니멀','생크림','쨍하게','햇살']],['살리기',['무드돌','어두운사진','역광','너무밝을때','흐린날']]];
+let tab=0, pre=0, amt=1, cmpHold=false;
+
+// ── 필터(LUT) 불러오기 ──
+let L=null;
+const lutReady=new Promise((res,rej)=>{
+  const s=document.createElement('script'); s.src='photo-luts.js?v=16';
+  s.onload=()=>{ L=window.MT_LUTS; L.bytes=L.data.map(b=>{ if(!b) return null; const bin=atob(b), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }); res(L); };
+  s.onerror=rej; document.head.appendChild(s);
+});
+// 미리보기 칩용 (CPU, 작은 그림만)
+function applyLut(ctx,w,h,lut,n,a){
+  const m=n-1, s=m/255, n2=n*n, id=ctx.getImageData(0,0,w,h), d=id.data;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i]*s, g=d[i+1]*s, b=d[i+2]*s;
+    let r0=r|0, g0=g|0, b0=b|0; if(r0>=m) r0=m-1; if(g0>=m) g0=m-1; if(b0>=m) b0=m-1;
+    const fr=r-r0, fg=g-g0, fb=b-b0;
+    const A=(b0*n2+g0*n+r0)*3, A1=A+3, C=A+n*3, C1=C+3, E=A+n2*3, E1=E+3, Q=E+n*3, Q1=Q+3;
+    for(let k=0;k<3;k++){
+      const x00=lut[A+k]+(lut[A1+k]-lut[A+k])*fr, x10=lut[C+k]+(lut[C1+k]-lut[C+k])*fr, x01=lut[E+k]+(lut[E1+k]-lut[E+k])*fr, x11=lut[Q+k]+(lut[Q1+k]-lut[Q+k])*fr;
+      const y0=x00+(x10-x00)*fg, v=y0+((x01+(x11-x01)*fg)-y0)*fb;
+      d[i+k]=d[i+k]+(v-d[i+k])*a;
+    }
+  }
+  ctx.putImageData(id,0,0);
+}
+
+// ── WebGL: 영상 매 장면에 LUT 입히기 ──
+const cv=$('cv'), vid=$('vid');
+let gl=null, prog=null, texV=null, texL=null, uAmt=null, lutTexFor=-1;
+function initGL(){
+  gl=cv.getContext('webgl',{preserveDrawingBuffer:true, premultipliedAlpha:false, alpha:false});
+  if(!gl) return false;
+  const vs='attribute vec2 p; varying vec2 uv; void main(){ uv=vec2((p.x+1.)*.5, (1.-p.y)*.5); gl_Position=vec4(p,0.,1.); }';
+  const fs=`precision highp float; varying vec2 uv; uniform sampler2D v; uniform sampler2D l; uniform float amt; const float N=${L.n}.0;
+    vec3 look(vec3 c){ float b=c.b*(N-1.); float b0=floor(b); float b1=min(b0+1.,N-1.); float f=b-b0;
+      float x=c.r*(N-1.)+.5, y=(c.g*(N-1.)+.5)/N;
+      vec3 a=texture2D(l, vec2((b0*N+x)/(N*N), y)).rgb, d=texture2D(l, vec2((b1*N+x)/(N*N), y)).rgb; return mix(a,d,f); }
+    void main(){ vec3 c=texture2D(v,uv).rgb; gl_FragColor=vec4(mix(c, look(clamp(c,0.,1.)), amt), 1.); }`;
+  const sh=(t,src)=>{ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog); gl.useProgram(prog);
+  const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(prog,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const mk=()=>{ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t); [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE)); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); return t; };
+  texV=mk(); texL=mk();
+  gl.uniform1i(gl.getUniformLocation(prog,'v'),0); gl.uniform1i(gl.getUniformLocation(prog,'l'),1); uAmt=gl.getUniformLocation(prog,'amt');
+  return true;
+}
+function setLutTex(i){
+  if(lutTexFor===i) return; lutTexFor=i;
+  const n=L.n, src=L.bytes[i]; if(!src) return;
+  // 파일 순서 (b,g,r) → 텍스처 가로=(b*n+r), 세로=g
+  const out=new Uint8Array(n*n*n*3);
+  for(let b=0;b<n;b++) for(let g=0;g<n;g++) for(let r=0;r<n;r++){ const s=((b*n+g)*n+r)*3, d=((g*n*n)+b*n+r)*3; out[d]=src[s]; out[d+1]=src[s+1]; out[d+2]=src[s+2]; }
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,texL); gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,n*n,n,0,gl.RGB,gl.UNSIGNED_BYTE,out);
+}
+function draw(){
+  if(!gl || !vid.videoWidth) return;
+  gl.viewport(0,0,cv.width,cv.height);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texV);
+  try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,vid); }catch(e){ return; }
+  const a=(pre===0||cmpHold)?0:amt; if(pre) setLutTex(pre);
+  gl.uniform1f(uAmt,a); gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+// 프레임마다 그리기
+const hasRVFC='requestVideoFrameCallback' in HTMLVideoElement.prototype;
+function loop(){ draw(); syncTime(); if(hasRVFC) vid.requestVideoFrameCallback(loop); else requestAnimationFrame(loop); }
+
+// ── 영상 열기 ──
+let url=null, loaded=false;
+$('pick').onclick=$('pickTop').onclick=()=>{ if(busy) return; $('file').click(); };
+$('file').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{ await lutReady; }catch(err){ toast('필터를 못 불러왔어요 (인터넷 확인)'); return; }
+  if(!gl && !initGL()){ toast('이 기기에서는 영상 필터가 안 돼요 (WebGL 없음)'); return; }
+  if(url) URL.revokeObjectURL(url); url=URL.createObjectURL(f);
+  vid.src=url; vid.muted=false; vid.load();
+  await new Promise((res,rej)=>{ vid.onloadeddata=res; vid.onerror=()=>rej(); }).catch(()=>{ toast('이 영상은 열 수 없어요'); });
+  if(!vid.videoWidth) return;
+  const k=Math.min(1, MAX_SIDE/Math.max(vid.videoWidth,vid.videoHeight));
+  cv.width=Math.round(vid.videoWidth*k/2)*2; cv.height=Math.round(vid.videoHeight*k/2)*2;
+  $('empty').hidden=true; ['cv','ctl','panel','cmp','playBig','pickTop'].forEach(id=>$(id).hidden=false);
+  if(vid.duration>90) toast('1분 넘는 영상은 저장이 오래 걸리고 폰에서 버벅일 수 있어요',3500);
+  if(!loaded){ loaded=true; loop(); }
+  vid.currentTime=Math.min(0.1, (vid.duration||1)/2);
+  vid.addEventListener('seeked', makeThumbs, {once:true});
+  draw(); setPlayIco();
+};
+
+// 칩 미리보기: 지금 장면 한 컷으로 필터별 작은 그림
+let thumbBase=null;
+function makeThumbs(){
+  const w=64*2, h=80*2, c=document.createElement('canvas'); c.width=w; c.height=h;
+  const x=c.getContext('2d',{willReadFrequently:true}), vw=vid.videoWidth, vh=vid.videoHeight, s=Math.max(w/vw,h/vh);
+  x.drawImage(vid,(w-vw*s)/2,(h-vh*s)/2,vw*s,vh*s); thumbBase=c; buildChips(); draw();
+}
+function renderTabs(){ $('tabs').innerHTML=TABS.map((t,i)=>`<button type="button" class="${i===tab?'on':''}" data-i="${i}">${t[0]}</button>`).join(''); }
+$('tabs').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; tab=+b.dataset.i; renderTabs(); buildChips(); };
+function visibleIdx(){ const list=TABS[tab][1]; const r=L.names.map((_,i)=>i).filter(i=>i===0||!list||list.includes(L.names[i])); if(list) r.sort((a,b)=>a===0?-1:b===0?1:list.indexOf(L.names[a])-list.indexOf(L.names[b])); return r; }
+function buildChips(){
+  const box=$('chips'); box.innerHTML='';
+  for(const i of visibleIdx()){
+    const b=document.createElement('button'); b.type='button'; b.className='chip'+(i===pre?' on':''); b.dataset.i=i;
+    if(thumbBase){ const c=document.createElement('canvas'); c.width=thumbBase.width; c.height=thumbBase.height; const x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(thumbBase,0,0); if(i) applyLut(x,c.width,c.height,L.bytes[i],L.n,1); b.appendChild(c); }
+    else { const d=document.createElement('div'); d.className='ph'; b.appendChild(d); }
+    const s=document.createElement('span'); s.textContent=en(L.names[i]); b.appendChild(s); box.appendChild(b);
+  }
+}
+$('chips').onclick=e=>{ const b=e.target.closest('.chip'); if(!b||busy) return; pre=+b.dataset.i; [...$('chips').children].forEach(c=>c.classList.toggle('on',+c.dataset.i===pre)); draw(); };
+renderTabs();
+lutReady.then(buildChips).catch(()=>{});
+
+// 강도
+function setAmt(v){ $('amt').value=v; $('amtOut').textContent=v; $('amt').style.setProperty('--p',v+'%'); amt=v/100; draw(); }
+$('amt').oninput=e=>setAmt(+e.target.value); setAmt(100);
+// 꾹 눌러 비교
+const cmp=$('cmp');
+cmp.addEventListener('pointerdown',e=>{ cmpHold=true; cmp.setPointerCapture(e.pointerId); draw(); });
+['pointerup','pointercancel'].forEach(t=>cmp.addEventListener(t,()=>{ cmpHold=false; draw(); }));
+
+// 재생
+function setPlayIco(){ $('play').innerHTML=vid.paused?PLAY:PAUSE; $('playBig').hidden=!vid.paused||busy||!loaded; }
+$('play').onclick=$('playBig').onclick=()=>{ if(busy) return; if(vid.paused){ if(vid.ended) vid.currentTime=0; vid.play().catch(()=>{}); } else vid.pause(); };
+$('cv').onclick=()=>$('play').onclick();
+vid.addEventListener('play',setPlayIco); vid.addEventListener('pause',setPlayIco); vid.addEventListener('ended',setPlayIco);
+vid.addEventListener('seeked',draw);
+let seeking=false;
+function syncTime(){ if(!vid.duration) return; $('time').textContent=fmt(vid.currentTime)+' / '+fmt(vid.duration); if(!seeking){ const p=vid.currentTime/vid.duration*1000; $('seek').value=p; $('seek').style.setProperty('--p',p/10+'%'); } }
+vid.addEventListener('timeupdate',syncTime);
+$('seek').oninput=e=>{ if(busy) return; seeking=true; vid.currentTime=e.target.value/1000*(vid.duration||0); $('seek').style.setProperty('--p',e.target.value/10+'%'); };
+$('seek').onchange=()=>{ seeking=false; };
+
+// ── 저장 (영상 길이만큼 재생하면서 녹화) ──
+let busy=false, rec=null, cancelled=false, actx=null, aDest=null;
+function pickMime(){
+  const c=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  if(!window.MediaRecorder) return null;
+  return c.find(t=>{ try{ return MediaRecorder.isTypeSupported(t); }catch(e){ return false; } }) || '';
+}
+function audioTrack(){
+  // 소리: 영상 → (스피커 대신) 녹화로만 보냄
+  try{
+    if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; actx=new AC(); const src=actx.createMediaElementSource(vid); aDest=actx.createMediaStreamDestination(); src.connect(aDest); src.connect(actx.destination); actx._src=src; }
+    actx.resume && actx.resume();
+    return aDest.stream.getAudioTracks()[0]||null;
+  }catch(e){ return null; }
+}
+$('save').onclick=async()=>{
+  if(busy||!loaded) return;
+  const mime=pickMime();
+  if(mime===null || !cv.captureStream){ toast('이 브라우저는 영상 저장이 안 돼요. 크롬·사파리 최신으로 열어 주세요',3500); return; }
+  busy=true; cancelled=false; vid.pause(); setPlayIco();
+  $('expT').textContent='영상 만드는 중…'; $('expP').textContent='영상 길이만큼 걸려요. 화면을 끄거나 다른 앱으로 가면 멈춰요.';
+  $('expBtns').innerHTML='<button class="pill ghost" id="expX" type="button">취소</button>'; $('expX').onclick=()=>{ cancelled=true; vid.pause(); try{ rec&&rec.stop(); }catch(e){} };
+  $('expBar').style.width='0'; $('expN').textContent='0%'; $('expOv').hidden=false;
+  const stream=cv.captureStream(30), at=audioTrack(); if(at) stream.addTrack(at);
+  const px=cv.width*cv.height, bps=px>=1920*1080*0.9?10e6:px>=1280*720*0.9?6e6:4e6;
+  const chunks=[];
+  try{ rec=new MediaRecorder(stream, Object.assign({videoBitsPerSecond:bps, audioBitsPerSecond:128000}, mime?{mimeType:mime}:{})); }
+  catch(e){ try{ rec=new MediaRecorder(stream); }catch(e2){ busy=false; $('expOv').hidden=true; toast('녹화를 시작할 수 없어요'); return; } }
+  rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  const done=new Promise(r=>rec.onstop=r);
+  vid.currentTime=0; await new Promise(r=>vid.addEventListener('seeked',r,{once:true})); draw();
+  const tick=setInterval(()=>{ const p=Math.min(100,Math.round(vid.currentTime/(vid.duration||1)*100)); $('expBar').style.width=p+'%'; $('expN').textContent=p+'% · '+fmt(vid.currentTime)+' / '+fmt(vid.duration); },250);
+  const onEnd=()=>{ setTimeout(()=>{ try{ rec.state!=='inactive'&&rec.stop(); }catch(e){} },150); };
+  vid.addEventListener('ended',onEnd,{once:true});
+  rec.start(1000); vid.muted=false;
+  try{ await vid.play(); }catch(e){ clearInterval(tick); try{ rec.stop(); }catch(_){} busy=false; $('expOv').hidden=true; toast('재생을 시작하지 못했어요. 다시 눌러 주세요'); return; }
+  await done; clearInterval(tick); vid.removeEventListener('ended',onEnd); stream.getVideoTracks().forEach(t=>t.stop());
+  busy=false; setPlayIco();
+  if(cancelled){ $('expOv').hidden=true; toast('취소했어요'); return; }
+  const type=(rec.mimeType||mime||'video/webm').split(';')[0], ext=type.includes('mp4')?'mp4':'webm';
+  const blob=new Blob(chunks,{type}), name='mongle_'+new Date().toISOString().slice(0,19).replace(/[-:T]/g,'')+'.'+ext;
+  const file=new File([blob],name,{type});
+  $('expBar').style.width='100%'; $('expN').textContent=(blob.size/1048576).toFixed(1)+'MB · '+ext.toUpperCase();
+  $('expT').textContent='완성됐어요 🎉';
+  $('expP').innerHTML=ext==='mp4'?'아래 버튼으로 저장하세요':'이 브라우저는 <b>WEBM</b>으로만 저장돼요.<br>인스타에 안 올라가면 사파리·최신 크롬에서 다시 해 주세요';
+  const canShare=navigator.canShare&&navigator.canShare({files:[file]});
+  $('expBtns').innerHTML=(canShare?'<button class="pill main" id="expShare" type="button">사진앱에 저장</button>':'')+'<button class="pill '+(canShare?'ghost':'main')+'" id="expDl" type="button">파일로 받기</button><button class="pill ghost" id="expClose" type="button">닫기</button>';
+  if(canShare) $('expShare').onclick=()=>navigator.share({files:[file]}).catch(()=>{});
+  $('expDl').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000); };
+  $('expClose').onclick=()=>{ $('expOv').hidden=true; };
+};
+document.addEventListener('visibilitychange',()=>{ if(busy&&document.hidden) toast('다른 앱으로 가면 녹화가 멈춰요',3000); });
+</script>
+</body>
+</html>
