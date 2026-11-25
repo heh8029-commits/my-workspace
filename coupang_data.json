@@ -31434,7 +31434,8 @@
     "11/24": {
       "cpAdCost": 237203,
       "mongCpAdCost": 52403,
-      "naverSales": 443100
+      "naverSales": 443100,
+      "naverSearchAd": 10135
     }
   },
   "ad_performance": {
